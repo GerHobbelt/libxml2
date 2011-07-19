@@ -194,8 +194,12 @@ static void globfree(glob_t *pglob) {
              free(pglob->gl_pathv[i]);
     }
 }
+/*
+[i_a] defined in "win32config.h":
+
 #define vsnprintf _vsnprintf
 #define snprintf _snprintf
+*/
 #else
 #include <glob.h>
 #endif

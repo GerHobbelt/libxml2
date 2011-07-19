@@ -1709,8 +1709,8 @@ xmlTextReaderReadInnerXml(xmlTextReaderPtr reader ATTRIBUTE_UNUSED)
  *
  * Reads the contents of the current node, including child nodes and markup.
  *
- * Returns a string containing the node and any XML content, or NULL if the 
- *         current node cannot be serialized. The string must be deallocated 
+ * Returns a string containing the node and any XML content, or NULL if the
+ *         current node cannot be serialized. The string must be deallocated
  *         by the caller.
  */
 xmlChar *
@@ -3915,7 +3915,7 @@ xmlTextReaderPreserve(xmlTextReaderPtr reader) {
     }
     reader->preserves++;
 
-    parent = cur->parent;;
+    parent = cur->parent;
     while (parent != NULL) {
         if (parent->type == XML_ELEMENT_NODE)
 	    parent->extra |= NODE_IS_PRESERVED;

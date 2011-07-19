@@ -28,6 +28,14 @@
  */
 #include <win32config.h>
 #include <libxml/xmlversion.h>
+#elif defined(_WIN32) || defined(WIN32)
+/*
+ * [i_a] Windows NT/XP/Vista/2003 compatibility definitions and functions
+ * This is needed to compile libxml2 for Windows using MSVC2003/2005.
+ * Tested with MSVC2005 on WinXP.
+ */
+#include <win32config.h>
+#include <libxml/xmlversion.h>
 #else
 #include "config.h"
 #include <libxml/xmlversion.h>

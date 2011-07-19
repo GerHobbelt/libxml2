@@ -8,15 +8,23 @@
 
 #include "libxml.h"
 
+#ifdef HAVE_STRING_H
 #include <string.h>
+#endif
+#ifdef HAVE_STDARG_H
 #include <stdarg.h>
+#endif
 #include <assert.h>
+#ifdef HAVE_ERRNO_H
+#include <errno.h>       /* EINVAL */
+#endif
 
 #if defined (_WIN32) && !defined(__CYGWIN__)
 #if defined (_MSC_VER) || defined(__BORLANDC__)
 #include <winsock2.h>
 #pragma comment(lib, "ws2_32.lib")
-#define gettimeofday(p1,p2)
+/* #define gettimeofday(p1,p2) [i_a] */
+int gettimeofday(struct timeval *tv, struct timezone *tzp);
 #endif /* _MSC_VER */
 #endif /* _WIN32 */
 
@@ -430,6 +438,63 @@ my_gettimeofday(struct timeval *tvp, void *tzp)
 #endif /* HAVE_SYS_TIME_H */
 #endif /* HAVE_SYS_TIMEB_H */
 #endif /* !HAVE_GETTIMEOFDAY */
+
+
+/* [i_a] */
+#ifndef HAVE_GETTIMEOFDAY
+#if defined (WIN32) || defined (_WIN32)
+
+/* adapted from code ripped from Curl mailing list & PostgreSQL sources */
+
+/* FILETIME of Jan 1 1970 00:00:00. */
+#define EPOCH    116444736000000000LL
+
+int gettimeofday(struct timeval *tv, struct timezone *tzp)
+{
+  union
+  {
+    LONGLONG ns100;             /*time since 1 Jan 1601 in 100ns units */
+    FILETIME ft;
+  } now;
+
+  if (!tv)
+  {
+    errno = EINVAL;
+    return -1;
+  }
+
+#if 0
+  {
+    SYSTEMTIME system_time;
+
+    GetSystemTime(&system_time);
+    SystemTimeToFileTime(&system_time, &now.ft);
+  }
+#else
+  GetSystemTimeAsFileTime(&now.ft);
+#endif
+  tv->tv_usec = (long)((now.ns100 / 10LL) % 1000000LL);
+  tv->tv_sec = (long)((now.ns100 - EPOCH) / 10000000LL);
+
+#if 0
+  // Get the timezone, if they want it
+  if (tzp != NULL)
+  {
+    _tzset();
+    tzp->tz_minuteswest = _timezone;
+    tzp->tz_dsttime = _daylight;
+  }
+#else
+  assert(tzp == NULL);          /* shouldn't've been used */
+#endif
+  return 0;
+}
+
+#define HAVE_GETTIMEOFDAY 1
+
+#endif
+#endif
+
 
 #if defined(HAVE_GETTIMEOFDAY)
 static struct timeval begin, end;

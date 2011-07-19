@@ -17,6 +17,9 @@
 #ifdef HAVE_TIME_H
 #include <time.h>
 #endif
+#ifdef HAVE_ERRNO_H
+#include <errno.h>       /* EINVAL */
+#endif
 
 #ifdef LIBXML_SAX1_ENABLED
 #include <string.h>
@@ -71,7 +74,7 @@ static int timing = 0;
  * function calls
  */
 
-#ifndef HAVE_GETTIMEOFDAY 
+#ifndef HAVE_GETTIMEOFDAY
 #ifdef HAVE_SYS_TIMEB_H
 #ifdef HAVE_SYS_TIME_H
 #ifdef HAVE_FTIME
@@ -95,6 +98,65 @@ my_gettimeofday(struct timeval *tvp, void *tzp)
 #endif /* HAVE_SYS_TIME_H */
 #endif /* HAVE_SYS_TIMEB_H */
 #endif /* !HAVE_GETTIMEOFDAY */
+
+
+/* [i_a] */
+#ifndef HAVE_GETTIMEOFDAY
+#if defined (WIN32) || defined (_WIN32)
+#include <assert.h>
+
+/* adapted from code ripped from Curl mailing list & PostgreSQL sources */
+
+/* FILETIME of Jan 1 1970 00:00:00. */
+#define EPOCH    116444736000000000LL
+
+int gettimeofday(struct timeval *tv, struct timezone *tzp)
+{
+  union
+  {
+    LONGLONG ns100;             /*time since 1 Jan 1601 in 100ns units */
+    FILETIME ft;
+  } now;
+
+  if (!tv)
+  {
+    errno = EINVAL;
+    return -1;
+  }
+
+#if 0
+  {
+    SYSTEMTIME system_time;
+
+    GetSystemTime(&system_time);
+    SystemTimeToFileTime(&system_time, &now.ft);
+  }
+#else
+  GetSystemTimeAsFileTime(&now.ft);
+#endif
+  tv->tv_usec = (long)((now.ns100 / 10LL) % 1000000LL);
+  tv->tv_sec = (long)((now.ns100 - EPOCH) / 10000000LL);
+
+#if 0
+  // Get the timezone, if they want it
+  if (tzp != NULL)
+  {
+    _tzset();
+    tzp->tz_minuteswest = _timezone;
+    tzp->tz_dsttime = _daylight;
+  }
+#else
+  assert(tzp == NULL);          /* shouldn't've been used */
+#endif
+  return 0;
+}
+
+#define HAVE_GETTIMEOFDAY 1
+
+#endif
+#endif
+
+
 
 #if defined(HAVE_GETTIMEOFDAY)
 static struct timeval begin, end;
@@ -368,7 +430,7 @@ resolveEntityDebug(void *ctx ATTRIBUTE_UNUSED, const xmlChar *publicId, const xm
 	return(NULL);
     /* xmlParserCtxtPtr ctxt = (xmlParserCtxtPtr) ctx; */
 
-    
+
     fprintf(stdout, "SAX.resolveEntity(");
     if (publicId != NULL)
 	fprintf(stdout, "%s", (char *)publicId);
@@ -428,8 +490,8 @@ getParameterEntityDebug(void *ctx ATTRIBUTE_UNUSED, const xmlChar *name)
 /**
  * entityDeclDebug:
  * @ctxt:  An XML parser context
- * @name:  the entity name 
- * @type:  the entity type 
+ * @name:  the entity name
+ * @type:  the entity type
  * @publicId: The public ID of the entity
  * @systemId: The system ID of the entity
  * @content: the entity value (without processing).
@@ -458,8 +520,8 @@ const xmlChar *nullstr = BAD_CAST "(null)";
 /**
  * attributeDeclDebug:
  * @ctxt:  An XML parser context
- * @name:  the attribute name 
- * @type:  the attribute type 
+ * @name:  the attribute name
+ * @type:  the attribute type
  *
  * An attribute definition has been parsed
  */
@@ -483,8 +545,8 @@ attributeDeclDebug(void *ctx ATTRIBUTE_UNUSED, const xmlChar * elem,
 /**
  * elementDeclDebug:
  * @ctxt:  An XML parser context
- * @name:  the element name 
- * @type:  the element type 
+ * @name:  the element name
+ * @type:  the element type
  * @content: the element value (without processing).
  *
  * An element definition has been parsed
@@ -670,7 +732,7 @@ charactersDebug(void *ctx ATTRIBUTE_UNUSED, const xmlChar *ch, int len)
  * @ctxt:  An XML parser context
  * @name:  The entity name
  *
- * called when an entity reference is detected. 
+ * called when an entity reference is detected.
  */
 static void
 referenceDebug(void *ctx ATTRIBUTE_UNUSED, const xmlChar *name)
@@ -906,7 +968,7 @@ startElementNsDebug(void *ctx ATTRIBUTE_UNUSED,
     else
 	fprintf(stdout, ", '%s'", (char *) URI);
     fprintf(stdout, ", %d", nb_namespaces);
-    
+
     if (namespaces != NULL) {
         for (i = 0;i < nb_namespaces * 2;i++) {
 	    fprintf(stdout, ", xmlns");
@@ -1131,7 +1193,7 @@ int main(int argc, char **argv) {
     int files = 0;
 
     LIBXML_TEST_VERSION	/* be safe, plus calls xmlInitParser */
-    
+
     for (i = 1; i < argc ; i++) {
 	if ((!strcmp(argv[i], "-debug")) || (!strcmp(argv[i], "--debug")))
 	    debug++;

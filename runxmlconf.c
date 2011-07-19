@@ -37,13 +37,15 @@ static int verbose = 0;
 
 #define NB_EXPECTED_ERRORS 15
 
+/*
+   [i_a]
+
 #if defined(_WIN32) && !defined(__CYGWIN__)
-
 #define vsnprintf _vsnprintf
-
 #define snprintf _snprintf
-
 #endif
+*/
+
 
 const char *skipped_tests[] = {
 /* http://lists.w3.org/Archives/Public/public-xml-testsuite/2008Jul/0000.html */
@@ -393,7 +395,7 @@ xmlconfTestItem(xmlDocPtr doc, xmlNodePtr cur) {
     if (xmlStrEqual(type, BAD_CAST "not-wf")) {
         if (nstest == 0)
 	    xmlconfTestNotWF((char *) id, (char *) filename, options);
-        else 
+        else
 	    xmlconfTestNotNSWF((char *) id, (char *) filename, options);
     } else if (xmlStrEqual(type, BAD_CAST "valid")) {
         options |= XML_PARSE_DTDVALID;
