@@ -1,6 +1,12 @@
 #ifndef __LIBXML_WIN32_CONFIG__
 #define __LIBXML_WIN32_CONFIG__
 
+/* Avoid silly warnings about "insecure" functions. */
+#define _CRT_SECURE_NO_DEPRECATE 1
+#define _CRT_SECURE_NO_WARNINGS  1
+#define _CRT_NONSTDC_NO_WARNINGS 1
+
+
 #define HAVE_CTYPE_H
 #define HAVE_STDARG_H
 #define HAVE_MALLOC_H
