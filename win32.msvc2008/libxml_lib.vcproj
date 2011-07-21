@@ -700,10 +700,6 @@
 			Name="Header Files"
 			>
 			<File
-				RelativePath="..\acconfig.h"
-				>
-			</File>
-			<File
 				RelativePath="..\libxml.h"
 				>
 			</File>
