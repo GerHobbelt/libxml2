@@ -1,4 +1,4 @@
-LIBRARY "libxml.dll"
+;LIBRARY "libxml.dll"
 
 EXPORTS
 ;	regaexec @1
