@@ -29,15 +29,16 @@
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
+			WholeProgramOptimization="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="copy $(TargetFileName) to bin\$(PlatformName)_MSVC2005.$(ConfigurationName) directory"
-				CommandLine="if not exist &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)&quot; mkdir &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
-				Outputs="$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)\$(TargetFileName)"
+				CommandLine=""
+				AdditionalDependencies=""
+				Outputs=""
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -124,15 +125,16 @@
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
+			WholeProgramOptimization="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="copy $(TargetFileName) to bin\$(PlatformName)_MSVC2005.$(ConfigurationName) directory"
-				CommandLine="if not exist &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)&quot; mkdir &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
-				Outputs="$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)\$(TargetFileName)"
+				CommandLine=""
+				AdditionalDependencies=""
+				Outputs=""
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -220,15 +222,16 @@
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
+			WholeProgramOptimization="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="copy $(TargetFileName) to bin\$(PlatformName)_MSVC2005.$(ConfigurationName) directory"
-				CommandLine="if not exist &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)&quot; mkdir &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
-				Outputs="$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)\$(TargetFileName)"
+				CommandLine=""
+				AdditionalDependencies=""
+				Outputs=""
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -316,15 +319,16 @@
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
+			WholeProgramOptimization="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="copy $(TargetFileName) to bin\$(PlatformName)_MSVC2005.$(ConfigurationName) directory"
-				CommandLine="if not exist &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)&quot; mkdir &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
-				Outputs="$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)\$(TargetFileName)"
+				CommandLine=""
+				AdditionalDependencies=""
+				Outputs=""
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -408,15 +412,16 @@
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
+			WholeProgramOptimization="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="copy $(TargetFileName) to bin\$(PlatformName)_MSVC2005.$(ConfigurationName) directory"
-				CommandLine="if not exist &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)&quot; mkdir &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
-				Outputs="$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)\$(TargetFileName)"
+				CommandLine=""
+				AdditionalDependencies=""
+				Outputs=""
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -501,15 +506,16 @@
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
+			WholeProgramOptimization="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="copy $(TargetFileName) to bin\$(PlatformName)_MSVC2005.$(ConfigurationName) directory"
-				CommandLine="if not exist &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)&quot; mkdir &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
-				Outputs="$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)\$(TargetFileName)"
+				CommandLine=""
+				AdditionalDependencies=""
+				Outputs=""
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"

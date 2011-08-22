@@ -34,6 +34,9 @@
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
 				Name="VCXMLDataGeneratorTool"
 			/>
 			<Tool
@@ -126,6 +129,9 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -222,6 +228,9 @@
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
 				Name="VCXMLDataGeneratorTool"
 			/>
 			<Tool
@@ -314,6 +323,9 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -412,6 +424,9 @@
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
 				Name="VCXMLDataGeneratorTool"
 			/>
 			<Tool
@@ -506,6 +521,9 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
