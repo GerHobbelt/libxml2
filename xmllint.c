@@ -2138,7 +2138,7 @@ static void doXPathDump(xmlXPathObjectPtr cur) {
 #ifdef LIBXML_OUTPUT_ENABLED
             xmlSaveCtxtPtr ctxt;
 
-            if (cur->nodesetval->nodeNr <= 0) {
+            if ((cur->nodesetval == NULL) || (cur->nodesetval->nodeNr <= 0)) {
                 fprintf(stderr, "XPath set is empty\n");
                 progresult = XMLLINT_ERR_XPATH;
                 break;
@@ -3023,6 +3023,7 @@ static void showVersion(const char *name) {
     if (xmlHasFeature(XML_WITH_DEBUG_MEM)) fprintf(stderr, "MemDebug ");
     if (xmlHasFeature(XML_WITH_DEBUG_RUN)) fprintf(stderr, "RunDebug ");
     if (xmlHasFeature(XML_WITH_ZLIB)) fprintf(stderr, "Zlib ");
+    if (xmlHasFeature(XML_WITH_LZMA)) fprintf(stderr, "Lzma ");
     fprintf(stderr, "\n");
 }
 

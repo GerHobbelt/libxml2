@@ -68,10 +68,6 @@ AC_PATH_PROG(WGET, wget, /usr/bin/wget)
 AC_PATH_PROG(XMLLINT, xmllint, /usr/bin/xmllint)
 AC_PATH_PROG(XSLTPROC, xsltproc, /usr/bin/xsltproc)
 
-dnl Make sure we have an ANSI compiler
-AM_C_PROTOTYPES
-test "x$U" != "x" && AC_MSG_ERROR(Compiler not ANSI compliant)
-
 AC_LIBTOOL_WIN32_DLL
 AM_PROG_LIBTOOL
 
@@ -193,6 +189,14 @@ AC_ARG_WITH(zlib,
 [  --with-zlib[[=DIR]]       use libz in DIR],[
   if test "$withval" != "no" -a "$withval" != "yes"; then
     Z_DIR=$withval
+    CPPFLAGS="${CPPFLAGS} -I$withval/include"
+    LDFLAGS="${LDFLAGS} -L$withval/lib"
+  fi
+])
+AC_ARG_WITH(lzma,
+[  --with-lzma[[=DIR]]       use liblzma in DIR],[
+  if test "$withval" != "no" -a "$withval" != "yes"; then
+    LZMA_DIR=$withval
     CPPFLAGS="${CPPFLAGS} -I$withval/include"
     LDFLAGS="${LDFLAGS} -L$withval/lib"
   fi
@@ -399,6 +403,30 @@ AC_SUBST(Z_CFLAGS)
 AC_SUBST(Z_LIBS)
 AC_SUBST(WITH_ZLIB)
 
+echo Checking lzma
+
+dnl Checks for lzma library.
+
+WITH_LZMA=0
+if test "$with_lzma" = "no"; then
+    echo "Disabling compression support"
+else
+    AC_CHECK_HEADERS(lzma.h,
+	AC_CHECK_LIB(lzma, lzma_code,[
+	    AC_DEFINE([HAVE_LIBLZMA], [1], [Have compression library])
+	    WITH_LZMA=1
+	    if test "x${LZMA_DIR}" != "x"; then
+		LZMA_CFLAGS="-I${LZMA_DIR}/include"
+		LZMA_LIBS="-L${LZMA_DIR}/lib -llzma"
+	    else
+		LZMA_LIBS="-llzma"
+	    fi]))
+fi
+
+AC_SUBST(LZMA_CFLAGS)
+AC_SUBST(LZMA_LIBS)
+AC_SUBST(WITH_LZMA)
+
 CPPFLAGS=${_cppflags}
 LDFLAGS=${_ldflags}
 
@@ -417,7 +445,7 @@ AC_CHECK_HEADERS([stdarg.h])
 AC_CHECK_HEADERS([sys/stat.h])
 AC_CHECK_HEADERS([sys/types.h])
 AC_CHECK_HEADERS([stdint.h])
-AC_CHECK_HEADERS([inttypes.h.h])
+AC_CHECK_HEADERS([inttypes.h])
 AC_CHECK_HEADERS([time.h])
 AC_CHECK_HEADERS([ansidecl.h])
 AC_CHECK_HEADERS([ieeefp.h])
@@ -480,6 +508,7 @@ AC_CHECK_FUNCS(strdup strndup strerror)
 AC_CHECK_FUNCS(finite isnand fp_class class fpclass)
 AC_CHECK_FUNCS(strftime localtime gettimeofday ftime)
 AC_CHECK_FUNCS(stat _stat signal)
+AC_CHECK_FUNCS(rand srand time)
 
 dnl Checking the standard string functions availability
 AC_CHECK_FUNCS(printf sprintf fprintf snprintf vfprintf vsprintf vsnprintf sscanf,,
