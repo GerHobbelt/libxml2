@@ -107,10 +107,9 @@ xstc/Makefile
 xstc/Makefile.in
 
 
-*.o
 *.a
-*.lo
 *.so
 *.la
 *~
 *.bak
+*.vcproj.user
