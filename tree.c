@@ -8030,7 +8030,7 @@ xmlDOMWrapRemoveNode(xmlDOMWrapCtxtPtr ctxt, xmlDocPtr doc,
 		     xmlNodePtr node, int options ATTRIBUTE_UNUSED)
 {
     xmlNsPtr *list = NULL;
-    int sizeList, nbList, i, j;
+    int sizeList, nbList = 0, i, j;
     xmlNsPtr ns;
 
     if ((node == NULL) || (doc == NULL) || (node->doc != doc))
