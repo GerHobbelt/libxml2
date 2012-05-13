@@ -50,7 +50,6 @@ include/Makefile
 include/Makefile.in
 include/libxml/Makefile
 include/libxml/Makefile.in
-include/libxml/xmlversion.h
 libtool
 libxml-2.0-uninstalled.pc
 libxml-2.0.pc
@@ -112,4 +111,4 @@ xstc/Makefile.in
 *.la
 *~
 *.bak
-*.vcproj.user
+*.user

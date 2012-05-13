@@ -20,6 +20,15 @@
     <Filter Include="Resources">
       <UniqueIdentifier>{00a9adaf-dad6-43ea-9a31-55ff753d7cf6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Extra Files">
+      <UniqueIdentifier>{b9ec6b61-9c56-409e-b513-65109a321bcb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Extra Files\include">
+      <UniqueIdentifier>{8db343a8-f772-4314-8d68-b28ad38135d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Extra Files\include\libxml">
+      <UniqueIdentifier>{ba7895bf-7942-4152-b47c-d1e0d918563d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\c14n.c">
@@ -337,6 +346,147 @@
   <ItemGroup>
     <None Include="libxml.def">
       <Filter>Resources</Filter>
+    </None>
+    <None Include="..\.gitignore">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\acinclude.m4">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\AUTHORS">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\autogen.sh">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\build_glob.py">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\ChangeLog">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\check-relaxng-test-suite.py">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\check-relaxng-test-suite2.py">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\check-xinclude-test-suite.py">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\check-xml-test-suite.py">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\check-xsddata-test-suite.py">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\configure.in">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\Copyright">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\dbgen.pl">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\dbgenattr.pl">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\genChRanges.py">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\gentest.py">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\genUnicode.py">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\global.data">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\HACKING">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\INSTALL.libxml2">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\libxml.3">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\libxml.m4">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\libxml.spec.in">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\libxml-2.0.pc.in">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\libxml-2.0-uninstalled.pc.in">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\libxml2.doap">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\libxml2.syms">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\MAINTAINERS">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\Makefile.am">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\Makefile.tests">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\Makefile.win">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\NEWS">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\README">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\README.cvs-commits">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\README.tests">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\regressions.py">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\TODO">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\TODO_SCHEMAS">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\xml2Conf.sh.in">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\xml2-config.1">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\xml2-config.in">
+      <Filter>Extra Files</Filter>
+    </None>
+    <None Include="..\include\Makefile.am">
+      <Filter>Extra Files\include</Filter>
+    </None>
+    <None Include="..\include\libxml\.cvsignore">
+      <Filter>Extra Files\include\libxml</Filter>
+    </None>
+    <None Include="..\include\libxml\Makefile.am">
+      <Filter>Extra Files\include\libxml</Filter>
+    </None>
+    <None Include="..\include\libxml\xmlversion.h.in">
+      <Filter>Extra Files\include\libxml</Filter>
+    </None>
+    <None Include="..\include\libxml\xmlwin32version.h.in">
+      <Filter>Extra Files\include\libxml</Filter>
     </None>
   </ItemGroup>
 </Project>

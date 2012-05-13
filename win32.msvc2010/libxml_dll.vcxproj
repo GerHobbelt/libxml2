@@ -140,7 +140,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>.;../include;../../libiconv/include;../../zlib;../../pthreads;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;TRE_EXPORTS;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;TRE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling>Async</ExceptionHandling>
@@ -254,7 +254,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>.;../include;../../libiconv/include;../../zlib;../../pthreads;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;TRE_EXPORTS;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;TRE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling>Async</ExceptionHandling>
@@ -316,7 +316,7 @@
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <AdditionalIncludeDirectories>.;../include;../../libiconv/include;../../zlib;../../pthreads;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;TRE_EXPORTS;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;TRE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Async</ExceptionHandling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -432,7 +432,7 @@
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <AdditionalIncludeDirectories>.;../include;../../libiconv/include;../../zlib;../../pthreads;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;TRE_EXPORTS;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;TRE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Async</ExceptionHandling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -575,6 +575,53 @@
     <ClInclude Include="..\include\libxml\xpointer.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\.gitignore" />
+    <None Include="..\acinclude.m4" />
+    <None Include="..\AUTHORS" />
+    <None Include="..\autogen.sh" />
+    <None Include="..\build_glob.py" />
+    <None Include="..\ChangeLog" />
+    <None Include="..\check-relaxng-test-suite.py" />
+    <None Include="..\check-relaxng-test-suite2.py" />
+    <None Include="..\check-xinclude-test-suite.py" />
+    <None Include="..\check-xml-test-suite.py" />
+    <None Include="..\check-xsddata-test-suite.py" />
+    <None Include="..\configure.in" />
+    <None Include="..\Copyright" />
+    <None Include="..\dbgen.pl" />
+    <None Include="..\dbgenattr.pl" />
+    <None Include="..\genChRanges.py" />
+    <None Include="..\gentest.py" />
+    <None Include="..\genUnicode.py" />
+    <None Include="..\global.data" />
+    <None Include="..\HACKING" />
+    <None Include="..\include\libxml\.cvsignore" />
+    <None Include="..\include\libxml\Makefile.am" />
+    <None Include="..\include\libxml\xmlversion.h.in" />
+    <None Include="..\include\libxml\xmlwin32version.h.in" />
+    <None Include="..\include\Makefile.am" />
+    <None Include="..\INSTALL.libxml2" />
+    <None Include="..\libxml-2.0-uninstalled.pc.in" />
+    <None Include="..\libxml-2.0.pc.in" />
+    <None Include="..\libxml.3" />
+    <None Include="..\libxml.m4" />
+    <None Include="..\libxml.spec.in" />
+    <None Include="..\libxml2.doap" />
+    <None Include="..\libxml2.syms" />
+    <None Include="..\MAINTAINERS" />
+    <None Include="..\Makefile.am" />
+    <None Include="..\Makefile.tests" />
+    <None Include="..\Makefile.win" />
+    <None Include="..\NEWS" />
+    <None Include="..\README" />
+    <None Include="..\README.cvs-commits" />
+    <None Include="..\README.tests" />
+    <None Include="..\regressions.py" />
+    <None Include="..\TODO" />
+    <None Include="..\TODO_SCHEMAS" />
+    <None Include="..\xml2-config.1" />
+    <None Include="..\xml2-config.in" />
+    <None Include="..\xml2Conf.sh.in" />
     <None Include="libxml.def" />
   </ItemGroup>
   <ItemGroup>
