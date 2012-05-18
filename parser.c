@@ -2629,7 +2629,7 @@ xmlStringLenDecodeEntities(xmlParserCtxtPtr ctxt, const xmlChar *str, int len,
     xmlChar *rep = NULL;
     const xmlChar *last;
     xmlEntityPtr ent;
-    int c,l;
+    int c,l = 0;
     int nbchars = 0;
 
     if ((ctxt == NULL) || (str == NULL) || (len < 0))
@@ -9564,7 +9564,7 @@ xmlParseElement(xmlParserCtxtPtr ctxt) {
     const xmlChar *prefix = NULL;
     const xmlChar *URI = NULL;
     xmlParserNodeInfo node_info;
-    int line, tlen;
+    int line, tlen = 0;
     xmlNodePtr ret;
     int nsNr = ctxt->nsNr;
 
