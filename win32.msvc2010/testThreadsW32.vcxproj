@@ -430,7 +430,7 @@
     <ClCompile Include="..\testThreadsWin32.c" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\pthread-win32\pthread.2010.vcxproj">
+    <ProjectReference Include="..\pthread-win32\pthread.2010.vcxproj">
       <Project>{5d459ba0-5eeb-47d3-a1c4-6b55c8d37ec0}</Project>
     </ProjectReference>
     <ProjectReference Include="libxml_dll.vcxproj">
