@@ -45,11 +45,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xmlcatalog", "xmlcatalog.vc
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xmllint", "xmllint.vcxproj", "{30212A7D-F656-425E-9AFD-E4F5F005FBFB}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzlib_lib", "..\..\zlib\libzlib_lib.2010.vcxproj", "{9DE41B37-B0C0-4FB2-960B-3FC6544394C3}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzlib_lib", "..\zlib\libzlib_lib.2010.vcxproj", "{9DE41B37-B0C0-4FB2-960B-3FC6544394C3}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzlib_dll", "..\..\zlib\libzlib_dll.2010.vcxproj", "{74FF2F85-52D7-48A2-B76F-4DACF9736E3C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzlib_dll", "..\zlib\libzlib_dll.2010.vcxproj", "{74FF2F85-52D7-48A2-B76F-4DACF9736E3C}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "minigzip", "..\..\zlib\minigzip.2010.vcxproj", "{99FCB505-163C-41B3-8958-AD3B55CB6CF3}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "minigzip", "..\zlib\test\minigzip.2010.vcxproj", "{99FCB505-163C-41B3-8958-AD3B55CB6CF3}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testThreadsW32", "testThreadsW32.vcxproj", "{8F4A408A-E589-4C7E-A8FA-8F237D547CF4}"
 EndProject
