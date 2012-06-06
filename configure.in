@@ -6,8 +6,8 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_CANONICAL_HOST
 
 LIBXML_MAJOR_VERSION=2
-LIBXML_MINOR_VERSION=7
-LIBXML_MICRO_VERSION=8
+LIBXML_MINOR_VERSION=8
+LIBXML_MICRO_VERSION=0
 LIBXML_MICRO_VERSION_SUFFIX=
 LIBXML_VERSION=$LIBXML_MAJOR_VERSION.$LIBXML_MINOR_VERSION.$LIBXML_MICRO_VERSION$LIBXML_MICRO_VERSION_SUFFIX
 LIBXML_VERSION_INFO=`expr $LIBXML_MAJOR_VERSION + $LIBXML_MINOR_VERSION`:$LIBXML_MICRO_VERSION:$LIBXML_MINOR_VERSION
@@ -29,7 +29,7 @@ else if test -d .svn ; then
       LIBXML_VERSION_EXTRA="-SVN$extra"
   fi
 else if test -d .git ; then
-  extra=`git describe | sed 's+LIBXML[[0-9.]]*-++'`
+  extra=`git describe 2>/dev/null | sed 's+LIBXML[[0-9.]]*-++'`
   echo extra=$extra
   if test "$extra" != ""
   then
@@ -508,11 +508,7 @@ AC_CHECK_FUNCS(strdup strndup strerror)
 AC_CHECK_FUNCS(finite isnand fp_class class fpclass)
 AC_CHECK_FUNCS(strftime localtime gettimeofday ftime)
 AC_CHECK_FUNCS(stat _stat signal)
-AC_CHECK_FUNCS(rand srand time)
-
-dnl Checking the standard string functions availability
-AC_CHECK_FUNCS(printf sprintf fprintf snprintf vfprintf vsprintf vsnprintf sscanf,,
-               NEED_TRIO=1)
+AC_CHECK_FUNCS(rand rand_r srand time)
 
 dnl Checking for va_copy availability
 AC_MSG_CHECKING([for va_copy])
@@ -948,22 +944,30 @@ if test "$with_threads" = "no" ; then
     echo Disabling multithreaded support
 else
     echo Enabling multithreaded support
-    dnl Use pthread by default
-    if test "$with_threads" = "pthread" || test "$with_threads" = "" || test "$with_threads" = "yes" ; then
-        AC_CHECK_HEADER(pthread.h,
-	    AC_CHECK_LIB(pthread, pthread_join,[
-	       THREAD_LIBS="-lpthread"
-	       AC_DEFINE([HAVE_LIBPTHREAD], [], [Define if pthread library is there (-lpthread)])
-	       AC_DEFINE([HAVE_PTHREAD_H], [], [Define if <pthread.h> is there])
-	       WITH_THREADS="1"]))
-    fi
+
+    dnl Default to native threads on Win32
     case $host_os in
-       *mingw32*) if test "$THREAD_LIBS" != "-lpthread"; then
+       *mingw32*) if test "$with_threads" != "pthread" && test "$with_threads" != "no"; then
                WITH_THREADS="1"
                THREADS_W32="Win32"
-	       THREAD_CFLAGS="$THREAD_CFLAGS -DHAVE_WIN32_THREADS"
+               THREAD_CFLAGS="$THREAD_CFLAGS -DHAVE_WIN32_THREADS"
            fi
        ;;
+    esac
+
+    dnl Use pthread by default in other cases
+    if test -z "$THREADS_W32"; then
+        if test "$with_threads" = "pthread" || test "$with_threads" = "" || test "$with_threads" = "yes" ; then
+            AC_CHECK_HEADER(pthread.h,
+                AC_CHECK_LIB(pthread, pthread_join,[
+                THREAD_LIBS="-lpthread"
+                AC_DEFINE([HAVE_LIBPTHREAD], [], [Define if pthread library is there (-lpthread)])
+                AC_DEFINE([HAVE_PTHREAD_H], [], [Define if <pthread.h> is there])
+                WITH_THREADS="1"]))
+        fi
+    fi
+
+    case $host_os in
        *cygwin*) THREAD_LIBS=""
        ;;
        *beos*) WITH_THREADS="1"
@@ -1473,11 +1477,9 @@ case "$host" in
  WIN32_EXTRA_LIBADD="-lws2_32"
  WIN32_EXTRA_LDFLAGS="-no-undefined"
  AC_DEFINE([_WINSOCKAPI_],1,[Using the Win32 Socket implementation])
- AC_DEFINE([snprintf],[_snprintf],[Win32 Std C name mangling work-around])
- AC_DEFINE([vsnprintf],[_vsnprintf],[Win32 Std C name mangling work-around])
  if test "${PYTHON}" != ""
  then
-   WIN32_EXTRA_PYTHON_LIBADD="-L${pythondir}/../../libs -lpython${PYTHON_VERSION//./}"
+   WIN32_EXTRA_PYTHON_LIBADD="-L${pythondir}/../../libs -lpython$(echo ${PYTHON_VERSION} | tr -d .)"
  fi
  ;;
  *-*-cygwin*)
@@ -1493,6 +1495,24 @@ AC_SUBST(WIN32_EXTRA_LDFLAGS)
 AC_SUBST(WIN32_EXTRA_PYTHON_LIBADD)
 AC_SUBST(CYGWIN_EXTRA_LDFLAGS)
 AC_SUBST(CYGWIN_EXTRA_PYTHON_LIBADD)
+
+dnl Checking the standard string functions availability
+dnl
+dnl Note mingw* has C99 implementation that produce expected xml numbers
+dnl if code use {v}snprintf functions.
+dnl If you like to activate at run-time C99 compatible number output
+dnl see release note for mingw runtime 3.15:
+dnl  http://sourceforge.net/project/shownotes.php?release_id=24832
+dnl
+dnl Also *win32*config.h files redefine them for various MSC compilers.
+dnl
+dnl So do not redefine {v}snprintf to _{v}snprintf like follwing:
+dnl  AC_DEFINE([snprintf],[_snprintf],[Win32 Std C name mangling work-around])
+dnl  AC_DEFINE([vsnprintf],[_vsnprintf],[Win32 Std C name mangling work-around])
+dnl and do not redefine those functions is C-source files.
+dnl
+AC_CHECK_FUNCS(printf sprintf fprintf snprintf vfprintf vsprintf vsnprintf sscanf,,
+	NEED_TRIO=1)
 
 if test "$with_coverage" = "yes" -a "${GCC}" = "yes"
 then

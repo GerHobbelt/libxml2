@@ -44,7 +44,9 @@
 
 #define MAX_PUSH 10000000
 
+#ifdef ERROR
 #undef ERROR /* [i_a] Win32 defines this one in winGDI.h :-( */
+#endif
 #define ERROR(str)							\
     ctxt->error = XML_REGEXP_COMPILE_ERROR;				\
     xmlRegexpErrCompile(ctxt, str);

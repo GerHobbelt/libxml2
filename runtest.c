@@ -197,8 +197,10 @@ static void globfree(glob_t *pglob) {
 /*
 [i_a] defined in "win32config.h":
 
+#if !defined(__MINGW32__)
 #define vsnprintf _vsnprintf
 #define snprintf _snprintf
+#endif
 */
 #else
 #include <glob.h>

@@ -855,16 +855,18 @@ xmlTextReaderPushData(xmlTextReaderPtr reader) {
 		          (const char *) &inbuf->content[reader->cur],
 			  CHUNK_SIZE, 0);
 	    reader->cur += CHUNK_SIZE;
-	    if ((val != 0) || (reader->ctxt->wellFormed == 0))
-		return(-1);
+	    if (val != 0)
+		reader->ctxt->wellFormed = 0;
+	    if (reader->ctxt->wellFormed == 0)
+		break;
 	} else {
 	    s = inbuf->use - reader->cur;
 	    val = xmlParseChunk(reader->ctxt,
 		          (const char *) &inbuf->content[reader->cur],
 			  s, 0);
 	    reader->cur += s;
-	    if ((val != 0) || (reader->ctxt->wellFormed == 0))
-		return(-1);
+	    if (val != 0)
+		reader->ctxt->wellFormed = 0;
 	    break;
 	}
     }
@@ -896,11 +898,17 @@ xmlTextReaderPushData(xmlTextReaderPtr reader) {
 		    s, 1);
 	    reader->cur = inbuf->use;
 	    reader->state  = XML_TEXTREADER_DONE;
-	    if ((val != 0) || (reader->ctxt->wellFormed == 0))
-	        return(-1);
+	    if (val != 0) {
+	        if (reader->ctxt->wellFormed)
+		    reader->ctxt->wellFormed = 0;
+		else
+		    return(-1);
+	    }
 	}
     }
     reader->state = oldstate;
+    if (reader->ctxt->wellFormed == 0)
+	reader->mode = XML_TEXTREADER_MODE_EOF;
     return(0);
 }
 
@@ -1264,8 +1272,6 @@ xmlTextReaderRead(xmlTextReaderPtr reader) {
     if (reader->doc != NULL)
         return(xmlTextReaderReadTree(reader));
     if (reader->ctxt == NULL)
-	return(-1);
-    if (reader->ctxt->wellFormed != 1)
 	return(-1);
 
 #ifdef DEBUG_READER
@@ -5401,8 +5407,11 @@ xmlReaderForIO(xmlInputReadCallback ioread, xmlInputCloseCallback ioclose,
 
     input = xmlParserInputBufferCreateIO(ioread, ioclose, ioctx,
                                          XML_CHAR_ENCODING_NONE);
-    if (input == NULL)
+    if (input == NULL) {
+        if (ioclose != NULL)
+            ioclose(ioctx);
         return (NULL);
+    }
     reader = xmlNewTextReader(input, URL);
     if (reader == NULL) {
         xmlFreeParserInputBuffer(input);
@@ -5619,10 +5628,14 @@ xmlReaderNewIO(xmlTextReaderPtr reader, xmlInputReadCallback ioread,
 
     input = xmlParserInputBufferCreateIO(ioread, ioclose, ioctx,
                                          XML_CHAR_ENCODING_NONE);
-    if (input == NULL)
+    if (input == NULL) {
+        if (ioclose != NULL)
+            ioclose(ioctx);
         return (-1);
+    }
     return (xmlTextReaderSetup(reader, input, URL, encoding, options));
 }
+
 /************************************************************************
  *									*
  *			Utilities					*
