@@ -625,7 +625,7 @@
     <None Include="libxml.def" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\zlib\libzlib_dll.2010.vcxproj">
+    <ProjectReference Include="..\zlib\libzlib_dll.2010.vcxproj">
       <Project>{74ff2f85-52d7-48a2-b76f-4dacf9736e3c}</Project>
     </ProjectReference>
   </ItemGroup>

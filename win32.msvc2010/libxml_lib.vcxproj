@@ -454,7 +454,7 @@
     <ClInclude Include="..\triostr.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\zlib\libzlib_lib.2010.vcxproj">
+    <ProjectReference Include="..\zlib\libzlib_lib.2010.vcxproj">
       <Project>{9de41b37-b0c0-4fb2-960b-3fc6544394c3}</Project>
     </ProjectReference>
   </ItemGroup>
