@@ -6956,7 +6956,7 @@ xmlBufferCreateSize(size_t size) {
  * Returns the previous string contained by the buffer.
  */
 xmlChar *
-xmlBufferDetach(xmlBufferPtr buf) {
+xmlBufferDetach(const xmlBufferPtr buf) {
     xmlChar *ret;
 
     if (buf == NULL)
