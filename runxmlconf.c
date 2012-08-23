@@ -6,11 +6,8 @@
  * daniel@veillard.com
  */
 
-#ifdef HAVE_CONFIG_H
 #include "libxml.h"
-#else
 #include <stdio.h>
-#endif
 
 #ifdef LIBXML_XPATH_ENABLED
 
@@ -36,15 +33,6 @@ static FILE *logfile = NULL;
 static int verbose = 0;
 
 #define NB_EXPECTED_ERRORS 15
-
-/*
-   [i_a]
-
-#if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MINGW32__)
-#define vsnprintf _vsnprintf
-#define snprintf _snprintf
-#endif
-*/
 
 
 const char *skipped_tests[] = {

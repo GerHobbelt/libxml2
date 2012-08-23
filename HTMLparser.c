@@ -44,6 +44,9 @@
 #include <libxml/globals.h>
 #include <libxml/uri.h>
 
+#include "buf.h"
+#include "enc.h"
+
 #define HTML_MAX_NAMELEN 1000
 #define HTML_PARSER_BIG_BUFFER_SIZE 1000
 #define HTML_PARSER_BUFFER_SIZE 100
@@ -1082,7 +1085,7 @@ static const char * const htmlStartClose[] = {
 "div",		"p", "head", NULL,
 "noscript",	"p", NULL,
 "center",	"font", "b", "i", "p", "head", NULL,
-"a",		"a", NULL,
+"a",		"a", "head", NULL,
 "caption",	"p", NULL,
 "colgroup",	"caption", "colgroup", "col", "p", NULL,
 "col",		"caption", "col", "p", NULL,
@@ -1100,6 +1103,43 @@ static const char * const htmlStartClose[] = {
 "option",	"option", NULL,
 "fieldset",	"legend", "p", "head", "h1", "h2", "h3", "h4", "h5", "h6",
 		"pre", "listing", "xmp", "a", NULL,
+/* most tags in in FONTSTYLE, PHRASE and SPECIAL should close <head> */
+"tt",		"head", NULL,
+"i",		"head", NULL,
+"b",		"head", NULL,
+"u",		"head", NULL,
+"s",		"head", NULL,
+"strike",	"head", NULL,
+"big",		"head", NULL,
+"small",	"head", NULL,
+
+"em",		"head", NULL,
+"strong",	"head", NULL,
+"dfn",		"head", NULL,
+"code",		"head", NULL,
+"samp",		"head", NULL,
+"kbd",		"head", NULL,
+"var",		"head", NULL,
+"cite",		"head", NULL,
+"abbr",		"head", NULL,
+"acronym",	"head", NULL,
+
+/* "a" */
+"img",		"head", NULL,
+/* "applet" */
+/* "embed" */
+/* "object" */
+"font",		"head", NULL,
+/* "basefont" */
+"br",		"head", NULL,
+/* "script" */
+"map",		"head", NULL,
+"q",		"head", NULL,
+"sub",		"head", NULL,
+"sup",		"head", NULL,
+"span",		"head", NULL,
+"bdo",		"head", NULL,
+"iframe",	"head", NULL,
 NULL
 };
 
@@ -3509,19 +3549,14 @@ htmlCheckEncodingDirect(htmlParserCtxtPtr ctxt, const xmlChar *encoding) {
 	     * convert as much as possible to the parser reading buffer.
 	     */
 	    processed = ctxt->input->cur - ctxt->input->base;
-	    xmlBufferShrink(ctxt->input->buf->buffer, processed);
-	    nbchars = xmlCharEncInFunc(ctxt->input->buf->encoder,
-		                       ctxt->input->buf->buffer,
-				       ctxt->input->buf->raw);
+	    xmlBufShrink(ctxt->input->buf->buffer, processed);
+	    nbchars = xmlCharEncInput(ctxt->input->buf);
 	    if (nbchars < 0) {
 		htmlParseErr(ctxt, XML_ERR_INVALID_ENCODING,
 		             "htmlCheckEncoding: encoder error\n",
 			     NULL, NULL);
 	    }
-	    ctxt->input->base =
-	    ctxt->input->cur = ctxt->input->buf->buffer->content;
-            ctxt->input->end =
-                          &ctxt->input->base[ctxt->input->buf->buffer->use];
+            xmlBufResetInput(ctxt->input->buf->buffer, ctxt->input);
 	}
     }
 }
@@ -4906,9 +4941,7 @@ htmlCreateMemoryParserCtxt(const char *buffer, int size) {
 
     input->filename = NULL;
     input->buf = buf;
-    input->base = input->buf->buffer->content;
-    input->cur = input->buf->buffer->content;
-    input->end = &input->buf->buffer->content[input->buf->buffer->use];
+    xmlBufResetInput(buf->buffer, input);
 
     inputPush(ctxt, input);
     return(ctxt);
@@ -5025,8 +5058,8 @@ htmlParseLookupSequence(htmlParserCtxtPtr ctxt, xmlChar first,
         buf = in->base;
         len = in->length;
     } else {
-        buf = in->buf->buffer->content;
-        len = in->buf->buffer->use;
+        buf = xmlBufContent(in->buf->buffer);
+        len = xmlBufUse(in->buf->buffer);
     }
 
     /* take into account the sequence length */
@@ -5152,8 +5185,8 @@ htmlParseLookupChars(htmlParserCtxtPtr ctxt, const xmlChar * stop,
         buf = in->base;
         len = in->length;
     } else {
-        buf = in->buf->buffer->content;
-        len = in->buf->buffer->use;
+        buf = xmlBufContent(in->buf->buffer);
+        len = xmlBufUse(in->buf->buffer);
     }
 
     for (; base < len; base++) {
@@ -5264,7 +5297,7 @@ htmlParseTryOrFinish(htmlParserCtxtPtr ctxt, int terminate) {
 	if (in->buf == NULL)
 	    avail = in->length - (in->cur - in->base);
 	else
-	    avail = in->buf->buffer->use - (in->cur - in->base);
+	    avail = xmlBufUse(in->buf->buffer) - (in->cur - in->base);
 	if ((avail == 0) && (terminate)) {
 	    htmlAutoCloseOnEnd(ctxt);
 	    if ((ctxt->nameNr == 0) && (ctxt->instate != XML_PARSER_EOF)) {
@@ -5300,7 +5333,7 @@ htmlParseTryOrFinish(htmlParserCtxtPtr ctxt, int terminate) {
 		    if (in->buf == NULL)
 			avail = in->length - (in->cur - in->base);
 		    else
-			avail = in->buf->buffer->use - (in->cur - in->base);
+			avail = xmlBufUse(in->buf->buffer) - (in->cur - in->base);
 		}
 		if ((ctxt->sax) && (ctxt->sax->setDocumentLocator))
 		    ctxt->sax->setDocumentLocator(ctxt->userData,
@@ -5342,7 +5375,7 @@ htmlParseTryOrFinish(htmlParserCtxtPtr ctxt, int terminate) {
 		if (in->buf == NULL)
 		    avail = in->length - (in->cur - in->base);
 		else
-		    avail = in->buf->buffer->use - (in->cur - in->base);
+		    avail = xmlBufUse(in->buf->buffer) - (in->cur - in->base);
 		/*
 		 * no chars in buffer
 		 */
@@ -5415,7 +5448,7 @@ htmlParseTryOrFinish(htmlParserCtxtPtr ctxt, int terminate) {
 		if (in->buf == NULL)
 		    avail = in->length - (in->cur - in->base);
 		else
-		    avail = in->buf->buffer->use - (in->cur - in->base);
+		    avail = xmlBufUse(in->buf->buffer) - (in->cur - in->base);
 		if (avail < 2)
 		    goto done;
 		cur = in->cur[0];
@@ -5456,7 +5489,7 @@ htmlParseTryOrFinish(htmlParserCtxtPtr ctxt, int terminate) {
 		if (in->buf == NULL)
 		    avail = in->length - (in->cur - in->base);
 		else
-		    avail = in->buf->buffer->use - (in->cur - in->base);
+		    avail = xmlBufUse(in->buf->buffer) - (in->cur - in->base);
 		if (avail < 1)
 		    goto done;
 		cur = in->cur[0];
@@ -5979,8 +6012,8 @@ htmlParseChunk(htmlParserCtxtPtr ctxt, const char *chunk, int size,
     }
     if ((size > 0) && (chunk != NULL) && (ctxt->input != NULL) &&
         (ctxt->input->buf != NULL) && (ctxt->instate != XML_PARSER_EOF))  {
-	int base = ctxt->input->base - ctxt->input->buf->buffer->content;
-	int cur = ctxt->input->cur - ctxt->input->base;
+	size_t base = xmlBufGetInputBase(ctxt->input->buf->buffer, ctxt->input);
+	size_t cur = ctxt->input->cur - ctxt->input->base;
 	int res;
 
 	res = xmlParserInputBufferPush(ctxt->input->buf, size, chunk);
@@ -5989,10 +6022,7 @@ htmlParseChunk(htmlParserCtxtPtr ctxt, const char *chunk, int size,
 	    ctxt->disableSAX = 1;
 	    return (XML_PARSER_EOF);
 	}
-	ctxt->input->base = ctxt->input->buf->buffer->content + base;
-	ctxt->input->cur = ctxt->input->base + cur;
-	ctxt->input->end =
-	  &ctxt->input->buf->buffer->content[ctxt->input->buf->buffer->use];
+        xmlBufSetInputBaseCur(ctxt->input->buf->buffer, ctxt->input, base, cur);
 #ifdef DEBUG_PUSH
 	xmlGenericError(xmlGenericErrorContext, "HPP: pushed %d\n", size);
 #endif
@@ -6008,7 +6038,7 @@ htmlParseChunk(htmlParserCtxtPtr ctxt, const char *chunk, int size,
 		    (in->raw != NULL)) {
 		int nbchars;
 
-		nbchars = xmlCharEncInFunc(in->encoder, in->buffer, in->raw);
+		nbchars = xmlCharEncInput(in);
 		if (nbchars < 0) {
 		    htmlParseErr(ctxt, XML_ERR_INVALID_ENCODING,
 			         "encoder error\n", NULL, NULL);
@@ -6107,24 +6137,18 @@ htmlCreatePushParserCtxt(htmlSAXHandlerPtr sax, void *user_data,
 	inputStream->filename = (char *)
 	    xmlCanonicPath((const xmlChar *) filename);
     inputStream->buf = buf;
-    inputStream->base = inputStream->buf->buffer->content;
-    inputStream->cur = inputStream->buf->buffer->content;
-    inputStream->end =
-	&inputStream->buf->buffer->content[inputStream->buf->buffer->use];
+    xmlBufResetInput(buf->buffer, inputStream);
 
     inputPush(ctxt, inputStream);
 
     if ((size > 0) && (chunk != NULL) && (ctxt->input != NULL) &&
         (ctxt->input->buf != NULL))  {
-	int base = ctxt->input->base - ctxt->input->buf->buffer->content;
-	int cur = ctxt->input->cur - ctxt->input->base;
+	size_t base = xmlBufGetInputBase(ctxt->input->buf->buffer, ctxt->input);
+	size_t cur = ctxt->input->cur - ctxt->input->base;
 
 	xmlParserInputBufferPush(ctxt->input->buf, size, chunk);
 
-	ctxt->input->base = ctxt->input->buf->buffer->content + base;
-	ctxt->input->cur = ctxt->input->base + cur;
-	ctxt->input->end =
-	    &ctxt->input->buf->buffer->content[ctxt->input->buf->buffer->use];
+        xmlBufSetInputBaseCur(ctxt->input->buf->buffer, ctxt->input, base, cur);
 #ifdef DEBUG_PUSH
 	xmlGenericError(xmlGenericErrorContext, "HPP: pushed %d\n", size);
 #endif

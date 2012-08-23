@@ -292,7 +292,10 @@ xmlReportError(xmlErrorPtr err, xmlParserCtxtPtr ctxt, const char *str,
     } else {
         if (file != NULL)
             channel(data, "%s:%d: ", file, line);
-        else if ((line != 0) && (domain == XML_FROM_PARSER))
+        else if ((line != 0) && 
+	         ((domain == XML_FROM_PARSER) || (domain == XML_FROM_SCHEMASV)||
+		  (domain == XML_FROM_SCHEMASP)||(domain == XML_FROM_DTD) ||
+		  (domain == XML_FROM_RELAXNGP)||(domain == XML_FROM_RELAXNGV)))
             channel(data, "Entity: line %d: ", line);
     }
     if (name != NULL) {
@@ -359,6 +362,15 @@ xmlReportError(xmlErrorPtr err, xmlParserCtxtPtr ctxt, const char *str,
             break;
         case XML_FROM_I18N:
             channel(data, "encoding ");
+            break;
+        case XML_FROM_SCHEMATRONV:
+            channel(data, "schematron ");
+            break;
+        case XML_FROM_BUFFER:
+            channel(data, "internal buffer ");
+            break;
+        case XML_FROM_URI:
+            channel(data, "URI ");
             break;
         default:
             break;
@@ -521,6 +533,8 @@ __xmlRaiseError(xmlStructuredErrorFunc schannel,
 
 	if ((node != NULL) && (node->type == XML_ELEMENT_NODE))
 	    line = node->line;
+	if ((line == 0) || (line == 65535))
+	    line = xmlGetLineNo(node);
     }
 
     /*

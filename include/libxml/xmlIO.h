@@ -129,8 +129,8 @@ struct _xmlParserInputBuffer {
     
     xmlCharEncodingHandlerPtr encoder; /* I18N conversions to UTF-8 */
     
-    xmlBufferPtr buffer;    /* Local buffer encoded in UTF-8 */
-    xmlBufferPtr raw;       /* if encoder != NULL buffer for raw input */
+    xmlBufPtr buffer;    /* Local buffer encoded in UTF-8 */
+    xmlBufPtr raw;       /* if encoder != NULL buffer for raw input */
     int	compressed;	    /* -1=unknown, 0=not compressed, 1=compressed */
     int error;
     unsigned long rawconsumed;/* amount consumed from raw */
@@ -145,8 +145,8 @@ struct _xmlOutputBuffer {
     
     xmlCharEncodingHandlerPtr encoder; /* I18N conversions to UTF-8 */
     
-    xmlBufferPtr buffer;    /* Local buffer encoded in UTF-8 or ISOLatin */
-    xmlBufferPtr conv;      /* if encoder != NULL buffer for output */
+    xmlBufPtr buffer;    /* Local buffer encoded in UTF-8 or ISOLatin */
+    xmlBufPtr conv;      /* if encoder != NULL buffer for output */
     int written;            /* total number of byte written */
     int error;
 };
@@ -244,6 +244,12 @@ XMLPUBFUN xmlOutputBufferPtr XMLCALL
 					 xmlOutputCloseCallback  ioclose,
 					 void *ioctx,
 					 xmlCharEncodingHandlerPtr encoder);
+
+/* Couple of APIs to get the output without digging into the buffers */
+XMLPUBFUN const xmlChar * XMLCALL
+        xmlOutputBufferGetContent       (xmlOutputBufferPtr out);
+XMLPUBFUN size_t XMLCALL
+        xmlOutputBufferGetSize          (xmlOutputBufferPtr out);
 
 XMLPUBFUN int XMLCALL	
 	xmlOutputBufferWrite		(xmlOutputBufferPtr out,

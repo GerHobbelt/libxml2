@@ -177,7 +177,7 @@ static int nodefdtd = 0;
 #ifdef LIBXML_PUSH_ENABLED
 static int push = 0;
 #endif /* LIBXML_PUSH_ENABLED */
-#ifdef HAVE_SYS_MMAN_H
+#ifdef HAVE_MMAP
 static int memory = 0;
 #endif
 static int testIO = 0;
@@ -217,7 +217,7 @@ static xmlStreamCtxtPtr patstream = NULL;
 #ifdef LIBXML_XPATH_ENABLED
 static const char *xpathquery = NULL;
 #endif
-static int options = XML_PARSE_COMPACT;
+static int options = XML_PARSE_COMPACT | XML_PARSE_BIG_LINES;
 static int sax = 0;
 static int oldxml10 = 0;
 
@@ -1734,6 +1734,7 @@ testSAX(const char *filename) {
 		(xmlSchemaValidityErrorFunc) fprintf,
 		(xmlSchemaValidityWarningFunc) fprintf,
 		stderr);
+	xmlSchemaValidateSetFilename(vctxt, filename);
 
 	ret = xmlSchemaValidateStream(vctxt, buf, 0, handler,
 	                              (void *)user_data);
@@ -1888,7 +1889,7 @@ static void processNode(xmlTextReaderPtr reader) {
 static void streamFile(char *filename) {
     xmlTextReaderPtr reader;
     int ret;
-#ifdef HAVE_SYS_MMAN_H
+#ifdef HAVE_MMAP
     int fd = -1;
     struct stat info;
     const char *base = NULL;
@@ -2039,7 +2040,7 @@ static void streamFile(char *filename) {
 	patstream = NULL;
     }
 #endif
-#ifdef HAVE_SYS_MMAN_H
+#ifdef HAVE_MMAP
     if (memory) {
         xmlFreeParserInputBuffer(input);
 	munmap((char *) base, info.st_size);
@@ -2277,7 +2278,7 @@ static void parseAndPrintFile(char *filename, xmlParserCtxtPtr rectxt) {
         }
     }
 #endif /* LIBXML_PUSH_ENABLED */
-#ifdef HAVE_SYS_MMAN_H
+#ifdef HAVE_MMAP
     else if ((html) && (memory)) {
 	int fd;
 	struct stat info;
@@ -2392,7 +2393,7 @@ static void parseAndPrintFile(char *filename, xmlParserCtxtPtr rectxt) {
 		if (rectxt == NULL)
 		    xmlFreeParserCtxt(ctxt);
 	    }
-#ifdef HAVE_SYS_MMAN_H
+#ifdef HAVE_MMAP
 	} else if (memory) {
 	    int fd;
 	    struct stat info;
@@ -2656,7 +2657,7 @@ static void parseAndPrintFile(char *filename, xmlParserCtxtPtr rectxt) {
 		}
 	    } else
 #endif
-#ifdef HAVE_SYS_MMAN_H
+#ifdef HAVE_MMAP
 	    if (memory) {
 		xmlChar *result;
 		int len;
@@ -2684,7 +2685,7 @@ static void parseAndPrintFile(char *filename, xmlParserCtxtPtr rectxt) {
 		}
 
 	    } else
-#endif /* HAVE_SYS_MMAN_H */
+#endif /* HAVE_MMAP */
 	    if (compress) {
 		xmlSaveFile(output ? output : "-", doc);
 	    } else if (oldout) {
@@ -3082,7 +3083,7 @@ static void usage(const char *name) {
 #ifdef LIBXML_PUSH_ENABLED
     printf("\t--push : use the push mode of the parser\n");
 #endif /* LIBXML_PUSH_ENABLED */
-#ifdef HAVE_SYS_MMAN_H
+#ifdef HAVE_MMAP
     printf("\t--memory : parse from memory\n");
 #endif
     printf("\t--maxmem nbbytes : limits memory allocation to nbbytes bytes\n");
@@ -3312,7 +3313,7 @@ main(int argc, char **argv) {
 	         (!strcmp(argv[i], "--push")))
 	    push++;
 #endif /* LIBXML_PUSH_ENABLED */
-#ifdef HAVE_SYS_MMAN_H
+#ifdef HAVE_MMAP
 	else if ((!strcmp(argv[i], "-memory")) ||
 	         (!strcmp(argv[i], "--memory")))
 	    memory++;
