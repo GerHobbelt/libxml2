@@ -1266,7 +1266,7 @@ xmlBufGetInputBase(xmlBufPtr buf, xmlParserInputPtr input) {
     CHECK_COMPAT(buf)
     base = input->base - buf->content;
     /*
-     * We could do some pointer arythmetic checks but that's probably
+     * We could do some pointer arithmetic checks but that's probably
      * sufficient.
      */
     if (base > buf->size) {

@@ -118,7 +118,7 @@ typedef xmlBuf *xmlBufPtr;
  */
 XMLPUBFUN xmlChar* XMLCALL       xmlBufContent	(const xmlBufPtr buf);
 XMLPUBFUN xmlChar* XMLCALL       xmlBufEnd      (const xmlBufPtr buf);
-XMLPUBFUN size_t XMLCALL         xmlBufUse      (xmlBufPtr buf);
+XMLPUBFUN size_t XMLCALL         xmlBufUse      (const xmlBufPtr buf);
 XMLPUBFUN size_t XMLCALL         xmlBufShrink	(xmlBufPtr buf, size_t len);
 
 /*
@@ -733,7 +733,7 @@ XMLPUBFUN void XMLCALL
 XMLPUBFUN const xmlChar* XMLCALL	
 		xmlBufferContent	(const xmlBufferPtr buf);
 XMLPUBFUN xmlChar* XMLCALL
-		xmlBufferDetach         (xmlBufferPtr buf);
+		xmlBufferDetach         (const xmlBufferPtr buf);
 XMLPUBFUN void XMLCALL		
 		xmlBufferSetAllocationScheme(xmlBufferPtr buf,
 					 xmlBufferAllocationScheme scheme);
