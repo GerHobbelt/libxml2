@@ -145,6 +145,9 @@
     <ClCompile Include="..\xpointer.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\buf.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\libxml.h">
@@ -163,6 +166,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\triostr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\enc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\save.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\buf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

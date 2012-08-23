@@ -509,12 +509,20 @@
 		</Configuration>
 	</Configurations>
 	<References>
+		<ProjectReference
+			ReferencedProjectIdentifier="{9DE41B37-B0C0-4FB2-960B-3FC6544394C3}"
+			RelativePathToProject="..\zlib\libzlib_lib.2008.vcproj"
+		/>
 	</References>
 	<Files>
 		<Filter
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
+			<File
+				RelativePath="..\buf.c"
+				>
+			</File>
 			<File
 				RelativePath="..\c14n.c"
 				>
@@ -700,7 +708,19 @@
 			Name="Header Files"
 			>
 			<File
+				RelativePath="..\buf.h"
+				>
+			</File>
+			<File
+				RelativePath="..\enc.h"
+				>
+			</File>
+			<File
 				RelativePath="..\libxml.h"
+				>
+			</File>
+			<File
+				RelativePath="..\save.h"
 				>
 			</File>
 			<File

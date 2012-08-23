@@ -600,6 +600,10 @@
 		</Configuration>
 	</Configurations>
 	<References>
+		<ProjectReference
+			ReferencedProjectIdentifier="{218F950C-EB90-4023-A016-E9AF52C4AAE9}"
+			RelativePathToProject=".\libxml_dll.vcproj"
+		/>
 	</References>
 	<Files>
 		<Filter

@@ -468,6 +468,7 @@
     </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\buf.c" />
     <ClCompile Include="..\c14n.c" />
     <ClCompile Include="..\catalog.c" />
     <ClCompile Include="..\chvalid.c" />
@@ -516,7 +517,10 @@
     <ClCompile Include="..\xpointer.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\buf.h" />
+    <ClInclude Include="..\enc.h" />
     <ClInclude Include="..\libxml.h" />
+    <ClInclude Include="..\save.h" />
     <ClInclude Include="..\trio.h" />
     <ClInclude Include="..\triodef.h" />
     <ClInclude Include="..\trionan.h" />
