@@ -170,6 +170,17 @@ typedef enum {
 } xmlParserMode;
 
 /**
+ * xmlParserType:
+ *
+ * Markup Languages types 
+ */
+typedef enum {
+    XML_TYPE_UNKNOWN = 0,
+    XML_TYPE_XML = 1,
+    XML_TYPE_SML = 2
+} xmlType;
+
+/**
  * xmlParserCtxt:
  *
  * The parser context.
@@ -311,6 +322,10 @@ struct _xmlParserCtxt {
 
     int                input_id;      /* we need to label inputs */
     unsigned long      sizeentcopy;   /* volume of entity copy */
+
+    /* for use by SML parser */
+    xmlType	       mlType;	    /* The XML formatting type (XML or SML) */
+    int		       curly;	    /* Beginning of a {curly block} */
 };
 
 /**

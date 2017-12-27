@@ -1,5 +1,23 @@
+This is a fork of the...
 
                   XML toolkit from the GNOME project
+
+... adding experimental support for parsing and generating SML.
+
+For information about SML, see:
+https://www.tclcommunityassociation.org/wub/proceedings/Proceedings-2013/JeanFrancoisLarvoire/A%20simpler%20and%20shorter%20representation%20of%20XML%20data%20inspired%20by%20Tcl.pdf
+
+Added two test programs:
+- x2s.c: Parse XML or SML as a DOM tree, and output that tree as SML.
+- testWriter.c: Adapted from the public testWriter.c, to output SML.
+
+To build libxml2.lib and x2s.exe debug versions in Windows with Microsoft tools:
+- Run the vcvars*.bat for your Visual C++ version.
+- Go to the libxml2 win32 subdirectory.
+- Run: 
+   configure.bat iconv=no
+   exe.bat x2s
+- x2s.exe is stored in win32\bin.msvc
 
 Full documentation is available on-line at
     http://xmlsoft.org/

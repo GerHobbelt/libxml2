@@ -473,6 +473,8 @@ extern "C" {
     XMLPUBFUN int XMLCALL
         xmlTextWriterSetQuoteChar(xmlTextWriterPtr writer, xmlChar quotechar);
 
+    XMLPUBFUN int XMLCALL
+        xmlTextWriterSetView(xmlTextWriterPtr writer, int view);
 
 /*
  * misc

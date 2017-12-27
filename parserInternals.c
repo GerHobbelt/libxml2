@@ -1750,6 +1750,8 @@ xmlInitParserCtxt(xmlParserCtxtPtr ctxt)
     ctxt->sizeentcopy = 0;
     ctxt->input_id = 1;
     xmlInitNodeInfoSeq(&ctxt->node_seq);
+    ctxt->mlType = 0;
+    ctxt->curly = 0;
     return(0);
 }
 

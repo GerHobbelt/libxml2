@@ -23,6 +23,8 @@
 #include "enc.h"
 #include "save.h"
 
+#include <debugm.h> /* SysToolsLib debug macros */
+
 /************************************************************************
  *									*
  *			XHTML detection					*
@@ -92,6 +94,7 @@ struct _xmlSaveCtxt {
     int indent_size;
     xmlCharEncodingOutputFunc escape;	/* used for element content */
     xmlCharEncodingOutputFunc escapeAttr;/* used for attribute content */
+    int quoted;				/* used for SML quoted text */
 };
 
 /************************************************************************
@@ -318,6 +321,320 @@ error:
 
 /************************************************************************
  *									*
+ *		    SML-specific formatting routines			*
+ *									*
+ ************************************************************************/
+
+/* Move an xmlChar pointer to the next UTF8 character */
+/* Make sure not to pass the end of string, even if there's a truncated UTF8 sequence there */
+const xmlChar *
+xmlNextUTF8Char(const xmlChar *pc) {
+    xmlChar c = *pc;
+    if (!c) return pc;
+    if (!(c & 0x80)) return pc+1;	  /* ASCII character */
+    if ((c & 0xC0) == 0x80) {		  /* UTF8 trail byte */
+    	while ((*pc & 0xC0) == 0x80) pc++;   /* Skip all others trail bytes */
+    	return pc;
+    }
+    if (!pc[1]) return pc+1;
+    if ((c & 0xE0) == 0xC0) return pc+2;  /* UTF8 head of a 2-byte sequence */
+    if (!pc[2]) return pc+2;		  /* Truncated char at end of string */
+    if ((c & 0xF0) == 0xE0) return pc+3;  /* UTF8 head of a 3-byte sequence */
+    if (!pc[3]) return pc+3;		  /* Truncated char at end of string */
+/*  if ((c & 0xF8) == 0xF0) return pc+4;  /* UTF8 head of a 4-byte sequence */
+    return pc+4;			  /* Invalid UTF8 character */
+}
+
+/* Same thing for a char pointer */
+#define xmlNextUTF8char(pc) ((char *)xmlNextUTF8Char((xmlChar *)(pc)))
+
+/* Check if there's any non-blank character in the string */
+int xmlStrIsAllBlank(const xmlChar *str) {
+    const xmlChar *pc;
+    for (pc = str; *pc; pc = xmlNextUTF8char(pc)) {
+    	if (!IS_BLANK_CH(*pc)) return 0;	/* It's not a blank string */
+    }
+    return 1; /* The string is entirely blank */
+}
+
+/**
+ * smlEscapeQuotedString:
+ * @out:  a pointer to an array of bytes to store the result
+ * @outlen:  the length of @out
+ * @in:  a pointer to an array of unescaped UTF-8 bytes
+ * @inlen:  the length of @in
+ *
+ * Take a block of UTF-8 chars in and escape them for use in a quoted SML string
+ *
+ * Returns 0 if success, or -1 otherwise
+ * The value of @inlen after return is the number of octets consumed
+ *     if the return value is positive, else unpredictable.
+ * The value of @outlen after return is the number of octets consumed.
+ */
+static int
+smlEscapeQuotedString(unsigned char* out, int *outlen,
+		      const xmlChar* in, int *inlen) {
+    unsigned char* outstart = out;
+    const unsigned char* base = in;
+    unsigned char* outend = out + *outlen;
+    const unsigned char* inend = in + *inlen;
+
+    /* Escape the \ and " characters */
+    while ((in < inend) && (out < outend)) {
+    	char c = *in++;
+    	if (c == '\\' || c == '"') {
+    	    if ((out+1) >= outend) return -1;
+	    *out++ = '\\';
+    	}
+	// TODO FOR SML: Convert characters not in the output encoding to &#NNN entities
+	switch(c) {
+	case '&':
+	    *out++ = '&';
+	    *out++ = 'a';
+	    *out++ = 'm';
+	    *out++ = 'p';
+	    *out++ = ';';
+	    break;
+	case '<':
+	    *out++ = '&';
+	    *out++ = 'l';
+	    *out++ = 't';
+	    *out++ = ';';
+	    break;
+	case '>':
+	    *out++ = '&';
+	    *out++ = 'g';
+	    *out++ = 't';
+	    *out++ = ';';
+	    break;
+	default:
+	    *out++ = c;
+	    break;
+	}
+    }
+    *outlen = out - outstart;
+    *inlen = in - base;
+    return(0);
+}
+
+/**
+ * smlEscapeRawString:
+ * @out:  a pointer to an array of bytes to store the result
+ * @outlen:  the length of @out
+ * @in:  a pointer to an array of unescaped UTF-8 bytes
+ * @inlen:  the length of @in
+ *
+ * Take a block of UTF-8 chars in and escape them for use in a raw SML string
+ *
+ * Returns 0 if success, or -1 otherwise
+ * The value of @inlen after return is the number of octets consumed
+ *     if the return value is positive, else unpredictable.
+ * The value of @outlen after return is the number of octets consumed.
+ */
+static int
+smlEscapeRawString(unsigned char* out, int *outlen,
+		      const xmlChar* in, int *inlen) {
+    unsigned char* outstart = out;
+    const unsigned char* base = in;
+    unsigned char* outend = out + *outlen;
+    const unsigned char* inend = in + *inlen;
+
+    while ((in < inend) && (out < outend)) {
+    	char c = *in++;
+	// TODO FOR SML: Convert characters not in the output encoding to &#NNN entities
+	switch(c) {
+	case '&':
+	    *out++ = '&';
+	    *out++ = 'a';
+	    *out++ = 'm';
+	    *out++ = 'p';
+	    *out++ = ';';
+	    break;
+	case '<':
+	    *out++ = '&';
+	    *out++ = 'l';
+	    *out++ = 't';
+	    *out++ = ';';
+	    break;
+	case '>':
+	    *out++ = '&';
+	    *out++ = 'g';
+	    *out++ = 't';
+	    *out++ = ';';
+	    break;
+	default:
+	    *out++ = c;
+	    break;
+	}
+    }
+    *outlen = out - outstart;
+    *inlen = in - base;
+    return(0);
+}
+
+/**
+ * smlTextNodeDumpOutput:
+ * @out:  a pointer to an array of bytes to store the result
+ * @cur:  the current text node
+ *
+ * Write the current text node, quoting it if needed
+ *
+ * Returns the number of characters written.
+ */
+static int smlTextNodeDumpOutput(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
+    xmlOutputBufferPtr out = ctxt->buf;
+    const xmlChar *str = cur->content;
+    int lStr = xmlStrlen(str);
+    const xmlChar *pc;
+    const xmlChar *pcEnd = str + lStr;
+    int n;
+    int nWritten = 0;
+    int iNeedQuote;
+    char c;
+    int isMixed;
+    const xmlChar *pcTail = NULL;
+    int lTail;
+    int nearEntity = 0;
+
+    /* If a text node has siblings, this is mixed content inside a {} block.
+       In this case, output the head and tail blanks outside of the quoted string. */
+    isMixed = (cur->prev || cur->next);
+    if (isMixed) {
+    	int lHead;
+    	/* Output the head blanks, if any */
+    	for (pc = str; *pc; pc++) if (!IS_BLANK_CH(*pc)) break;
+    	lHead = pc - str;
+    	if (lHead) {
+	    n = xmlOutputBufferWrite(out, lHead, str);
+	    if (n == -1) return -1;
+	    nWritten += n;
+	    if (!*pc) return nWritten; /* This was all blanks */
+	    str = pc; /* The printable string begins here with a non-blank */
+	    lStr -= lHead;
+	}
+	/* Put aside the tail blanks */
+    	for (pc = pcEnd-1; pc > str; pc--) if (!IS_BLANK_CH(*pc)) break;
+	pc += 1; /* Point to the first tail blank, or NUL */
+	lTail = pcEnd - pc; /* Tail length */
+    	if (lTail) {
+    	    pcTail = pc;
+    	    lStr -= lTail;
+    	    str = (const xmlChar *)xmlStrndup(str, lStr);
+    	    if (!str) return -1;
+    	    pcEnd = str + lStr;
+    	}
+    }
+
+    /* Check if the string needs quoting or not */
+    if (cur->prev && cur->prev->type == XML_ENTITY_REF_NODE) nearEntity = 1;
+    if (cur->next && cur->next->type == XML_ENTITY_REF_NODE) nearEntity = 1;
+    /* The order of the tests is important */
+    if (nearEntity) {
+    	iNeedQuote = 1; /* An entity must be quoted */
+    } else if (ctxt->quoted) {
+    	iNeedQuote = 1; /* We're within a quoted string already anyway */
+    } else if (!str[0]) {
+    	iNeedQuote = 1; /* An empty string must be quoted */
+    } else if (isMixed) {
+    	iNeedQuote = 1; /* A string having siblings must be quoted */
+    } else { 
+	iNeedQuote = 0; /* It should not be quoted, unless there's an SML syntax character inside... */
+	c = '\\';
+	for (pc=str; pc<pcEnd; pc = xmlNextUTF8char(pc)) {
+	    c = *pc;
+	    switch (c) {
+	    case '"':
+	    case '=':
+	    case ';':
+	    case '#':
+	    case '{':
+	    case '}':
+	    case '&':
+	    case '<':
+	    case '>':
+		c = ' '; /* Can't break out of the for loop here, so force IS_BLANK to do it */
+	    }
+	    if (IS_BLANK_CH(c)) {iNeedQuote = 1; break;}
+	}
+	if (c == '\\') iNeedQuote = 1; /* The last character is a \ */
+    }
+
+    /* Output the string */
+    if (iNeedQuote) {
+    	if (!ctxt->quoted) {
+	    n = xmlOutputBufferWrite(out, 1, "\"");
+	    if (n == -1) return -1;
+	    nWritten += n;
+	    ctxt->quoted = 1;
+	}
+    	n = xmlOutputBufferWriteEscape(out, str, smlEscapeQuotedString);
+    	if (n == -1) return -1;
+    	nWritten += n;
+	if (!cur->next || (cur->next->type != XML_ENTITY_REF_NODE)) {
+	    ctxt->quoted = 0;
+	    n = xmlOutputBufferWrite(out, 1, "\"");
+	    if (n == -1) return -1;
+	    nWritten += n;
+	}
+    } else {
+    	n = xmlOutputBufferWriteEscape(out, str, smlEscapeRawString);
+    	if (n == -1) return -1;
+    	nWritten += n;
+    }
+
+    /* In the case of mixed content, output the tail spaces */
+    if (isMixed && pcTail) {
+	n = xmlOutputBufferWrite(out, lTail, pcTail);
+    	if (n == -1) return -1;
+    	nWritten += n;
+    	xmlFree((xmlChar *)str); /* Free the string duplicated above */
+    }
+
+    return nWritten;
+}
+
+int xmlOutputBufferIsBlankLine(xmlOutputBufferPtr out) {
+    xmlBufferPtr pxBuf = (xmlBufferPtr)(out->buffer);
+    char *pBuf = (char *)(pxBuf->content);
+    char *pcEnd = pBuf + pxBuf->use;
+    char *pc;
+    int i;
+    /* Search the beginning of the last line */
+    for (i = pxBuf->use - 1; i >= 0; i--) {
+    	if (pBuf[i] == '\n') break;
+    }
+    i += 1; /* Index of the beginning of the last line */
+    /* Check if there's any non-blank character on that last line */
+    for (pc = pBuf+i; pc < pcEnd; pc = xmlNextUTF8char(pc)) {
+    	if (!IS_BLANK_CH(*pc)) return 0;	/* It's not a blank line */
+    }
+    return 1; /* The last line is entirely blank */
+}
+
+xmlChar xmlOutputBufferLastNonBlank(xmlOutputBufferPtr out) {
+    xmlBufferPtr pxBuf = (xmlBufferPtr)(out->buffer);
+    char *pBuf = (char *)(pxBuf->content);
+    char *pcEnd = pBuf + pxBuf->use;
+    int i;
+    /* Scan the string backwards from the end */
+    for (i = pxBuf->use - 1; i >= 0; i--) {
+    	if ((pBuf[i] & 0xC0) == 0x80) continue;	/* UTF8 tail byte */
+    	if (!IS_BLANK_CH(pBuf[i])) return pBuf[i];
+    }
+    return (xmlChar)'\0';
+}
+
+void smlWriteSemiColonIfNeeded(xmlOutputBufferPtr buf) {
+    char c;
+    if (xmlOutputBufferIsBlankLine(buf)) return; /* Not needed */
+    c = (char)xmlOutputBufferLastNonBlank(buf);
+    if ((c == '{') || (c == '[')) return; /* Not needed */
+    /* Else we need the ; sepacator */
+    xmlOutputBufferWrite(buf, 1, ";");
+    return;
+}
+/************************************************************************
+ *									*
  *			Allocation and deallocation			*
  *									*
  ************************************************************************/
@@ -479,6 +796,30 @@ xmlBufDumpNotationTable(xmlBufPtr buf, xmlNotationTablePtr table) {
     xmlBufMergeBuffer(buf, buffer);
 }
 
+void
+smlBufDumpNotationTable(xmlBufPtr buf, xmlNotationTablePtr table) {
+    xmlBufferPtr buffer;
+    xmlChar *content;
+    int use;
+
+    buffer = xmlBufferCreate();
+    if (buffer == NULL) {
+        /*
+         * TODO set the error in buf
+         */
+        return;
+    }
+    // Quick and dirty conversion to SML:
+    // Generate the XML version, then remove the head < an trailing >
+    xmlDumpNotationTable(buffer, table);
+    content = buffer->content + 1; /* Skip the head < */
+    use = (int)buffer->use - 2; /* Remove two characters: The < and > */
+    content[use-1] = '\n'; /* Replace the > by a \n */
+    content[use] = '0'; /* Overwrite the previous \n */
+    xmlBufAdd(buf, content, use);
+    xmlBufferFree(buffer);
+}
+
 /**
  * xmlBufDumpElementDecl:
  * @buf:  an xmlBufPtr output
@@ -500,6 +841,30 @@ xmlBufDumpElementDecl(xmlBufPtr buf, xmlElementPtr elem) {
     }
     xmlDumpElementDecl(buffer, elem);
     xmlBufMergeBuffer(buf, buffer);
+}
+
+void
+smlBufDumpElementDecl(xmlBufPtr buf, xmlElementPtr elem) {
+    xmlBufferPtr buffer;
+    xmlChar *content;
+    int use;
+
+    buffer = xmlBufferCreate();
+    if (buffer == NULL) {
+        /*
+         * TODO set the error in buf
+         */
+        return;
+    }
+    // Quick and dirty conversion to SML:
+    // Generate the XML version, then remove the head < an trailing >
+    xmlDumpElementDecl(buffer, elem);
+    content = buffer->content + 1; /* Skip the head < */
+    use = (int)buffer->use - 2; /* Remove two characters: The < and > */
+    content[use-1] = '\n'; /* Replace the > by a \n */
+    content[use] = '0'; /* Overwrite the previous \n */
+    xmlBufAdd(buf, content, use);
+    xmlBufferFree(buffer);
 }
 
 /**
@@ -525,6 +890,30 @@ xmlBufDumpAttributeDecl(xmlBufPtr buf, xmlAttributePtr attr) {
     xmlBufMergeBuffer(buf, buffer);
 }
 
+void
+smlBufDumpAttributeDecl(xmlBufPtr buf, xmlAttributePtr attr) {
+    xmlBufferPtr buffer;
+    xmlChar *content;
+    int use;
+
+    buffer = xmlBufferCreate();
+    if (buffer == NULL) {
+        /*
+         * TODO set the error in buf
+         */
+        return;
+    }
+    // Quick and dirty conversion to SML:
+    // Generate the XML version, then remove the head < an trailing >
+    xmlDumpAttributeDecl(buffer, attr);
+    content = buffer->content + 1; /* Skip the head < */
+    use = (int)buffer->use - 2; /* Remove two characters: The < and > */
+    content[use-1] = '\n'; /* Replace the > by a \n */
+    content[use] = '0'; /* Overwrite the previous \n */
+    xmlBufAdd(buf, content, use);
+    xmlBufferFree(buffer);
+}
+
 /**
  * xmlBufDumpEntityDecl:
  * @buf:  an xmlBufPtr output
@@ -545,6 +934,30 @@ xmlBufDumpEntityDecl(xmlBufPtr buf, xmlEntityPtr ent) {
     }
     xmlDumpEntityDecl(buffer, ent);
     xmlBufMergeBuffer(buf, buffer);
+}
+
+void
+smlBufDumpEntityDecl(xmlBufPtr buf, xmlEntityPtr ent) {
+    xmlBufferPtr buffer;
+    xmlChar *content;
+    int use;
+
+    buffer = xmlBufferCreate();
+    if (buffer == NULL) {
+        /*
+         * TODO set the error in buf
+         */
+        return;
+    }
+    // Quick and dirty conversion to SML:
+    // Generate the XML version, then remove the head < an trailing >
+    xmlDumpEntityDecl(buffer, ent);
+    content = buffer->content + 1; /* Skip the head < */
+    use = (int)buffer->use - 2; /* Remove two characters: The < and > */
+    content[use-1] = '\n'; /* Replace the > by a \n */
+    content[use] = '0'; /* Overwrite the previous \n */
+    xmlBufAdd(buf, content, use);
+    xmlBufferFree(buffer);
 }
 
 /************************************************************************
@@ -609,6 +1022,10 @@ xmlOutputBufferWriteWSNonSig(xmlSaveCtxtPtr ctxt, int extra)
     int i;
     if ((ctxt == NULL) || (ctxt->buf == NULL))
         return;
+    if (ctxt->options & XML_SAVE_AS_SML) {		/* SML */
+        /* Prevent the \n from becoming a significant end of element for SML */
+	xmlOutputBufferWrite(ctxt->buf, 1, "\\");
+    }
     xmlOutputBufferWrite(ctxt->buf, 1, "\n");
     for (i = 0; i < (ctxt->level + extra); i += ctxt->indent_nr) {
         xmlOutputBufferWrite(ctxt->buf, ctxt->indent_size *
@@ -709,11 +1126,16 @@ xmlDtdDumpOutput(xmlSaveCtxtPtr ctxt, xmlDtdPtr dtd) {
     int format, level;
     xmlDocPtr doc;
 
-    if (dtd == NULL) return;
+    DEBUG_ENTER(("xmlDtdDumpOutput(%p, %p);", ctxt, dtd));
+    if (dtd == NULL) RETURN();
     if ((ctxt == NULL) || (ctxt->buf == NULL))
-        return;
+        RETURN();
     buf = ctxt->buf;
-    xmlOutputBufferWrite(buf, 10, "<!DOCTYPE ");
+    if (!(ctxt->options & XML_SAVE_AS_SML)) {	/* XML */
+	xmlOutputBufferWrite(buf, 10, "<!DOCTYPE ");
+    } else {					/* SML */
+	xmlOutputBufferWrite(buf, 9, "!DOCTYPE ");
+    }
     xmlOutputBufferWriteString(buf, (const char *)dtd->name);
     if (dtd->ExternalID != NULL) {
 	xmlOutputBufferWrite(buf, 8, " PUBLIC ");
@@ -727,8 +1149,10 @@ xmlDtdDumpOutput(xmlSaveCtxtPtr ctxt, xmlDtdPtr dtd) {
     if ((dtd->entities == NULL) && (dtd->elements == NULL) &&
         (dtd->attributes == NULL) && (dtd->notations == NULL) &&
 	(dtd->pentities == NULL)) {
-	xmlOutputBufferWrite(buf, 1, ">");
-	return;
+	if (!(ctxt->options & XML_SAVE_AS_SML)) {	/* XML */
+	    xmlOutputBufferWrite(buf, 1, ">");
+	}
+	RETURN();
     }
     xmlOutputBufferWrite(buf, 3, " [\n");
     /*
@@ -737,8 +1161,13 @@ xmlDtdDumpOutput(xmlSaveCtxtPtr ctxt, xmlDtdPtr dtd) {
      */
     if ((dtd->notations != NULL) && ((dtd->doc == NULL) ||
         (dtd->doc->intSubset == dtd))) {
-        xmlBufDumpNotationTable(buf->buffer,
-                                (xmlNotationTablePtr) dtd->notations);
+	if (!(ctxt->options & XML_SAVE_AS_SML)) {	/* XML */
+	    xmlBufDumpNotationTable(buf->buffer,
+				    (xmlNotationTablePtr) dtd->notations);
+	} else {					/* SML */
+	    smlBufDumpNotationTable(buf->buffer,
+				    (xmlNotationTablePtr) dtd->notations);
+	}
     }
     format = ctxt->format;
     level = ctxt->level;
@@ -750,7 +1179,12 @@ xmlDtdDumpOutput(xmlSaveCtxtPtr ctxt, xmlDtdPtr dtd) {
     ctxt->format = format;
     ctxt->level = level;
     ctxt->doc = doc;
-    xmlOutputBufferWrite(buf, 2, "]>");
+    if (!(ctxt->options & XML_SAVE_AS_SML)) {	/* XML */
+	xmlOutputBufferWrite(buf, 2, "]>");
+    } else {					/* SML */
+	xmlOutputBufferWrite(buf, 1, "]");
+    }
+    RETURN();
 }
 
 /**
@@ -763,6 +1197,8 @@ xmlDtdDumpOutput(xmlSaveCtxtPtr ctxt, xmlDtdPtr dtd) {
 static void
 xmlAttrDumpOutput(xmlSaveCtxtPtr ctxt, xmlAttrPtr cur) {
     xmlOutputBufferPtr buf;
+
+    DEBUG_PRINTF(("xmlAttrDumpOutput(%p, %p %s);\n", ctxt, cur, cur->name));
 
     if (cur == NULL) return;
     buf = ctxt->buf;
@@ -792,11 +1228,13 @@ xmlAttrDumpOutput(xmlSaveCtxtPtr ctxt, xmlAttrPtr cur) {
  */
 static void
 xmlAttrListDumpOutput(xmlSaveCtxtPtr ctxt, xmlAttrPtr cur) {
-    if (cur == NULL) return;
+    DEBUG_ENTER(("xmlAttrListDumpOutput(%p, %p);\n", ctxt, cur));
+    if (cur == NULL) RETURN();
     while (cur != NULL) {
         xmlAttrDumpOutput(ctxt, cur);
 	cur = cur->next;
     }
+    RETURN();
 }
 
 
@@ -811,7 +1249,9 @@ static void
 xmlNodeListDumpOutput(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
     xmlOutputBufferPtr buf;
 
-    if (cur == NULL) return;
+    DEBUG_ENTER(("xmlNodeListDumpOutput(%p, %p);\n", ctxt, cur));
+
+    if (cur == NULL) RETURN();
     buf = ctxt->buf;
     while (cur != NULL) {
 	if ((ctxt->format == 1) && (xmlIndentTreeOutput) &&
@@ -828,6 +1268,7 @@ xmlNodeListDumpOutput(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
 	}
 	cur = cur->next;
     }
+    RETURN();
 }
 
 #ifdef LIBXML_HTML_ENABLED
@@ -903,63 +1344,86 @@ xmlNodeDumpOutputInternal(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
     xmlChar *start, *end;
     xmlOutputBufferPtr buf;
 
-    if (cur == NULL) return;
+    DEBUG_ENTER(("xmlNodeDumpOutputInternal(%p, %p [%s]<%s>);\n", ctxt, cur, pszXmlElementType[cur->type], cur->name));
+
+    if (cur == NULL) RETURN();
     buf = ctxt->buf;
     if (cur->type == XML_XINCLUDE_START)
-	return;
+	RETURN();
     if (cur->type == XML_XINCLUDE_END)
-	return;
+	RETURN();
     if ((cur->type == XML_DOCUMENT_NODE) ||
         (cur->type == XML_HTML_DOCUMENT_NODE)) {
 	xmlDocContentDumpOutput(ctxt, (xmlDocPtr) cur);
-	return;
+	RETURN();
     }
 #ifdef LIBXML_HTML_ENABLED
     if (ctxt->options & XML_SAVE_XHTML) {
         xhtmlNodeDumpOutput(ctxt, cur);
-        return;
+        RETURN();
     }
     if (((cur->type != XML_NAMESPACE_DECL) && (cur->doc != NULL) &&
          (cur->doc->type == XML_HTML_DOCUMENT_NODE) &&
          ((ctxt->options & XML_SAVE_AS_XML) == 0)) ||
         (ctxt->options & XML_SAVE_AS_HTML)) {
 	htmlNodeDumpOutputInternal(ctxt, cur);
-	return;
+	RETURN();
     }
 #endif
     if (cur->type == XML_DTD_NODE) {
         xmlDtdDumpOutput(ctxt, (xmlDtdPtr) cur);
-	return;
+	RETURN();
     }
     if (cur->type == XML_DOCUMENT_FRAG_NODE) {
         xmlNodeListDumpOutput(ctxt, cur->children);
-	return;
+	RETURN();
     }
     if (cur->type == XML_ELEMENT_DECL) {
-        xmlBufDumpElementDecl(buf->buffer, (xmlElementPtr) cur);
-	return;
+	if (!(ctxt->options & XML_SAVE_AS_SML)) {	/* XML */
+	    xmlBufDumpElementDecl(buf->buffer, (xmlElementPtr) cur);
+	} else {					/* SML */
+	    smlBufDumpElementDecl(buf->buffer, (xmlElementPtr) cur);
+	}
+	RETURN();
     }
     if (cur->type == XML_ATTRIBUTE_DECL) {
-        xmlBufDumpAttributeDecl(buf->buffer, (xmlAttributePtr) cur);
-	return;
+	if (!(ctxt->options & XML_SAVE_AS_SML)) {	/* XML */
+	    xmlBufDumpAttributeDecl(buf->buffer, (xmlAttributePtr) cur);
+	} else {					/* SML */
+	    smlBufDumpAttributeDecl(buf->buffer, (xmlAttributePtr) cur);
+	}
+	RETURN();
     }
     if (cur->type == XML_ENTITY_DECL) {
-        xmlBufDumpEntityDecl(buf->buffer, (xmlEntityPtr) cur);
-	return;
+	if (!(ctxt->options & XML_SAVE_AS_SML)) {	/* XML */
+	    xmlBufDumpEntityDecl(buf->buffer, (xmlEntityPtr) cur);
+	} else {					/* SML */
+	    smlBufDumpEntityDecl(buf->buffer, (xmlEntityPtr) cur);
+	}
+	RETURN();
     }
     if (cur->type == XML_TEXT_NODE) {
-	if (cur->content != NULL) {
-	    if (cur->name != xmlStringTextNoenc) {
-                xmlOutputBufferWriteEscape(buf, cur->content, ctxt->escape);
-	    } else {
-		/*
-		 * Disable escaping, needed for XSLT
-		 */
-		xmlOutputBufferWriteString(buf, (const char *) cur->content);
+    	xmlChar *content = cur->content;
+	if (!(ctxt->options & XML_SAVE_AS_SML)) {	/* XML */
+	    if (content != NULL) {
+		if (cur->name != xmlStringTextNoenc) {
+		    xmlOutputBufferWriteEscape(buf, cur->content, ctxt->escape);
+		} else {
+		    /*
+		     * Disable escaping, needed for XSLT
+		     */
+		    xmlOutputBufferWriteString(buf, (const char *) cur->content);
+		}
 	    }
+	} else {					/* SML */
+	    if (content == NULL) content = "";
+	    if (cur->prev && !xmlStrIsAllBlank(content) && !ctxt->quoted) {
+		smlWriteSemiColonIfNeeded(buf);
+	    }
+	    smlTextNodeDumpOutput(ctxt, cur);
 	}
 
-	return;
+	RETURN();
     }
     if (cur->type == XML_PI_NODE) {
 	if (cur->content != NULL) {
@@ -980,53 +1444,100 @@ xmlNodeDumpOutputInternal(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
 	        xmlOutputBufferWriteWSNonSig(ctxt, 0);
 	    xmlOutputBufferWrite(buf, 2, "?>");
 	}
-	return;
+	RETURN();
     }
     if (cur->type == XML_COMMENT_NODE) {
 	if (cur->content != NULL) {
-	    xmlOutputBufferWrite(buf, 4, "<!--");
-	    xmlOutputBufferWriteString(buf, (const char *)cur->content);
-	    xmlOutputBufferWrite(buf, 3, "-->");
+	    if (!(ctxt->options & XML_SAVE_AS_SML)) {		/* XML */
+		xmlOutputBufferWrite(buf, 4, "<!--");
+		xmlOutputBufferWriteString(buf, (const char *)cur->content);
+		xmlOutputBufferWrite(buf, 3, "-->");
+	    } else {						/* SML */
+		smlWriteSemiColonIfNeeded(buf);
+		/* If the comment does not fit on a single line */
+		DEBUG_PRINTF(("\\x%02X ... \\x%02X\n", cur->content[0], cur->content[xmlStrlen(cur->content)-1]));
+	    	if (   xmlStrchr((const char *)cur->content, '\n')
+	    	    /* Or we're not in formatted mode, and can predict that something will follow on the same line */
+	    	    || (   (!ctxt->format)
+	    	    	   /* Exception for comments at the top level: xmlDocContentDumpOutput() appends an \n after each top node */
+	    	        && (cur->parent != (struct _xmlNode *)cur->doc)
+	    	        && (/* No other sibling node follows, so that there will be a } on the same line */
+			       (!cur->next)
+			    /* Or if it's followed by anything except blank text beginning with a new line */
+			    || (cur->next->type != XML_TEXT_NODE)	/* Not text, so there will be a ; then that next node */
+			    || (!xmlStrIsAllBlank(cur->next->content)	/* Non blank text, so the first line will be visible or quoted */
+			    || (cur->next->content[0] != '\n'))))	/* Blank text, not quoted, but we must preserve the spaces ahead */
+		    ) {		/* Use the long form */
+		    xmlOutputBufferWrite(buf, 3, "#--");
+		    xmlOutputBufferWriteString(buf, (const char *)cur->content);
+		    xmlOutputBufferWrite(buf, 2, "--");
+	    	} else {	/* Use the short 1-line form */
+		    xmlOutputBufferWrite(buf, 1, "#");
+		    xmlOutputBufferWriteString(buf, (const char *)cur->content);
+	    	}
+	    }
 	}
-	return;
+	RETURN();
     }
     if (cur->type == XML_ENTITY_REF_NODE) {
+	DEBUG_PRINTF(("# Dumping entity &%s;\n", cur->name));
+	if ((ctxt->options & XML_SAVE_AS_SML) && !ctxt->quoted) { /* SML */
+	    xmlOutputBufferWrite(buf, 1, "\"");
+	    ctxt->quoted = 1;
+	}
         xmlOutputBufferWrite(buf, 1, "&");
 	xmlOutputBufferWriteString(buf, (const char *)cur->name);
         xmlOutputBufferWrite(buf, 1, ";");
-	return;
+	if (ctxt->options & XML_SAVE_AS_SML) {		/* SML */
+	    if (!cur->next ||
+	    	(   (cur->next->type != XML_ENTITY_REF_NODE)
+	    	 && (cur->next->type != XML_TEXT_NODE))) {
+		xmlOutputBufferWrite(buf, 1, "\"");
+		ctxt->quoted = 0;
+	    }
+	}
+	RETURN();
     }
     if (cur->type == XML_CDATA_SECTION_NODE) {
+    	char *pszBeginCData;
+    	char *pszEndCData = "]]>";
+	if (!(ctxt->options & XML_SAVE_AS_SML)) {	/* XML */
+	    pszBeginCData = "<![CDATA[";
+	} else {					/* SML */
+	    pszBeginCData = "<[[";
+	    smlWriteSemiColonIfNeeded(buf);
+	}
 	if (cur->content == NULL || *cur->content == '\0') {
-	    xmlOutputBufferWrite(buf, 12, "<![CDATA[]]>");
+	    xmlOutputBufferWriteString(buf, pszBeginCData);
+	    xmlOutputBufferWriteString(buf, pszEndCData);
 	} else {
 	    start = end = cur->content;
 	    while (*end != '\0') {
 		if ((*end == ']') && (*(end + 1) == ']') &&
 		    (*(end + 2) == '>')) {
 		    end = end + 2;
-		    xmlOutputBufferWrite(buf, 9, "<![CDATA[");
+		    xmlOutputBufferWriteString(buf, pszBeginCData);
 		    xmlOutputBufferWrite(buf, end - start, (const char *)start);
-		    xmlOutputBufferWrite(buf, 3, "]]>");
+		    xmlOutputBufferWriteString(buf, pszEndCData);
 		    start = end;
 		}
 		end++;
 	    }
 	    if (start != end) {
-		xmlOutputBufferWrite(buf, 9, "<![CDATA[");
+		xmlOutputBufferWriteString(buf, pszBeginCData);
 		xmlOutputBufferWriteString(buf, (const char *)start);
-		xmlOutputBufferWrite(buf, 3, "]]>");
+		xmlOutputBufferWriteString(buf, pszEndCData);
 	    }
 	}
-	return;
+	RETURN();
     }
     if (cur->type == XML_ATTRIBUTE_NODE) {
 	xmlAttrDumpOutput(ctxt, (xmlAttrPtr) cur);
-	return;
+	RETURN();
     }
     if (cur->type == XML_NAMESPACE_DECL) {
 	xmlNsDumpOutputCtxt(ctxt, (xmlNsPtr) cur);
-	return;
+	RETURN();
     }
 
     format = ctxt->format;
@@ -1042,7 +1553,11 @@ xmlNodeDumpOutputInternal(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
 	    tmp = tmp->next;
 	}
     }
-    xmlOutputBufferWrite(buf, 1, "<");
+    if (!(ctxt->options & XML_SAVE_AS_SML)) {		/* XML */
+    	xmlOutputBufferWrite(buf, 1, "<");
+    } else {						/* SML */
+    	smlWriteSemiColonIfNeeded(buf);
+    }
     if ((cur->ns != NULL) && (cur->ns->prefix != NULL)) {
         xmlOutputBufferWriteString(buf, (const char *)cur->ns->prefix);
 	xmlOutputBufferWrite(buf, 1, ":");
@@ -1058,38 +1573,60 @@ xmlNodeDumpOutputInternal(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
 	(cur->children == NULL) && ((ctxt->options & XML_SAVE_NO_EMPTY) == 0)) {
         if (ctxt->format == 2)
             xmlOutputBufferWriteWSNonSig(ctxt, 0);
-        xmlOutputBufferWrite(buf, 2, "/>");
+	if (!(ctxt->options & XML_SAVE_AS_SML))	{	/* XML */
+	    xmlOutputBufferWrite(buf, 2, "/>");
+	} /* Else nothing to do as empty tags are implicit for SML */
 	ctxt->format = format;
-	return;
+	RETURN();
     }
     if (ctxt->format == 2)
         xmlOutputBufferWriteWSNonSig(ctxt, 1);
-    xmlOutputBufferWrite(buf, 1, ">");
+    if (!(ctxt->options & XML_SAVE_AS_SML)) {		/* XML */
+	xmlOutputBufferWrite(buf, 1, ">");
+    } else {						/* SML */
+	xmlOutputBufferWrite(buf, 1, " ");
+	ctxt->quoted = 0;
+    }
     if ((cur->type != XML_ELEMENT_NODE) && (cur->content != NULL)) {
 	xmlOutputBufferWriteEscape(buf, cur->content, ctxt->escape);
     }
     if (cur->children != NULL) {
+	int isOneText;
+	if (ctxt->options & XML_SAVE_AS_SML) {		/* SML */
+	    xmlNodePtr child=cur->children;
+	    isOneText = ((child->type == XML_TEXT_NODE) && !child->next);
+	    if (!isOneText) xmlOutputBufferWrite(buf, 1, "{");
+	}
 	if (ctxt->format == 1) xmlOutputBufferWrite(buf, 1, "\n");
 	if (ctxt->level >= 0) ctxt->level++;
 	xmlNodeListDumpOutput(ctxt, cur->children);
 	if (ctxt->level > 0) ctxt->level--;
 	if ((xmlIndentTreeOutput) && (ctxt->format == 1))
 	    xmlOutputBufferWrite(buf, ctxt->indent_size *
-	                         (ctxt->level > ctxt->indent_nr ?
+				 (ctxt->level > ctxt->indent_nr ?
 				  ctxt->indent_nr : ctxt->level),
 				 ctxt->indent);
+	if (ctxt->options & XML_SAVE_AS_SML) {		/* SML */
+	    if (!isOneText) xmlOutputBufferWrite(buf, 1, "}");
+	}
+    } else if (ctxt->options & XML_SAVE_AS_SML) {	/* SML */
+        xmlOutputBufferWrite(buf, 2, "{}");
     }
-    xmlOutputBufferWrite(buf, 2, "</");
-    if ((cur->ns != NULL) && (cur->ns->prefix != NULL)) {
-        xmlOutputBufferWriteString(buf, (const char *)cur->ns->prefix);
-	xmlOutputBufferWrite(buf, 1, ":");
-    }
+    if (!(ctxt->options & XML_SAVE_AS_SML)) {		/* XML */
+	xmlOutputBufferWrite(buf, 2, "</");
+	if ((cur->ns != NULL) && (cur->ns->prefix != NULL)) {
+	    xmlOutputBufferWriteString(buf, (const char *)cur->ns->prefix);
+	    xmlOutputBufferWrite(buf, 1, ":");
+	}
 
-    xmlOutputBufferWriteString(buf, (const char *)cur->name);
-    if (ctxt->format == 2)
-        xmlOutputBufferWriteWSNonSig(ctxt, 0);
-    xmlOutputBufferWrite(buf, 1, ">");
+	xmlOutputBufferWriteString(buf, (const char *)cur->name);
+	if (ctxt->format == 2)
+	    xmlOutputBufferWriteWSNonSig(ctxt, 0);
+	xmlOutputBufferWrite(buf, 1, ">");
+    }
     ctxt->format = format;
+
+    RETURN();
 }
 
 /**
@@ -1113,11 +1650,15 @@ xmlDocContentDumpOutput(xmlSaveCtxtPtr ctxt, xmlDocPtr cur) {
     xmlCharEncoding enc;
     int switched_encoding = 0;
 
+    DEBUG_ENTER(("xmlDocContentDumpOutput(%p, %p);\n", ctxt, cur));
+
+    DEBUG_PRINTF(("format=0x%X; options=0x%X;\n", ctxt->format, ctxt->options));
+
     xmlInitParser();
 
     if ((cur->type != XML_HTML_DOCUMENT_NODE) &&
         (cur->type != XML_DOCUMENT_NODE))
-	 return(-1);
+	 RETURN_INT(-1);
 
     if (ctxt->encoding != NULL) {
         cur->encoding = BAD_CAST ctxt->encoding;
@@ -1143,7 +1684,7 @@ xmlDocContentDumpOutput(xmlSaveCtxtPtr ctxt, xmlDocPtr cur) {
 	    (buf->encoder == NULL) && (buf->conv == NULL)) {
 	    if (xmlSaveSwitchEncoding(ctxt, (const char*) encoding) < 0) {
 		cur->encoding = oldenc;
-		return(-1);
+		RETURN_INT(-1);
 	    }
 	}
         if (ctxt->options & XML_SAVE_FORMAT)
@@ -1154,9 +1695,9 @@ xmlDocContentDumpOutput(xmlSaveCtxtPtr ctxt, xmlDocPtr cur) {
 	                                   (const char *)encoding, 0);
 	if (ctxt->encoding != NULL)
 	    cur->encoding = oldenc;
-	return(0);
+	RETURN_INT(0);
 #else
-        return(-1);
+        RETURN_INT(-1);
 #endif
     } else if ((cur->type == XML_DOCUMENT_NODE) ||
                (ctxt->options & XML_SAVE_AS_XML) ||
@@ -1175,7 +1716,7 @@ xmlDocContentDumpOutput(xmlSaveCtxtPtr ctxt, xmlDocPtr cur) {
 		 */
 		if (xmlSaveSwitchEncoding(ctxt, (const char*) encoding) < 0) {
 		    cur->encoding = oldenc;
-		    return(-1);
+		    RETURN_INT(-1);
 		}
 		switched_encoding = 1;
 	    }
@@ -1190,7 +1731,11 @@ xmlDocContentDumpOutput(xmlSaveCtxtPtr ctxt, xmlDocPtr cur) {
 	 * Save the XML declaration
 	 */
 	if ((ctxt->options & XML_SAVE_NO_DECL) == 0) {
-	    xmlOutputBufferWrite(buf, 14, "<?xml version=");
+	    if (!(ctxt->options & XML_SAVE_AS_SML)) {		/* XML */
+		xmlOutputBufferWrite(buf, 14, "<?xml version=");
+	    } else {						/* SML */
+		xmlOutputBufferWrite(buf, 13, "?xml version=");
+	    }
 	    if (cur->version != NULL)
 		xmlBufWriteQuotedString(buf->buffer, cur->version);
 	    else
@@ -1207,7 +1752,11 @@ xmlDocContentDumpOutput(xmlSaveCtxtPtr ctxt, xmlDocPtr cur) {
 		    xmlOutputBufferWrite(buf, 17, " standalone=\"yes\"");
 		    break;
 	    }
-	    xmlOutputBufferWrite(buf, 3, "?>\n");
+	    if (!(ctxt->options & XML_SAVE_AS_SML)) {		/* XML */
+		xmlOutputBufferWrite(buf, 3, "?>\n");
+	    } else {						/* SML */
+		xmlOutputBufferWrite(buf, 1, "\n");
+	    }
 	}
 
 #ifdef LIBXML_HTML_ENABLED
@@ -1247,7 +1796,7 @@ xmlDocContentDumpOutput(xmlSaveCtxtPtr ctxt, xmlDocPtr cur) {
 	ctxt->escapeAttr = oldescapeAttr;
     }
     cur->encoding = oldenc;
-    return(0);
+    RETURN_INT(0);
 }
 
 #ifdef LIBXML_HTML_ENABLED
@@ -1834,15 +2383,17 @@ xmlSaveToFilename(const char *filename, const char *encoding, int options)
     xmlSaveCtxtPtr ret;
     int compression = 0; /* TODO handle compression option */
 
+    DEBUG_ENTER(("xmlSaveToFilename(%s, %s, 0x%X);\n", filename, encoding, options));
+
     ret = xmlNewSaveCtxt(encoding, options);
-    if (ret == NULL) return(NULL);
+    if (ret == NULL) RETURN_PTR(NULL);
     ret->buf = xmlOutputBufferCreateFilename(filename, ret->handler,
                                              compression);
     if (ret->buf == NULL) {
 	xmlFreeSaveCtxt(ret);
-	return(NULL);
+	RETURN_PTR(NULL);
     }
-    return(ret);
+    RETURN_PTR(ret);
 }
 
 /**
@@ -1932,10 +2483,12 @@ xmlSaveDoc(xmlSaveCtxtPtr ctxt, xmlDocPtr doc)
 {
     long ret = 0;
 
+    DEBUG_ENTER(("xmlSaveDoc(%p, %p);\n", ctxt, doc));
+
     if ((ctxt == NULL) || (doc == NULL)) return(-1);
     if (xmlDocContentDumpOutput(ctxt, doc) < 0)
-        return(-1);
-    return(ret);
+        RETURN_LONG(-1);
+    RETURN_LONG(ret);
 }
 
 /**
@@ -2691,8 +3244,10 @@ xmlSaveFormatFileEnc( const char * filename, xmlDocPtr cur,
     xmlCharEncodingHandlerPtr handler = NULL;
     int ret;
 
+    DEBUG_ENTER(("xmlSaveFormatFileEnc(\"%s\", %p, %s, 0x%X);\n", filename, cur, encoding, format));
+
     if (cur == NULL)
-	return(-1);
+	RETURN_INT(-1);
 
     if (encoding == NULL)
 	encoding = (const char *) cur->encoding;
@@ -2701,7 +3256,7 @@ xmlSaveFormatFileEnc( const char * filename, xmlDocPtr cur,
 
 	    handler = xmlFindCharEncodingHandler(encoding);
 	    if (handler == NULL)
-		return(-1);
+		RETURN_INT(-1);
     }
 
 #ifdef LIBXML_ZLIB_ENABLED
@@ -2711,7 +3266,7 @@ xmlSaveFormatFileEnc( const char * filename, xmlDocPtr cur,
      * save the content to a temp buffer.
      */
     buf = xmlOutputBufferCreateFilename(filename, handler, cur->compression);
-    if (buf == NULL) return(-1);
+    if (buf == NULL) RETURN_INT(-1);
     memset(&ctxt, 0, sizeof(ctxt));
     ctxt.doc = cur;
     ctxt.buf = buf;
@@ -2724,7 +3279,7 @@ xmlSaveFormatFileEnc( const char * filename, xmlDocPtr cur,
     xmlDocContentDumpOutput(&ctxt, cur);
 
     ret = xmlOutputBufferClose(buf);
-    return(ret);
+    RETURN_INT(ret);
 }
 
 
@@ -2759,7 +3314,8 @@ xmlSaveFileEnc(const char *filename, xmlDocPtr cur, const char *encoding) {
  */
 int
 xmlSaveFormatFile(const char *filename, xmlDocPtr cur, int format) {
-    return ( xmlSaveFormatFileEnc( filename, cur, NULL, format ) );
+    DEBUG_ENTER(("xmlSaveFormatFile(\"%s\", %p, 0x%X);\n", filename, cur, format));
+    RETURN_INT( xmlSaveFormatFileEnc( filename, cur, NULL, format ) );
 }
 
 /**

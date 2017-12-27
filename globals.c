@@ -23,8 +23,6 @@
 #include <libxml/xmlmemory.h>
 #include <libxml/threads.h>
 
-/* #define DEBUG_GLOBALS */
-
 /*
  * Helpful Macro
  */
@@ -33,6 +31,39 @@
 #else
 #define IS_MAIN_THREAD 1
 #endif
+
+#include <debugm.h> /* SysToolsLib debug macros */
+
+/* Important: Must be defined _AFTER_ the IS_MAIN_THREAD definition */
+DEBUG_GLOBALS
+
+/* Debug strings for the xmlElementType in tree.h */
+char *pszXmlElementType[] = {
+    "None",
+    "ELEMENT",			/*  1 */
+    "ATTRIBUTE",		/*  2 */
+    "TEXT",			/*  3 */
+    "CDATA_SECTION",		/*  4 */
+    "ENTITY_REF",		/*  5 */
+    "ENTITY",			/*  6 */
+    "PI",			/*  7 */
+    "COMMENT",			/*  8 */
+    "DOCUMENT",			/*  9 */
+    "DOCUMENT_TYPE",		/* 10 */
+    "DOCUMENT_FRAG",		/* 11 */
+    "NOTATION",			/* 12 */
+    "HTML_DOCUMENT",		/* 13 */
+    "DTD",			/* 14 */
+    "ELEMENT_DECL",		/* 15 */
+    "ATTRIBUTE_DECL",		/* 16 */
+    "ENTITY_DECL",		/* 17 */
+    "NAMESPACE_DECL",		/* 18 */
+    "XINCLUDE_START",		/* 19 */
+    "XINCLUDE_END"		/* 20 */
+#ifdef LIBXML_DOCB_ENABLED
+   ,"XML_DOCB_DOCUMENT"		/* 21 */
+#endif
+};
 
 /*
  * Mutex to protect "ForNewThreads" variables

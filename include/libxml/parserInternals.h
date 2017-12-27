@@ -297,6 +297,9 @@ XMLPUBVAR unsigned int xmlParserMaxDepth;
 #define MOVETO_ENDTAG(p)						\
     while ((*p) && (*(p) != '>')) (p)++
 
+#define MOVETO_ENDSMLTAG(p)						\
+    while ((*p) && (*(p) != '\n') && (*(p) != ';') && (*(p) != '}') && (*(p) != ']')) (p)++
+
 /**
  * MOVETO_STARTTAG:
  * @p:  and UTF8 string pointer
