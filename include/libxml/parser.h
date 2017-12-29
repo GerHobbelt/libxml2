@@ -326,6 +326,7 @@ struct _xmlParserCtxt {
     /* for use by SML parser */
     xmlType	       mlType;	    /* The XML formatting type (XML or SML) */
     int		       curly;	    /* Beginning of a {curly block} */
+    int                quoted;	    /* Within a "quoted string" */
 };
 
 /**

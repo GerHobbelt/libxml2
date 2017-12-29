@@ -4601,8 +4601,8 @@ xmlParseCharDataComplex(xmlParserCtxtPtr ctxt, int cdata) {
     SHRINK;
     GROW;
     cur = CUR_CHAR(l);
-    if ((ctxt->mlType == XML_TYPE_SML) && (cur == '"') && !cdata) {
-    	quoted = 1;
+    if ((ctxt->mlType == XML_TYPE_SML) && (cur == '"') && !cdata && !ctxt->quoted) {
+    	ctxt->quoted = 1;
 	count++;
 	NEXTL(l);
 	cur = CUR_CHAR(l);
@@ -4611,19 +4611,19 @@ xmlParseCharDataComplex(xmlParserCtxtPtr ctxt, int cdata) {
 	        (cur != '<')) /* checked */
 	    || ((ctxt->mlType == XML_TYPE_SML) &&
 	    	(cur != '\n') && (cur != ';') && (cur != '}') &&
-	    	((cur != '"') || !quoted)
+	    	((cur != '"') || !ctxt->quoted)
 	    	    /* TODO for SML: What other conditions here? */ )
 	    ) &&
 	   (cur != '&') &&
 	   (IS_CHAR(cur))) /* test also done in xmlCurrentChar() */ {
 	if ((cur == ']') && (NXT(1) == ']') &&
-	    (NXT(2) == '>') && ((ctxt->mlType != XML_TYPE_SML) || !quoted)) {
+	    (NXT(2) == '>') && ((ctxt->mlType != XML_TYPE_SML) || !ctxt->quoted)) {
 	    if (cdata) break;
 	    else {
 		xmlFatalErr(ctxt, XML_ERR_MISPLACED_CDATA_END, NULL);
 	    }
 	}
-	if ((ctxt->mlType == XML_TYPE_SML) && quoted && (cur == '\\')) {
+	if ((ctxt->mlType == XML_TYPE_SML) && ctxt->quoted && (cur == '\\')) {
 	    count++;
 	    NEXTL(l);
 	    cur = CUR_CHAR(l);
@@ -4664,8 +4664,8 @@ xmlParseCharDataComplex(xmlParserCtxtPtr ctxt, int cdata) {
 	NEXTL(l);
 	cur = CUR_CHAR(l);
     }
-    if ((ctxt->mlType == XML_TYPE_SML) && (cur == '"') && quoted) {
-    	quoted = 0;
+    if ((ctxt->mlType == XML_TYPE_SML) && (cur == '"') && ctxt->quoted) {
+    	ctxt->quoted = 0;
 	count++;
 	NEXTL(l);
 	cur = CUR_CHAR(l);
@@ -10016,6 +10016,7 @@ xmlParseContent(xmlParserCtxtPtr ctxt) {
 	    }
 	}
     } else {							/* SML*/
+    	ctxt->quoted = 0;
 	while ((RAW != 0) &&
 	       (RAW != '\n') && (RAW != ';') && (RAW != '}') &&
 	       (ctxt->instate != XML_PARSER_EOF)) {
