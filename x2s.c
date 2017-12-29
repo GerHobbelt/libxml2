@@ -44,6 +44,7 @@ Options:\n\
   -PN           Parse removing entity nodes (i.e. expanding entities)\n\
   -PW           Parse ignoring warnings\n\
   -s            Output non-significant spaces\n\
+  -x            Output XML. Default: Output SML\n\
   -?            Display this help screen\n\
 \n\
 Filenames: Default or \"-\": Use stdin and stdout respectively\n\
@@ -104,6 +105,10 @@ int main(int argc, char *argv[]) {
       }
       if (!strcmp(opt, "s")) {
       	iSaveOpts |= XML_SAVE_WSNONSIG;
+      	continue;
+      }
+      if (!strcmp(opt, "x")) {
+      	iSaveOpts &= ~XML_SAVE_AS_SML;
       	continue;
       }
       printf("Unexpected option: %s\n", arg);
