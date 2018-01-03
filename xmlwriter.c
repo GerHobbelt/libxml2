@@ -1024,7 +1024,7 @@ xmlTextWriterStartElement(xmlTextWriterPtr writer, const xmlChar * name)
 			if (count < 0)
 			    RETURN_INT(-1);
 			sum += count;
-		    } else { // if (writer->view == XML_VIEW_XML)
+		    } else { /* if (writer->view == XML_VIEW_XML) */
 			count = xmlOutputBufferWriteString(writer->out, " {");
 			if (count < 0)
 			    RETURN_INT(-1);
@@ -1231,8 +1231,8 @@ xmlTextWriterEndElement(xmlTextWriterPtr writer)
 		if (count < 0)
 		    RETURN_INT(-1);
 		sum += count;
-	    } else { // if (writer->view == XML_VIEW_SML)
-	        // if (writer->viewContent == 
+	    } else { /* if (writer->view == XML_VIEW_SML) */
+	        /* if (writer->viewContent ==  */
 		count = xmlOutputBufferWriteString(writer->out, "}!}");
 		if (count < 0)
 		    RETURN_INT(-1);
@@ -2311,10 +2311,10 @@ xmlTextWriterWriteElement(xmlTextWriterPtr writer, const xmlChar * name,
 
     sum = 0;
     if (writer->view == XML_VIEW_SML) {
-        int lContent = strlen(content);
+        int lContent = xmlStrlen(content);
         if (lContent == 0) {
             writer->viewContent = XML_VIEWCONTENT_EMPTY;
-        } else if (   strpbrk(content, " \t\"=;#{}<>")
+        } else if (   strpbrk((const char *)content, " \t\"=;#{}<>")
                    || (content[lContent-1] == '\\')) {
             writer->viewContent = XML_VIEWCONTENT_QUOTED;
         } else {
@@ -4805,7 +4805,7 @@ xmlTextWriterHandleStateDependencies(xmlTextWriterPtr writer,
                 sum += count;
                 if (writer->view == XML_VIEW_XML) {
 		    extra[0] = '>';
-		} else { // if (writer->view == XML_VIEW_SML)
+		} else { /* if (writer->view == XML_VIEW_SML) */
 		    switch (writer->viewContent) {
 		    case XML_VIEWCONTENT_NONE:
 		        break;

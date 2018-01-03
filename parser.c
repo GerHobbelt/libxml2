@@ -4594,7 +4594,6 @@ xmlParseCharDataComplex(xmlParserCtxtPtr ctxt, int cdata) {
     int nbchar = 0;
     int cur, l;
     int count = 0;
-    int quoted = 0;
 
     DEBUG_ENTER(("xmlParseCharDataComplex(%s, %d);\n", dbgCtxt(ctxt), cdata));
 
@@ -4672,7 +4671,7 @@ xmlParseCharDataComplex(xmlParserCtxtPtr ctxt, int cdata) {
     }
     if (nbchar != 0) {
         buf[nbchar] = 0;
-        // DEBUG_PRINTF(("Found text \"%s\"\n", buf));
+        /* DEBUG_PRINTF(("Found text \"%s\"\n", buf)); */
 	/*
 	 * OK the segment is to be consumed as chars.
 	 */
@@ -9293,7 +9292,7 @@ xmlParseAttribute2(xmlParserCtxtPtr ctxt,
  */
 
 /* Check if what comes next is an attribute name, or an unquoted value */
-static isAttributeNext(xmlParserCtxtPtr ctxt) {
+static int isAttributeNext(xmlParserCtxtPtr ctxt) {
     int i;
     if (!xmlIsNameStartChar(ctxt, RAW)) return 0;
     for (i=1; xmlIsNameChar(ctxt, NXT(i)); i++) ;

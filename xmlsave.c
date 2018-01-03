@@ -327,7 +327,7 @@ error:
 
 /* Move an xmlChar pointer to the next UTF8 character */
 /* Make sure not to pass the end of string, even if there's a truncated UTF8 sequence there */
-const xmlChar *
+static const xmlChar *
 xmlNextUTF8Char(const xmlChar *pc) {
     xmlChar c = *pc;
     if (!c) return pc;
@@ -341,7 +341,7 @@ xmlNextUTF8Char(const xmlChar *pc) {
     if (!pc[2]) return pc+2;		  /* Truncated char at end of string */
     if ((c & 0xF0) == 0xE0) return pc+3;  /* UTF8 head of a 3-byte sequence */
     if (!pc[3]) return pc+3;		  /* Truncated char at end of string */
-/*  if ((c & 0xF8) == 0xF0) return pc+4;  /* UTF8 head of a 4-byte sequence */
+/*  if ((c & 0xF8) == 0xF0) return pc+4;  // UTF8 head of a 4-byte sequence */
     return pc+4;			  /* Invalid UTF8 character */
 }
 
@@ -349,9 +349,9 @@ xmlNextUTF8Char(const xmlChar *pc) {
 #define xmlNextUTF8char(pc) ((char *)xmlNextUTF8Char((xmlChar *)(pc)))
 
 /* Check if there's any non-blank character in the string */
-int xmlStrIsAllBlank(const xmlChar *str) {
+static int xmlStrIsAllBlank(const xmlChar *str) {
     const xmlChar *pc;
-    for (pc = str; *pc; pc = xmlNextUTF8char(pc)) {
+    for (pc = str; *pc; pc = xmlNextUTF8Char(pc)) {
     	if (!IS_BLANK_CH(*pc)) return 0;	/* It's not a blank string */
     }
     return 1; /* The string is entirely blank */
@@ -386,7 +386,7 @@ smlEscapeQuotedString(unsigned char* out, int *outlen,
     	    if ((out+1) >= outend) return -1;
 	    *out++ = '\\';
     	}
-	// TODO FOR SML: Convert characters not in the output encoding to &#NNN entities
+	/* TODO FOR SML: Convert characters not in the output encoding to &#NNN entities */
 	switch(c) {
 	case '&':
 	    *out++ = '&';
@@ -441,7 +441,7 @@ smlEscapeRawString(unsigned char* out, int *outlen,
 
     while ((in < inend) && (out < outend)) {
     	char c = *in++;
-	// TODO FOR SML: Convert characters not in the output encoding to &#NNN entities
+	/* TODO FOR SML: Convert characters not in the output encoding to &#NNN entities */
 	switch(c) {
 	case '&':
 	    *out++ = '&';
@@ -493,7 +493,7 @@ static int smlTextNodeDumpOutput(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
     char c;
     int isMixed;
     const xmlChar *pcTail = NULL;
-    int lTail;
+    int lTail = 0;
     int nearEntity = 0;
 
     /* If a text node has siblings, this is mixed content inside a {} block.
@@ -505,7 +505,7 @@ static int smlTextNodeDumpOutput(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
     	for (pc = str; *pc; pc++) if (!IS_BLANK_CH(*pc)) break;
     	lHead = pc - str;
     	if (lHead) {
-	    n = xmlOutputBufferWrite(out, lHead, str);
+	    n = xmlOutputBufferWrite(out, lHead, (const char *)str);
 	    if (n == -1) return -1;
 	    nWritten += n;
 	    if (!*pc) return nWritten; /* This was all blanks */
@@ -540,7 +540,7 @@ static int smlTextNodeDumpOutput(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
     } else { 
 	iNeedQuote = 0; /* It should not be quoted, unless there's an SML syntax character inside... */
 	c = '\\';
-	for (pc=str; pc<pcEnd; pc = xmlNextUTF8char(pc)) {
+	for (pc=str; pc<pcEnd; pc = xmlNextUTF8Char(pc)) {
 	    c = *pc;
 	    switch (c) {
 	    case '"':
@@ -584,7 +584,7 @@ static int smlTextNodeDumpOutput(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
 
     /* In the case of mixed content, output the tail spaces */
     if (isMixed && pcTail) {
-	n = xmlOutputBufferWrite(out, lTail, pcTail);
+	n = xmlOutputBufferWrite(out, lTail, (const char *)pcTail);
     	if (n == -1) return -1;
     	nWritten += n;
     	xmlFree((xmlChar *)str); /* Free the string duplicated above */
@@ -593,7 +593,7 @@ static int smlTextNodeDumpOutput(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
     return nWritten;
 }
 
-int xmlOutputBufferIsBlankLine(xmlOutputBufferPtr out) {
+static int xmlOutputBufferIsBlankLine(xmlOutputBufferPtr out) {
     xmlBufferPtr pxBuf = (xmlBufferPtr)(out->buffer);
     char *pBuf = (char *)(pxBuf->content);
     char *pcEnd = pBuf + pxBuf->use;
@@ -611,10 +611,9 @@ int xmlOutputBufferIsBlankLine(xmlOutputBufferPtr out) {
     return 1; /* The last line is entirely blank */
 }
 
-xmlChar xmlOutputBufferLastNonBlank(xmlOutputBufferPtr out) {
+static xmlChar xmlOutputBufferLastNonBlank(xmlOutputBufferPtr out) {
     xmlBufferPtr pxBuf = (xmlBufferPtr)(out->buffer);
     char *pBuf = (char *)(pxBuf->content);
-    char *pcEnd = pBuf + pxBuf->use;
     int i;
     /* Scan the string backwards from the end */
     for (i = pxBuf->use - 1; i >= 0; i--) {
@@ -624,7 +623,7 @@ xmlChar xmlOutputBufferLastNonBlank(xmlOutputBufferPtr out) {
     return (xmlChar)'\0';
 }
 
-void smlWriteSemiColonIfNeeded(xmlOutputBufferPtr buf) {
+static void smlWriteSemiColonIfNeeded(xmlOutputBufferPtr buf) {
     char c;
     if (xmlOutputBufferIsBlankLine(buf)) return; /* Not needed */
     c = (char)xmlOutputBufferLastNonBlank(buf);
@@ -796,7 +795,7 @@ xmlBufDumpNotationTable(xmlBufPtr buf, xmlNotationTablePtr table) {
     xmlBufMergeBuffer(buf, buffer);
 }
 
-void
+static void
 smlBufDumpNotationTable(xmlBufPtr buf, xmlNotationTablePtr table) {
     xmlBufferPtr buffer;
     xmlChar *content;
@@ -809,8 +808,8 @@ smlBufDumpNotationTable(xmlBufPtr buf, xmlNotationTablePtr table) {
          */
         return;
     }
-    // Quick and dirty conversion to SML:
-    // Generate the XML version, then remove the head < an trailing >
+    /* Quick and dirty conversion to SML: */
+    /* Generate the XML version, then remove the head < an trailing > */
     xmlDumpNotationTable(buffer, table);
     content = buffer->content + 1; /* Skip the head < */
     use = (int)buffer->use - 2; /* Remove two characters: The < and > */
@@ -843,7 +842,7 @@ xmlBufDumpElementDecl(xmlBufPtr buf, xmlElementPtr elem) {
     xmlBufMergeBuffer(buf, buffer);
 }
 
-void
+static void
 smlBufDumpElementDecl(xmlBufPtr buf, xmlElementPtr elem) {
     xmlBufferPtr buffer;
     xmlChar *content;
@@ -856,8 +855,8 @@ smlBufDumpElementDecl(xmlBufPtr buf, xmlElementPtr elem) {
          */
         return;
     }
-    // Quick and dirty conversion to SML:
-    // Generate the XML version, then remove the head < an trailing >
+    /* Quick and dirty conversion to SML: */
+    /* Generate the XML version, then remove the head < an trailing > */
     xmlDumpElementDecl(buffer, elem);
     content = buffer->content + 1; /* Skip the head < */
     use = (int)buffer->use - 2; /* Remove two characters: The < and > */
@@ -890,7 +889,7 @@ xmlBufDumpAttributeDecl(xmlBufPtr buf, xmlAttributePtr attr) {
     xmlBufMergeBuffer(buf, buffer);
 }
 
-void
+static void
 smlBufDumpAttributeDecl(xmlBufPtr buf, xmlAttributePtr attr) {
     xmlBufferPtr buffer;
     xmlChar *content;
@@ -903,8 +902,8 @@ smlBufDumpAttributeDecl(xmlBufPtr buf, xmlAttributePtr attr) {
          */
         return;
     }
-    // Quick and dirty conversion to SML:
-    // Generate the XML version, then remove the head < an trailing >
+    /* Quick and dirty conversion to SML: */
+    /* Generate the XML version, then remove the head < an trailing > */
     xmlDumpAttributeDecl(buffer, attr);
     content = buffer->content + 1; /* Skip the head < */
     use = (int)buffer->use - 2; /* Remove two characters: The < and > */
@@ -936,7 +935,7 @@ xmlBufDumpEntityDecl(xmlBufPtr buf, xmlEntityPtr ent) {
     xmlBufMergeBuffer(buf, buffer);
 }
 
-void
+static void
 smlBufDumpEntityDecl(xmlBufPtr buf, xmlEntityPtr ent) {
     xmlBufferPtr buffer;
     xmlChar *content;
@@ -949,8 +948,8 @@ smlBufDumpEntityDecl(xmlBufPtr buf, xmlEntityPtr ent) {
          */
         return;
     }
-    // Quick and dirty conversion to SML:
-    // Generate the XML version, then remove the head < an trailing >
+    /* Quick and dirty conversion to SML: */
+    /* Generate the XML version, then remove the head < an trailing > */
     xmlDumpEntityDecl(buffer, ent);
     content = buffer->content + 1; /* Skip the head < */
     use = (int)buffer->use - 2; /* Remove two characters: The < and > */
@@ -1403,7 +1402,7 @@ xmlNodeDumpOutputInternal(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
 	RETURN();
     }
     if (cur->type == XML_TEXT_NODE) {
-    	xmlChar *content = cur->content;
+    	const xmlChar *content = cur->content;
 	if (!(ctxt->options & XML_SAVE_AS_SML)) {	/* XML */
 	    if (content != NULL) {
 		if (cur->name != xmlStringTextNoenc) {
@@ -1416,7 +1415,7 @@ xmlNodeDumpOutputInternal(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
 		}
 	    }
 	} else {					/* SML */
-	    if (content == NULL) content = "";
+	    if (content == NULL) content = (xmlChar *)"";
 	    if (cur->prev && !xmlStrIsAllBlank(content) && !ctxt->quoted) {
 		smlWriteSemiColonIfNeeded(buf);
 	    }
@@ -1456,7 +1455,7 @@ xmlNodeDumpOutputInternal(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
 		smlWriteSemiColonIfNeeded(buf);
 		/* If the comment does not fit on a single line */
 		DEBUG_PRINTF(("\\x%02X ... \\x%02X\n", cur->content[0], cur->content[xmlStrlen(cur->content)-1]));
-	    	if (   xmlStrchr((const char *)cur->content, '\n')
+	    	if (   xmlStrchr(cur->content, '\n')
 	    	    /* Or we're not in formatted mode, and can predict that something will follow on the same line */
 	    	    || (   (!ctxt->format)
 	    	    	   /* Exception for comments at the top level: xmlDocContentDumpOutput() appends an \n after each top node */
@@ -1499,8 +1498,8 @@ xmlNodeDumpOutputInternal(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
 	RETURN();
     }
     if (cur->type == XML_CDATA_SECTION_NODE) {
-    	char *pszBeginCData;
-    	char *pszEndCData = "]]>";
+    	const char *pszBeginCData;
+    	const char *pszEndCData = "]]>";
 	if (!(ctxt->options & XML_SAVE_AS_SML)) {	/* XML */
 	    pszBeginCData = "<![CDATA[";
 	} else {					/* SML */
@@ -1591,7 +1590,7 @@ xmlNodeDumpOutputInternal(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
 	xmlOutputBufferWriteEscape(buf, cur->content, ctxt->escape);
     }
     if (cur->children != NULL) {
-	int isOneText;
+	int isOneText = 0;
 	if (ctxt->options & XML_SAVE_AS_SML) {		/* SML */
 	    xmlNodePtr child=cur->children;
 	    isOneText = ((child->type == XML_TEXT_NODE) && !child->next);

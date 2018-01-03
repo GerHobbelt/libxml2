@@ -38,7 +38,7 @@
 DEBUG_GLOBALS
 
 /* Debug strings for the xmlElementType in tree.h */
-char *pszXmlElementType[] = {
+const char *pszXmlElementType[] = {
     "None",
     "ELEMENT",			/*  1 */
     "ATTRIBUTE",		/*  2 */

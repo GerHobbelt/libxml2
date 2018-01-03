@@ -222,7 +222,7 @@ int debug_printf(char *pszFormat, ...) {                                       \
 
 #include <libxml/xmlexports.h> /* For XMLPUBVAR and XMLPUBFUN and XMLCALL */
 
-/* XMLPUBVAR int iDebug;	/* Global variable enabling of disabling debug messages */
+/* XMLPUBVAR int iDebug;	// Global variable enabling of disabling debug messages */
 XMLPUBFUN int * XMLCALL get_iDebug(void);
 #define iDebug *get_iDebug()
 XMLPUBVAR int (*pdputs)(const char *);	/* Pointer to the debug puts routine */

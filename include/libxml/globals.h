@@ -26,7 +26,7 @@ extern "C" {
 #endif
 
 /* JFL 2017-12-13 Debug information */
-XMLPUBVAR char *pszXmlElementType[]; /* Names of xmlElementType constants in tree.h */
+XMLPUBVAR const char *pszXmlElementType[]; /* Names of xmlElementType constants in tree.h */
 
 XMLPUBFUN void XMLCALL xmlInitGlobals(void);
 XMLPUBFUN void XMLCALL xmlCleanupGlobals(void);
