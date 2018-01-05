@@ -127,7 +127,7 @@ static char *dbgNStr(const char *string, int len) {
     	return msg;
     }
     if (len < 0) len = strlen(string);
-    if (len > 0) etc = "";
+    if (len >= 0) etc = "";
     if (len > 20) len = 20;
     msg[n++] = '"';
     for (i=0; i<len; i++) {
@@ -2275,6 +2275,62 @@ xmlSkipBlankChars(xmlParserCtxtPtr ctxt) {
         }
     }
     return(res);
+}
+
+/************************************************************************
+ *									*
+ *		Markup type detection (XML or SML)			*
+ *									*
+ ************************************************************************/
+
+/* Heuristic to determine if the input marker type is XML or SML */
+
+static void
+xmlDetectMarkupType(xmlParserCtxtPtr ctxt) {
+    char c;
+    int i;
+
+    GROW;
+    ctxt->mlType = XML_TYPE_UNKNOWN;
+
+    /* First, a strong indicator is to look for an ?xml header or a comment */
+    for (i=0; i<(INPUT_CHUNK-3); i++) {
+    	if (ctxt->instate == XML_PARSER_EOF) break;
+    	c = NXT(i);
+        if ((c == '<') && (NXT(i+1) == '?')) {
+            ctxt->mlType = XML_TYPE_XML;
+	    break;
+	} else if (c == '?') {
+            ctxt->mlType = XML_TYPE_SML;
+	    break;
+	} else if (IS_BLANK_CH(c)) {
+            continue;
+	} else if ((c == '<') && (NXT(i+1) == '!') && (NXT(i+2) == '-') && (NXT(i+3) == '-')) {
+            ctxt->mlType = XML_TYPE_XML;
+	    break;
+	} else if (c == '#') {
+            ctxt->mlType = XML_TYPE_SML;
+	    break;
+	} else { /* There is no ?xml header nor a comment */
+	    break;
+	}
+    }
+    /* If this failed, a weak indicator is to scan for the first < or { */
+    if (ctxt->mlType == XML_TYPE_UNKNOWN) for ( ; i<INPUT_CHUNK; i++) {
+    	if (ctxt->instate == XML_PARSER_EOF) break;
+    	c = NXT(i);
+        if (c == '<') {
+            ctxt->mlType = XML_TYPE_XML;
+	    break;
+	} else if (c == '{') {
+            ctxt->mlType = XML_TYPE_SML;
+	    break;
+	}
+    }
+    /* TODO for SML: Remove this eventually. Leaving it for now to avoid breaking XML parsing */
+    if (ctxt->mlType == XML_TYPE_UNKNOWN) {
+	ctxt->mlType = XML_TYPE_XML;
+    }
 }
 
 /************************************************************************
@@ -4687,6 +4743,10 @@ xmlParseCharDataComplex(xmlParserCtxtPtr ctxt, int cdata) {
 		    *ctxt->space = -2;
 	    }
 	}
+    } else {
+    	DEBUG_CODE(
+    	    buf[0] = 0;
+	)
     }
     if ((cur != 0) && (!IS_CHAR(cur))) {
 	/* Generate the error and skip the offending character */
@@ -10014,7 +10074,7 @@ xmlParseContent(xmlParserCtxtPtr ctxt) {
 		break;
 	    }
 	}
-    } else {							/* SML*/
+    } else {							/* SML */
     	ctxt->quoted = 0;
 	while ((RAW != 0) &&
 	       (RAW != '\n') && (RAW != ';') && (RAW != '}') &&
@@ -10867,6 +10927,11 @@ xmlParseDocument(xmlParserCtxtPtr ctxt) {
         RETURN_INT(-1);
 
     GROW;
+
+    /*
+     * Markup type (XML or SML)
+     */
+    xmlDetectMarkupType(ctxt);
 
     /*
      * SAX: detecting the level.
@@ -12744,6 +12809,8 @@ xmlCreatePushParserCtxt(xmlSAXHandlerPtr sax, void *user_data,
         xmlSwitchEncoding(ctxt, enc);
     }
 
+    /* TODO for SML: Detect the markup type and set SML-specific fields */
+
     return(ctxt);
 }
 #endif /* LIBXML_PUSH_ENABLED */
@@ -12854,6 +12921,8 @@ xmlCreateIOParserCtxt(xmlSAXHandlerPtr sax, void *user_data,
 	return(NULL);
     }
     inputPush(ctxt, inputStream);
+
+    /* TODO for SML: Detect the markup type and set SML-specific fields */
 
     return(ctxt);
 }
@@ -13681,6 +13750,9 @@ xmlParseBalancedChunkMemoryInternal(xmlParserCtxtPtr oldctxt,
     ctxt->str_xml = xmlDictLookup(ctxt->dict, BAD_CAST "xml", 3);
     ctxt->str_xmlns = xmlDictLookup(ctxt->dict, BAD_CAST "xmlns", 5);
     ctxt->str_xml_ns = xmlDictLookup(ctxt->dict, XML_XML_NAMESPACE, 36);
+    ctxt->mlType = oldctxt->mlType;	/* SML support */
+    ctxt->curly = oldctxt->curly;	/* SML support */
+    ctxt->quoted = oldctxt->quoted;	/* SML support */
 
 #ifdef SAX2
     /* propagate namespaces down the entity */
@@ -13900,6 +13972,11 @@ xmlParseInNodeContext(xmlNodePtr node, const char *data, int datalen,
     if (ctxt == NULL)
         return(XML_ERR_NO_MEMORY);
 
+    /* TODO for SML: Determine if this context refers to XML or SML
+     *   ctxt->mlType = oldctxt->mlType;	// SML support
+     *   ctxt->curly = oldctxt->curly;		// SML support
+     *   ctxt->quoted = oldctxt->quoted;	// SML support
+     */
     /*
      * Use input doc's dict if present, else assure XML_PARSE_NODICT is set.
      * We need a dictionary for xmlDetectSAX2, so if there's no doc dict
@@ -14343,6 +14420,7 @@ xmlCreateEntityParserCtxtInternal(const xmlChar *URL, const xmlChar *ID,
 	    ctxt->directory = directory;
 	xmlFree(uri);
     }
+    /* TODO for SML: Detect the markup type and set SML-specific fields */
     return(ctxt);
 }
 
@@ -14410,6 +14488,8 @@ xmlCreateURLParserCtxt(const char *filename, int options)
         directory = xmlParserGetDirectory(filename);
     if ((ctxt->directory == NULL) && (directory != NULL))
         ctxt->directory = directory;
+
+    /* TODO for SML: Detect the markup type and set SML-specific fields */
 
     return(ctxt);
 }
@@ -14704,6 +14784,9 @@ xmlCreateMemoryParserCtxt(const char *buffer, int size) {
     xmlBufResetInput(input->buf->buffer, input);
 
     inputPush(ctxt, input);
+
+    /* TODO for SML: Detect the markup type and set SML-specific fields */
+
     return(ctxt);
 }
 
