@@ -22,43 +22,40 @@
 
 #define MY_ENCODING "ISO-8859-1"
 
-void testXmlwriterFilename(const char *uri);
-void testXmlwriterMemory(const char *file);
-void testXmlwriterDoc(const char *file);
-void testXmlwriterTree(const char *file);
 xmlChar *ConvertInput(const char *in, const char *encoding);
+int usage(void);
 
 int usage() {
-  printf("%s\n", "\
+  printf("%s%s", "\
 XML to SML converter\n\
 \n\
 Usage: x2s [OPTIONS] [XMLFILENAME [SMLFILENAME]]\n\
 \n\
 Options:\n\
+  -?            Display this help screen\n\
   -d            Debug mode\n\
   -D            No ?xml declaration\n\
   -E            No empty tags\n\
-  -f            Format and indent the output. Default: Same as the input\n\
+  -f            Format and indent the output. Default: Same as the input\n", "\
   -PB           Parse removing blank nodes\n\
   -PE           Parse ignoring errors\n\
   -PN           Parse removing entity nodes (i.e. expanding entities)\n\
   -PW           Parse ignoring warnings\n\
   -s            Output non-significant spaces\n\
   -x            Output XML. Default: Output SML\n\
-  -?            Display this help screen\n\
 \n\
 Filenames: Default or \"-\": Use stdin and stdout respectively\n\
 \n\
 ");
   return 0;
 }
- 
+
 int main(int argc, char *argv[]) {
   int i;
   xmlDocPtr doc; /* the resulting document tree */
-  char * infilename = NULL;
-  char * outfilename = NULL;
-  char * encoding = "ISO-8859-1";
+  const char * infilename = NULL;
+  const char * outfilename = NULL;
+  /* const char * encoding = "ISO-8859-1"; */
   int iSaveOpts = XML_SAVE_AS_SML;
   int iParseOpts = 0;
   xmlSaveCtxtPtr ctxt;
@@ -126,8 +123,8 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
 
-  if (!infilename) infilename = "-"; // Input from stdin by default
-  if (!outfilename) outfilename = "-"; // Output to stdout by default
+  if (!infilename) infilename = "-"; /* Input from stdin by default */
+  if (!outfilename) outfilename = "-"; /* Output to stdout by default */
 
   doc = xmlReadFile(infilename, NULL, iParseOpts);
   if (doc == NULL) {
@@ -135,12 +132,12 @@ int main(int argc, char *argv[]) {
     return 1;
   }
   DEBUG_PRINTF(("# Parsed ML successfully\n"));
-  xmlKeepBlanksDefault(1); // So that the SML is indented identically 
+  /* xmlKeepBlanksDefault(1); // So that the SML is indented identically  */
   ctxt = xmlSaveToFilename(outfilename, NULL, iSaveOpts);
   xmlSaveDoc(ctxt, doc);
   xmlSaveClose(ctxt);
   xmlFreeDoc(doc);
-  xmlCleanupParser(); // Cleanup function for the XML library.
+  xmlCleanupParser(); /* Cleanup function for the XML library. */
   return 0;
 }
 
