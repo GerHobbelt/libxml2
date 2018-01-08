@@ -1342,8 +1342,29 @@ xmlNodeDumpOutputInternal(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
     xmlNodePtr tmp;
     xmlChar *start, *end;
     xmlOutputBufferPtr buf;
+    DEBUG_CODE(
+    const char *pszValue;
+    char c0;
+    char c1;
+    switch (cur->type) {
+    case XML_TEXT_NODE:
+    	pszValue = dbgStr(cur->content);
+    	c0 = c1 = ' ';
+    	break;
+    case XML_ENTITY_REF_NODE:
+    	pszValue = cur->name;
+    	c0 = '&';
+    	c1 = ';';
+    	break;
+    default:
+    	pszValue = cur->name;
+    	c0 = '<';
+    	c1 = '>';
+    	break;
+    }
+    );
 
-    DEBUG_ENTER(("xmlNodeDumpOutputInternal(%p, %p [%s]<%s>);\n", ctxt, cur, pszXmlElementType[cur->type], cur->name));
+    DEBUG_ENTER(("xmlNodeDumpOutputInternal(%p, %p [%s]%c%s%c>);\n", ctxt, cur, pszXmlElementType[cur->type], c0, pszValue, c1));
 
     if (cur == NULL) RETURN();
     buf = ctxt->buf;
@@ -1490,7 +1511,8 @@ xmlNodeDumpOutputInternal(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
 	if (ctxt->options & XML_SAVE_AS_SML) {		/* SML */
 	    if (!cur->next ||
 	    	(   (cur->next->type != XML_ENTITY_REF_NODE)
-	    	 && (cur->next->type != XML_TEXT_NODE))) {
+	    	 && (   (cur->next->type != XML_TEXT_NODE)
+	    	     || xmlStrIsAllBlank(cur->next->content)))) {
 		xmlOutputBufferWrite(buf, 1, "\"");
 		ctxt->quoted = 0;
 	    }
