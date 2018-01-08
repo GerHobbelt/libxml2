@@ -15,7 +15,7 @@ check_PROGRAMS=testSchemas testRelax testSAX testHTML testXPath testURI \
                testReader testapi testModule runtest runsuite testchar \
 	       testdict runxmlconf testrecurse testlimits
 
-bin_PROGRAMS = xmllint xmlcatalog
+bin_PROGRAMS = xmllint xmlcatalog x2s
 
 bin_SCRIPTS=xml2-config
 
@@ -115,6 +115,11 @@ xmlcatalog_SOURCES=xmlcatalog.c
 xmlcatalog_LDFLAGS = 
 xmlcatalog_DEPENDENCIES = $(DEPS)
 xmlcatalog_LDADD = $(RDL_LIBS) $(LDADDS)
+
+x2s_SOURCES=x2s.c
+x2s_LDFLAGS = 
+x2s_DEPENDENCIES = $(DEPS)
+x2s_LDADD = $(RDL_LIBS) $(LDADDS)
 
 testXPath_SOURCES=testXPath.c
 testXPath_LDFLAGS = 
