@@ -157,6 +157,12 @@
 #define LIBXML_DLL_IMPORT XMLPUBVAR
 #endif
 
+/* Debugging */
+#if defined(_DEBUG)
+XMLPUBFUN char *dbgNStr(const char *string, int len);
+XMLPUBFUN char *dbgStr(const char *string);
+#endif /* defined(_DEBUG) */
+
 #endif /* __XML_EXPORTS_H__ */
 
 

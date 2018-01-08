@@ -117,7 +117,7 @@ static void xmlHaltParser(xmlParserCtxtPtr ctxt);
 
 DEBUG_CODE(
 /* Build a debug string with the control characters escaped */
-static char *dbgNStr(const char *string, int len) {
+char *dbgNStr(const char *string, int len) {
     static char msg[64];
     int n = 0;
     int i;
@@ -152,7 +152,7 @@ static char *dbgNStr(const char *string, int len) {
     msg[n] = '\0';
     return msg;
 }
-static char *dbgStr(const char *string) {
+char *dbgStr(const char *string) {
     return dbgNStr(string, -1);
 }
 /* Build a debug string describing the parser context */
