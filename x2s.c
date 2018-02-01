@@ -19,6 +19,7 @@
 #include <libxml/xmlsave.h>
 
 #include <debugm.h> /* SysToolsLib debug macros */
+DEBUG_GLOBALS
 
 #define MY_ENCODING "ISO-8859-1"
 
@@ -27,22 +28,23 @@ int usage(void);
 
 int usage() {
   printf("%s%s", "\
-XML to SML converter\n\
+XML <--> SML converter\n\
 \n\
-Usage: x2s [OPTIONS] [XMLFILENAME [SMLFILENAME]]\n\
+Usage: x2s [OPTIONS] [INPUT_FILENAME [OUTPUT_FILENAME]]\n\
 \n\
 Options:\n\
   -?            Display this help screen\n\
   -d            Debug mode\n\
-  -D            No ?xml declaration\n\
-  -E            No empty tags\n\
+  -D            Output no ?xml declaration. Default: Same as in input.\n\
+  -E            Output no empty tags\n\
   -f            Format and indent the output. Default: Same as the input\n", "\
   -PB           Parse removing blank nodes\n\
   -PE           Parse ignoring errors\n\
   -PN           Parse removing entity nodes (i.e. expanding entities)\n\
   -PW           Parse ignoring warnings\n\
-  -s            Output non-significant spaces\n\
-  -x            Output XML. Default: Output SML\n\
+  -s            Output SML. Default if the input is XML.\n\
+  -S            Output non-significant spaces\n\
+  -x            Output XML. Default if the input is SML.\n\
 \n\
 Filenames: Default or \"-\": Use stdin and stdout respectively\n\
 \n\
@@ -58,6 +60,8 @@ int main(int argc, char *argv[]) {
   /* const char * encoding = "ISO-8859-1"; */
   int iSaveOpts = XML_SAVE_AS_SML;
   int iParseOpts = 0;
+  int iOutMLTypeSet = 0; /* 1 = Output markup type specified */
+  int iXmlDeclSet = 0; /* 1 = Whether to output the ?xml declaration specified */
   xmlSaveCtxtPtr ctxt;
 
   for (i=1; i<argc; i++) {
@@ -73,6 +77,7 @@ int main(int argc, char *argv[]) {
       	continue;
       }
       if (!strcmp(opt, "D")) {
+      	iXmlDeclSet = 1;
       	iSaveOpts |= XML_SAVE_NO_DECL;
       	continue;
       }
@@ -101,11 +106,17 @@ int main(int argc, char *argv[]) {
       	continue;
       }
       if (!strcmp(opt, "s")) {
+      	iSaveOpts |= XML_SAVE_AS_SML;
+	int iOutMLTypeSet = 1;
+      	continue;
+      }
+      if (!strcmp(opt, "S")) {
       	iSaveOpts |= XML_SAVE_WSNONSIG;
       	continue;
       }
       if (!strcmp(opt, "x")) {
       	iSaveOpts &= ~XML_SAVE_AS_SML;
+	int iOutMLTypeSet = 1;
       	continue;
       }
       printf("Unexpected option: %s\n", arg);
@@ -132,6 +143,22 @@ int main(int argc, char *argv[]) {
     return 1;
   }
   DEBUG_PRINTF(("# Parsed ML successfully\n"));
+  /* Output the other ML type if not specified on the command line */
+  if (doc->properties & XML_DOC_SML) {		/* The input doc was SML */
+    DEBUG_PRINTF(("# The input was SML\n"));
+    if (!iOutMLTypeSet) iSaveOpts &= ~XML_SAVE_AS_SML; /* So output XML */
+  } else {					/* Else the input doc was XML */
+    DEBUG_PRINTF(("# The input was XML\n"));
+    if (!iOutMLTypeSet) iSaveOpts |= XML_SAVE_AS_SML;  /* So output SML */
+  }
+  /* Output an ?xml declaration only if there was one already */
+  if (doc->properties & XML_DOC_XMLDECL) {	/* There was one */
+    DEBUG_PRINTF(("# The input had an ?xml declaration\n"));
+    if (!iXmlDeclSet) iSaveOpts &= ~XML_SAVE_NO_DECL;
+  } else {					/* Else there was none */
+    DEBUG_PRINTF(("# The input did not have an ?xml declaration\n"));
+    if (!iXmlDeclSet) iSaveOpts |= XML_SAVE_NO_DECL;
+  }
   /* xmlKeepBlanksDefault(1); // So that the SML is indented identically  */
   ctxt = xmlSaveToFilename(outfilename, NULL, iSaveOpts);
   xmlSaveDoc(ctxt, doc);
