@@ -87,6 +87,8 @@
 *    RETURN_STRING(s)			Leave and trace return string	      *
 *    RETURN_PTR(p)			Leave and trace return pointer	      *
 *    RETURN_LONG(l)			Leave and trace return long	      *
+*    RETURN_CSTRING(s)			Leave and trace return const. string  *
+*    RETURN_CPTR(p)			Leave and trace return const. pointer *
 *                                                                             *
 *    RETURN_COMMENT((format, ...))	Leave, print comment and return	      *
 *    RETURN_CONST_COMMENT(value, (...)) Leave, print comment & return a const.*
