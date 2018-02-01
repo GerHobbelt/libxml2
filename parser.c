@@ -10918,6 +10918,7 @@ int
 xmlParseDocument(xmlParserCtxtPtr ctxt) {
     xmlChar start[4];
     xmlCharEncoding enc;
+    int hasXmlDecl;
 
     DEBUG_ENTER(("xmlParseDocument(%s);\n", dbgCtxt(ctxt)));
 
@@ -10980,6 +10981,7 @@ xmlParseDocument(xmlParserCtxtPtr ctxt) {
     }
     if (   ((CMP5(CUR_PTR, '<', '?', 'x', 'm', 'l')) && (IS_BLANK_CH(NXT(5))))
         || ((CMP4(CUR_PTR,      '?', 'x', 'm', 'l')) && (IS_BLANK_CH(NXT(4))))) {
+        hasXmlDecl = 1; /* We can't record it yet in myDoc->properties */
 	/*
 	 * Note that we will switch encoding on the fly.
 	 */
@@ -10994,6 +10996,7 @@ xmlParseDocument(xmlParserCtxtPtr ctxt) {
 	ctxt->standalone = ctxt->input->standalone;
 	SKIP_BLANKS;
     } else {
+        hasXmlDecl = 0; /* We can't record it yet in myDoc->properties */
 	ctxt->version = xmlCharStrdup(XML_DEFAULT_VERSION);
     }
     if ((ctxt->sax) && (ctxt->sax->startDocument) && (!ctxt->disableSAX))
@@ -11068,6 +11071,12 @@ xmlParseDocument(xmlParserCtxtPtr ctxt) {
 	}
     }
     DEBUG_PRINTF(("# The document markup type is %s\n", (ctxt->mlType == XML_TYPE_XML) ? "XML" : "SML"));
+    /* Record the information in the xmlDoc properties */
+    if (ctxt->mlType == XML_TYPE_SML) {
+	if (ctxt->myDoc) ctxt->myDoc->properties |= XML_DOC_SML;
+    }
+    /* Also record the ?xml declaration presence in the xmlDoc properties */
+    if (hasXmlDecl && ctxt->myDoc) ctxt->myDoc->properties |= XML_DOC_XMLDECL;
 
     /*
      * Time to start parsing the tree itself
