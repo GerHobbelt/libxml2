@@ -538,7 +538,9 @@ typedef enum {
     XML_DOC_USERBUILT		= 1<<5, /* Document was built using the API
                                            and not by parsing an instance */
     XML_DOC_INTERNAL		= 1<<6, /* built for internal processing */
-    XML_DOC_HTML		= 1<<7  /* parsed or built HTML document */
+    XML_DOC_HTML		= 1<<7, /* parsed or built HTML document */
+    XML_DOC_SML		        = 1<<8, /* parsed or built SML document */
+    XML_DOC_XMLDECL	        = 1<<9  /* XMLDecl in the Prolog */
 } xmlDocProperties;
 
 /**
