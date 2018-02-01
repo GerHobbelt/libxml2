@@ -247,6 +247,7 @@ XML_OBJS_A_DLL = $(XML_INTDIR_A_DLL)\buf.obj\
 # Xmllint and friends executables.
 UTILS = $(BINDIR)\xmllint.exe\
 	$(BINDIR)\xmlcatalog.exe\
+	$(BINDIR)\x2s.exe\
 	$(BINDIR)\testAutomata.exe\
 	$(BINDIR)\testC14N.exe\
 	$(BINDIR)\testDocbook.exe\
