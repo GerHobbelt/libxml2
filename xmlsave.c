@@ -14,6 +14,7 @@
 #include <libxml/parserInternals.h>
 #include <libxml/tree.h>
 #include <libxml/xmlsave.h>
+#include <libxml/xmlexports.h>
 
 #define MAX_INDENT 60
 
