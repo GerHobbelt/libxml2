@@ -381,10 +381,10 @@ extern DEBUG_TLS int iIndent;	/* Debug messages indentation. Thread local. */
 #define RETURN_STRING_COMMENT(s, args) return(s)
 #define RETURN_CHAR_COMMENT(c, args) return(c)
 #define RETURN_BOOL_COMMENT(b, args) return(b)
-#define RETURN_PTR_COMMENT(p) return(p)
-#define RETURN_LONG_COMMENT(l) return(l)
-#define RETURN_CSTRING_COMMENT(s) return(s)
-#define RETURN_CPTR_COMMENT(p) return(p)
+#define RETURN_PTR_COMMENT(p, args) return(p)
+#define RETURN_LONG_COMMENT(l, args) return(l)
+#define RETURN_CSTRING_COMMENT(s, args) return(s)
+#define RETURN_CPTR_COMMENT(p, args) return(p)
 
 #define SET_DEBUG_PUTS(pFunc) DEBUG_DO_NOTHING() /* Set the debug puts routine */
 
