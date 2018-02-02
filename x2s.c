@@ -19,7 +19,6 @@
 #include <libxml/xmlsave.h>
 
 #include <debugm.h> /* SysToolsLib debug macros */
-DEBUG_GLOBALS
 
 #define MY_ENCODING "ISO-8859-1"
 
