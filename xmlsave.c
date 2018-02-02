@@ -1345,27 +1345,27 @@ xmlNodeDumpOutputInternal(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
     xmlOutputBufferPtr buf;
     DEBUG_CODE(
     const char *pszValue;
-    char c0;
-    char c1;
+    char *c0;
+    char *c1;
     switch (cur->type) {
     case XML_TEXT_NODE:
     	pszValue = dbgStr(cur->content);
-    	c0 = c1 = ' ';
+    	c0 = c1 = "";
     	break;
     case XML_ENTITY_REF_NODE:
     	pszValue = cur->name;
-    	c0 = '&';
-    	c1 = ';';
+    	c0 = "&";
+    	c1 = ";";
     	break;
     default:
     	pszValue = cur->name;
-    	c0 = '<';
-    	c1 = '>';
+    	c0 = "<";
+    	c1 = ">";
     	break;
     }
     );
 
-    DEBUG_ENTER(("xmlNodeDumpOutputInternal(%p, %p [%s]%c%s%c>);\n", ctxt, cur, pszXmlElementType[cur->type], c0, pszValue, c1));
+    DEBUG_ENTER(("xmlNodeDumpOutputInternal(%p, %p [%s]%s%s%s);\n", ctxt, cur, pszXmlElementType[cur->type], c0, pszValue, c1));
 
     if (cur == NULL) RETURN();
     buf = ctxt->buf;
