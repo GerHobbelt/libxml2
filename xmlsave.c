@@ -2405,7 +2405,7 @@ xmlSaveToFilename(const char *filename, const char *encoding, int options)
     xmlSaveCtxtPtr ret;
     int compression = 0; /* TODO handle compression option */
 
-    DEBUG_ENTER(("xmlSaveToFilename(%s, %s, 0x%X);\n", filename, encoding, options));
+    DEBUG_ENTER(("xmlSaveToFilename(\"%s\", \"%s\", 0x%X);\n", filename, encoding, options));
 
     ret = xmlNewSaveCtxt(encoding, options);
     if (ret == NULL) RETURN_PTR(NULL);
