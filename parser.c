@@ -4663,12 +4663,6 @@ xmlParseCharDataComplex(xmlParserCtxtPtr ctxt, int cdata) {
     SHRINK;
     GROW;
     cur = CUR_CHAR(l);
-    if ((ctxt->mlType == XML_TYPE_SML) && (cur == '"') && !cdata && !ctxt->quoted) {
-    	ctxt->quoted = 1;
-	count++;
-	NEXTL(l);
-	cur = CUR_CHAR(l);
-    }
     DEBUG_CODE(
     if (ctxt->mlType == XML_TYPE_SML)
         DEBUG_PRINTF(("curly = %d; quoted = %d;\n", ctxt->curly, ctxt->quoted));
@@ -4733,12 +4727,6 @@ xmlParseCharDataComplex(xmlParserCtxtPtr ctxt, int cdata) {
 	    if (ctxt->instate == XML_PARSER_EOF)
 		RETURN();
 	}
-	NEXTL(l);
-	cur = CUR_CHAR(l);
-    }
-    if ((ctxt->mlType == XML_TYPE_SML) && (cur == '"') && ctxt->quoted) {
-    	ctxt->quoted = 0;
-	count++;
 	NEXTL(l);
 	cur = CUR_CHAR(l);
     }
@@ -7758,7 +7746,7 @@ xmlParseEntityRef(xmlParserCtxtPtr ctxt) {
      * not contain a <.
      */
     else if ((ctxt->instate == XML_PARSER_ATTRIBUTE_VALUE) &&
-	     (ent != NULL) && 
+	     (ent != NULL) &&
 	     (ent->etype != XML_INTERNAL_PREDEFINED_ENTITY)) {
 	if (((ent->checked & 1) || (ent->checked == 0)) &&
 	     (ent->content != NULL) && (xmlStrchr(ent->content, '<'))) {
@@ -9882,7 +9870,7 @@ xmlParseEndTag2(xmlParserCtxtPtr ctxt, const xmlChar *prefix,
 	    else
 		name = xmlParseQNameAndCompare(ctxt, ctxt->name, prefix);
 	}
-    
+
 	/*
 	 * We should definitely be at the ending "S? '>'" part
 	 */
@@ -9894,7 +9882,7 @@ xmlParseEndTag2(xmlParserCtxtPtr ctxt, const xmlChar *prefix,
 	    xmlFatalErr(ctxt, XML_ERR_GT_REQUIRED, NULL);
 	} else
 	    NEXT1;
-    
+
 	/*
 	 * [ WFC: Element Type Match ]
 	 * The Name in an element's end-tag must match the element type in the
@@ -10066,14 +10054,14 @@ xmlParseContent(xmlParserCtxtPtr ctxt) {
 	    const xmlChar *test = CUR_PTR;
 	    unsigned int cons = ctxt->input->consumed;
 	    const xmlChar *cur = ctxt->input->cur;
-    
+
 	    /*
 	     * First case : a Processing Instruction.
 	     */
 	    if ((*cur == '<') && (cur[1] == '?')) {
 		xmlParsePI(ctxt);
 	    }
-    
+
 	    /*
 	     * Second case : a CDSection
 	     */
@@ -10081,7 +10069,7 @@ xmlParseContent(xmlParserCtxtPtr ctxt) {
 	    else if (CMP9(CUR_PTR, '<', '!', '[', 'C', 'D', 'A', 'T', 'A', '[')) {
 		xmlParseCDSect(ctxt);
 	    }
-    
+
 	    /*
 	     * Third case :  a comment
 	     */
@@ -10090,33 +10078,33 @@ xmlParseContent(xmlParserCtxtPtr ctxt) {
 		xmlParseComment(ctxt);
 		ctxt->instate = XML_PARSER_CONTENT;
 	    }
-    
+
 	    /*
 	     * Fourth case :  a sub-element.
 	     */
 	    else if (*cur == '<') {
 		xmlParseElement(ctxt);
 	    }
-    
+
 	    /*
 	     * Fifth case : a reference. If if has not been resolved,
 	     *    parsing returns it's Name, create the node
 	     */
-    
+
 	    else if (*cur == '&') {
 		xmlParseReference(ctxt);
 	    }
-    
+
 	    /*
 	     * Last case, text. Note that References are handled directly.
 	     */
 	    else {
 		xmlParseCharData(ctxt, 0);
 	    }
-    
+
 	    GROW;
 	    SHRINK;
-    
+
 	    if ((cons == ctxt->input->consumed) && (test == CUR_PTR)) {
 		xmlFatalErr(ctxt, XML_ERR_INTERNAL_ERROR,
 			    "detected an error in element content\n");
@@ -10138,59 +10126,77 @@ xmlParseContent(xmlParserCtxtPtr ctxt) {
 	    unsigned int cons = ctxt->input->consumed;
 	    const xmlChar *cur = ctxt->input->cur;
 	    XDEBUG_PRINTF(("*cur = '%s';\n", dbgChar(RAW)));
+	    int iParsed = 0;
 
-	    /*
-	     * First case : a Processing Instruction.
-	     */
-	    if (*cur == '?') {
-		xmlParsePI(ctxt);
-	    }
-    
-	    /*
-	     * Second case : a CDSection
-	     */
-	    else if (CMP3(CUR_PTR, '<', '[', '[')) {
-		xmlParseCDSect(ctxt);
-	    }
-    
-	    /*
-	     * Third case :  a comment
-	     */
-	    else if (*cur == '#') {
-		xmlParseComment(ctxt);
-		ctxt->instate = XML_PARSER_CONTENT;
-	    }
-    
-	    /*
-	     * Fifth case : a reference. If if has not been resolved,
-	     *    parsing returns it's Name, create the node
-	     */
-    
-	    else if (*cur == '&') {
-		xmlParseReference(ctxt);
-	    }
-    
-	    /*
-	     * Sixth case :  an element separator
-	     */
-	    else if (*cur == ';') {
+	    if (*cur == '"') {
+		ctxt->quoted = !ctxt->quoted;
 		SKIP(1);
 	    }
-    
-	    /*
-	     * Fourth case :  a sub-element.
-	     */
-	    else if ((!IS_BLANK_CH(*cur)) && (*cur != '"') && (ctxt->curly == 1)) {
-		xmlParseElement(ctxt);
+
+	    if (!ctxt->quoted) {
+		/*
+		 * An element separator
+		 */
+		if (*cur == ';') {
+		    SKIP(1);
+		    if (IS_BLANK_CH(*cur) && (*cur != '\n')) {
+			xmlParseCharData(ctxt, 0);
+			iParsed = 1;
+		    }
+		}
+
+		/*
+		 * First case : a Processing Instruction.
+		 */
+		else if (*cur == '?') {
+		    xmlParsePI(ctxt);
+		    iParsed = 1;
+		}
+
+		/*
+		 * Second case : a CDSection
+		 */
+		else if (CMP3(CUR_PTR, '<', '[', '[')) {
+		    xmlParseCDSect(ctxt);
+		    iParsed = 1;
+		}
+
+		/*
+		 * Third case :  a comment
+		 */
+		else if (*cur == '#') {
+		    xmlParseComment(ctxt);
+		    ctxt->instate = XML_PARSER_CONTENT;
+		    iParsed = 1;
+		}
+
+		/*
+		 * Fourth case :  a sub-element.
+		 */
+		else if ((!IS_BLANK_CH(*cur)) && (*cur != '"') && (ctxt->curly == 1)) {
+		    xmlParseElement(ctxt);
+		    iParsed = 1;
+		}
 	    }
-    
-	    /*
-	     * Last case, text. Note that References are handled directly.
-	     */
-	    else {
-		xmlParseCharData(ctxt, 0);
+
+	    if (!iParsed) {
+		/*
+		 * Fifth case : a reference. If if has not been resolved,
+		 *    parsing returns it's Name, create the node
+		 */
+
+		if (*cur == '&') {
+		    xmlParseReference(ctxt);
+		}
+
+		/*
+		 * Last case, text. Note that References are handled directly.
+		 */
+		else {
+		    xmlParseCharData(ctxt, 0);
+		}
 	    }
-    
+
 	    GROW;
 	    SHRINK;
 
@@ -10337,7 +10343,7 @@ xmlParseElement(xmlParserCtxtPtr ctxt) {
 	    spacePop(ctxt);
 	    if (nsNr != ctxt->nsNr)
 		nsPop(ctxt, ctxt->nsNr - nsNr);
-    
+
 	    /*
 	     * Capture end position and add node
 	     */
