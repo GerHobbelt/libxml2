@@ -33,17 +33,17 @@ Usage: x2s [OPTIONS] [INPUT_FILENAME [OUTPUT_FILENAME]]\n\
 \n\
 Options:\n\
   -?            Display this help screen\n\
-  -d            Debug mode\n\
-  -D            Output no ?xml declaration. Default: Same as in input.\n\
+  -d            Debug mode. Repeat to get more debugging output\n\
+  -D            Output no ?xml declaration. Default: Same as in input\n\
   -E            Output no empty tags\n\
   -f            Format and indent the output. Default: Same as the input\n", "\
   -PB           Parse removing blank nodes\n\
   -PE           Parse ignoring errors\n\
   -PN           Parse removing entity nodes (i.e. expanding entities)\n\
   -PW           Parse ignoring warnings\n\
-  -s            Output SML. Default if the input is XML.\n\
+  -s            Output SML. Default if the input is XML\n\
   -S            Output non-significant spaces\n\
-  -x            Output XML. Default if the input is SML.\n\
+  -x            Output XML. Default if the input is SML\n\
 \n\
 Filenames: Default or \"-\": Use stdin and stdout respectively\n\
 \n\
@@ -71,8 +71,7 @@ int main(int argc, char *argv[]) {
       	return usage();
       }
       if (!strcmp(opt, "d")) {
-      	DEBUG_ON();
-	DEBUG_PRINTF(("Debug is ON\n"));
+	DEBUG_MORE();
       	continue;
       }
       if (!strcmp(opt, "D")) {
@@ -132,6 +131,7 @@ int main(int argc, char *argv[]) {
     printf("Unexpected argument: %s\n", arg);
     exit(1);
   }
+  DEBUG_PRINTF(("# Debug level %d\n", iDebug));
 
   if (!infilename) infilename = "-"; /* Input from stdin by default */
   if (!outfilename) outfilename = "-"; /* Output to stdout by default */
