@@ -4669,8 +4669,10 @@ xmlParseCharDataComplex(xmlParserCtxtPtr ctxt, int cdata) {
 	NEXTL(l);
 	cur = CUR_CHAR(l);
     }
+    DEBUG_CODE(
     if (ctxt->mlType == XML_TYPE_SML)
         DEBUG_PRINTF(("curly = %d; quoted = %d;\n", ctxt->curly, ctxt->quoted));
+    )
     while ((   ((ctxt->mlType == XML_TYPE_XML) &&
 	        (cur != '<')) /* checked */
 	    || ((ctxt->mlType == XML_TYPE_SML) &&
@@ -4681,7 +4683,7 @@ xmlParseCharDataComplex(xmlParserCtxtPtr ctxt, int cdata) {
 	   (IS_CHAR(cur))) /* test also done in xmlCurrentChar() */ {
 	/* More complex termination criteria, that would have been confusing in the while loop */
 	if ((ctxt->mlType == XML_TYPE_SML) && (!ctxt->quoted)) {
-	    if ((!ctxt->curly) && ((cur == '\n') || (cur != ';'))) break; /* End of element */
+	    if ((!ctxt->curly) && ((cur == '\n') || (cur == ';'))) break; /* End of element */
 	    if (( ctxt->curly) && (!IS_BLANK_CH(cur))) break; /* End of initial spaces */
 	}
 	if ((cur == ']') && (NXT(1) == ']') &&
@@ -9337,7 +9339,7 @@ xmlParseAttribute2(xmlParserCtxtPtr ctxt,
     }
 
     *value = val;
-    RETURN_CPTR(name);
+    RETURN_CPTR_COMMENT(name, ("ctxt = %s\n", dbgCtxt(ctxt)));
 }
 /**
  * xmlParseStartTag2:
@@ -9620,8 +9622,13 @@ next_attr:
 	GROW
         if (ctxt->instate == XML_PARSER_EOF)
             break;
-	if ((RAW == '>') || (((RAW == '/') && (NXT(1) == '>'))))
-	    break;
+    	if (   ((ctxt->mlType == XML_TYPE_XML) &&
+    	        ((RAW == '>') || ((RAW == '/') && (NXT(1) == '>'))))
+	    || ((ctxt->mlType == XML_TYPE_SML) &&
+	        ((RAW == ';') || (RAW == '\n') || (RAW == '}') || /* End of element */
+	           /* No need to test for "\\\n", as SKIP_BLANKS skips it already */
+	           (RAW == '"') || (RAW == '<'))) /* Begin quoted text or CDATA */
+	   ) break;
 	if (SKIP_BLANKS == 0) {
 	    xmlFatalErrMsg(ctxt, XML_ERR_SPACE_REQUIRED,
 			   "attributes construct error\n");
@@ -9851,7 +9858,7 @@ xmlParseEndTag2(xmlParserCtxtPtr ctxt, const xmlChar *prefix,
     	}
     	if ((ctxt->curly) && (RAW == '}')) {
     	    SKIP(1);
-    	} else if ((!ctxt->curly) && (RAW == ';')) {
+    	} else if (RAW == ';') {
     	    SKIP(1);
     	}
     }
@@ -9942,32 +9949,41 @@ xmlParseCDSect(xmlParserCtxtPtr ctxt) {
     int cur, l;
     int count = 0;
 
+    DEBUG_ENTER(("xmlParseCDSect(%s);\n", dbgCtxt(ctxt)));
+
     /* Check 2.6.0 was NXT(0) not RAW */
-    if (CMP9(CUR_PTR, '<', '!', '[', 'C', 'D', 'A', 'T', 'A', '[')) {
-	SKIP(9);
-    } else
-        return;
+    if (ctxt->mlType == XML_TYPE_XML) {				/* XML*/
+      if (CMP9(CUR_PTR, '<', '!', '[', 'C', 'D', 'A', 'T', 'A', '[')) {
+	  SKIP(9);
+      } else
+	  RETURN();
+    } else {							/* SML */
+      if (CMP3(CUR_PTR, '<', '[', '[')) {
+	  SKIP(3);
+      } else
+	  RETURN();
+    }
 
     ctxt->instate = XML_PARSER_CDATA_SECTION;
     r = CUR_CHAR(rl);
     if (!IS_CHAR(r)) {
 	xmlFatalErr(ctxt, XML_ERR_CDATA_NOT_FINISHED, NULL);
 	ctxt->instate = XML_PARSER_CONTENT;
-        return;
+        RETURN();
     }
     NEXTL(rl);
     s = CUR_CHAR(sl);
     if (!IS_CHAR(s)) {
 	xmlFatalErr(ctxt, XML_ERR_CDATA_NOT_FINISHED, NULL);
 	ctxt->instate = XML_PARSER_CONTENT;
-        return;
+        RETURN();
     }
     NEXTL(sl);
     cur = CUR_CHAR(l);
     buf = (xmlChar *) xmlMallocAtomic(size * sizeof(xmlChar));
     if (buf == NULL) {
 	xmlErrMemory(ctxt, NULL);
-	return;
+	RETURN();
     }
     while (IS_CHAR(cur) &&
            ((r != ']') || (s != ']') || (cur != '>'))) {
@@ -9979,13 +9995,13 @@ xmlParseCDSect(xmlParserCtxtPtr ctxt) {
                 xmlFatalErrMsgStr(ctxt, XML_ERR_CDATA_NOT_FINISHED,
                              "CData section too big found", NULL);
                 xmlFree (buf);
-                return;
+                RETURN();
             }
 	    tmp = (xmlChar *) xmlRealloc(buf, size * 2 * sizeof(xmlChar));
 	    if (tmp == NULL) {
 	        xmlFree(buf);
 		xmlErrMemory(ctxt, NULL);
-		return;
+		RETURN();
 	    }
 	    buf = tmp;
 	    size *= 2;
@@ -10000,7 +10016,7 @@ xmlParseCDSect(xmlParserCtxtPtr ctxt) {
 	    GROW;
             if (ctxt->instate == XML_PARSER_EOF) {
 		xmlFree(buf);
-		return;
+		RETURN();
             }
 	    count = 0;
 	}
@@ -10013,7 +10029,7 @@ xmlParseCDSect(xmlParserCtxtPtr ctxt) {
 	xmlFatalErrMsgStr(ctxt, XML_ERR_CDATA_NOT_FINISHED,
 	                     "CData section not finished\n%.50s\n", buf);
 	xmlFree(buf);
-        return;
+        RETURN();
     }
     NEXTL(l);
 
@@ -10027,6 +10043,7 @@ xmlParseCDSect(xmlParserCtxtPtr ctxt) {
 	    ctxt->sax->characters(ctxt->userData, buf, len);
     }
     xmlFree(buf);
+    RETURN_COMMENT(("xmlParseCDSect. ctxt = %s;\n", dbgCtxt(ctxt)));
 }
 
 /**
@@ -10109,9 +10126,12 @@ xmlParseContent(xmlParserCtxtPtr ctxt) {
 	}
     } else {							/* SML */
     	ctxt->quoted = 0;
-DEBUG_PRINTF(("curly = %d;\n", ctxt->curly));
 	while ((RAW != 0) &&
-	       ((ctxt->curly) || (RAW != '\n') && (RAW != ';')) &&
+	       /* Within a {curly block}, new lines are part of the text
+	          Else, they flag the end of the element */
+	       /* Likewise, within a {curly block}, ; flags the end of an inner element
+	          Else, they flag the end of the current element */
+	       ((ctxt->curly) || ((RAW != '\n') && (RAW != ';'))) &&
 	       (RAW != '}') &&
 	       (ctxt->instate != XML_PARSER_EOF)) {
 	    const xmlChar *test = CUR_PTR;
@@ -10148,6 +10168,13 @@ DEBUG_PRINTF(("curly = %d;\n", ctxt->curly));
     
 	    else if (*cur == '&') {
 		xmlParseReference(ctxt);
+	    }
+    
+	    /*
+	     * Sixth case :  an element separator
+	     */
+	    else if (*cur == ';') {
+		SKIP(1);
 	    }
     
 	    /*
@@ -10292,7 +10319,6 @@ xmlParseElement(xmlParserCtxtPtr ctxt) {
 	   node_info.node = ret;
 	   xmlParserAddNodeInfo(ctxt, &node_info);
 	}
-	if ((ctxt->mlType == XML_TYPE_SML) && ((RAW == '\n') || (RAW == ';'))) NEXT1;
 	RETURN_COMMENT(("xmlParseElement. ctxt = %s;\n", dbgCtxt(ctxt)));
     }
     if (ctxt->mlType == XML_TYPE_XML) {				/* XML */
