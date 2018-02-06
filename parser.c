@@ -2223,6 +2223,10 @@ xmlSkipBlankChars(xmlParserCtxtPtr ctxt) {
 		    xmlParserInputGrow(ctxt->input, INPUT_CHUNK);
 		    cur = ctxt->input->cur;
 	    	}
+	    	if ((cur[1] == '\r') && (cur[2] == '\n')) {	/* The \ escapes a continuation line */
+	    	    cur++;		/* Skip the \r */
+	    	    res++;
+	    	}
 	    	if (cur[1] == '\n') {	/* The \ escapes a continuation line */
 	    	    prev = '\\';
 	    	    cur++;
@@ -4861,6 +4865,8 @@ xmlParseCommentComplex(xmlParserCtxtPtr ctxt, xmlChar *buf,
     size_t count = 0;
     int inputid;
 
+    DEBUG_ENTER(("xmlParseCommentComplex(%s, %s, %ld, %ld);\n", dbgCtxt(ctxt), dbgStr(buf), (long)len, (long)size));
+
     inputid = ctxt->input->id;
 
     if (buf == NULL) {
@@ -4869,7 +4875,7 @@ xmlParseCommentComplex(xmlParserCtxtPtr ctxt, xmlChar *buf,
 	buf = (xmlChar *) xmlMallocAtomic(size * sizeof(xmlChar));
 	if (buf == NULL) {
 	    xmlErrMemory(ctxt, NULL);
-	    return;
+	    RETURN();
 	}
     }
     GROW;	/* Assure there's enough input data */
@@ -4881,7 +4887,7 @@ xmlParseCommentComplex(xmlParserCtxtPtr ctxt, xmlChar *buf,
                           "xmlParseComment: invalid xmlChar value %d\n",
 	                  q);
 	xmlFree (buf);
-	return;
+	RETURN();
     }
     NEXTL(ql);
     r = CUR_CHAR(rl);
@@ -4892,7 +4898,7 @@ xmlParseCommentComplex(xmlParserCtxtPtr ctxt, xmlChar *buf,
                           "xmlParseComment: invalid xmlChar value %d\n",
 	                  q);
 	xmlFree (buf);
-	return;
+	RETURN();
     }
     NEXTL(rl);
     cur = CUR_CHAR(l);
@@ -4909,7 +4915,7 @@ xmlParseCommentComplex(xmlParserCtxtPtr ctxt, xmlChar *buf,
             xmlFatalErrMsgStr(ctxt, XML_ERR_COMMENT_NOT_FINISHED,
                          "Comment too big found", NULL);
             xmlFree (buf);
-            return;
+            RETURN();
         }
 	if (len + 5 >= size) {
 	    xmlChar *new_buf;
@@ -4920,7 +4926,7 @@ xmlParseCommentComplex(xmlParserCtxtPtr ctxt, xmlChar *buf,
 	    if (new_buf == NULL) {
 		xmlFree (buf);
 		xmlErrMemory(ctxt, NULL);
-		return;
+		RETURN();
 	    }
 	    buf = new_buf;
             size = new_size;
@@ -4937,7 +4943,7 @@ xmlParseCommentComplex(xmlParserCtxtPtr ctxt, xmlChar *buf,
 	    count = 0;
             if (ctxt->instate == XML_PARSER_EOF) {
 		xmlFree(buf);
-		return;
+		RETURN();
             }
 	}
 	NEXTL(l);
@@ -4968,12 +4974,12 @@ xmlParseCommentComplex(xmlParserCtxtPtr ctxt, xmlChar *buf,
 	    ctxt->sax->comment(ctxt->userData, buf);
     }
     xmlFree(buf);
-    return;
+    RETURN_COMMENT(("xmlParseComment. ctxt = %s;\n", dbgCtxt(ctxt)));
 not_terminated:
     xmlFatalErrMsgStr(ctxt, XML_ERR_COMMENT_NOT_FINISHED,
 			 "Comment not terminated\n", NULL);
     xmlFree(buf);
-    return;
+    RETURN_COMMENT(("xmlParseComment. ctxt = %s;\n", dbgCtxt(ctxt)));
 }
 
 /**
@@ -4996,16 +5002,32 @@ xmlParseComment(xmlParserCtxtPtr ctxt) {
     size_t nbchar = 0;
     int ccol;
     int inputid;
+    int iLineComment = 0;
+
+    DEBUG_ENTER(("xmlParseComment(%s);\n", dbgCtxt(ctxt)));
 
     /*
      * Check that there is a comment right here.
      */
-    if ((RAW != '<') || (NXT(1) != '!') ||
-        (NXT(2) != '-') || (NXT(3) != '-')) return;
+    if (   ((ctxt->mlType == XML_TYPE_XML) &&
+	    ((RAW != '<') || (NXT(1) != '!') ||
+	     (NXT(2) != '-') || (NXT(3) != '-')))
+        || ((ctxt->mlType == XML_TYPE_SML) &&
+	    ((RAW != '#')))
+	) RETURN();
     state = ctxt->instate;
     ctxt->instate = XML_PARSER_COMMENT;
     inputid = ctxt->input->id;
-    SKIP(4);
+    if (ctxt->mlType == XML_TYPE_XML) {
+	SKIP(4);
+    } else {
+        if ((NXT(1) == '-') && (NXT(2) == '-')) {
+            SKIP(3);
+        } else {
+            iLineComment = 1;
+            SKIP(1);
+        }
+    }
     SHRINK;
     GROW;
 
@@ -5016,6 +5038,7 @@ xmlParseComment(xmlParserCtxtPtr ctxt) {
     in = ctxt->input->cur;
     do {
 	if (*in == 0xA) {
+	    if (iLineComment) goto return_comment;		/* SML only */
 	    do {
 		ctxt->input->line++; ctxt->input->col = 1;
 		in++;
@@ -5031,6 +5054,7 @@ get_more:
 	}
 	ctxt->input->col = ccol;
 	if (*in == 0xA) {
+	    if (iLineComment) goto return_comment;		/* SML only */
 	    do {
 		ctxt->input->line++; ctxt->input->col = 1;
 		in++;
@@ -5053,7 +5077,7 @@ get_more:
 		    if (buf == NULL) {
 		        xmlErrMemory(ctxt, NULL);
 			ctxt->instate = state;
-			return;
+			RETURN();
 		    }
 		    len = 0;
 		} else if (len + nbchar + 1 >= size) {
@@ -5065,7 +5089,7 @@ get_more:
 		        xmlFree (buf);
 			xmlErrMemory(ctxt, NULL);
 			ctxt->instate = state;
-			return;
+			RETURN();
 		    }
 		    buf = new_buf;
 		}
@@ -5079,16 +5103,18 @@ get_more:
             xmlFatalErrMsgStr(ctxt, XML_ERR_COMMENT_NOT_FINISHED,
                          "Comment too big found", NULL);
             xmlFree (buf);
-            return;
+            RETURN();
         }
 	ctxt->input->cur = in;
 	if (*in == 0xA) {
+	    if (iLineComment) goto return_comment;		/* SML only */
 	    in++;
 	    ctxt->input->line++; ctxt->input->col = 1;
 	}
 	if (*in == 0xD) {
 	    in++;
 	    if (*in == 0xA) {
+		if (iLineComment) goto return_comment;		/* SML only */
 		ctxt->input->cur = in;
 		in++;
 		ctxt->input->line++; ctxt->input->col = 1;
@@ -5100,11 +5126,15 @@ get_more:
 	GROW;
         if (ctxt->instate == XML_PARSER_EOF) {
             xmlFree(buf);
-            return;
+            RETURN();
         }
 	in = ctxt->input->cur;
 	if (*in == '-') {
 	    if (in[1] == '-') {
+	        if (ctxt->mlType == XML_TYPE_SML) {
+		    SKIP(2);
+	            goto return_comment;
+	        }
 	        if (in[2] == '>') {
 		    if (ctxt->input->id != inputid) {
 			xmlFatalErrMsg(ctxt, XML_ERR_ENTITY_BOUNDARY,
@@ -5112,6 +5142,7 @@ get_more:
                                        " same entity\n");
 		    }
 		    SKIP(3);
+return_comment:
 		    if ((ctxt->sax != NULL) && (ctxt->sax->comment != NULL) &&
 		        (!ctxt->disableSAX)) {
 			if (buf != NULL)
@@ -5123,7 +5154,7 @@ get_more:
 		        xmlFree(buf);
 		    if (ctxt->instate != XML_PARSER_EOF)
 			ctxt->instate = state;
-		    return;
+		    RETURN();
 		}
 		if (buf != NULL) {
 		    xmlFatalErrMsgStr(ctxt, XML_ERR_HYPHEN_IN_COMMENT,
@@ -5140,10 +5171,10 @@ get_more:
 	    ctxt->input->col++;
 	    goto get_more;
 	}
-    } while (((*in >= 0x20) && (*in <= 0x7F)) || (*in == 0x09));
+    } while (((*in >= 0x20) && (*in <= 0x7F)) || (*in == 0x09) || (*in == 0x0D));
     xmlParseCommentComplex(ctxt, buf, len, size);
     ctxt->instate = state;
-    return;
+    RETURN_COMMENT(("xmlParseComment. ctxt = %s;\n", dbgCtxt(ctxt)));
 }
 
 
