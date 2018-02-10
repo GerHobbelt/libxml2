@@ -9,8 +9,11 @@
  * jf.larvoire@free.fr
  */
 
+#define VERSION "2018-02-10"
+
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <libxml/encoding.h>
@@ -18,7 +21,10 @@
 
 #include <debugm.h> /* SysToolsLib debug macros */
 
+/* Forward references */
 int usage(void);
+int xmlRemoveBlankNodes(xmlNodePtr n);
+int xmlTrimTextNodes(xmlNodePtr n);
 
 int usage() {
   printf("%s%s", "\
@@ -28,7 +34,12 @@ Usage: x2s [OPTIONS] [INPUT_FILENAME [OUTPUT_FILENAME]]\n\
 \n\
 Options:\n\
   -?            Display this help screen\n\
+"
+DEBUG_CODE("\
   -d            Debug mode. Repeat to get more debugging output\n\
+"
+)
+"\
   -D            Output no ?xml declaration. Default: Same as in input\n\
   -E            Output no empty tags\n\
   -f            Format and indent the output. Default: Same as the input\n", "\
@@ -65,10 +76,12 @@ int main(int argc, char *argv[]) {
       if (!strcmp(opt, "?")) {
       	return usage();
       }
+      DEBUG_CODE(
       if (!strcmp(opt, "d")) {
 	DEBUG_MORE();
       	continue;
       }
+      )
       if (!strcmp(opt, "D")) {
       	iXmlDeclSet = 1;
       	iSaveOpts |= XML_SAVE_NO_DECL;
@@ -79,6 +92,7 @@ int main(int argc, char *argv[]) {
       	continue;
       }
       if (!strcmp(opt, "f")) {
+      	/* iParseOpts |= XML_PARSE_NOBLANKS; /* This does not seem to have any effect */
       	iSaveOpts |= XML_SAVE_FORMAT;
       	continue;
       }
@@ -107,6 +121,14 @@ int main(int argc, char *argv[]) {
       	iSaveOpts |= XML_SAVE_WSNONSIG;
       	continue;
       }
+      if ((!strcmp(opt, "V")) || (!strcmp(opt, "-version"))) {
+      	printf("x2s version " VERSION " " EXE_OS_NAME);
+      	DEBUG_CODE(
+      	printf(" Debug");
+      	)
+        printf("\n");
+      	exit(0);
+      }
       if (!strcmp(opt, "x")) {
       	iSaveOpts &= ~XML_SAVE_AS_SML;
 	iOutMLTypeSet = 1;
@@ -131,6 +153,13 @@ int main(int argc, char *argv[]) {
   if (!infilename) infilename = "-"; /* Input from stdin by default */
   if (!outfilename) outfilename = "-"; /* Output to stdout by default */
 
+#if 0  /* This does not seem to have any effect */
+  if (iSaveOpts & XML_SAVE_FORMAT) { /* If we want to reformat the output */
+    i = xmlKeepBlanksDefault(0); /* Then ignore blank nodes in input */
+    DEBUG_PRINTF(("xmlKeepBlanksDefault was %d\n", i)); // Prints a 1 */
+  }
+#endif
+
   /* Parse the input */
   doc = xmlReadFile(infilename, NULL, iParseOpts);
   if (doc == NULL) {
@@ -138,6 +167,11 @@ int main(int argc, char *argv[]) {
     return 1;
   }
   DEBUG_PRINTF(("# Parsed ML successfully\n"));
+
+  if (iSaveOpts & XML_SAVE_FORMAT) { /* If we want to reformat the output */
+    xmlRemoveBlankNodes(xmlDocGetRootElement(doc)); // Remove blank text nodes
+    xmlTrimTextNodes(xmlDocGetRootElement(doc)); // Trim spaces around text nodes
+  }
 
   /* Output the other ML type if not specified on the command line */
   if (doc->properties & XML_DOC_SML) {		/* The input doc was SML */
@@ -158,12 +192,67 @@ int main(int argc, char *argv[]) {
   }
 
   /* Generate the output */
-  /* xmlKeepBlanksDefault(1); // So that the SML is indented identically  */
   ctxt = xmlSaveToFilename(outfilename, NULL, iSaveOpts);
   xmlSaveDoc(ctxt, doc);
   xmlSaveClose(ctxt);
   xmlFreeDoc(doc);
   xmlCleanupParser(); /* Cleanup function for the XML library. */
+
+  return 0;
+}
+
+/**
+ * Remove blank text nodes in a DOM node tree
+ */
+                                                                         
+int xmlRemoveBlankNodes(xmlNodePtr node) {
+  xmlNodePtr child;
+
+  if (node) {
+    if (xmlIsBlankNode(node)) {
+      xmlUnlinkNode(node);
+      xmlFreeNode(node);
+    } else {
+      for (child = node->children; child; child = child->next) {
+	xmlRemoveBlankNodes(child);
+      }
+    }
+  }
+
+  return 0;
+}
+
+/**
+ * Trim spaces around text in a DOM node tree
+ *
+ * Danger: This may remove significant spaces, in strings that really do have
+ *         head or tail spaces
+ */
+                                                                         
+int xmlTrimTextNodes(xmlNodePtr node) {
+  xmlNodePtr child;
+
+  if (node) {
+    if (node->type == XML_TEXT_NODE) {
+      xmlChar *pData = xmlNodeGetContent(node);
+      xmlChar *pData0 = pData;
+      xmlChar *pc;
+      int changed = 0;
+      /* Trim the left side */
+      for (; *pData && isspace(*pData); pData++) changed = 1;
+      /* Trim the right side */
+      for (pc = pData+strlen(pData); (pc > pData) && isspace(*(pc-1)); ) {
+      	*(--pc) = '\0';
+      	changed = 1;
+      }
+      if (changed) xmlNodeSetContent(node, pData);
+      xmlFree(pData0);
+    } else {
+      for (child = node->children; child; child = child->next) {
+	xmlTrimTextNodes(child);
+      }
+    }
+  }
 
   return 0;
 }
