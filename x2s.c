@@ -9,7 +9,7 @@
  * jf.larvoire@free.fr
  */
 
-#define VERSION "2018-02-10"
+#define VERSION "2018-02-14"
 
 #include <stdio.h>
 #include <string.h>
@@ -34,6 +34,7 @@ Usage: x2s [OPTIONS] [INPUT_FILENAME [OUTPUT_FILENAME]]\n\
 \n\
 Options:\n\
   -?            Display this help screen\n\
+  -B            Delete blank nodes\n\
 "
 DEBUG_CODE("\
   -d            Debug mode. Repeat to get more debugging output\n\
@@ -49,6 +50,7 @@ DEBUG_CODE("\
   -PW           Parse ignoring warnings\n\
   -s            Output SML. Default if the input is XML\n\
   -S            Output non-significant spaces\n\
+  -T            Trim text nodes\n\
   -x            Output XML. Default if the input is SML\n\
 \n\
 Filenames: Default or \"-\": Use stdin and stdout respectively\n\
@@ -68,6 +70,8 @@ int main(int argc, char *argv[]) {
   int iOutMLTypeSet = 0; /* 1 = Output markup type specified */
   int iXmlDeclSet = 0; /* 1 = Whether to output the ?xml declaration specified */
   xmlSaveCtxtPtr ctxt;
+  int iDeleteBlankNodes = 0;
+  int iTrimSpaces = 0;
 
   for (i=1; i<argc; i++) {
     char *arg = argv[i];
@@ -75,6 +79,10 @@ int main(int argc, char *argv[]) {
       char *opt = arg + 1;
       if (!strcmp(opt, "?")) {
       	return usage();
+      }
+      if (!strcmp(opt, "B")) {
+      	iDeleteBlankNodes = 1;
+      	continue;
       }
       DEBUG_CODE(
       if (!strcmp(opt, "d")) {
@@ -92,8 +100,9 @@ int main(int argc, char *argv[]) {
       	continue;
       }
       if (!strcmp(opt, "f")) {
-      	/* iParseOpts |= XML_PARSE_NOBLANKS; /* This does not seem to have any effect */
       	iSaveOpts |= XML_SAVE_FORMAT;
+      	/* iParseOpts |= XML_PARSE_NOBLANKS; /* This does not seem to have any effect */
+      	iDeleteBlankNodes = 1; /* Do it manually instead */
       	continue;
       }
       if (!strcmp(opt, "PB")) {
@@ -119,6 +128,10 @@ int main(int argc, char *argv[]) {
       }
       if (!strcmp(opt, "S")) {
       	iSaveOpts |= XML_SAVE_WSNONSIG;
+      	continue;
+      }
+      if (!strcmp(opt, "t")) {
+      	iTrimSpaces = 1;
       	continue;
       }
       if ((!strcmp(opt, "V")) || (!strcmp(opt, "-version"))) {
@@ -168,11 +181,6 @@ int main(int argc, char *argv[]) {
   }
   DEBUG_PRINTF(("# Parsed ML successfully\n"));
 
-  if (iSaveOpts & XML_SAVE_FORMAT) { /* If we want to reformat the output */
-    xmlRemoveBlankNodes(xmlDocGetRootElement(doc)); // Remove blank text nodes
-    xmlTrimTextNodes(xmlDocGetRootElement(doc)); // Trim spaces around text nodes
-  }
-
   /* Output the other ML type if not specified on the command line */
   if (doc->properties & XML_DOC_SML) {		/* The input doc was SML */
     DEBUG_PRINTF(("# The input was SML\n"));
@@ -189,6 +197,14 @@ int main(int argc, char *argv[]) {
   } else {					/* Else there was none */
     DEBUG_PRINTF(("# The input did not have an ?xml declaration\n"));
     if (!iXmlDeclSet) iSaveOpts |= XML_SAVE_NO_DECL;
+  }
+
+  if (iDeleteBlankNodes) { /* If we want to reformat the output */
+    xmlRemoveBlankNodes(xmlDocGetRootElement(doc)); // Remove blank text nodes
+  }
+
+  if (iTrimSpaces) { /* If we want to reformat the output */
+    xmlTrimTextNodes(xmlDocGetRootElement(doc)); // Trim spaces around text nodes
   }
 
   /* Generate the output */
@@ -210,10 +226,17 @@ int xmlRemoveBlankNodes(xmlNodePtr node) {
 
   if (node) {
     if (xmlIsBlankNode(node)) {
+      DEBUG_CODE(
+      xmlChar *pszText = xmlNodeGetContent(node);
+      DEBUG_PRINTF(("xmlUnlinkNode(%s)\n", dbgStr(pszText)));
+      xmlFree(pszText);
+      )
       xmlUnlinkNode(node);
       xmlFreeNode(node);
     } else {
-      for (child = node->children; child; child = child->next) {
+      xmlNodePtr next;
+      for (child = node->children; child; child = next) {
+      	next = child->next; // Do that before deleting the node!
 	xmlRemoveBlankNodes(child);
       }
     }
