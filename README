@@ -23,12 +23,12 @@ To build libxml2.lib and x2s.exe in Windows with Microsoft tools:
 - Go to the libxml2 win32 subdirectory.
 - Run: 
    configure iconv=no
-   make
+   make STATIC=1
 - x2s.exe is stored in win32\bin.msvc
 
 To build libxml2.lib and x2s.exe debug versions in Windows with Microsoft tools:
    make clean
-   make "DEBUG=1"
+   make DEBUG=1 STATIC=1
 
 -------------------------------------------------------------------------------
 
