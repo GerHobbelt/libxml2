@@ -9,7 +9,7 @@
  * jf.larvoire@free.fr
  */
 
-#define VERSION "2018-02-14"
+#define VERSION "2018-03-23"
 
 #include <stdio.h>
 #include <string.h>
@@ -21,16 +21,21 @@
 
 #include <debugm.h> /* SysToolsLib debug macros */
 
+/* Global variables */
+char *program;	/* This program basename, with extension in Windows */
+char *progcmd;	/* This program invokation name, without extension in Windows */
+int GetProgramNames(char *argv0);	/* Initialize the above two */
+
 /* Forward references */
 int usage(void);
 int xmlRemoveBlankNodes(xmlNodePtr n);
 int xmlTrimTextNodes(xmlNodePtr n);
 
 int usage() {
-  printf("%s%s", "\
-XML <--> SML converter\n\
+  printf("\n\
+%s version " VERSION " " EXE_OS_NAME " - XML <--> SML converter based on libxml2\n\
 \n\
-Usage: x2s [OPTIONS] [INPUT_FILENAME [OUTPUT_FILENAME]]\n\
+Usage: %s [OPTIONS] [INPUT_FILENAME [OUTPUT_FILENAME]]\n\
 \n\
 Options:\n\
   -?            Display this help screen\n\
@@ -38,12 +43,12 @@ Options:\n\
 "
 DEBUG_CODE("\
   -d            Debug mode. Repeat to get more debugging output\n\
-"
-)
-"\
+")
+, program, progcmd);
+  printf("\
   -D            Output no ?xml declaration. Default: Same as in input\n\
   -E            Output no empty tags\n\
-  -f            Format and indent the output. Default: Same as the input\n", "\
+  -f            Format and indent the output. Default: Same as the input\n\
   -PB           Parse removing blank nodes\n\
   -PE           Parse ignoring errors\n\
   -PN           Parse removing entity nodes (i.e. expanding entities)\n\
@@ -54,8 +59,11 @@ DEBUG_CODE("\
   -x            Output XML. Default if the input is SML\n\
 \n\
 Filenames: Default or \"-\": Use stdin and stdout respectively\n\
-\n\
-");
+"
+#ifdef __unix__
+"\n"
+#endif
+);
   return 0;
 }
 
@@ -73,6 +81,10 @@ int main(int argc, char *argv[]) {
   int iDeleteBlankNodes = 0;
   int iTrimSpaces = 0;
 
+  /* Extract the program names from argv[0] */
+  GetProgramNames(argv[0]);
+
+  /* Process arguments */
   for (i=1; i<argc; i++) {
     char *arg = argv[i];
     if (arg[0] == '-') {
@@ -135,7 +147,7 @@ int main(int argc, char *argv[]) {
       	continue;
       }
       if ((!strcmp(opt, "V")) || (!strcmp(opt, "-version"))) {
-      	printf("x2s version " VERSION " " EXE_OS_NAME);
+      	printf("%s version " VERSION " " EXE_OS_NAME, program);
       	DEBUG_CODE(
       	printf(" Debug");
       	)
@@ -214,6 +226,41 @@ int main(int argc, char *argv[]) {
   xmlFreeDoc(doc);
   xmlCleanupParser(); /* Cleanup function for the XML library. */
 
+  return 0;
+}
+
+/**
+ * Extract the program names from argv[0]
+ * Sets global variables program and progcmd.
+ */
+                                                                         
+int GetProgramNames(char *argv0) {
+#if defined(_MSDOS) || defined(_WIN32)
+#if defined(_MSC_VER) /* Building with Microsoft tools */
+#define strlwr _strlwr
+#endif
+  int lBase;
+  char *pBase;
+  char *p;
+  pBase = strrchr(argv0, '\\');
+  if ((p = strrchr(argv0, '/')) > pBase) pBase = p;
+  if ((p = strrchr(argv0, ':')) > pBase) pBase = p;
+  if (!(pBase++)) pBase = argv0;
+  lBase = (int)strlen(pBase);
+  program = strdup(pBase);
+  strlwr(program);
+  progcmd = strdup(program);
+  if ((lBase > 4) && !strcmp(program+lBase-4, ".exe")) {
+    progcmd[lBase-4] = '\0';
+  } else {
+    program = realloc(strdup(program), lBase+4+1);
+    strcpy(program+lBase, ".exe");
+  }
+#else /* Build for Unix */
+#include <libgen.h>	/* For basename() */
+  program = basename(strdup(argv0)); /* basename() modifies its argument */
+  progcmd = program;
+#endif
   return 0;
 }
 
