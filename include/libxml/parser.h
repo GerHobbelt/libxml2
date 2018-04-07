@@ -1127,7 +1127,9 @@ typedef enum {
     XML_PARSE_HUGE      = 1<<19,/* relax any hardcoded limit from the parser */
     XML_PARSE_OLDSAX    = 1<<20,/* parse using SAX2 interface before 2.7.0 */
     XML_PARSE_IGNORE_ENC= 1<<21,/* ignore internal document encoding hint */
-    XML_PARSE_BIG_LINES = 1<<22 /* Store big lines numbers in text PSVI field */
+    XML_PARSE_BIG_LINES = 1<<22,/* Store big lines numbers in text PSVI field */
+    XML_PARSE_DETECT_ML = 1<<23,/* Auto-detect the markup type (XML or SML) */
+    XML_PARSE_SML       = 1<<24 /* Assume the input is SML (Default: XML) */
 } xmlParserOption;
 
 XMLPUBFUN void XMLCALL

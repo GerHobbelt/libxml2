@@ -2300,6 +2300,16 @@ xmlDetectMarkupType(xmlParserCtxtPtr ctxt) {
     char c;
     int i;
 
+    /* First chek if the user told us the ML type */
+    if (!(ctxt->options & XML_PARSE_DETECT_ML)) {
+        if (ctxt->options & XML_PARSE_SML) {
+	    ctxt->mlType = XML_TYPE_SML;
+	} else {
+	    ctxt->mlType = XML_TYPE_XML; // Default if nothing specified
+	}
+	return;
+    }
+
     GROW;
     ctxt->mlType = XML_TYPE_UNKNOWN;
 
@@ -10119,7 +10129,7 @@ xmlParseContent(xmlParserCtxtPtr ctxt) {
 
 	    /*
 	     * Fifth case : a reference. If if has not been resolved,
-	     *    parsing returns it's Name, create the node
+	     *    parsing returns its Name, create the node
 	     */
 
 	    else if (*cur == '&') {
@@ -10213,7 +10223,7 @@ xmlParseContent(xmlParserCtxtPtr ctxt) {
 	    if (!iParsed) {
 		/*
 		 * Fifth case : a reference. If if has not been resolved,
-		 *    parsing returns it's Name, create the node
+		 *    parsing returns its Name, create the node
 		 */
 
 		if (*cur == '&') {
@@ -10225,6 +10235,8 @@ xmlParseContent(xmlParserCtxtPtr ctxt) {
 		 */
 		else {
 		    xmlParseCharData(ctxt, 0);
+		    cur = ctxt->input->cur;
+		    if (*cur != '&') break; /* The current element finishes here */
 		}
 	    }
 
@@ -15645,6 +15657,14 @@ xmlCtxtUseOptionsInternal(xmlParserCtxtPtr ctxt, int options, const char *encodi
     if (options & XML_PARSE_BIG_LINES) {
 	ctxt->options |= XML_PARSE_BIG_LINES;
         options -= XML_PARSE_BIG_LINES;
+    }
+    if (options & XML_PARSE_DETECT_ML) {
+	ctxt->options |= XML_PARSE_DETECT_ML;
+        options -= XML_PARSE_DETECT_ML;
+    }
+    if (options & XML_PARSE_SML) {
+	ctxt->options |= XML_PARSE_SML;
+        options -= XML_PARSE_SML;
     }
     ctxt->linenumbers = 1;
     return (options);

@@ -49,14 +49,16 @@ DEBUG_CODE("\
   -D            Output no ?xml declaration. Default: Same as in input\n\
   -E            Output no empty tags\n\
   -f            Format and indent the output. Default: Same as the input\n\
-  -PB           Parse removing blank nodes\n\
-  -PE           Parse ignoring errors\n\
-  -PN           Parse removing entity nodes (i.e. expanding entities)\n\
-  -PW           Parse ignoring warnings\n\
+  -pB           Parse removing blank nodes\n\
+  -pE           Parse ignoring errors\n\
+  -pN           Parse removing entity nodes (i.e. expanding entities)\n\
+  -ps           Parse SML. Default: Autodetect the ML type\n\
+  -pW           Parse ignoring warnings\n\
+  -px           Parse XML. Default: Autodetect the ML type\n\
   -s            Output SML. Default if the input is XML\n\
-  -S            Output non-significant spaces\n\
-  -T            Trim text nodes\n\
+  -t            Trim text nodes\n\
   -x            Output XML. Default if the input is SML\n\
+  -w            Output non-significant white spaces\n\
 \n\
 Filenames: Default or \"-\": Use stdin and stdout respectively\n\
 "
@@ -73,8 +75,8 @@ int main(int argc, char *argv[]) {
   const char * infilename = NULL;
   const char * outfilename = NULL;
   /* const char * encoding = "ISO-8859-1"; */
-  int iSaveOpts = XML_SAVE_AS_SML;
-  int iParseOpts = 0;
+  int iSaveOpts = 0;
+  int iParseOpts = XML_PARSE_DETECT_ML;
   int iOutMLTypeSet = 0; /* 1 = Output markup type specified */
   int iXmlDeclSet = 0; /* 1 = Whether to output the ?xml declaration specified */
   xmlSaveCtxtPtr ctxt;
@@ -87,9 +89,13 @@ int main(int argc, char *argv[]) {
   /* Process arguments */
   for (i=1; i<argc; i++) {
     char *arg = argv[i];
-    if (arg[0] == '-') {
+    if (   (arg[0] == '-')
+#if defined(_WIN32)
+	|| (arg[0] == '/')
+#endif
+	) {
       char *opt = arg + 1;
-      if (!strcmp(opt, "?")) {
+      if (!strcmp(opt, "?") || !strcmp(opt, "h") || !strcmp(opt, "-help")) {
       	return usage();
       }
       if (!strcmp(opt, "B")) {
@@ -117,29 +123,35 @@ int main(int argc, char *argv[]) {
       	iDeleteBlankNodes = 1; /* Do it manually instead */
       	continue;
       }
-      if (!strcmp(opt, "PB")) {
+      if (!strcmp(opt, "pB")) {
       	iParseOpts |= XML_PARSE_NOBLANKS;
       	continue;
       }
-      if (!strcmp(opt, "PE")) {
+      if (!strcmp(opt, "pE")) {
       	iParseOpts |= XML_PARSE_NOERROR;
       	continue;
       }
-      if (!strcmp(opt, "PN")) {
+      if (!strcmp(opt, "pN")) {
       	iParseOpts |= XML_PARSE_NOENT;
       	continue;
       }
-      if (!strcmp(opt, "PW")) {
+      if (!strcmp(opt, "ps")) {
+      	iParseOpts &= ~XML_PARSE_DETECT_ML;
+      	iParseOpts |= XML_PARSE_SML;
+      	continue;
+      }
+      if (!strcmp(opt, "pW")) {
       	iParseOpts |= XML_PARSE_NOWARNING;
+      	continue;
+      }
+      if (!strcmp(opt, "px")) {
+      	iParseOpts &= ~XML_PARSE_DETECT_ML;
+      	iParseOpts &= ~XML_PARSE_SML;
       	continue;
       }
       if (!strcmp(opt, "s")) {
       	iSaveOpts |= XML_SAVE_AS_SML;
 	iOutMLTypeSet = 1;
-      	continue;
-      }
-      if (!strcmp(opt, "S")) {
-      	iSaveOpts |= XML_SAVE_WSNONSIG;
       	continue;
       }
       if (!strcmp(opt, "t")) {
@@ -153,6 +165,10 @@ int main(int argc, char *argv[]) {
       	)
         printf("\n");
       	exit(0);
+      }
+      if (!strcmp(opt, "w")) {
+      	iSaveOpts |= XML_SAVE_WSNONSIG;
+      	continue;
       }
       if (!strcmp(opt, "x")) {
       	iSaveOpts &= ~XML_SAVE_AS_SML;
