@@ -38,27 +38,30 @@ int usage() {
 Usage: %s [OPTIONS] [INPUT_FILENAME [OUTPUT_FILENAME]]\n\
 \n\
 Options:\n\
-  -?            Display this help screen\n\
-  -B            Delete blank nodes\n\
+  -?        Display this help screen. Alias -h or --help.\n\
+  -B        Delete blank nodes\n\
 "
 DEBUG_CODE("\
-  -d            Debug mode. Repeat to get more debugging output\n\
+  -d        Debug mode. Repeat to get more debugging output\n\
 ")
 , program, progcmd);
   printf("\
-  -D            Output no ?xml declaration. Default: Same as in input\n\
-  -E            Output no empty tags\n\
-  -f            Format and indent the output. Default: Same as the input\n\
-  -pB           Parse removing blank nodes\n\
-  -pE           Parse ignoring errors\n\
-  -pN           Parse removing entity nodes (i.e. expanding entities)\n\
-  -ps           Parse SML. Default: Autodetect the ML type\n\
-  -pW           Parse ignoring warnings\n\
-  -px           Parse XML. Default: Autodetect the ML type\n\
-  -s            Output SML. Default if the input is XML\n\
-  -t            Trim text nodes\n\
-  -x            Output XML. Default if the input is SML\n\
-  -w            Output non-significant white spaces\n\
+  -D        Output no ?xml declaration. Default: Same as in input\n\
+  -E        Output no empty tags\n\
+  -f        Format and indent the output. Default: Same as the input\n\
+  -is       Input is SML. Default: Autodetect the ML type\n\
+  -ix       Input is XML. Default: Autodetect the ML type\n\
+  -os       Output SML. Default if the input is XML\n\
+  -ox       Output XML. Default if the input is SML\n\
+  -pB       Parse removing blank nodes\n\
+  -pE       Parse ignoring errors\n\
+  -pN       Parse removing entity nodes (i.e. expanding entities)\n\
+  -pW       Parse ignoring warnings\n\
+  -px       Parse XML. Default: Autodetect the ML type\n\
+  -s        Input & output SML. Default: Input one kind & output the other\n\
+  -t        Trim text nodes\n\
+  -x        Input & output XML. Default: Input one kind & output the other\n\
+  -w        Output non-significant white spaces\n\
 \n\
 Filenames: Default or \"-\": Use stdin and stdout respectively\n\
 "
@@ -123,6 +126,26 @@ int main(int argc, char *argv[]) {
       	iDeleteBlankNodes = 1; /* Do it manually instead */
       	continue;
       }
+      if (!strcmp(opt, "is")) {
+      	iParseOpts &= ~XML_PARSE_DETECT_ML;
+      	iParseOpts |= XML_PARSE_SML;
+      	continue;
+      }
+      if (!strcmp(opt, "ix")) {
+      	iParseOpts &= ~XML_PARSE_DETECT_ML;
+      	iParseOpts &= ~XML_PARSE_SML;
+      	continue;
+      }
+      if (!strcmp(opt, "os")) {
+      	iSaveOpts |= XML_SAVE_AS_SML;
+	iOutMLTypeSet = 1;
+      	continue;
+      }
+      if (!strcmp(opt, "ox")) {
+      	iSaveOpts &= ~XML_SAVE_AS_SML;
+	iOutMLTypeSet = 1;
+      	continue;
+      }
       if (!strcmp(opt, "pB")) {
       	iParseOpts |= XML_PARSE_NOBLANKS;
       	continue;
@@ -135,21 +158,13 @@ int main(int argc, char *argv[]) {
       	iParseOpts |= XML_PARSE_NOENT;
       	continue;
       }
-      if (!strcmp(opt, "ps")) {
-      	iParseOpts &= ~XML_PARSE_DETECT_ML;
-      	iParseOpts |= XML_PARSE_SML;
-      	continue;
-      }
       if (!strcmp(opt, "pW")) {
       	iParseOpts |= XML_PARSE_NOWARNING;
       	continue;
       }
-      if (!strcmp(opt, "px")) {
-      	iParseOpts &= ~XML_PARSE_DETECT_ML;
-      	iParseOpts &= ~XML_PARSE_SML;
-      	continue;
-      }
       if (!strcmp(opt, "s")) {
+      	iParseOpts &= ~XML_PARSE_DETECT_ML;
+      	iParseOpts |= XML_PARSE_SML;
       	iSaveOpts |= XML_SAVE_AS_SML;
 	iOutMLTypeSet = 1;
       	continue;
@@ -171,6 +186,8 @@ int main(int argc, char *argv[]) {
       	continue;
       }
       if (!strcmp(opt, "x")) {
+      	iParseOpts &= ~XML_PARSE_DETECT_ML;
+      	iParseOpts &= ~XML_PARSE_SML;
       	iSaveOpts &= ~XML_SAVE_AS_SML;
 	iOutMLTypeSet = 1;
       	continue;
