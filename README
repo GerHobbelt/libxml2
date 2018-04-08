@@ -8,7 +8,7 @@ For information about SML, see  page 137 of:
 http://archive.xmlprague.cz/2018/files/xmlprague-2018-proceedings.pdf
 
 Added two test programs:
-- x2s.c: Parse XML or SML as a DOM tree, and output that tree as SML.
+- sml2.c: Parse XML or SML as a DOM tree, and output that tree as SML.
 - testWriter.c: Adapted from the public testWriter.c, to output SML.
 
 Also added batch scripts to help build a Windows version with Microsoft tools:
@@ -17,18 +17,18 @@ Also added batch scripts to help build a Windows version with Microsoft tools:
 These scripts allow building the Windows version with commands that look the 
 same as the commands used to build the Unix versions:
 
-To build libxml2.lib and x2s.exe in Windows with Microsoft tools:
+To build libxml2.lib and sml2.exe in Windows with Microsoft tools:
 (Assuming you don't have the iconv library installed, as it is not by default.)
 - Run the vcvars*.bat for your Visual C++ version.
 - Go to the libxml2 win32 subdirectory.
 - Run: 
    configure iconv=no
-   make STATIC=1
-- x2s.exe is stored in win32\bin.msvc
+   make STATIC=1 libxmla bin.msvc\sml2.exe
+- sml2.exe is stored in win32\bin.msvc
 
-To build libxml2.lib and x2s.exe debug versions in Windows with Microsoft tools:
+To build libxml2.lib and sml2.exe debug versions in Windows with Microsoft tools:
    make clean
-   make DEBUG=1 STATIC=1
+   make DEBUG=1 STATIC=1 libxmla bin.msvc\sml2.exe
 
 -------------------------------------------------------------------------------
 
