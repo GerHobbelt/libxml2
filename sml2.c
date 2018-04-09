@@ -9,7 +9,7 @@
  * jf.larvoire@free.fr
  */
 
-#define VERSION "2018-03-23"
+#define VERSION "2018-04-09"
 
 #include <stdio.h>
 #include <string.h>
@@ -18,6 +18,7 @@
 #include <libxml/tree.h>
 #include <libxml/encoding.h>
 #include <libxml/xmlsave.h>
+#include <libxml/xmlversion.h>
 
 #include <debugm.h> /* SysToolsLib debug macros */
 
@@ -178,6 +179,7 @@ int main(int argc, char *argv[]) {
       	DEBUG_CODE(
       	printf(" Debug");
       	)
+      	printf(" ; libxml2 version " LIBXML_DOTTED_VERSION);
         printf("\n");
       	exit(0);
       }
