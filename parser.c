@@ -2275,7 +2275,7 @@ xmlSkipBlankChars(xmlParserCtxtPtr ctxt) {
 	    	}
 	    }
 	    if (*cur == '\n') {
-	    	if (ISSML && (prev != '\\')) {
+	    	if (ISSML && (!ctxt->curly) && (prev != '\\')) {
 	    	    break; /* A non-escaped \n marks the end of an element */
 	    	}
 		ctxt->input->line++; ctxt->input->col = 1;
@@ -2297,6 +2297,7 @@ xmlSkipBlankChars(xmlParserCtxtPtr ctxt) {
 
 	while (1) {
             if (IS_BLANK_CH(CUR)) { /* CHECKED tstblanks.xml */
+                if (ISSML && (!ctxt->curly) && (CUR == '\n')) break; /* End of element */
 		NEXT;
 	    } else if (CUR == '%') {
                 /*
@@ -5594,6 +5595,8 @@ xmlParseEntityDecl(xmlParserCtxtPtr ctxt) {
     int isParameter = 0;
     xmlChar *orig = NULL;
 
+    DEBUG_ENTER(("xmlParseEntityDecl(%s);\n", dbgCtxt(ctxt)));
+
     /* GROW; done in the caller */
     if (CMP8_MLI(CUR_PTR, '<', '!', 'E', 'N', 'T', 'I', 'T', 'Y')) {
 	int inputid = ctxt->input->id;
@@ -5617,7 +5620,7 @@ xmlParseEntityDecl(xmlParserCtxtPtr ctxt) {
 	if (name == NULL) {
 	    xmlFatalErrMsg(ctxt, XML_ERR_NAME_REQUIRED,
 	                   "xmlParseEntityDecl: no name\n");
-            return;
+            RETURN();
 	}
 	if (xmlStrchr(name, ':') != NULL) {
 	    xmlNsErr(ctxt, XML_NS_ERR_COLON,
@@ -5696,7 +5699,7 @@ xmlParseEntityDecl(xmlParserCtxtPtr ctxt) {
 			ctxt->myDoc = xmlNewDoc(SAX_COMPAT_MODE);
 			if (ctxt->myDoc == NULL) {
 			    xmlErrMemory(ctxt, "New Doc failed");
-			    return;
+			    RETURN();
 			}
 			ctxt->myDoc->properties = XML_DOC_INTERNAL;
 		    }
@@ -5767,7 +5770,7 @@ xmlParseEntityDecl(xmlParserCtxtPtr ctxt) {
 			    ctxt->myDoc = xmlNewDoc(SAX_COMPAT_MODE);
 			    if (ctxt->myDoc == NULL) {
 			        xmlErrMemory(ctxt, "New Doc failed");
-				return;
+				RETURN();
 			    }
 			    ctxt->myDoc->properties = XML_DOC_INTERNAL;
 			}
@@ -5827,6 +5830,7 @@ done:
 	if (literal != NULL) xmlFree(literal);
         if (orig != NULL) xmlFree(orig);
     }
+    RETURN();
 }
 
 /**
@@ -5863,14 +5867,16 @@ xmlParseDefaultDecl(xmlParserCtxtPtr ctxt, xmlChar **value) {
     int val;
     xmlChar *ret;
 
+    DEBUG_ENTER(("xmlParseDefaultDecl(%s, %p);\n", dbgCtxt(ctxt), value));
+
     *value = NULL;
     if (CMP9(CUR_PTR, '#', 'R', 'E', 'Q', 'U', 'I', 'R', 'E', 'D')) {
 	SKIP(9);
-	return(XML_ATTRIBUTE_REQUIRED);
+	RETURN_INT(XML_ATTRIBUTE_REQUIRED);
     }
     if (CMP8(CUR_PTR, '#', 'I', 'M', 'P', 'L', 'I', 'E', 'D')) {
 	SKIP(8);
-	return(XML_ATTRIBUTE_IMPLIED);
+	RETURN_INT(XML_ATTRIBUTE_IMPLIED);
     }
     val = XML_ATTRIBUTE_NONE;
     if (CMP6(CUR_PTR, '#', 'F', 'I', 'X', 'E', 'D')) {
@@ -5888,7 +5894,7 @@ xmlParseDefaultDecl(xmlParserCtxtPtr ctxt, xmlChar **value) {
 		       "Attribute default value declaration error\n");
     } else
         *value = ret;
-    return(val);
+    RETURN_INT(val);
 }
 
 /**
@@ -5913,9 +5919,11 @@ xmlParseNotationType(xmlParserCtxtPtr ctxt) {
     const xmlChar *name;
     xmlEnumerationPtr ret = NULL, last = NULL, cur, tmp;
 
+    DEBUG_ENTER(("xmlParseNotationType(%s);\n", dbgCtxt(ctxt)));
+
     if (RAW != '(') {
 	xmlFatalErr(ctxt, XML_ERR_NOTATION_NOT_STARTED, NULL);
-	return(NULL);
+	RETURN_PTR(NULL);
     }
     SHRINK;
     do {
@@ -5926,7 +5934,7 @@ xmlParseNotationType(xmlParserCtxtPtr ctxt) {
 	    xmlFatalErrMsg(ctxt, XML_ERR_NAME_REQUIRED,
 			   "Name expected in NOTATION declaration\n");
             xmlFreeEnumeration(ret);
-	    return(NULL);
+	    RETURN_PTR(NULL);
 	}
 	tmp = ret;
 	while (tmp != NULL) {
@@ -5944,7 +5952,7 @@ xmlParseNotationType(xmlParserCtxtPtr ctxt) {
 	    cur = xmlCreateEnumeration(name);
 	    if (cur == NULL) {
                 xmlFreeEnumeration(ret);
-                return(NULL);
+                RETURN_PTR(NULL);
             }
 	    if (last == NULL) ret = last = cur;
 	    else {
@@ -5957,10 +5965,10 @@ xmlParseNotationType(xmlParserCtxtPtr ctxt) {
     if (RAW != ')') {
 	xmlFatalErr(ctxt, XML_ERR_NOTATION_NOT_FINISHED, NULL);
         xmlFreeEnumeration(ret);
-	return(NULL);
+	RETURN_PTR(NULL);
     }
     NEXT;
-    return(ret);
+    RETURN_PTR(ret);
 }
 
 /**
@@ -5983,9 +5991,11 @@ xmlParseEnumerationType(xmlParserCtxtPtr ctxt) {
     xmlChar *name;
     xmlEnumerationPtr ret = NULL, last = NULL, cur, tmp;
 
+    DEBUG_ENTER(("xmlParseEnumerationType(%s);\n", dbgCtxt(ctxt)));
+
     if (RAW != '(') {
 	xmlFatalErr(ctxt, XML_ERR_ATTLIST_NOT_STARTED, NULL);
-	return(NULL);
+	RETURN_PTR(NULL);
     }
     SHRINK;
     do {
@@ -5994,7 +6004,7 @@ xmlParseEnumerationType(xmlParserCtxtPtr ctxt) {
         name = xmlParseNmtoken(ctxt);
 	if (name == NULL) {
 	    xmlFatalErr(ctxt, XML_ERR_NMTOKEN_REQUIRED, NULL);
-	    return(ret);
+	    RETURN_PTR(ret);
 	}
 	tmp = ret;
 	while (tmp != NULL) {
@@ -6014,7 +6024,7 @@ xmlParseEnumerationType(xmlParserCtxtPtr ctxt) {
 		xmlFree(name);
 	    if (cur == NULL) {
                 xmlFreeEnumeration(ret);
-                return(NULL);
+                RETURN_PTR(NULL);
             }
 	    if (last == NULL) ret = last = cur;
 	    else {
@@ -6026,10 +6036,10 @@ xmlParseEnumerationType(xmlParserCtxtPtr ctxt) {
     } while (RAW == '|');
     if (RAW != ')') {
 	xmlFatalErr(ctxt, XML_ERR_ATTLIST_NOT_FINISHED, NULL);
-	return(ret);
+	RETURN_PTR(ret);
     }
     NEXT;
-    return(ret);
+    RETURN_PTR(ret);
 }
 
 /**
@@ -6049,20 +6059,23 @@ xmlParseEnumerationType(xmlParserCtxtPtr ctxt) {
 
 int
 xmlParseEnumeratedType(xmlParserCtxtPtr ctxt, xmlEnumerationPtr *tree) {
+
+    DEBUG_ENTER(("xmlParseEnumeratedType(%s, %p);\n", dbgCtxt(ctxt), tree));
+
     if (CMP8(CUR_PTR, 'N', 'O', 'T', 'A', 'T', 'I', 'O', 'N')) {
 	SKIP(8);
 	if (SKIP_BLANKS == 0) {
 	    xmlFatalErrMsg(ctxt, XML_ERR_SPACE_REQUIRED,
 			   "Space required after 'NOTATION'\n");
-	    return(0);
+	    RETURN_INT(0);
 	}
 	*tree = xmlParseNotationType(ctxt);
-	if (*tree == NULL) return(0);
-	return(XML_ATTRIBUTE_NOTATION);
+	if (*tree == NULL) RETURN_INT(0);
+	RETURN_INT(XML_ATTRIBUTE_NOTATION);
     }
     *tree = xmlParseEnumerationType(ctxt);
-    if (*tree == NULL) return(0);
-    return(XML_ATTRIBUTE_ENUMERATION);
+    if (*tree == NULL) RETURN_INT(0);
+    RETURN_INT(XML_ATTRIBUTE_ENUMERATION);
 }
 
 /**
@@ -6112,33 +6125,36 @@ xmlParseEnumeratedType(xmlParserCtxtPtr ctxt, xmlEnumerationPtr *tree) {
  */
 int
 xmlParseAttributeType(xmlParserCtxtPtr ctxt, xmlEnumerationPtr *tree) {
+
+    DEBUG_ENTER(("xmlParseAttributeType(%s, %p);\n", dbgCtxt(ctxt), tree));
+
     SHRINK;
     if (CMP5(CUR_PTR, 'C', 'D', 'A', 'T', 'A')) {
 	SKIP(5);
-	return(XML_ATTRIBUTE_CDATA);
+	RETURN_INT(XML_ATTRIBUTE_CDATA);
      } else if (CMP6(CUR_PTR, 'I', 'D', 'R', 'E', 'F', 'S')) {
 	SKIP(6);
-	return(XML_ATTRIBUTE_IDREFS);
+	RETURN_INT(XML_ATTRIBUTE_IDREFS);
      } else if (CMP5(CUR_PTR, 'I', 'D', 'R', 'E', 'F')) {
 	SKIP(5);
-	return(XML_ATTRIBUTE_IDREF);
+	RETURN_INT(XML_ATTRIBUTE_IDREF);
      } else if ((RAW == 'I') && (NXT(1) == 'D')) {
         SKIP(2);
-	return(XML_ATTRIBUTE_ID);
+	RETURN_INT(XML_ATTRIBUTE_ID);
      } else if (CMP6(CUR_PTR, 'E', 'N', 'T', 'I', 'T', 'Y')) {
 	SKIP(6);
-	return(XML_ATTRIBUTE_ENTITY);
+	RETURN_INT(XML_ATTRIBUTE_ENTITY);
      } else if (CMP8(CUR_PTR, 'E', 'N', 'T', 'I', 'T', 'I', 'E', 'S')) {
 	SKIP(8);
-	return(XML_ATTRIBUTE_ENTITIES);
+	RETURN_INT(XML_ATTRIBUTE_ENTITIES);
      } else if (CMP8(CUR_PTR, 'N', 'M', 'T', 'O', 'K', 'E', 'N', 'S')) {
 	SKIP(8);
-	return(XML_ATTRIBUTE_NMTOKENS);
+	RETURN_INT(XML_ATTRIBUTE_NMTOKENS);
      } else if (CMP7(CUR_PTR, 'N', 'M', 'T', 'O', 'K', 'E', 'N')) {
 	SKIP(7);
-	return(XML_ATTRIBUTE_NMTOKEN);
+	RETURN_INT(XML_ATTRIBUTE_NMTOKEN);
      }
-     return(xmlParseEnumeratedType(ctxt, tree));
+     RETURN_INT(xmlParseEnumeratedType(ctxt, tree));
 }
 
 /**
@@ -6158,6 +6174,8 @@ xmlParseAttributeListDecl(xmlParserCtxtPtr ctxt) {
     const xmlChar *attrName;
     xmlEnumerationPtr tree;
 
+    DEBUG_ENTER(("xmlParseAttributeListDecl(%s);\n", dbgCtxt(ctxt)));
+
     if (CMP9_MLI(CUR_PTR, '<', '!', 'A', 'T', 'T', 'L', 'I', 'S', 'T')) {
 	int inputid = ctxt->input->id;
 
@@ -6170,7 +6188,7 @@ xmlParseAttributeListDecl(xmlParserCtxtPtr ctxt) {
 	if (elemName == NULL) {
 	    xmlFatalErrMsg(ctxt, XML_ERR_NAME_REQUIRED,
 			   "ATTLIST: no name for Element\n");
-	    return;
+	    RETURN();
 	}
 	SKIP_BLANKS;
 	GROW;
@@ -6259,6 +6277,7 @@ xmlParseAttributeListDecl(xmlParserCtxtPtr ctxt) {
 	    NEXT;
 	}
     }
+    RETURN();
 }
 
 /**
@@ -6285,9 +6304,11 @@ xmlParseElementMixedContentDecl(xmlParserCtxtPtr ctxt, int inputchk) {
     xmlElementContentPtr ret = NULL, cur = NULL, n;
     const xmlChar *elem = NULL;
 
+    DEBUG_ENTER(("xmlParseElementMixedContentDecl(%s, %d);\n", dbgCtxt(ctxt), inputchk));
+
     GROW;
-    if (CMP7_MLI(CUR_PTR, '#', 'P', 'C', 'D', 'A', 'T', 'A')) {
-	SKIP_MLI(7);
+    if (CMP7(CUR_PTR, '#', 'P', 'C', 'D', 'A', 'T', 'A')) {
+	SKIP(7);
 	SKIP_BLANKS;
 	SHRINK;
 	if (RAW == ')') {
@@ -6299,29 +6320,29 @@ xmlParseElementMixedContentDecl(xmlParserCtxtPtr ctxt, int inputchk) {
 	    NEXT;
 	    ret = xmlNewDocElementContent(ctxt->myDoc, NULL, XML_ELEMENT_CONTENT_PCDATA);
 	    if (ret == NULL)
-	        return(NULL);
+	        RETURN_PTR(NULL);
 	    if (RAW == '*') {
 		ret->ocur = XML_ELEMENT_CONTENT_MULT;
 		NEXT;
 	    }
-	    return(ret);
+	    RETURN_PTR_COMMENT(ret, ("ctxt = %s;\n", dbgCtxt(ctxt)));
 	}
 	if ((RAW == '(') || (RAW == '|')) {
 	    ret = cur = xmlNewDocElementContent(ctxt->myDoc, NULL, XML_ELEMENT_CONTENT_PCDATA);
-	    if (ret == NULL) return(NULL);
+	    if (ret == NULL) RETURN_PTR(NULL);
 	}
 	while ((RAW == '|') && (ctxt->instate != XML_PARSER_EOF)) {
 	    NEXT;
 	    if (elem == NULL) {
 	        ret = xmlNewDocElementContent(ctxt->myDoc, NULL, XML_ELEMENT_CONTENT_OR);
-		if (ret == NULL) return(NULL);
+		if (ret == NULL) RETURN_PTR(NULL);
 		ret->c1 = cur;
 		if (cur != NULL)
 		    cur->parent = ret;
 		cur = ret;
 	    } else {
 	        n = xmlNewDocElementContent(ctxt->myDoc, NULL, XML_ELEMENT_CONTENT_OR);
-		if (n == NULL) return(NULL);
+		if (n == NULL) RETURN_PTR(NULL);
 		n->c1 = xmlNewDocElementContent(ctxt->myDoc, elem, XML_ELEMENT_CONTENT_ELEMENT);
 		if (n->c1 != NULL)
 		    n->c1->parent = n;
@@ -6336,7 +6357,7 @@ xmlParseElementMixedContentDecl(xmlParserCtxtPtr ctxt, int inputchk) {
 		xmlFatalErrMsg(ctxt, XML_ERR_NAME_REQUIRED,
 			"xmlParseElementMixedContentDecl : Name expected\n");
 		xmlFreeDocElementContent(ctxt->myDoc, ret);
-		return(NULL);
+		RETURN_PTR(NULL);
 	    }
 	    SKIP_BLANKS;
 	    GROW;
@@ -6359,13 +6380,13 @@ xmlParseElementMixedContentDecl(xmlParserCtxtPtr ctxt, int inputchk) {
 	} else {
 	    xmlFreeDocElementContent(ctxt->myDoc, ret);
 	    xmlFatalErr(ctxt, XML_ERR_MIXED_NOT_STARTED, NULL);
-	    return(NULL);
+	    RETURN_PTR(NULL);
 	}
 
     } else {
 	xmlFatalErr(ctxt, XML_ERR_PCDATA_REQUIRED, NULL);
     }
-    return(ret);
+    RETURN_PTR_COMMENT(ret, ("ctxt = %s;\n", dbgCtxt(ctxt)));
 }
 
 /**
@@ -6407,12 +6428,14 @@ xmlParseElementChildrenContentDeclPriv(xmlParserCtxtPtr ctxt, int inputchk,
     const xmlChar *elem;
     xmlChar type = 0;
 
+    DEBUG_ENTER(("xmlParseElementChildrenContentDeclPriv(%s, %d, %d);\n", dbgCtxt(ctxt), inputchk, depth));
+
     if (((depth > 128) && ((ctxt->options & XML_PARSE_HUGE) == 0)) ||
         (depth >  2048)) {
         xmlFatalErrMsgInt(ctxt, XML_ERR_ELEMCONTENT_NOT_FINISHED,
 "xmlParseElementChildrenContentDecl : depth %d too deep, use XML_PARSE_HUGE\n",
                           depth);
-	return(NULL);
+	RETURN_PTR(NULL);
     }
     SKIP_BLANKS;
     GROW;
@@ -6430,12 +6453,12 @@ xmlParseElementChildrenContentDeclPriv(xmlParserCtxtPtr ctxt, int inputchk,
 	elem = xmlParseName(ctxt);
 	if (elem == NULL) {
 	    xmlFatalErr(ctxt, XML_ERR_ELEMCONTENT_NOT_STARTED, NULL);
-	    return(NULL);
+	    RETURN_PTR(NULL);
 	}
         cur = ret = xmlNewDocElementContent(ctxt->myDoc, elem, XML_ELEMENT_CONTENT_ELEMENT);
 	if (cur == NULL) {
 	    xmlErrMemory(ctxt, NULL);
-	    return(NULL);
+	    RETURN_PTR(NULL);
 	}
 	GROW;
 	if (RAW == '?') {
@@ -6472,7 +6495,7 @@ xmlParseElementChildrenContentDeclPriv(xmlParserCtxtPtr ctxt, int inputchk,
 		    xmlFreeDocElementContent(ctxt->myDoc, last);
 		if (ret != NULL)
 		    xmlFreeDocElementContent(ctxt->myDoc, ret);
-		return(NULL);
+		RETURN_PTR(NULL);
 	    }
 	    NEXT;
 
@@ -6481,7 +6504,7 @@ xmlParseElementChildrenContentDeclPriv(xmlParserCtxtPtr ctxt, int inputchk,
 		if ((last != NULL) && (last != ret))
 		    xmlFreeDocElementContent(ctxt->myDoc, last);
 	        xmlFreeDocElementContent(ctxt->myDoc, ret);
-		return(NULL);
+		RETURN_PTR(NULL);
 	    }
 	    if (last == NULL) {
 		op->c1 = ret;
@@ -6512,7 +6535,7 @@ xmlParseElementChildrenContentDeclPriv(xmlParserCtxtPtr ctxt, int inputchk,
 		    xmlFreeDocElementContent(ctxt->myDoc, last);
 		if (ret != NULL)
 		    xmlFreeDocElementContent(ctxt->myDoc, ret);
-		return(NULL);
+		RETURN_PTR(NULL);
 	    }
 	    NEXT;
 
@@ -6522,7 +6545,7 @@ xmlParseElementChildrenContentDeclPriv(xmlParserCtxtPtr ctxt, int inputchk,
 		    xmlFreeDocElementContent(ctxt->myDoc, last);
 		if (ret != NULL)
 		    xmlFreeDocElementContent(ctxt->myDoc, ret);
-		return(NULL);
+		RETURN_PTR(NULL);
 	    }
 	    if (last == NULL) {
 		op->c1 = ret;
@@ -6545,7 +6568,7 @@ xmlParseElementChildrenContentDeclPriv(xmlParserCtxtPtr ctxt, int inputchk,
 	        xmlFreeDocElementContent(ctxt->myDoc, last);
 	    if (ret != NULL)
 		xmlFreeDocElementContent(ctxt->myDoc, ret);
-	    return(NULL);
+	    RETURN_PTR(NULL);
 	}
 	GROW;
 	SKIP_BLANKS;
@@ -6564,13 +6587,13 @@ xmlParseElementChildrenContentDeclPriv(xmlParserCtxtPtr ctxt, int inputchk,
 		xmlFatalErr(ctxt, XML_ERR_ELEMCONTENT_NOT_STARTED, NULL);
 		if (ret != NULL)
 		    xmlFreeDocElementContent(ctxt->myDoc, ret);
-		return(NULL);
+		RETURN_PTR(NULL);
 	    }
 	    last = xmlNewDocElementContent(ctxt->myDoc, elem, XML_ELEMENT_CONTENT_ELEMENT);
 	    if (last == NULL) {
 		if (ret != NULL)
 		    xmlFreeDocElementContent(ctxt->myDoc, ret);
-		return(NULL);
+		RETURN_PTR(NULL);
 	    }
 	    if (RAW == '?') {
 		last->ocur = XML_ELEMENT_CONTENT_OPT;
@@ -6663,7 +6686,7 @@ xmlParseElementChildrenContentDeclPriv(xmlParserCtxtPtr ctxt, int inputchk,
 	}
 	NEXT;
     }
-    return(ret);
+    RETURN_PTR(ret);
 }
 
 /**
@@ -6724,17 +6747,19 @@ xmlParseElementContentDecl(xmlParserCtxtPtr ctxt, const xmlChar *name,
     int inputid = ctxt->input->id;
     int res;
 
+    DEBUG_ENTER(("xmlParseElementContentDecl(%s, %s, %p);\n", dbgCtxt(ctxt), name, result));
+
     *result = NULL;
 
     if (RAW != '(') {
 	xmlFatalErrMsgStr(ctxt, XML_ERR_ELEMCONTENT_NOT_STARTED,
 		"xmlParseElementContentDecl : %s '(' expected\n", name);
-	return(-1);
+	RETURN_INT(-1);
     }
     NEXT;
     GROW;
     if (ctxt->instate == XML_PARSER_EOF)
-        return(-1);
+        RETURN_INT(-1);
     SKIP_BLANKS;
     if (CMP7(CUR_PTR, '#', 'P', 'C', 'D', 'A', 'T', 'A')) {
         tree = xmlParseElementMixedContentDecl(ctxt, inputid);
@@ -6745,7 +6770,7 @@ xmlParseElementContentDecl(xmlParserCtxtPtr ctxt, const xmlChar *name,
     }
     SKIP_BLANKS;
     *result = tree;
-    return(res);
+    RETURN_INT_COMMENT(res, ("ctxt = %s;\n", dbgCtxt(ctxt)));
 }
 
 /**
@@ -6767,6 +6792,8 @@ xmlParseElementDecl(xmlParserCtxtPtr ctxt) {
     int ret = -1;
     xmlElementContentPtr content  = NULL;
 
+    DEBUG_ENTER(("xmlParseElementDecl(%s);\n", dbgCtxt(ctxt)));
+
     /* GROW; done in the caller */
     if (CMP9_MLI(CUR_PTR, '<', '!', 'E', 'L', 'E', 'M', 'E', 'N', 'T')) {
 	int inputid = ctxt->input->id;
@@ -6775,13 +6802,13 @@ xmlParseElementDecl(xmlParserCtxtPtr ctxt) {
 	if (SKIP_BLANKS == 0) {
 	    xmlFatalErrMsg(ctxt, XML_ERR_SPACE_REQUIRED,
 		           "Space required after 'ELEMENT'\n");
-	    return(-1);
+	    RETURN_INT(-1);
 	}
         name = xmlParseName(ctxt);
 	if (name == NULL) {
 	    xmlFatalErrMsg(ctxt, XML_ERR_NAME_REQUIRED,
 			   "xmlParseElementDecl: no name for Element\n");
-	    return(-1);
+	    RETURN_INT(-1);
 	}
 	if (SKIP_BLANKS == 0) {
 	    xmlFatalErrMsg(ctxt, XML_ERR_SPACE_REQUIRED,
@@ -6813,7 +6840,7 @@ xmlParseElementDecl(xmlParserCtxtPtr ctxt) {
 		xmlFatalErrMsg(ctxt, XML_ERR_ELEMCONTENT_NOT_STARTED,
 		      "xmlParseElementDecl: 'EMPTY', 'ANY' or '(' expected\n");
             }
-	    return(-1);
+	    RETURN_INT(-1);
 	}
 
 	SKIP_BLANKS;
@@ -6851,7 +6878,7 @@ xmlParseElementDecl(xmlParserCtxtPtr ctxt) {
 	    }
 	}
     }
-    return(ret);
+    RETURN_INT(ret);
 }
 
 /**
@@ -6869,6 +6896,8 @@ static void
 xmlParseConditionalSections(xmlParserCtxtPtr ctxt) {
     int id = ctxt->input->id;
 
+    DEBUG_ENTER(("xmlParseConditionalSections(%s);\n", dbgCtxt(ctxt)));
+
     SKIP_MLI(3);	/* '<', '!', '[' */
     SKIP_BLANKS;
     if (CMP7(CUR_PTR, 'I', 'N', 'C', 'L', 'U', 'D', 'E')) {
@@ -6877,7 +6906,7 @@ xmlParseConditionalSections(xmlParserCtxtPtr ctxt) {
 	if (RAW != '[') {
 	    xmlFatalErr(ctxt, XML_ERR_CONDSEC_INVALID, NULL);
 	    xmlHaltParser(ctxt);
-	    return;
+	    RETURN();
 	} else {
 	    if (ctxt->input->id != id) {
 		xmlFatalErrMsg(ctxt, XML_ERR_ENTITY_BOUNDARY,
@@ -6935,7 +6964,7 @@ xmlParseConditionalSections(xmlParserCtxtPtr ctxt) {
 	if (RAW != '[') {
 	    xmlFatalErr(ctxt, XML_ERR_CONDSEC_INVALID, NULL);
 	    xmlHaltParser(ctxt);
-	    return;
+	    RETURN();
 	} else {
 	    if (ctxt->input->id != id) {
 		xmlFatalErrMsg(ctxt, XML_ERR_ENTITY_BOUNDARY,
@@ -6992,7 +7021,7 @@ xmlParseConditionalSections(xmlParserCtxtPtr ctxt) {
     } else {
 	xmlFatalErr(ctxt, XML_ERR_CONDSEC_INVALID_KEYWORD, NULL);
 	xmlHaltParser(ctxt);
-	return;
+	RETURN();
     }
 
     if (RAW == 0)
@@ -7010,6 +7039,7 @@ xmlParseConditionalSections(xmlParserCtxtPtr ctxt) {
 	    ((ctxt->input->cur + 3) <= ctxt->input->end))
 	    SKIP(3);
     }
+    RETURN();
 }
 
 /**
@@ -7037,6 +7067,8 @@ xmlParseConditionalSections(xmlParserCtxtPtr ctxt) {
 void
 xmlParseMarkupDecl(xmlParserCtxtPtr ctxt) {
     GROW;
+
+    DEBUG_ENTER(("xmlParseMarkupDecl(%s);\n", dbgCtxt(ctxt)));
 
     if (ISXML) {						/* XML */
 	if (CUR == '<') {
@@ -7066,6 +7098,8 @@ xmlParseMarkupDecl(xmlParserCtxtPtr ctxt) {
 	    }
 	}
     } else {							/* SML */
+	int iCurly0 = ctxt->curly;
+	ctxt->curly = 0;
       	if (CUR == '!') {
 	    switch (NXT(1)) {
 	        case 'E':
@@ -7087,6 +7121,7 @@ xmlParseMarkupDecl(xmlParserCtxtPtr ctxt) {
 	} else if (CUR == '?') {
 	    xmlParsePI(ctxt);
 	}
+	ctxt->curly = iCurly0;
     }
 
     /*
@@ -7094,7 +7129,7 @@ xmlParseMarkupDecl(xmlParserCtxtPtr ctxt) {
      * and avoid having instate overriden later on
      */
     if (ctxt->instate == XML_PARSER_EOF)
-        return;
+        RETURN();
 
     /*
      * Conditional sections are allowed from entities included
@@ -7107,6 +7142,7 @@ xmlParseMarkupDecl(xmlParserCtxtPtr ctxt) {
     }
 
     ctxt->instate = XML_PARSER_DTD;
+    RETURN();
 }
 
 /**
@@ -7123,6 +7159,8 @@ xmlParseTextDecl(xmlParserCtxtPtr ctxt) {
     xmlChar *version;
     const xmlChar *encoding;
 
+    DEBUG_ENTER(("xmlParseTextDecl(%s);\n", dbgCtxt(ctxt)));
+
     /*
      * We know that '<?xml' is here.
      */
@@ -7130,7 +7168,7 @@ xmlParseTextDecl(xmlParserCtxtPtr ctxt) {
 	SKIP_MLI(5);
     } else {
 	xmlFatalErr(ctxt, XML_ERR_XMLDECL_NOT_STARTED, NULL);
-	return;
+	RETURN();
     }
 
     if (SKIP_BLANKS == 0) {
@@ -7160,7 +7198,7 @@ xmlParseTextDecl(xmlParserCtxtPtr ctxt) {
 	/*
 	 * The XML REC instructs us to stop parsing right here
 	 */
-        return;
+        RETURN();
     }
     if ((encoding == NULL) && (ctxt->errNo == XML_ERR_OK)) {
 	xmlFatalErrMsg(ctxt, XML_ERR_MISSING_ENCODING,
@@ -7180,6 +7218,7 @@ xmlParseTextDecl(xmlParserCtxtPtr ctxt) {
 	MOVETO_ENDTAG(CUR_PTR);
 	NEXT;
     }
+    RETURN();
 }
 
 /**
@@ -8480,6 +8519,8 @@ xmlParseDocTypeDecl(xmlParserCtxtPtr ctxt) {
     xmlChar *ExternalID = NULL;
     xmlChar *URI = NULL;
 
+    DEBUG_ENTER(("xmlParseDocTypeDecl(%s);\n", dbgCtxt(ctxt)));
+
     /*
      * We know that '<!DOCTYPE' has been detected.
      */
@@ -8519,14 +8560,14 @@ xmlParseDocTypeDecl(xmlParserCtxtPtr ctxt) {
 	(!ctxt->disableSAX))
 	ctxt->sax->internalSubset(ctxt->userData, name, ExternalID, URI);
     if (ctxt->instate == XML_PARSER_EOF)
-	return;
+	RETURN();
 
     /*
      * Is there any internal subset declarations ?
      * they are handled separately in xmlParseInternalSubset()
      */
     if (RAW == '[')
-	return;
+	RETURN();
 
     /*
      * We should be at the end of the DOCTYPE declaration.
@@ -8535,6 +8576,7 @@ xmlParseDocTypeDecl(xmlParserCtxtPtr ctxt) {
 	xmlFatalErr(ctxt, XML_ERR_DOCTYPE_NOT_FINISHED, NULL);
     }
     NEXT;
+    RETURN();
 }
 
 /**
@@ -8548,12 +8590,16 @@ xmlParseDocTypeDecl(xmlParserCtxtPtr ctxt) {
 
 static void
 xmlParseInternalSubset(xmlParserCtxtPtr ctxt) {
+
+    DEBUG_ENTER(("xmlParseInternalSubset(%s);\n", dbgCtxt(ctxt)));
+
     /*
      * Is there any DTD definition ?
      */
     if (RAW == '[') {
         int baseInputNr = ctxt->inputNr;
         ctxt->instate = XML_PARSER_DTD;
+        ctxt->curly = 1;
         NEXT;
 	/*
 	 * Parse the succession of Markup declarations and
@@ -8579,6 +8625,7 @@ xmlParseInternalSubset(xmlParserCtxtPtr ctxt) {
 	    }
 	}
 	if (RAW == ']') {
+	    ctxt->curly = 0;
 	    NEXT;
 	    SKIP_BLANKS;
 	}
@@ -8589,9 +8636,10 @@ xmlParseInternalSubset(xmlParserCtxtPtr ctxt) {
      */
     if (!RAW_IS_GT_MLI) { /* RAW != '>' */
 	xmlFatalErr(ctxt, XML_ERR_DOCTYPE_NOT_FINISHED, NULL);
-	return;
+	RETURN();
     }
     NEXT;
+    RETURN();
 }
 
 #ifdef LIBXML_SAX1_ENABLED
