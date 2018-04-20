@@ -629,7 +629,7 @@ static void smlWriteSemiColonIfNeeded(xmlOutputBufferPtr buf) {
     if (xmlOutputBufferIsBlankLine(buf)) return; /* Not needed */
     c = (char)xmlOutputBufferLastNonBlank(buf);
     if ((c == '{') || (c == '[')) return; /* Not needed */
-    /* Else we need the ; sepacator */
+    /* Else we need the ; separator */
     xmlOutputBufferWrite(buf, 1, ";");
     return;
 }
@@ -1438,7 +1438,7 @@ xmlNodeDumpOutputInternal(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
 	    }
 	} else {					/* SML */
 	    if (content == NULL) content = (xmlChar *)"";
-	    if (cur->prev && !xmlStrIsAllBlank(content) && !ctxt->quoted) {
+	    if (cur->prev && (content[0] != '\n') && !ctxt->quoted) {
 		smlWriteSemiColonIfNeeded(buf);
 	    }
 	    smlTextNodeDumpOutput(ctxt, cur);
