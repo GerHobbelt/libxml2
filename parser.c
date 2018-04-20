@@ -5099,8 +5099,7 @@ get_more:
 		    ccol++;
 	}
 	ctxt->input->col = ccol;
-	if (*in == 0xA) {
-	    if (iLineComment) goto return_comment;		/* SML only */
+	if ((*in == 0xA) && (ISXML || !iLineComment)) {
 	    do {
 		ctxt->input->line++; ctxt->input->col = 1;
 		in++;
@@ -5189,6 +5188,8 @@ get_more:
 		    }
 		    SKIP(3);
 return_comment:
+		    if (iLineComment) {				/* SML only */
+		    }
 		    if ((ctxt->sax != NULL) && (ctxt->sax->comment != NULL) &&
 		        (!ctxt->disableSAX)) {
 			if (buf != NULL)
@@ -5200,7 +5201,7 @@ return_comment:
 		        xmlFree(buf);
 		    if (ctxt->instate != XML_PARSER_EOF)
 			ctxt->instate = state;
-		    RETURN();
+		    RETURN_COMMENT(("ctxt = %s;\n", dbgCtxt(ctxt)));
 		}
 		if (buf != NULL) {
 		    xmlFatalErrMsgStr(ctxt, XML_ERR_HYPHEN_IN_COMMENT,
@@ -5220,7 +5221,7 @@ return_comment:
     } while (((*in >= 0x20) && (*in <= 0x7F)) || (*in == 0x09) || (*in == 0x0D));
     xmlParseCommentComplex(ctxt, buf, len, size);
     ctxt->instate = state;
-    RETURN_COMMENT(("xmlParseComment. ctxt = %s;\n", dbgCtxt(ctxt)));
+    RETURN_COMMENT(("ctxt = %s;\n", dbgCtxt(ctxt)));
 }
 
 
@@ -9035,7 +9036,7 @@ xmlParseQName(xmlParserCtxtPtr ctxt, const xmlChar **prefix) {
 	        xmlNsErr(ctxt, XML_NS_ERR_QNAME,
 		         "Failed to parse QName '%s'\n", l, NULL, NULL);
 		*prefix = NULL;
-		RETURN_CSTRING(l);
+		RETURN_CSTRING_COMMENT(l, ("ctxt = %s\n", dbgCtxt(ctxt)));
 	    }
 	}
         RETURN_PTR(NULL);
@@ -9059,7 +9060,7 @@ xmlParseQName(xmlParserCtxtPtr ctxt, const xmlChar **prefix) {
 	    p = xmlDictLookup(ctxt->dict, tmp, -1);
 	    if (tmp != NULL) xmlFree(tmp);
 	    *prefix = NULL;
-	    RETURN_CSTRING(p);
+	    RETURN_CSTRING_COMMENT(p, ("ctxt = %s\n", dbgCtxt(ctxt)));
 	}
 	if (CUR == ':') {
 	    xmlChar *tmp;
@@ -9073,18 +9074,18 @@ xmlParseQName(xmlParserCtxtPtr ctxt, const xmlChar **prefix) {
 		l = xmlDictLookup(ctxt->dict, tmp, -1);
 		if (tmp != NULL) xmlFree(tmp);
 		*prefix = p;
-		RETURN_CSTRING(l);
+		RETURN_CSTRING_COMMENT(l, ("ctxt = %s\n", dbgCtxt(ctxt)));
 	    }
 	    tmp = xmlBuildQName(BAD_CAST "", l, NULL, 0);
 	    l = xmlDictLookup(ctxt->dict, tmp, -1);
 	    if (tmp != NULL) xmlFree(tmp);
 	    *prefix = p;
-	    RETURN_CSTRING(l);
+	    RETURN_CSTRING_COMMENT(l, ("ctxt = %s\n", dbgCtxt(ctxt)));
 	}
 	*prefix = p;
     } else
         *prefix = NULL;
-    RETURN_CSTRING(l);
+    RETURN_CSTRING_COMMENT(l, ("ctxt = %s\n", dbgCtxt(ctxt)));
 }
 
 /**
@@ -9536,6 +9537,7 @@ xmlParseStartTag2(xmlParserCtxtPtr ctxt, const xmlChar **pref,
     int i, j, nbNs, attval;
     unsigned long cur;
     int nsNr = ctxt->nsNr;
+    int curly0;
 
     DEBUG_ENTER(("xmlParseStartTag2(%s, %p, %p, %d);\n", dbgCtxt(ctxt), pref, URI, tlen));
 
@@ -9561,6 +9563,8 @@ xmlParseStartTag2(xmlParserCtxtPtr ctxt, const xmlChar **pref,
     attval = 0;
     /* Forget any namespaces added during an earlier parse of this element. */
     ctxt->nsNr = nsNr;
+    curly0 = ctxt->curly;
+    ctxt->curly = 0;
 
     localname = xmlParseQName(ctxt, &prefix);
     if (localname == NULL) {
@@ -9589,7 +9593,7 @@ xmlParseStartTag2(xmlParserCtxtPtr ctxt, const xmlChar **pref,
 	   ) {
 	const xmlChar *q = CUR_PTR;
 	unsigned int cons = ctxt->input->consumed;
-	int len = -1, alloc = 0;
+	int len  = -1, alloc = 0;
 
 	attname = xmlParseAttribute2(ctxt, prefix, localname,
 	                             &aprefix, &attvalue, &len, &alloc);
@@ -9605,6 +9609,7 @@ xmlParseStartTag2(xmlParserCtxtPtr ctxt, const xmlChar **pref,
                 xmlErrMemory(ctxt, "dictionary allocation failure");
                 if ((attvalue != NULL) && (alloc != 0))
                     xmlFree(attvalue);
+		ctxt->curly = curly0;
                 RETURN_PTR(NULL);
             }
             if (*URL != 0) {
@@ -9859,6 +9864,7 @@ next_attr:
 
 		    if ((atts == NULL) || (nbatts + 5 > maxatts)) {
 			if (xmlCtxtGrowAttrs(ctxt, nbatts + 5) < 0) {
+			    ctxt->curly = curly0;
 			    RETURN_PTR(NULL);
 			}
 			maxatts = ctxt->maxatts;
@@ -9956,6 +9962,7 @@ done:
 	        xmlFree((xmlChar *) atts[i]);
     }
 
+    ctxt->curly = curly0;
     RETURN_CPTR_COMMENT(localname, ("ctxt = %s\n", dbgCtxt(ctxt)));
 }
 
