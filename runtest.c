@@ -600,9 +600,19 @@ static char *resultFilename(const char *filename, const char *out,
 }
 
 static int checkTestFile(const char *filename) {
+#if defined(_MSC_VER) && _MSC_VER >= 1500
+    struct _stat64 buf;
+#else
     struct stat buf;
+#endif
 
-    if (stat(filename, &buf) == -1)
+    if (
+#if defined(_MSC_VER) && _MSC_VER >= 1500
+        _stat64(filename, &buf)
+#else
+        stat(filename, &buf)
+#endif
+        == -1)
         return(0);
 
 #if defined(_WIN32)
@@ -681,7 +691,11 @@ static int compareFileMem(const char *filename, const char *mem, int size) {
     int fd;
     char bytes[4096];
     int idx = 0;
+#if defined(_MSC_VER) && _MSC_VER >= 1500
+    struct _stat64 info;
+#else
     struct stat info;
+#endif
 
     if (update_results) {
         if (size == 0) {
@@ -698,7 +712,13 @@ static int compareFileMem(const char *filename, const char *mem, int size) {
         return(res != size);
     }
 
-    if (stat(filename, &info) < 0) {
+    if (
+#if defined(_MSC_VER) && _MSC_VER >= 1500
+        _stat64(filename, &info)
+#else
+        stat(filename, &info)
+#endif
+        < 0) {
         if (size == 0)
             return(0);
         fprintf(stderr, "failed to stat %s\n", filename);
@@ -740,10 +760,20 @@ static int compareFileMem(const char *filename, const char *mem, int size) {
 
 static int loadMem(const char *filename, const char **mem, int *size) {
     int fd, res;
+#if defined(_MSC_VER) && _MSC_VER >= 1500
+    struct _stat64 info;
+#else
     struct stat info;
+#endif
     char *base;
     int siz = 0;
-    if (stat(filename, &info) < 0)
+    if (
+#if defined(_MSC_VER) && _MSC_VER >= 1500
+        _stat64(filename, &info)
+#else
+        stat(filename, &info)
+#endif
+        < 0)
 	return(-1);
     base = malloc(info.st_size + 1);
     if (base == NULL)
