@@ -9,7 +9,7 @@
  * jf.larvoire@free.fr
  */
 
-#define VERSION "2018-04-09"
+#define VERSION "2018-12-02"
 
 #include <stdio.h>
 #include <string.h>
@@ -54,10 +54,14 @@ DEBUG_CODE("\
   -ix       Input is XML. Default: Autodetect the ML type\n\
   -os       Output SML. Default if the input is XML\n\
   -ox       Output XML. Default if the input is SML\n\
+  -pb       Parse keeping blank nodes (Default)\n\
   -pB       Parse removing blank nodes\n\
-  -pE       Parse ignoring errors\n\
+  -pe       Parse reporting errors\n\
+  -pE       Parse ignoring errors (Default)\n\
+  -pn       Parse keeping entity nodes (i.e. not expanding entities) (Default)\n\
   -pN       Parse removing entity nodes (i.e. expanding entities)\n\
-  -pW       Parse ignoring warnings\n\
+  -pw       Parse reporting warnings\n\
+  -pW       Parse ignoring warnings (Default)\n\
   -px       Parse XML. Default: Autodetect the ML type\n\
   -s        Input & output SML. Default: Input one kind & output the other\n\
   -t        Trim text nodes\n\
@@ -80,7 +84,7 @@ int main(int argc, char *argv[]) {
   const char * outfilename = NULL;
   /* const char * encoding = "ISO-8859-1"; */
   int iSaveOpts = 0;
-  int iParseOpts = XML_PARSE_DETECT_ML;
+  int iParseOpts = XML_PARSE_DETECT_ML | XML_PARSE_NOERROR | XML_PARSE_NOWARNING;
   int iOutMLTypeSet = 0; /* 1 = Output markup type specified */
   int iXmlDeclSet = 0; /* 1 = Whether to output the ?xml declaration specified */
   xmlSaveCtxtPtr ctxt;
@@ -147,16 +151,32 @@ int main(int argc, char *argv[]) {
 	iOutMLTypeSet = 1;
       	continue;
       }
+      if (!strcmp(opt, "pb")) {
+      	iParseOpts &= ~XML_PARSE_NOBLANKS;
+      	continue;
+      }
       if (!strcmp(opt, "pB")) {
       	iParseOpts |= XML_PARSE_NOBLANKS;
+      	continue;
+      }
+      if (!strcmp(opt, "pe")) {
+      	iParseOpts &= ~XML_PARSE_NOERROR;
       	continue;
       }
       if (!strcmp(opt, "pE")) {
       	iParseOpts |= XML_PARSE_NOERROR;
       	continue;
       }
+      if (!strcmp(opt, "pn")) {
+      	iParseOpts &= ~XML_PARSE_NOENT;
+      	continue;
+      }
       if (!strcmp(opt, "pN")) {
       	iParseOpts |= XML_PARSE_NOENT;
+      	continue;
+      }
+      if (!strcmp(opt, "pw")) {
+      	iParseOpts &= ~XML_PARSE_NOWARNING;
       	continue;
       }
       if (!strcmp(opt, "pW")) {
