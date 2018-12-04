@@ -10,16 +10,19 @@ that.
 Changes for SML support
 -----------------------
 
-These changes are actually minor improvements, to simplify the Windows build process. 
+These changes are actually minor improvements, to simplify the Windows build process.  
+In the simplest case of a default build with Microsoft tools, it becomes exactly the same
+as the Unix process:
 
-I've added two batch scripts to help build it with Microsoft tools:  
+    configure & make & make install
+
+For that, I've added two batch scripts to help build with Unix-like commands:  
 
 - configure.bat: Front end to the existing configure.js script.  
 - make.bat: Front end to Microsoft nmake.exe or Borland bmake.exe.
   (Copied by configure.js from make.msvc.bat and make.bcb.bat respectively.)
 
-These scripts allow building the Windows version with commands that look the 
-same as the typical commands used to build the Unix versions:
+### More detailed instructions for building with MSVC
 
 To quickly build libxml2.lib and sml2.exe in Windows with Microsoft tools:  
 (Assuming you don't have the iconv library installed, as it is not by default.)  
@@ -269,6 +272,6 @@ command-line tools.
 
 
 
-Authors: Igor Zlatkovic <igor@zlatkovic.com>
-         Eric Zurcher <Eric.Zurcher@csiro.au>
+Authors: Igor Zlatkovic <igor@zlatkovic.com>  
+         Eric Zurcher <Eric.Zurcher@csiro.au>  
          Jean-François Larvoire <jf.larvoire@free.fr>

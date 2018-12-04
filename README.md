@@ -46,7 +46,7 @@ This fork also adds one important program:
   sml2.c is a trivial program, doing only the command-line parsing.
   All the hard work is done by the modified libxml2 library.  
   sml2.exe is about 50 times faster than sml.tcl for converting very large files.
-  Use option -? or -h to display help.
+  Use option -? or -h to display help.  
   I'm particularly proud of the -f option, to reformat and reindent canonically
   the output, whatever its kind.
   This makes sml2.exe particularly useful to study complex XML files.
@@ -56,9 +56,9 @@ This fork also adds one important program:
 Contrary to sml.tcl, sml2.c does not guaranty binary reversibility. That is:
 An XML file converted to SML, then back to XML, may have changes in its non-
 significant white spaces. This is due to a limitation of libxml2, which does
-not record non-significant white spaces in the DOM tree.
+not record non-significant white spaces in the DOM tree.  
 This is a problem for testing, as it's not possible to just do a binary
-comparison to check the sml2.exe conversions correctness.
+comparison to check the sml2.exe conversions correctness.  
 But this is not a problem for actual use, as non-significant white spaces
 are (by definition) non-significant in XML and SML.
 
@@ -89,9 +89,11 @@ https://github.com/JFLarvoire/SysToolsLib/blob/master/Docs/System%20Script%20Lib
     
 -------------------------------------------------------------------------------
 
+Original README contents:
+
 Full documentation for the standard version of libxml2 is available on-line at  
 
-   http://xmlsoft.org/
+    http://xmlsoft.org/
 
 This code is released under the MIT Licence see the Copyright file.
 
@@ -101,17 +103,17 @@ To build on an Unixised setup:
 
 To build on Windows:
 
-   see instructions on [win32/README.md](win32/README.md)
+    see instructions on [win32/README.md](win32/README.md)
 
 To assert build quality:  
-   on an Unixised setup:  
-      run make tests  
-   otherwise:  
-       There is 3 standalone tools runtest.c runsuite.c testapi.c, which  
-       should compile as part of the build or as any application would.  
-       Launch them from this directory to get results, runtest checks  
-       the proper functionning of libxml2 main APIs while testapi does  
-       a full coverage check. Report failures to the list.
+    on an Unixised setup:  
+        run `make tests`  
+    otherwise:  
+        There is 3 standalone tools runtest.c runsuite.c testapi.c, which  
+        should compile as part of the build or as any application would.  
+        Launch them from this directory to get results, runtest checks  
+        the proper functionning of libxml2 main APIs while testapi does  
+        a full coverage check. Report failures to the list.
 
 To report bugs, follow the instructions at:  
    http://xmlsoft.org/bugs.html
