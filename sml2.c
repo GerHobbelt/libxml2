@@ -9,7 +9,7 @@
  * jf.larvoire@free.fr
  */
 
-#define VERSION "2018-12-02"
+#define VERSION "2018-12-04"
 
 #include <stdio.h>
 #include <string.h>
@@ -62,7 +62,6 @@ DEBUG_CODE("\
   -pN       Parse removing entity nodes (i.e. expanding entities)\n\
   -pw       Parse reporting warnings\n\
   -pW       Parse ignoring warnings (Default)\n\
-  -px       Parse XML. Default: Autodetect the ML type\n\
   -s        Input & output SML. Default: Input one kind & output the other\n\
   -t        Trim text nodes\n\
   -x        Input & output XML. Default: Input one kind & output the other\n\
@@ -288,7 +287,7 @@ int main(int argc, char *argv[]) {
  * Extract the program names from argv[0]
  * Sets global variables program and progcmd.
  */
-                                                                         
+
 int GetProgramNames(char *argv0) {
 #if defined(_MSDOS) || defined(_WIN32)
 #if defined(_MSC_VER) /* Building with Microsoft tools */
@@ -322,7 +321,7 @@ int GetProgramNames(char *argv0) {
 /**
  * Remove blank text nodes in a DOM node tree
  */
-                                                                         
+
 int xmlRemoveBlankNodes(xmlNodePtr node) {
   xmlNodePtr child;
 
@@ -353,7 +352,7 @@ int xmlRemoveBlankNodes(xmlNodePtr node) {
  * Danger: This may remove significant spaces, in strings that really do have
  *         head or tail spaces
  */
-                                                                         
+
 int xmlTrimTextNodes(xmlNodePtr node) {
   xmlNodePtr child;
 
