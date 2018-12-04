@@ -647,6 +647,7 @@ if (f) {
 }
 fso.CopyFile(makefile, new_makefile, true);
 WScript.Echo("Created Makefile.");
+
 // Create the config.h.
 var confighsrc = "..\\include\\win32config.h";
 var configh = "..\\config.h";
@@ -657,6 +658,17 @@ if (f) {
 }
 fso.CopyFile(confighsrc, configh, true);
 WScript.Echo("Created config.h.");
+
+// Create the make.bat script
+var new_script = "make.bat";
+if (fso.FileExists(new_script)) fso.GetFile(new_script).Attributes = 0;
+if (compiler == "msvc") {
+   fso.CopyFile("make.msvc.bat", new_script, true);
+} else if (compiler == "mingw") {
+   if (fso.FileExists(new_script)) fso.DeleteFile(new_script, true);
+} else if (compiler == "bcb") {
+   fso.CopyFile("make.bcb.bat", new_script, true);
+}
 
 
 // Display the final configuration. 

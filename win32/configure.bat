@@ -1,0 +1,1 @@
+@cscript configure.js %*
