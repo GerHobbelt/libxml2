@@ -66,59 +66,8 @@ are (by definition) non-significant in XML and SML.
 Build procedure
 ---------------
 
-Use the standard build procedure for both Unix and Windows.  
+Use the standard build procedure for both Unix and Windows, detailed below.  
 The sml2 or sml2.exe program is built along with the test programs.
-
-For Windows, I've added two batch scripts to help build it with Microsoft tools:  
-
-- configure.bat: Front end to the existing configure.js script.  
-- make.bat: Front end to Microsoft nmake.exe or Borland bmake.exe.
-  (Copied by configure.js from make.msvc.bat and make.bcb.bat respectively.)
-
-These scripts allow building the Windows version with commands that look the 
-same as the typical commands used to build the Unix versions:
-
-To quickly build libxml2.lib and sml2.exe in Windows with Microsoft tools:  
-(Assuming you don't have the iconv library installed, as it is not by default.)  
-
-- Run the vcvars*.bat for your Visual C++ version.
-
-       :# Locate Visual Studio installation path in vswhere output:  
-       vswhere -latest | findstr installationPath:  
-       :# Locate the vcvars*.bat scripts in Visual Studio installation. Ex:  
-       dir /b /s "C:\Program Files (x86)\Microsoft Visual Studio\2017\vcvars*.bat"  
-       :# Open a new sub-shell, so that environment changes can be reversed.  
-       cmd  
-       :# Run vcvars.bat for your target processor. Ex:  
-       "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-
-- Go to the libxml2 win32 subdirectory.
-
-       cd win32
-
-- Run: 
-
-       configure iconv=no xml_debug=no  
-       make STATIC=1 libxmla bin.msvc\sml2.exe
-
-- sml2.exe is stored in win32\bin.msvc
-
-To build libxml2.lib and sml2.exe debug versions in Windows with Microsoft tools:
-
-    make clean
-    configure iconv=no xml_debug=yes
-    make DEBUG=1 STATIC=1 libxmla bin.msvc\sml2.exe  
-
-To build the version for another processor, for example the 32-bits x86 processor:
-
-    :# Exit the current sub-shell to return to a "clean" environment, and open a new one.
-    exit
-    cmd
-    :# Run vcvars.bat for the other processor. Ex:
-    "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Auxiliary\Build\vcvars32.bat"
-    make clean
-    make STATIC=1 libxmla bin.msvc\sml2.exe
-
 
 
 Debug mode
@@ -142,7 +91,7 @@ https://github.com/JFLarvoire/SysToolsLib/blob/master/Docs/System%20Script%20Lib
 
 Full documentation for the standard version of libxml2 is available on-line at  
 
-   http://xmlsoft.org/
+   http://xmlsoft.org/
 
 This code is released under the MIT Licence see the Copyright file.
 
@@ -152,16 +101,16 @@ To build on an Unixised setup:
 
 To build on Windows:
 
-   see instructions on [win32/Readme.txt](win32/Readme.txt)
+   see instructions on [win32/README.md](win32/README.md)
 
 To assert build quality:  
-   on an Unixised setup:  
-      run make tests  
-   otherwise:  
-       There is 3 standalone tools runtest.c runsuite.c testapi.c, which
-       should compile as part of the build or as any application would.
-       Launch them from this directory to get results, runtest checks 
-       the proper functionning of libxml2 main APIs while testapi does
+   on an Unixised setup:  
+      run make tests  
+   otherwise:  
+       There is 3 standalone tools runtest.c runsuite.c testapi.c, which  
+       should compile as part of the build or as any application would.  
+       Launch them from this directory to get results, runtest checks  
+       the proper functionning of libxml2 main APIs while testapi does  
        a full coverage check. Report failures to the list.
 
 To report bugs, follow the instructions at:  
