@@ -1,6 +1,6 @@
 ﻿
-                             Windows port
-                             ============
+Windows port
+============
 
 This directory contains the files required to build this software on the
 native Windows platform. This is not a place to look for help if you are
@@ -10,7 +10,8 @@ that.
 Changes for SML support
 -----------------------
 
-These changes are actually minor improvements, to simplify the Windows build process.  
+These changes are actually minor improvements to simplify the Windows build process,
+unrelated to SML.  
 In the simplest case of a default build with Microsoft tools, it becomes exactly the same
 as the Unix process:
 
