@@ -7,7 +7,6 @@ set(CMAKE_SHARED_LIBRARY_PREFIX)
 set(CMAKE_STATIC_LIBRARY_PREFIX)
 
 find_package(ZLIB REQUIRED)
-find_package(LibLZMA REQUIRED)
 find_package(unofficial-iconv REQUIRED)
 
 file(GLOB SOURCES *.c)
@@ -88,7 +87,7 @@ set(WITH_SCHEMATRON 1)
 set(WITH_MODULES 1)
 set(MODULE_EXTENSION ".so")
 set(WITH_ZLIB 1)
-set(WITH_LZMA 1)
+set(WITH_LZMA 0)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
     set(WITH_CATALOG 0)
@@ -107,11 +106,10 @@ if(INSTALL_HEADERS)
 
     set_target_properties(libxml2 PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS}")
 endif()
-target_include_directories(libxml2 PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR}/include include ${LIBLZMA_INCLUDE_DIRS})
+target_include_directories(libxml2 PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR}/include include)
 target_link_libraries(libxml2 PRIVATE
     unofficial::iconv::libcharset unofficial::iconv::libiconv
     ZLIB::ZLIB
-    ${LIBLZMA_LIBRARIES}
 )
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows" OR CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
     target_include_directories(libxml2 PRIVATE win32/vc10)
@@ -131,7 +129,6 @@ target_compile_definitions(libxml2 PRIVATE
     -D_REENTRANT
     -DNOLIBTOOL
     -DHAVE_ZLIB_H
-    -DHAVE_LZMA_H
 )
 if(NOT BUILD_SHARED_LIBS)
     target_compile_definitions(libxml2 PRIVATE -DLIBXML_STATIC)
