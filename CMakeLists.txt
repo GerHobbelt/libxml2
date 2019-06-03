@@ -1,4 +1,10 @@
 cmake_minimum_required(VERSION 3.8)
+
+# Enable use of <PackageName>_ROOT in find scripts.
+if(POLICY CMP0074)
+  cmake_policy(SET CMP0074 NEW)
+endif(POLICY CMP0074)
+
 project(libxml2 C)
 
 option(INSTALL_HEADERS "Install public header files" ON)
