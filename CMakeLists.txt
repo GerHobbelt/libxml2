@@ -13,7 +13,7 @@ set(CMAKE_SHARED_LIBRARY_PREFIX)
 set(CMAKE_STATIC_LIBRARY_PREFIX)
 
 find_package(ZLIB REQUIRED)
-find_package(ICU REQUIRED)
+find_package(ICU COMPONENTS data i18n io uc REQUIRED)
 
 file(GLOB SOURCES *.c)
 list(FILTER SOURCES EXCLUDE REGEX "/(run|test|trio)[^/]*$")
