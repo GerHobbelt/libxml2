@@ -7,7 +7,7 @@ set(CMAKE_SHARED_LIBRARY_PREFIX)
 set(CMAKE_STATIC_LIBRARY_PREFIX)
 
 find_package(ZLIB REQUIRED)
-find_package(unofficial-iconv REQUIRED)
+find_package(ICU REQUIRED)
 
 file(GLOB SOURCES *.c)
 list(FILTER SOURCES EXCLUDE REGEX "/(run|test|trio)[^/]*$")
@@ -75,8 +75,8 @@ set(WITH_DOCB 1)
 set(WITH_XPATH 1)
 set(WITH_XPTR 1)
 set(WITH_XINCLUDE 1)
-set(WITH_ICONV 1)
-set(WITH_ICU 0)
+set(WITH_ICONV 0)
+set(WITH_ICU 1)
 set(WITH_ISO8859X 1)
 set(WITH_DEBUG 1)
 set(WITH_MEM_DEBUG 0)
@@ -108,9 +108,10 @@ if(INSTALL_HEADERS)
 endif()
 target_include_directories(libxml2 PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR}/include include)
 target_link_libraries(libxml2 PRIVATE
-    unofficial::iconv::libcharset unofficial::iconv::libiconv
     ZLIB::ZLIB
+    ICU::uc
 )
+
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows" OR CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
     target_include_directories(libxml2 PRIVATE win32/vc10)
     target_link_libraries(libxml2 PRIVATE
