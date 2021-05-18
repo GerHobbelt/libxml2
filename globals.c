@@ -130,18 +130,6 @@ xmlMallocFunc xmlMallocAtomic = lcl_xmlMallocFunc;
  */
 xmlReallocFunc xmlRealloc = lcl_xmlReallocFunc;
 /**
- * xmlPosixStrdup
- * @cur:  the input char *
- *
- * a strdup implementation with a type signature matching POSIX
- *
- * Returns a new xmlChar * or NULL
- */
-static char *
-xmlPosixStrdup(const char *cur) {
-    return((char*) xmlCharStrdup(cur));
-}
-/**
  * xmlMemStrdup:
  * @str: a zero terminated string
  *
@@ -149,7 +137,7 @@ xmlPosixStrdup(const char *cur) {
  *
  * Returns the copy of the string or NULL in case of error
  */
-xmlStrdupFunc xmlMemStrdup = xmlPosixStrdup;
+xmlStrdupFunc xmlMemStrdup = lcl_xmlStrdupFunc;
 #endif /* DEBUG_MEMORY_LOCATION || DEBUG_MEMORY */
 
 #include <libxml/threads.h>
