@@ -1,5 +1,5 @@
 /*
- * pattern.c: Implemetation of selectors for nodes
+ * pattern.c: Implementation of selectors for nodes
  *
  * Reference:
  *   http://www.w3.org/TR/2001/REC-xmlschema-1-20010502/
@@ -55,7 +55,7 @@
 /*
 * NOTE: Those private flags (XML_STREAM_xxx) are used
 *   in _xmlStreamCtxt->flag. They extend the public
-*   xmlPatternFlags, so be carefull not to interfere with the
+*   xmlPatternFlags, so be careful not to interfere with the
 *   reserved values for xmlPatternFlags.
 */
 #define XML_STREAM_FINAL_IS_ANY_NODE 1<<14
@@ -162,7 +162,7 @@ struct _xmlStepOp {
 #define PAT_FROM_CUR	(1<<9)
 
 struct _xmlPattern {
-    void *data;    		/* the associated template */
+    void *data;		/* the associated template */
     xmlDictPtr dict;		/* the optional dictionary */
     struct _xmlPattern *next;	/* next pattern if | is used */
     const xmlChar *pattern;	/* the pattern */
@@ -187,9 +187,9 @@ struct _xmlPatParserContext {
 };
 
 /************************************************************************
- * 									*
- * 			Type functions 					*
- * 									*
+ *									*
+ *			Type functions					*
+ *									*
  ************************************************************************/
 
 /**
@@ -229,13 +229,16 @@ xmlNewPattern(void) {
  */
 void
 xmlFreePattern(xmlPatternPtr comp) {
+    xmlFreePatternList(comp);
+}
+
+static void
+xmlFreePatternInternal(xmlPatternPtr comp) {
     xmlStepOpPtr op;
     int i;
 
     if (comp == NULL)
 	return;
-    if (comp->next != NULL)
-        xmlFreePattern(comp->next);
     if (comp->stream != NULL)
         xmlFreeStreamComp(comp->stream);
     if (comp->pattern != NULL)
@@ -273,7 +276,7 @@ xmlFreePatternList(xmlPatternPtr comp) {
 	cur = comp;
 	comp = comp->next;
 	cur->next = NULL;
-	xmlFreePattern(cur);
+	xmlFreePatternInternal(cur);
     }
 }
 
@@ -455,9 +458,9 @@ xmlReversePattern(xmlPatternPtr comp) {
 }
 
 /************************************************************************
- * 									*
- * 		The interpreter for the precompiled patterns		*
- * 									*
+ *									*
+ *		The interpreter for the precompiled patterns		*
+ *									*
  ************************************************************************/
 
 static int
@@ -709,7 +712,7 @@ rollback:
  *									*
  ************************************************************************/
 
-#define TODO 								\
+#define TODO								\
     xmlGenericError(xmlGenericErrorContext,				\
 	    "Unimplemented block at %s:%d\n",				\
             __FILE__, __LINE__);
@@ -719,14 +722,14 @@ rollback:
 #define PEEKPREV(val) ctxt->cur[-(val)]
 #define CUR_PTR ctxt->cur
 
-#define SKIP_BLANKS 							\
+#define SKIP_BLANKS							\
     while (IS_BLANK_CH(CUR)) NEXT
 
 #define CURRENT (*ctxt->cur)
 #define NEXT ((*ctxt->cur) ?  ctxt->cur++: ctxt->cur)
 
 
-#define PUSH(op, val, val2) 						\
+#define PUSH(op, val, val2)						\
     if (xmlPatternAdd(ctxt, ctxt->comp, (op), (val), (val2))) goto error;
 
 #define XSLT_ERROR(X)							\
@@ -742,7 +745,7 @@ rollback:
  * xmlPatScanLiteral:
  * @ctxt:  the XPath Parser context
  *
- * Parse an XPath Litteral:
+ * Parse an XPath Literal:
  *
  * [29] Literal ::= '"' [^"]* '"'
  *                | "'" [^']* "'"
@@ -969,6 +972,7 @@ xmlCompileAttributeTest(xmlPatParserContextPtr ctxt) {
 		ERROR5(NULL, NULL, NULL,
 		    "xmlCompileAttributeTest : no namespace bound to prefix %s\n",
 		    prefix);
+	        XML_PAT_FREE_STRING(ctxt, prefix);
 		ctxt->error = 1;
 		goto error;
 	    }
@@ -1931,7 +1935,7 @@ xmlStreamPushInternal(xmlStreamCtxtPtr stream,
 	    /*
 	    * Skip blocked expressions.
 	    */
-    	    stream->level++;
+	    stream->level++;
 	    goto stream_next;
 	}
 
@@ -1972,7 +1976,7 @@ xmlStreamPushInternal(xmlStreamCtxtPtr stream,
 	    } else {
 		/*
 		* If there are "//", then we need to process every "//"
-		* occuring in the states, plus any other state for this
+		* occurring in the states, plus any other state for this
 		* level.
 		*/
 		stepNr = stream->states[2 * i];

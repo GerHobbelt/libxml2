@@ -18,6 +18,9 @@
 #define STDOUT_FILENO fileno(stdout)
 #endif /* HAVE_UNISTD_H */
 #endif
+#ifdef _WIN32
+#include <io.h>
+#endif
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
@@ -298,7 +301,7 @@ load_xpath_expr (xmlDocPtr parent_doc, const char* filename) {
     while(ns != NULL) {
 	if(xmlXPathRegisterNs(ctx, ns->prefix, ns->href) != 0) {
 	    fprintf(stderr,"Error: unable to register NS with prefix=\"%s\" and href=\"%s\"\n", ns->prefix, ns->href);
-    	    xmlFree(expr);
+	    xmlFree(expr);
 	    xmlXPathFreeContext(ctx);
 	    xmlFreeDoc(doc);
 	    return(NULL);

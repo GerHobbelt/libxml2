@@ -28,8 +28,8 @@
 #    Bye
 #
 # Then run the script in the doc subdir, it will create the symbols and
-# word tables and populate them with informations extracted from 
-# the libxml2-api.xml API description, and make then accessible read-only
+# word tables and populate them with information extracted from 
+# the libxml2-api.xml API description, and make them accessible read-only
 # by nobody@loaclhost the user expected to be Apache's one
 #
 # On the Apache configuration, make sure you have php support enabled
@@ -49,7 +49,7 @@ def callback(ctx, str):
 libxml2.registerErrorHandler(callback, None)
 
 #
-# The dictionnary of tables required and the SQL command needed
+# The dictionary of tables required and the SQL command needed
 # to create them
 #
 TABLES={
@@ -438,12 +438,12 @@ def updateWordArchive(name, id, relevance):
 	    print """UPDATE wordsArchive SET relevance='%d' where name='%s' and ID='%d'""" % (relevance, name, id)
 	    print sys.exc_type, sys.exc_value
 	    return -1
-	     
+
     return ret
 
 #########################################################################
 #									#
-#                  Word dictionnary and analysis routines		#
+#                  Word dictionary and analysis routines		#
 #									#
 #########################################################################
 
@@ -1177,7 +1177,7 @@ def analyzeAPITop():
     try:
 	doc = loadAPI(API)
 	ret = analyzeAPI(doc)
-	print "Analyzed %d blocs" % (ret)
+	print "Analyzed %d blocks" % (ret)
 	doc.freeDoc()
     except:
 	print "Failed to parse and analyze %s" % (API)

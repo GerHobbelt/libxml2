@@ -10,11 +10,8 @@
  * daniel@veillard.com
  */
 
-#ifdef HAVE_CONFIG_H
 #include "libxml.h"
-#else
 #include <stdio.h>
-#endif
 
 #if !defined(_WIN32) || defined(__CYGWIN__)
 #include <unistd.h>
@@ -835,8 +832,8 @@ getParameterEntityCallback(void *ctx ATTRIBUTE_UNUSED,
 /**
  * entityDeclCallback:
  * @ctxt:  An XML parser context
- * @name:  the entity name 
- * @type:  the entity type 
+ * @name:  the entity name
+ * @type:  the entity type
  * @publicId: The public ID of the entity
  * @systemId: The system ID of the entity
  * @content: the entity value (without processing).
@@ -858,8 +855,8 @@ entityDeclCallback(void *ctx ATTRIBUTE_UNUSED,
 /**
  * attributeDeclCallback:
  * @ctxt:  An XML parser context
- * @name:  the attribute name 
- * @type:  the attribute type 
+ * @name:  the attribute name
+ * @type:  the attribute type
  *
  * An attribute definition has been parsed
  */
@@ -878,8 +875,8 @@ attributeDeclCallback(void *ctx ATTRIBUTE_UNUSED,
 /**
  * elementDeclCallback:
  * @ctxt:  An XML parser context
- * @name:  the element name 
- * @type:  the element type 
+ * @name:  the element name
+ * @type:  the element type
  * @content: the element value (without processing).
  *
  * An element definition has been parsed
@@ -1032,7 +1029,7 @@ charactersCallback(void *ctx ATTRIBUTE_UNUSED,
  * @ctxt:  An XML parser context
  * @name:  The entity name
  *
- * called when an entity reference is detected. 
+ * called when an entity reference is detected.
  */
 static void
 referenceCallback(void *ctx ATTRIBUTE_UNUSED,
@@ -1287,13 +1284,14 @@ saxTest(const char *filename, size_t limit, int options, int fail) {
         if (fail)
             res = 0;
         else {
-            fprintf(stderr, "Failed to parse '%s' %lu\n", filename, limit);
+            fprintf(stderr, "Failed to parse '%s' %lu\n", filename,
+                    (unsigned long) limit);
             res = 1;
         }
     } else {
         if (fail) {
             fprintf(stderr, "Failed to get failure for '%s' %lu\n",
-                    filename, limit);
+                    filename, (unsigned long) limit);
             res = 1;
         } else
             res = 0;
@@ -1337,22 +1335,22 @@ readerTest(const char *filename, size_t limit, int options, int fail) {
         if (fail)
             res = 0;
         else {
-            if (strncmp(filename, "crazy:", 6) == 0) 
+            if (strncmp(filename, "crazy:", 6) == 0)
                 fprintf(stderr, "Failed to parse '%s' %u\n",
                         filename, crazy_indx);
             else
                 fprintf(stderr, "Failed to parse '%s' %lu\n",
-                        filename, limit);
+                        filename, (unsigned long) limit);
             res = 1;
         }
     } else {
         if (fail) {
-            if (strncmp(filename, "crazy:", 6) == 0) 
+            if (strncmp(filename, "crazy:", 6) == 0)
                 fprintf(stderr, "Failed to get failure for '%s' %u\n",
                         filename, crazy_indx);
             else
                 fprintf(stderr, "Failed to get failure for '%s' %lu\n",
-                        filename, limit);
+                        filename, (unsigned long) limit);
             res = 1;
         } else
             res = 0;
@@ -1384,19 +1382,19 @@ struct limitDesc {
 };
 
 static limitDesc limitDescriptions[] = {
-    /* max lenght of a text node in content */
+    /* max length of a text node in content */
     {"huge:textNode", XML_MAX_TEXT_LENGTH - CHUNK, 0, 0},
     {"huge:textNode", XML_MAX_TEXT_LENGTH + CHUNK, 0, 1},
     {"huge:textNode", XML_MAX_TEXT_LENGTH + CHUNK, XML_PARSE_HUGE, 0},
-    /* max lenght of a text node in content */
+    /* max length of a text node in content */
     {"huge:attrNode", XML_MAX_TEXT_LENGTH - CHUNK, 0, 0},
     {"huge:attrNode", XML_MAX_TEXT_LENGTH + CHUNK, 0, 1},
     {"huge:attrNode", XML_MAX_TEXT_LENGTH + CHUNK, XML_PARSE_HUGE, 0},
-    /* max lenght of a comment node */
+    /* max length of a comment node */
     {"huge:commentNode", XML_MAX_TEXT_LENGTH - CHUNK, 0, 0},
     {"huge:commentNode", XML_MAX_TEXT_LENGTH + CHUNK, 0, 1},
     {"huge:commentNode", XML_MAX_TEXT_LENGTH + CHUNK, XML_PARSE_HUGE, 0},
-    /* max lenght of a PI node */
+    /* max length of a PI node */
     {"huge:piNode", XML_MAX_TEXT_LENGTH - CHUNK, 0, 0},
     {"huge:piNode", XML_MAX_TEXT_LENGTH + CHUNK, 0, 1},
     {"huge:piNode", XML_MAX_TEXT_LENGTH + CHUNK, XML_PARSE_HUGE, 0},
@@ -1405,7 +1403,7 @@ static limitDesc limitDescriptions[] = {
 typedef struct testDesc testDesc;
 typedef testDesc *testDescPtr;
 struct testDesc {
-    const char *desc; /* descripton of the test */
+    const char *desc; /* description of the test */
     functest    func; /* function implementing the test */
 };
 
@@ -1512,6 +1510,7 @@ launchCrazySAX(unsigned int test, int fail) {
     return(err);
 }
 
+#ifdef LIBXML_READER_ENABLED
 static int
 launchCrazy(unsigned int test, int fail) {
     int res = 0, err = 0;
@@ -1528,6 +1527,7 @@ launchCrazy(unsigned int test, int fail) {
 
     return(err);
 }
+#endif
 
 static int get_crazy_fail(int test) {
     /*
@@ -1565,6 +1565,8 @@ runcrazy(void) {
     old_errors = nb_errors;
     old_tests = nb_tests;
     old_leaks = nb_leaks;
+
+#ifdef LIBXML_READER_ENABLED
     if (tests_quiet == 0) {
 	printf("## Crazy tests on reader\n");
     }
@@ -1573,6 +1575,8 @@ runcrazy(void) {
         if (res != 0)
             ret++;
     }
+#endif
+
     if (tests_quiet == 0) {
 	printf("\n## Crazy tests on SAX\n");
     }

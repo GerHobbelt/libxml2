@@ -49,10 +49,10 @@ testRegexpFile(const char *filename) {
     while (fgets(expression, 4500, input) != NULL) {
 	len = strlen(expression);
 	len--;
-	while ((len >= 0) && 
+	while ((len >= 0) &&
 	       ((expression[len] == '\n') || (expression[len] == '\t') ||
 		(expression[len] == '\r') || (expression[len] == ' '))) len--;
-	expression[len + 1] = 0;      
+	expression[len + 1] = 0;
 	if (len >= 0) {
 	    if (expression[0] == '#')
 		continue;
@@ -103,10 +103,10 @@ runFileTest(xmlExpCtxtPtr ctxt, const char *filename) {
     while (fgets(expression, 4500, input) != NULL) {
 	len = strlen(expression);
 	len--;
-	while ((len >= 0) && 
+	while ((len >= 0) &&
 	       ((expression[len] == '\n') || (expression[len] == '\t') ||
 		(expression[len] == '\r') || (expression[len] == ' '))) len--;
-	expression[len + 1] = 0;      
+	expression[len + 1] = 0;
 	if (len >= 0) {
 	    if (expression[0] == '#')
 		continue;
@@ -115,7 +115,7 @@ runFileTest(xmlExpCtxtPtr ctxt, const char *filename) {
 
 		if (expr != NULL) {
 		    xmlExpFree(ctxt, expr);
-		    if (xmlExpCtxtNbNodes(ctxt) != 0) 
+		    if (xmlExpCtxtNbNodes(ctxt) != 0)
 		        printf(" Parse/free of Expression leaked %d\n",
 			       xmlExpCtxtNbNodes(ctxt));
 		    expr = NULL;
@@ -142,7 +142,7 @@ runFileTest(xmlExpCtxtPtr ctxt, const char *filename) {
 		    break;
 		} else {
 		    int ret;
-		    
+
 		    nodes2 = xmlExpCtxtNbNodes(ctxt);
 		    ret = xmlExpSubsume(ctxt, expr, sub);
 
@@ -174,31 +174,30 @@ runFileTest(xmlExpCtxtPtr ctxt, const char *filename) {
     }
     if (expr != NULL) {
 	xmlExpFree(ctxt, expr);
-	if (xmlExpCtxtNbNodes(ctxt) != 0) 
+	if (xmlExpCtxtNbNodes(ctxt) != 0)
 	    printf(" Parse/free of Expression leaked %d\n",
 		   xmlExpCtxtNbNodes(ctxt));
     }
     fclose(input);
 }
 
-static void 
+static void
 testReduce(xmlExpCtxtPtr ctxt, xmlExpNodePtr expr, const char *tst) {
     xmlBufferPtr xmlExpBuf;
     xmlExpNodePtr sub, deriv;
-    xmlExpBuf = xmlBufferCreate();
 
     sub = xmlExpParse(ctxt, tst);
     if (sub == NULL) {
         printf("Subset %s failed to parse\n", tst);
 	return;
     }
+    xmlExpBuf = xmlBufferCreate();
     xmlExpDump(xmlExpBuf, sub);
     printf("Subset parsed as: %s\n",
            (const char *) xmlBufferContent(xmlExpBuf));
     deriv = xmlExpExpDerive(ctxt, expr, sub);
     if (deriv == NULL) {
         printf("Derivation led to an internal error, report this !\n");
-	return;
     } else {
         xmlBufferEmpty(xmlExpBuf);
 	xmlExpDump(xmlExpBuf, deriv);
@@ -210,10 +209,11 @@ testReduce(xmlExpCtxtPtr ctxt, xmlExpNodePtr expr, const char *tst) {
 	           (const char *) xmlBufferContent(xmlExpBuf));
 	xmlExpFree(ctxt, deriv);
     }
+    xmlBufferFree(xmlExpBuf);
     xmlExpFree(ctxt, sub);
 }
 
-static void 
+static void
 exprDebug(xmlExpCtxtPtr ctxt, xmlExpNodePtr expr) {
     xmlBufferPtr xmlExpBuf;
     xmlExpNodePtr deriv;

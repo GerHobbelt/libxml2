@@ -11,7 +11,7 @@
  *
  * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
- * MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE AUTHORS AND
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE AUTHORS AND
  * CONTRIBUTORS ACCEPT NO RESPONSIBILITY IN ANY CONCEIVABLE MANNER.
  *
  * Author: breese@users.sourceforge.net
@@ -33,7 +33,8 @@
  * it seems that having hash randomization might be a good idea
  * when using XML with untrusted data
  */
-#if defined(HAVE_RAND) && defined(HAVE_SRAND) && defined(HAVE_TIME)
+#if defined(HAVE_RAND) && defined(HAVE_SRAND) && defined(HAVE_TIME) && \
+    !defined(FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION)
 #define HASH_RANDOMIZATION
 #endif
 
@@ -78,12 +79,15 @@ struct _xmlHashTable {
  * xmlHashComputeKey:
  * Calculate the hash key
  */
+#ifdef __clang__
+ATTRIBUTE_NO_SANITIZE("unsigned-integer-overflow")
+#endif
 static unsigned long
 xmlHashComputeKey(xmlHashTablePtr table, const xmlChar *name,
 	          const xmlChar *name2, const xmlChar *name3) {
     unsigned long value = 0L;
     char ch;
-    
+
 #ifdef HASH_RANDOMIZATION
     value = table->random_seed;
 #endif
@@ -93,11 +97,13 @@ xmlHashComputeKey(xmlHashTablePtr table, const xmlChar *name,
 	    value = value ^ ((value << 5) + (value >> 3) + (unsigned long)ch);
 	}
     }
+    value = value ^ ((value << 5) + (value >> 3));
     if (name2 != NULL) {
 	while ((ch = *name2++) != 0) {
 	    value = value ^ ((value << 5) + (value >> 3) + (unsigned long)ch);
 	}
     }
+    value = value ^ ((value << 5) + (value >> 3));
     if (name3 != NULL) {
 	while ((ch = *name3++) != 0) {
 	    value = value ^ ((value << 5) + (value >> 3) + (unsigned long)ch);
@@ -106,6 +112,9 @@ xmlHashComputeKey(xmlHashTablePtr table, const xmlChar *name,
     return (value % table->size);
 }
 
+#ifdef __clang__
+ATTRIBUTE_NO_SANITIZE("unsigned-integer-overflow")
+#endif
 static unsigned long
 xmlHashComputeQKey(xmlHashTablePtr table,
 		   const xmlChar *prefix, const xmlChar *name,
@@ -113,7 +122,7 @@ xmlHashComputeQKey(xmlHashTablePtr table,
 		   const xmlChar *prefix3, const xmlChar *name3) {
     unsigned long value = 0L;
     char ch;
-    
+
 #ifdef HASH_RANDOMIZATION
     value = table->random_seed;
 #endif
@@ -133,6 +142,7 @@ xmlHashComputeQKey(xmlHashTablePtr table,
 	    value = value ^ ((value << 5) + (value >> 3) + (unsigned long)ch);
 	}
     }
+    value = value ^ ((value << 5) + (value >> 3));
     if (prefix2 != NULL) {
 	while ((ch = *prefix2++) != 0) {
 	    value = value ^ ((value << 5) + (value >> 3) + (unsigned long)ch);
@@ -144,6 +154,7 @@ xmlHashComputeQKey(xmlHashTablePtr table,
 	    value = value ^ ((value << 5) + (value >> 3) + (unsigned long)ch);
 	}
     }
+    value = value ^ ((value << 5) + (value >> 3));
     if (prefix3 != NULL) {
 	while ((ch = *prefix3++) != 0) {
 	    value = value ^ ((value << 5) + (value >> 3) + (unsigned long)ch);
@@ -164,15 +175,15 @@ xmlHashComputeQKey(xmlHashTablePtr table,
  *
  * Create a new xmlHashTablePtr.
  *
- * Returns the newly created object, or NULL if an error occured.
+ * Returns the newly created object, or NULL if an error occurred.
  */
 xmlHashTablePtr
 xmlHashCreate(int size) {
     xmlHashTablePtr table;
-  
+
     if (size <= 0)
         size = 256;
-  
+
     table = xmlMalloc(sizeof(xmlHashTable));
     if (table) {
         table->dict = NULL;
@@ -180,11 +191,11 @@ xmlHashCreate(int size) {
 	table->nbElems = 0;
         table->table = xmlMalloc(size * sizeof(xmlHashEntry));
         if (table->table) {
-  	    memset(table->table, 0, size * sizeof(xmlHashEntry));
+	    memset(table->table, 0, size * sizeof(xmlHashEntry));
 #ifdef HASH_RANDOMIZATION
             table->random_seed = __xmlRandom();
 #endif
-  	    return(table);
+	    return(table);
         }
         xmlFree(table);
     }
@@ -198,7 +209,7 @@ xmlHashCreate(int size) {
  *
  * Create a new xmlHashTablePtr which will use @dict as the internal dictionary
  *
- * Returns the newly created object, or NULL if an error occured.
+ * Returns the newly created object, or NULL if an error occurred.
  */
 xmlHashTablePtr
 xmlHashCreateDict(int size, xmlDictPtr dict) {
@@ -230,7 +241,7 @@ xmlHashGrow(xmlHashTablePtr table, int size) {
 #ifdef DEBUG_GROW
     unsigned long nbElem = 0;
 #endif
-  
+
     if (table == NULL)
 	return(-1);
     if (size < 8)
@@ -242,7 +253,7 @@ xmlHashGrow(xmlHashTablePtr table, int size) {
     oldtable = table->table;
     if (oldtable == NULL)
         return(-1);
-  
+
     table->table = xmlMalloc(size * sizeof(xmlHashEntry));
     if (table->table == NULL) {
 	table->table = oldtable;
@@ -252,13 +263,13 @@ xmlHashGrow(xmlHashTablePtr table, int size) {
     table->size = size;
 
     /*	If the two loops are merged, there would be situations where
-	a new entry needs to allocated and data copied into it from 
+	a new entry needs to allocated and data copied into it from
 	the main table. So instead, we run through the array twice, first
 	copying all the elements in the main array (where we can't get
 	conflicts) and then the rest, so we only free (and don't allocate)
     */
     for (i = 0; i < oldsize; i++) {
-	if (oldtable[i].valid == 0) 
+	if (oldtable[i].valid == 0)
 	    continue;
 	key = xmlHashComputeKey(table, oldtable[i].name, oldtable[i].name2,
 				oldtable[i].name3);
@@ -282,8 +293,8 @@ xmlHashGrow(xmlHashTablePtr table, int size) {
 		table->table[key].next = NULL;
 		xmlFree(iter);
 	    } else {
-	    	iter->next = table->table[key].next;
-	    	table->table[key].next = iter;
+		iter->next = table->table[key].next;
+		table->table[key].next = iter;
 	    }
 
 #ifdef DEBUG_GROW
@@ -354,6 +365,18 @@ xmlHashFree(xmlHashTablePtr table, xmlHashDeallocator f) {
     if (table->dict)
         xmlDictFree(table->dict);
     xmlFree(table);
+}
+
+/**
+ * xmlHashDefaultDeallocator:
+ * @entry: the hash table entry
+ * @name: the entry's name
+ *
+ * Free a hash table entry with xmlFree.
+ */
+void
+xmlHashDefaultDeallocator(void *entry, const xmlChar *name ATTRIBUTE_UNUSED) {
+    xmlFree(entry);
 }
 
 /**
@@ -599,7 +622,7 @@ xmlHashAddEntry3(xmlHashTablePtr table, const xmlChar *name,
     entry->valid = 1;
 
 
-    if (insert != NULL) 
+    if (insert != NULL)
 	insert->next = entry;
 
     table->nbElems++;
@@ -748,7 +771,7 @@ xmlHashUpdateEntry3(xmlHashTablePtr table, const xmlChar *name,
  * Returns the a pointer to the userdata
  */
 void *
-xmlHashLookup3(xmlHashTablePtr table, const xmlChar *name, 
+xmlHashLookup3(xmlHashTablePtr table, const xmlChar *name,
 	       const xmlChar *name2, const xmlChar *name3) {
     unsigned long key;
     xmlHashEntryPtr entry;
@@ -821,14 +844,14 @@ typedef struct {
     void *data;
 } stubData;
 
-static void 
-stubHashScannerFull (void *payload, void *data, const xmlChar *name, 
+static void
+stubHashScannerFull (void *payload, void *data, const xmlChar *name,
                      const xmlChar *name2 ATTRIBUTE_UNUSED,
 		     const xmlChar *name3 ATTRIBUTE_UNUSED) {
     stubData *stubdata = (stubData *) data;
     stubdata->hashscanner (payload, stubdata->data, (xmlChar *) name);
-}                                  
- 
+}
+
 /**
  * xmlHashScan:
  * @table: the hash table
@@ -841,7 +864,7 @@ void
 xmlHashScan(xmlHashTablePtr table, xmlHashScanner f, void *data) {
     stubData stubdata;
     stubdata.data = data;
-    stubdata.hashscanner = f; 
+    stubdata.hashscanner = f;
     xmlHashScanFull (table, stubHashScannerFull, &stubdata);
 }
 
@@ -866,7 +889,7 @@ xmlHashScanFull(xmlHashTablePtr table, xmlHashScannerFull f, void *data) {
 
     if (table->table) {
 	for(i = 0; i < table->size; i++) {
-	    if (table->table[i].valid == 0) 
+	    if (table->table[i].valid == 0)
 		continue;
 	    iter = &(table->table[i]);
 	    while (iter) {
@@ -905,11 +928,14 @@ xmlHashScanFull(xmlHashTablePtr table, xmlHashScannerFull f, void *data) {
  * the comparison is considered to match.
  */
 void
-xmlHashScan3(xmlHashTablePtr table, const xmlChar *name, 
+xmlHashScan3(xmlHashTablePtr table, const xmlChar *name,
 	     const xmlChar *name2, const xmlChar *name3,
 	     xmlHashScanner f, void *data) {
-    xmlHashScanFull3 (table, name, name2, name3,
-		      (xmlHashScannerFull) f, data);
+    stubData stubdata;
+    stubdata.data = data;
+    stubdata.hashscanner = f;
+    xmlHashScanFull3(table, name, name2, name3, stubHashScannerFull,
+                     &stubdata);
 }
 
 /**
@@ -926,7 +952,7 @@ xmlHashScan3(xmlHashTablePtr table, const xmlChar *name,
  * the comparison is considered to match.
  */
 void
-xmlHashScanFull3(xmlHashTablePtr table, const xmlChar *name, 
+xmlHashScanFull3(xmlHashTablePtr table, const xmlChar *name,
 		 const xmlChar *name2, const xmlChar *name3,
 		 xmlHashScannerFull f, void *data) {
     int i;
@@ -980,6 +1006,9 @@ xmlHashCopy(xmlHashTablePtr table, xmlHashCopier f) {
 	return(NULL);
 
     ret = xmlHashCreate(table->size);
+    if (ret == NULL)
+        return(NULL);
+
     if (table->table) {
 	for(i = 0; i < table->size; i++) {
 	    if (table->table[i].valid == 0)

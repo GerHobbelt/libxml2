@@ -242,7 +242,7 @@ docs: web $(top_builddir)/NEWS libxml2.xsa $(man_MANS)
 
 api: libxml2-api.xml libxml2-refs.xml $(APIPAGES) $(srcdir)/html/index.html $(WIN32_DIR)/libxml2.def.src ../elfgcchack.h $(srcdir)/site.xsl
 
-web: $(PAGES)
+web: $(PAGES) xmllint.html xmlcatalog_man.html
 
 ../elfgcchack.h: $(srcdir)/elfgcchack.xsl $(srcdir)/libxml2-api.xml
 	-@(if [ -x $(XSLTPROC) ] ; then \
@@ -303,6 +303,7 @@ source_file_deps = \
 	$(wildcard $(top_srcdir)/*.c)
 
 libxml2-api.xml libxml2-refs.xml ../libxml2.syms: apibuild.py symbols.xml syms.xsl checkapisym.xsl $(source_file_deps)
+	test -f $(top_srcdir)/include/libxml/xmlversion.h
 	(cd $(srcdir) && ./apibuild.py)
 	($(XSLTPROC) $(srcdir)/checkapisym.xsl $(srcdir)/libxml2-api.xml)
 	($(XSLTPROC) -o ../libxml2.syms $(srcdir)/syms.xsl $(srcdir)/symbols.xml)
@@ -312,8 +313,14 @@ libxml2-api.xml libxml2-refs.xml ../libxml2.syms: apibuild.py symbols.xml syms.x
 xmllint.1: xmllint.xml
 	-@($(XSLTPROC) --nonet xmllint.xml)
 
+xmllint.html: xmllint.xml
+	-@($(XSLTPROC) --nonet -o $@ http://docbook.sourceforge.net/release/xsl/current/html/docbook.xsl xmllint.xml)
+
 xmlcatalog.1: xmlcatalog_man.xml
 	-@($(XSLTPROC) --nonet xmlcatalog_man.xml)
+
+xmlcatalog_man.html: xmlcatalog_man.xml
+	-@($(XSLTPROC) --nonet -o $@ http://docbook.sourceforge.net/release/xsl/current/html/docbook.xsl xmlcatalog_man.xml)
 
 check-extra-dist:
 	for f in $(EXTRA_DIST_wc) ; do echo $$f; done | sort -u >tmp.EXTRA_DIST_wc
@@ -346,4 +353,4 @@ install-data-local:
 	-$(INSTALL) -m 0644 $(srcdir)/tutorial/images/callouts/*.* \
 		$(DESTDIR)$(HTML_DIR)/tutorial/images/callouts
 
-.PHONY : html xml templates scan
+.PHONY: docs api web wiki rebuild

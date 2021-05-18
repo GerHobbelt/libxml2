@@ -84,7 +84,7 @@ void	<a href="#xmlResetError">xmlResetError</a>			(<a href="libxml2-xmlerror.htm
     char *	str2	: extra string information
     char *	str3	: extra string information
     int	int1	: extra number information
-    int	int2	: column number of the error or 0 if N/A (todo: rename this field when
+    int	int2	: error column # or 0 if N/A (todo: rename field when we would brk ABI)
     void *	ctxt	: the parser context if available
     void *	node	: the node in the tree
 } xmlError;
@@ -252,6 +252,7 @@ void	<a href="#xmlResetError">xmlResetError</a>			(<a href="libxml2-xmlerror.htm
     <a name="XML_ERR_UNKNOWN_VERSION">XML_ERR_UNKNOWN_VERSION</a> = 108 /* 108 */
     <a name="XML_ERR_VERSION_MISMATCH">XML_ERR_VERSION_MISMATCH</a> = 109 /* 109 */
     <a name="XML_ERR_NAME_TOO_LONG">XML_ERR_NAME_TOO_LONG</a> = 110 /* 110 */
+    <a name="XML_ERR_USER_STOP">XML_ERR_USER_STOP</a> = 111 /* 111 */
     <a name="XML_NS_ERR_XML_NAMESPACE">XML_NS_ERR_XML_NAMESPACE</a> = 200
     <a name="XML_NS_ERR_UNDEFINED_NAMESPACE">XML_NS_ERR_UNDEFINED_NAMESPACE</a> = 201 /* 201 */
     <a name="XML_NS_ERR_QNAME">XML_NS_ERR_QNAME</a> = 202 /* 202 */
@@ -880,7 +881,7 @@ void	<a href="#xmlResetError">xmlResetError</a>			(<a href="libxml2-xmlerror.htm
         <hr/>
         <div class="refsect2" lang="en"><h3><a name="xmlGenericErrorFunc"/>Function type xmlGenericErrorFunc</h3><pre class="programlisting">void	xmlGenericErrorFunc		(void * ctx, <br/>					 const char * msg, <br/>					 ... ...)<br/>
 </pre><p>Signature of the function to use when there is an error and no parsing or validity context available .</p>
-<div class="variablelist"><table border="0"><col align="left"/><tbody><tr><td><span class="term"><i><tt>ctx</tt></i>:</span></td><td>a parsing context</td></tr><tr><td><span class="term"><i><tt>msg</tt></i>:</span></td><td>the message</td></tr><tr><td><span class="term"><i><tt>...</tt></i>:</span></td><td>the extra arguments of the varags to format the message</td></tr></tbody></table></div></div>
+<div class="variablelist"><table border="0"><col align="left"/><tbody><tr><td><span class="term"><i><tt>ctx</tt></i>:</span></td><td>a parsing context</td></tr><tr><td><span class="term"><i><tt>msg</tt></i>:</span></td><td>the message</td></tr><tr><td><span class="term"><i><tt>...</tt></i>:</span></td><td>the extra arguments of the varargs to format the message</td></tr></tbody></table></div></div>
         <hr/>
         <div class="refsect2" lang="en"><h3><a name="xmlStructuredErrorFunc"/>Function type xmlStructuredErrorFunc</h3><pre class="programlisting">void	xmlStructuredErrorFunc		(void * userData, <br/>					 <a href="libxml2-xmlerror.html#xmlErrorPtr">xmlErrorPtr</a> error)<br/>
 </pre><p>Signature of the function to use when there is an error and the module handles the new error reporting mechanism.</p>
@@ -896,7 +897,7 @@ void	<a href="#xmlResetError">xmlResetError</a>			(<a href="libxml2-xmlerror.htm
         <hr/>
         <div class="refsect2" lang="en"><h3><a name="xmlCtxtGetLastError"/>xmlCtxtGetLastError ()</h3><pre class="programlisting"><a href="libxml2-xmlerror.html#xmlErrorPtr">xmlErrorPtr</a>	xmlCtxtGetLastError	(void * ctx)<br/>
 </pre><p>Get the last parsing error registered.</p>
-<div class="variablelist"><table border="0"><col align="left"/><tbody><tr><td><span class="term"><i><tt>ctx</tt></i>:</span></td><td>an XML parser context</td></tr><tr><td><span class="term"><i><tt>Returns</tt></i>:</span></td><td>NULL if no error occured or a pointer to the error</td></tr></tbody></table></div></div>
+<div class="variablelist"><table border="0"><col align="left"/><tbody><tr><td><span class="term"><i><tt>ctx</tt></i>:</span></td><td>an XML parser context</td></tr><tr><td><span class="term"><i><tt>Returns</tt></i>:</span></td><td>NULL if no error occurred or a pointer to the error</td></tr></tbody></table></div></div>
         <hr/>
         <div class="refsect2" lang="en"><h3><a name="xmlCtxtResetLastError"/>xmlCtxtResetLastError ()</h3><pre class="programlisting">void	xmlCtxtResetLastError		(void * ctx)<br/>
 </pre><p>Cleanup the last global error registered. For parsing error this does not change the well-formedness result.</p>
@@ -904,7 +905,7 @@ void	<a href="#xmlResetError">xmlResetError</a>			(<a href="libxml2-xmlerror.htm
         <hr/>
         <div class="refsect2" lang="en"><h3><a name="xmlGetLastError"/>xmlGetLastError ()</h3><pre class="programlisting"><a href="libxml2-xmlerror.html#xmlErrorPtr">xmlErrorPtr</a>	xmlGetLastError		(void)<br/>
 </pre><p>Get the last global error registered. This is per thread if compiled with thread support.</p>
-<div class="variablelist"><table border="0"><col align="left"/><tbody><tr><td><span class="term"><i><tt>Returns</tt></i>:</span></td><td>NULL if no error occured or a pointer to the error</td></tr></tbody></table></div></div>
+<div class="variablelist"><table border="0"><col align="left"/><tbody><tr><td><span class="term"><i><tt>Returns</tt></i>:</span></td><td>NULL if no error occurred or a pointer to the error</td></tr></tbody></table></div></div>
         <hr/>
         <div class="refsect2" lang="en"><h3><a name="xmlParserError"/>xmlParserError ()</h3><pre class="programlisting">void	xmlParserError			(void * ctx, <br/>					 const char * msg, <br/>					 ... ...)<br/>
 </pre><p>Display and format an error messages, gives file, line, position and extra parameters.</p>
@@ -915,7 +916,7 @@ void	<a href="#xmlResetError">xmlResetError</a>			(<a href="libxml2-xmlerror.htm
 <div class="variablelist"><table border="0"><col align="left"/><tbody><tr><td><span class="term"><i><tt>input</tt></i>:</span></td><td>an <a href="libxml2-tree.html#xmlParserInputPtr">xmlParserInputPtr</a> input</td></tr></tbody></table></div></div>
         <hr/>
         <div class="refsect2" lang="en"><h3><a name="xmlParserPrintFileInfo"/>xmlParserPrintFileInfo ()</h3><pre class="programlisting">void	xmlParserPrintFileInfo		(<a href="libxml2-tree.html#xmlParserInputPtr">xmlParserInputPtr</a> input)<br/>
-</pre><p>Displays the associated file and line informations for the current input</p>
+</pre><p>Displays the associated file and line information for the current input</p>
 <div class="variablelist"><table border="0"><col align="left"/><tbody><tr><td><span class="term"><i><tt>input</tt></i>:</span></td><td>an <a href="libxml2-tree.html#xmlParserInputPtr">xmlParserInputPtr</a> input</td></tr></tbody></table></div></div>
         <hr/>
         <div class="refsect2" lang="en"><h3><a name="xmlParserValidityError"/>xmlParserValidityError ()</h3><pre class="programlisting">void	xmlParserValidityError		(void * ctx, <br/>					 const char * msg, <br/>					 ... ...)<br/>

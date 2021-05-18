@@ -13,7 +13,7 @@ sys.path.insert(0, "..")
 from apibuild import CParser, escape
 
 examples = []
-extras = ['examples.xsl', 'index.py']
+extras = ['examples.xsl', 'index.html', 'index.py']
 tests = []
 sections = {}
 symbols = {}
@@ -177,10 +177,10 @@ def parse(filename, output):
 	    type = id.get_type()
 	    output.write("      <%s line='%d' name='%s'/>\n" % (type,
 	                 line, name))
-	    
+
     output.write("    </uses>\n")
     output.write("  </example>\n")
-    
+
     return idx
 
 def dump_symbols(output):
@@ -231,15 +231,18 @@ LDADD = $(RDL_LIBS) $(STATIC_BINARIES) $(top_builddir)/libxml2.la $(THREAD_LIBS)
 
 CLEANFILES = *.tmp
 
+if REBUILD_DOCS
 rebuild: examples.xml index.html
+.PHONY: rebuild
 
-examples.xml: index.py $(noinst_PROGRAMS:=.c)
+examples.xml: index.py $(check_PROGRAMS:=.c)
 	cd $(srcdir) && $(PYTHON) index.py
 	$(MAKE) Makefile
 
 index.html: examples.xml examples.xsl
 	cd $(srcdir) && xsltproc examples.xsl examples.xml && echo "Rebuilt web page"
 	-cd $(srcdir) && xmllint --valid --noout index.html
+endif
 
 install-data-local: 
 	$(MKDIR_P) $(DESTDIR)$(HTML_DIR)
@@ -256,20 +259,21 @@ clean-local:
     for extra in extras:
         EXTRA_DIST = EXTRA_DIST + " \\\n\t" + extra
     Makefile = Makefile + "EXTRA_DIST =%s\n\n" % (EXTRA_DIST)
-    noinst_PROGRAMS=""
+    check_PROGRAMS=""
     for example in examples:
-        noinst_PROGRAMS = noinst_PROGRAMS + " \\\n\t" + example
-    Makefile = Makefile + "noinst_PROGRAMS =%s\n\n" % (noinst_PROGRAMS)
+        check_PROGRAMS = check_PROGRAMS + " \\\n\t" + example
+    Makefile = Makefile + "check_PROGRAMS =%s\n\n" % (check_PROGRAMS)
     for example in examples:
         Makefile = Makefile + "%s_SOURCES = %s.c\n\n" % (example, example)
     Makefile = Makefile + "valgrind: \n\t$(MAKE) CHECKER='valgrind' tests\n\n"
-    Makefile = Makefile + "tests: $(noinst_PROGRAMS)\n"
-    Makefile = Makefile + "\ttest -f Makefile.am || test -f test1.xml || $(LN_S) $(srcdir)/test?.xml .\n"
+    Makefile = Makefile + "tests: $(check_PROGRAMS)\n"
+    Makefile = Makefile + "\t@test -f Makefile.am || test -f test1.xml || $(LN_S) $(srcdir)/test?.xml .\n"
     Makefile = Makefile + "\t@(echo '## examples regression tests')\n"
     Makefile = Makefile + "\t@(echo > .memdump)\n"
     for test in tests:
-        Makefile = Makefile + "\t$(CHECKER) %s\n" % (test)
+        Makefile = Makefile + "\t@$(CHECKER) %s\n" % (test)
         Makefile = Makefile + '\t@grep "MORY ALLO" .memdump | grep -v "MEMORY ALLOCATED : 0" ; exit 0\n'
+    Makefile = Makefile + "\t@rm *.tmp\n"
     try:
 	old = open("Makefile.am", "r").read()
 	if old != Makefile:
@@ -277,29 +281,29 @@ clean-local:
 	    print "Updated Makefile.am"
     except:
         print "Failed to read or save Makefile.am"
-    #
-    # Autogenerate the .cvsignore too ...
-    #
-    ignore = """.memdump
-Makefile.in
-Makefile
-"""
-    for example in examples:
-        ignore = ignore + "%s\n" % (example)
-    try:
-	old = open(".cvsignore", "r").read()
-	if old != ignore:
-	    n = open(".cvsignore", "w").write(ignore)
-	    print "Updated .cvsignore"
-    except:
-        print "Failed to read or save .cvsignore"
-    
+#    #
+#    # Autogenerate the .cvsignore too ... DEPRECATED
+#    #
+#    ignore = """.memdump
+#Makefile.in
+#Makefile
+#"""
+#    for example in examples:
+#        ignore = ignore + "%s\n" % (example)
+#    try:
+#	old = open(".cvsignore", "r").read()
+#	if old != ignore:
+#	    n = open(".cvsignore", "w").write(ignore)
+#	    print "Updated .cvsignore"
+#    except:
+#        print "Failed to read or save .cvsignore"
+
 if __name__ == "__main__":
     load_api()
     output = open("examples.xml", "w")
     output.write("<examples>\n")
 
-    for file in glob.glob('*.c'):
+    for file in sorted(glob.glob('*.c')):
 	parse(file, output)
 	examples.append(file[:-2])
 

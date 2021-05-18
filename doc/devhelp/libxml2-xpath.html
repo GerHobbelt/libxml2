@@ -70,6 +70,7 @@ typedef <a href="libxml2-xpath.html#xmlXPathAxis">xmlXPathAxis</a> * <a href="#x
 typedef struct _xmlXPathParserContext <a href="#xmlXPathParserContext">xmlXPathParserContext</a>;
 int	<a href="#xmlXPathCastNodeSetToBoolean">xmlXPathCastNodeSetToBoolean</a>	(<a href="libxml2-xpath.html#xmlNodeSetPtr">xmlNodeSetPtr</a> ns);
 typedef <a href="libxml2-xpath.html#xmlXPathFunction">xmlXPathFunction</a> <a href="#xmlXPathFuncLookupFunc">xmlXPathFuncLookupFunc</a>	(void * ctxt, <br/>						 const <a href="libxml2-xmlstring.html#xmlChar">xmlChar</a> * name, <br/>						 const <a href="libxml2-xmlstring.html#xmlChar">xmlChar</a> * ns_uri);
+<a href="libxml2-xpath.html#xmlXPathObjectPtr">xmlXPathObjectPtr</a>	<a href="#xmlXPathNodeEval">xmlXPathNodeEval</a>	(<a href="libxml2-tree.html#xmlNodePtr">xmlNodePtr</a> node, <br/>						 const <a href="libxml2-xmlstring.html#xmlChar">xmlChar</a> * str, <br/>						 <a href="libxml2-xpath.html#xmlXPathContextPtr">xmlXPathContextPtr</a> ctx);
 <a href="libxml2-xmlstring.html#xmlChar">xmlChar</a> *	<a href="#xmlXPathCastNodeToString">xmlXPathCastNodeToString</a>	(<a href="libxml2-tree.html#xmlNodePtr">xmlNodePtr</a> node);
 int	<a href="#xmlXPathIsNaN">xmlXPathIsNaN</a>			(double val);
 int	<a href="#xmlXPathContextSetCache">xmlXPathContextSetCache</a>		(<a href="libxml2-xpath.html#xmlXPathContextPtr">xmlXPathContextPtr</a> ctxt, <br/>					 int active, <br/>					 int value, <br/>					 int options);
@@ -104,6 +105,7 @@ int	<a href="#xmlXPathCmpNodes">xmlXPathCmpNodes</a>		(<a href="libxml2-tree.htm
 <a href="libxml2-xpath.html#xmlXPathCompExprPtr">xmlXPathCompExprPtr</a>	<a href="#xmlXPathCtxtCompile">xmlXPathCtxtCompile</a>	(<a href="libxml2-xpath.html#xmlXPathContextPtr">xmlXPathContextPtr</a> ctxt, <br/>						 const <a href="libxml2-xmlstring.html#xmlChar">xmlChar</a> * str);
 typedef void <a href="#xmlXPathEvalFunc">xmlXPathEvalFunc</a>		(<a href="libxml2-xpath.html#xmlXPathParserContextPtr">xmlXPathParserContextPtr</a> ctxt, <br/>					 int nargs);
 <a href="libxml2-xmlstring.html#xmlChar">xmlChar</a> *	<a href="#xmlXPathCastBooleanToString">xmlXPathCastBooleanToString</a>	(int val);
+int	<a href="#xmlXPathSetContextNode">xmlXPathSetContextNode</a>		(<a href="libxml2-tree.html#xmlNodePtr">xmlNodePtr</a> node, <br/>					 <a href="libxml2-xpath.html#xmlXPathContextPtr">xmlXPathContextPtr</a> ctx);
 int	<a href="#xmlXPathCastNumberToBoolean">xmlXPathCastNumberToBoolean</a>	(double val);
 void	<a href="#xmlXPathFreeNodeSet">xmlXPathFreeNodeSet</a>		(<a href="libxml2-xpath.html#xmlNodeSetPtr">xmlNodeSetPtr</a> obj);
 void	<a href="#xmlXPathFreeCompExpr">xmlXPathFreeCompExpr</a>		(<a href="libxml2-xpath.html#xmlXPathCompExprPtr">xmlXPathCompExprPtr</a> comp);
@@ -143,7 +145,7 @@ int	<a href="#xmlXPathCastToBoolean">xmlXPathCastToBoolean</a>		(<a href="libxml
         <div class="refsect2" lang="en"><h3><a name="xmlNodeSet">Structure </a>xmlNodeSet</h3><pre class="programlisting">struct _xmlNodeSet {
     int	nodeNr	: number of nodes in the set
     int	nodeMax	: size of the array as allocated
-    <a href="libxml2-tree.html#xmlNodePtr">xmlNodePtr</a> *	nodeTab	: array of nodes in no particular order @@ with_ns to check wether name
+    <a href="libxml2-tree.html#xmlNodePtr">xmlNodePtr</a> *	nodeTab	: array of nodes in no particular order @@ with_ns to check whether nam
 } xmlNodeSet;
 </pre><p/>
 </div>
@@ -212,7 +214,10 @@ The content of this structure is not made public by the API.
     <a href="libxml2-tree.html#xmlNodePtr">xmlNodePtr</a>	debugNode	: the source node XSLT dictionary
     <a href="libxml2-dict.html#xmlDictPtr">xmlDictPtr</a>	dict	: dictionary if any
     int	flags	: flags to control compilation Cache for reusal of XPath objects
-    void *	cache
+    void *	cache	: Resource limits
+    unsigned long	opLimit
+    unsigned long	opCount
+    int	depth
 } xmlXPathContext;
 </pre><p/>
 </div>
@@ -246,6 +251,9 @@ The content of this structure is not made public by the API.
     <a name="XPATH_INVALID_CHAR_ERROR">XPATH_INVALID_CHAR_ERROR</a> = 21
     <a name="XPATH_INVALID_CTXT">XPATH_INVALID_CTXT</a> = 22
     <a name="XPATH_STACK_ERROR">XPATH_STACK_ERROR</a> = 23
+    <a name="XPATH_FORBID_VARIABLE_ERROR">XPATH_FORBID_VARIABLE_ERROR</a> = 24
+    <a name="XPATH_OP_LIMIT_EXCEEDED">XPATH_OP_LIMIT_EXCEEDED</a> = 25
+    <a name="XPATH_RECURSION_LIMIT_EXCEEDED">XPATH_RECURSION_LIMIT_EXCEEDED</a> = 26
 };
 </pre><p/>
 </div>
@@ -447,7 +455,7 @@ The content of this structure is not made public by the API.
         <hr/>
         <div class="refsect2" lang="en"><h3><a name="xmlXPathContextSetCache"/>xmlXPathContextSetCache ()</h3><pre class="programlisting">int	xmlXPathContextSetCache		(<a href="libxml2-xpath.html#xmlXPathContextPtr">xmlXPathContextPtr</a> ctxt, <br/>					 int active, <br/>					 int value, <br/>					 int options)<br/>
 </pre><p>Creates/frees an object cache on the XPath context. If activates XPath objects (xmlXPathObject) will be cached internally to be reused. @options: 0: This will set the XPath object caching: @value: This will set the maximum number of XPath objects to be cached per slot There are 5 slots for: node-set, string, number, boolean, and misc objects. Use &lt;0 for the default number (100). Other values for @options have currently no effect.</p>
-<div class="variablelist"><table border="0"><col align="left"/><tbody><tr><td><span class="term"><i><tt>ctxt</tt></i>:</span></td><td>the XPath context</td></tr><tr><td><span class="term"><i><tt>active</tt></i>:</span></td><td>enables/disables (creates/frees) the cache</td></tr><tr><td><span class="term"><i><tt>value</tt></i>:</span></td><td>a value with semantics dependant on @options</td></tr><tr><td><span class="term"><i><tt>options</tt></i>:</span></td><td>options (currently only the value 0 is used)</td></tr><tr><td><span class="term"><i><tt>Returns</tt></i>:</span></td><td>0 if the setting succeeded, and -1 on API or internal errors.</td></tr></tbody></table></div></div>
+<div class="variablelist"><table border="0"><col align="left"/><tbody><tr><td><span class="term"><i><tt>ctxt</tt></i>:</span></td><td>the XPath context</td></tr><tr><td><span class="term"><i><tt>active</tt></i>:</span></td><td>enables/disables (creates/frees) the cache</td></tr><tr><td><span class="term"><i><tt>value</tt></i>:</span></td><td>a value with semantics dependent on @options</td></tr><tr><td><span class="term"><i><tt>options</tt></i>:</span></td><td>options (currently only the value 0 is used)</td></tr><tr><td><span class="term"><i><tt>Returns</tt></i>:</span></td><td>0 if the setting succeeded, and -1 on API or internal errors.</td></tr></tbody></table></div></div>
         <hr/>
         <div class="refsect2" lang="en"><h3><a name="xmlXPathConvertBoolean"/>xmlXPathConvertBoolean ()</h3><pre class="programlisting"><a href="libxml2-xpath.html#xmlXPathObjectPtr">xmlXPathObjectPtr</a>	xmlXPathConvertBoolean	(<a href="libxml2-xpath.html#xmlXPathObjectPtr">xmlXPathObjectPtr</a> val)<br/>
 </pre><p>Converts an existing object to its boolean() equivalent</p>
@@ -470,7 +478,7 @@ The content of this structure is not made public by the API.
 <div class="variablelist"><table border="0"><col align="left"/><tbody><tr><td><span class="term"><i><tt>str</tt></i>:</span></td><td>the XPath expression</td></tr><tr><td><span class="term"><i><tt>ctx</tt></i>:</span></td><td>the XPath context</td></tr><tr><td><span class="term"><i><tt>Returns</tt></i>:</span></td><td>the <a href="libxml2-xpath.html#xmlXPathObjectPtr">xmlXPathObjectPtr</a> resulting from the evaluation or NULL. the caller has to free the object.</td></tr></tbody></table></div></div>
         <hr/>
         <div class="refsect2" lang="en"><h3><a name="xmlXPathEvalExpression"/>xmlXPathEvalExpression ()</h3><pre class="programlisting"><a href="libxml2-xpath.html#xmlXPathObjectPtr">xmlXPathObjectPtr</a>	xmlXPathEvalExpression	(const <a href="libxml2-xmlstring.html#xmlChar">xmlChar</a> * str, <br/>						 <a href="libxml2-xpath.html#xmlXPathContextPtr">xmlXPathContextPtr</a> ctxt)<br/>
-</pre><p>Evaluate the XPath expression in the given context.</p>
+</pre><p>Alias for xmlXPathEval().</p>
 <div class="variablelist"><table border="0"><col align="left"/><tbody><tr><td><span class="term"><i><tt>str</tt></i>:</span></td><td>the XPath expression</td></tr><tr><td><span class="term"><i><tt>ctxt</tt></i>:</span></td><td>the XPath context</td></tr><tr><td><span class="term"><i><tt>Returns</tt></i>:</span></td><td>the <a href="libxml2-xpath.html#xmlXPathObjectPtr">xmlXPathObjectPtr</a> resulting from the evaluation or NULL. the caller has to free the object.</td></tr></tbody></table></div></div>
         <hr/>
         <div class="refsect2" lang="en"><h3><a name="xmlXPathEvalPredicate"/>xmlXPathEvalPredicate ()</h3><pre class="programlisting">int	xmlXPathEvalPredicate		(<a href="libxml2-xpath.html#xmlXPathContextPtr">xmlXPathContextPtr</a> ctxt, <br/>					 <a href="libxml2-xpath.html#xmlXPathObjectPtr">xmlXPathObjectPtr</a> res)<br/>
@@ -502,16 +510,20 @@ The content of this structure is not made public by the API.
 </div>
         <hr/>
         <div class="refsect2" lang="en"><h3><a name="xmlXPathIsInf"/>xmlXPathIsInf ()</h3><pre class="programlisting">int	xmlXPathIsInf			(double val)<br/>
-</pre><p>Provides a portable isinf() function to detect whether a double is a +Infinite or -Infinite. Based on trio code http://sourceforge.net/projects/ctrio/</p>
-<div class="variablelist"><table border="0"><col align="left"/><tbody><tr><td><span class="term"><i><tt>val</tt></i>:</span></td><td>a double value</td></tr><tr><td><span class="term"><i><tt>Returns</tt></i>:</span></td><td>1 vi the value is +Infinite, -1 if -Infinite, 0 otherwise</td></tr></tbody></table></div></div>
+</pre><p/>
+<div class="variablelist"><table border="0"><col align="left"/><tbody><tr><td><span class="term"><i><tt>val</tt></i>:</span></td><td>a double value</td></tr><tr><td><span class="term"><i><tt>Returns</tt></i>:</span></td><td>1 if the value is +Infinite, -1 if -Infinite, 0 otherwise</td></tr></tbody></table></div></div>
         <hr/>
         <div class="refsect2" lang="en"><h3><a name="xmlXPathIsNaN"/>xmlXPathIsNaN ()</h3><pre class="programlisting">int	xmlXPathIsNaN			(double val)<br/>
-</pre><p>Provides a portable isnan() function to detect whether a double is a NotaNumber. Based on trio code http://sourceforge.net/projects/ctrio/</p>
+</pre><p/>
 <div class="variablelist"><table border="0"><col align="left"/><tbody><tr><td><span class="term"><i><tt>val</tt></i>:</span></td><td>a double value</td></tr><tr><td><span class="term"><i><tt>Returns</tt></i>:</span></td><td>1 if the value is a NaN, 0 otherwise</td></tr></tbody></table></div></div>
         <hr/>
         <div class="refsect2" lang="en"><h3><a name="xmlXPathNewContext"/>xmlXPathNewContext ()</h3><pre class="programlisting"><a href="libxml2-xpath.html#xmlXPathContextPtr">xmlXPathContextPtr</a>	xmlXPathNewContext	(<a href="libxml2-tree.html#xmlDocPtr">xmlDocPtr</a> doc)<br/>
 </pre><p>Create a new <a href="libxml2-xpath.html#xmlXPathContext">xmlXPathContext</a></p>
 <div class="variablelist"><table border="0"><col align="left"/><tbody><tr><td><span class="term"><i><tt>doc</tt></i>:</span></td><td>the XML document</td></tr><tr><td><span class="term"><i><tt>Returns</tt></i>:</span></td><td>the <a href="libxml2-xpath.html#xmlXPathContext">xmlXPathContext</a> just allocated. The caller will need to free it.</td></tr></tbody></table></div></div>
+        <hr/>
+        <div class="refsect2" lang="en"><h3><a name="xmlXPathNodeEval"/>xmlXPathNodeEval ()</h3><pre class="programlisting"><a href="libxml2-xpath.html#xmlXPathObjectPtr">xmlXPathObjectPtr</a>	xmlXPathNodeEval	(<a href="libxml2-tree.html#xmlNodePtr">xmlNodePtr</a> node, <br/>						 const <a href="libxml2-xmlstring.html#xmlChar">xmlChar</a> * str, <br/>						 <a href="libxml2-xpath.html#xmlXPathContextPtr">xmlXPathContextPtr</a> ctx)<br/>
+</pre><p>Evaluate the XPath Location Path in the given context. The node 'node' is set as the context node. The context node is not restored.</p>
+<div class="variablelist"><table border="0"><col align="left"/><tbody><tr><td><span class="term"><i><tt>node</tt></i>:</span></td><td>the node to to use as the context node</td></tr><tr><td><span class="term"><i><tt>str</tt></i>:</span></td><td>the XPath expression</td></tr><tr><td><span class="term"><i><tt>ctx</tt></i>:</span></td><td>the XPath context</td></tr><tr><td><span class="term"><i><tt>Returns</tt></i>:</span></td><td>the <a href="libxml2-xpath.html#xmlXPathObjectPtr">xmlXPathObjectPtr</a> resulting from the evaluation or NULL. the caller has to free the object.</td></tr></tbody></table></div></div>
         <hr/>
         <div class="refsect2" lang="en"><h3><a name="xmlXPathNodeSetCreate"/>xmlXPathNodeSetCreate ()</h3><pre class="programlisting"><a href="libxml2-xpath.html#xmlNodeSetPtr">xmlNodeSetPtr</a>	xmlXPathNodeSetCreate	(<a href="libxml2-tree.html#xmlNodePtr">xmlNodePtr</a> val)<br/>
 </pre><p>Create a new <a href="libxml2-xpath.html#xmlNodeSetPtr">xmlNodeSetPtr</a> of type double and of value @val</p>
@@ -524,6 +536,10 @@ The content of this structure is not made public by the API.
         <div class="refsect2" lang="en"><h3><a name="xmlXPathOrderDocElems"/>xmlXPathOrderDocElems ()</h3><pre class="programlisting">long	xmlXPathOrderDocElems		(<a href="libxml2-tree.html#xmlDocPtr">xmlDocPtr</a> doc)<br/>
 </pre><p>Call this routine to speed up XPath computation on static documents. This stamps all the element nodes with the document order Like for line information, the order is kept in the element-&gt;content field, the value stored is actually - the node number (starting at -1) to be able to differentiate from line numbers.</p>
 <div class="variablelist"><table border="0"><col align="left"/><tbody><tr><td><span class="term"><i><tt>doc</tt></i>:</span></td><td>an input document</td></tr><tr><td><span class="term"><i><tt>Returns</tt></i>:</span></td><td>the number of elements found in the document or -1 in case of error.</td></tr></tbody></table></div></div>
+        <hr/>
+        <div class="refsect2" lang="en"><h3><a name="xmlXPathSetContextNode"/>xmlXPathSetContextNode ()</h3><pre class="programlisting">int	xmlXPathSetContextNode		(<a href="libxml2-tree.html#xmlNodePtr">xmlNodePtr</a> node, <br/>					 <a href="libxml2-xpath.html#xmlXPathContextPtr">xmlXPathContextPtr</a> ctx)<br/>
+</pre><p>Sets 'node' as the context node. The node must be in the same document as that associated with the context.</p>
+<div class="variablelist"><table border="0"><col align="left"/><tbody><tr><td><span class="term"><i><tt>node</tt></i>:</span></td><td>the node to to use as the context node</td></tr><tr><td><span class="term"><i><tt>ctx</tt></i>:</span></td><td>the XPath context</td></tr><tr><td><span class="term"><i><tt>Returns</tt></i>:</span></td><td>-1 in case of error or 0 if successful</td></tr></tbody></table></div></div>
         <hr/>
       </div>
     </div>

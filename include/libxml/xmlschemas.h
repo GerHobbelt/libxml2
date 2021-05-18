@@ -92,7 +92,8 @@ typedef xmlSchema *xmlSchemaPtr;
  *
  * Signature of an error callback from an XSD validation
  */
-typedef void (XMLCDECL *xmlSchemaValidityErrorFunc) (void *ctx, const char *msg, ...) LIBXML_ATTR_FORMAT(2,3);
+typedef void (XMLCDECL *xmlSchemaValidityErrorFunc)
+                 (void *ctx, const char *msg, ...) LIBXML_ATTR_FORMAT(2,3);
 
 /**
  * xmlSchemaValidityWarningFunc:
@@ -102,7 +103,8 @@ typedef void (XMLCDECL *xmlSchemaValidityErrorFunc) (void *ctx, const char *msg,
  *
  * Signature of a warning callback from an XSD validation
  */
-typedef void (XMLCDECL *xmlSchemaValidityWarningFunc) (void *ctx, const char *msg, ...) LIBXML_ATTR_FORMAT(2,3);
+typedef void (XMLCDECL *xmlSchemaValidityWarningFunc)
+                 (void *ctx, const char *msg, ...) LIBXML_ATTR_FORMAT(2,3);
 
 /**
  * A schemas validation context
@@ -120,7 +122,7 @@ typedef xmlSchemaValidCtxt *xmlSchemaValidCtxtPtr;
  * @line: returned line information
  *
  * A schemas validation locator, a callback called by the validator.
- * This is used when file or node informations are not available
+ * This is used when file or node information are not available
  * to find out what file and line number are affected
  *
  * Returns: 0 in case of success and -1 in case of error

@@ -44,7 +44,7 @@ typedef int (*functest) (const char *filename, const char *result,
 typedef struct testDesc testDesc;
 typedef testDesc *testDescPtr;
 struct testDesc {
-    const char *desc; /* descripton of the test */
+    const char *desc; /* description of the test */
     functest    func; /* function implementing the test */
     const char *in;   /* glob to path for input files */
     const char *out;  /* output directory */
@@ -69,8 +69,8 @@ typedef struct
 } glob_t;
 
 #define GLOB_DOOFFS 0
-static int glob(const char *pattern, int flags,
-                int errfunc(const char *epath, int eerrno),
+static int glob(const char *pattern, ATTRIBUTE_UNUSED int flags,
+                ATTRIBUTE_UNUSED int errfunc(const char *epath, int eerrno),
                 glob_t *pglob) {
     glob_t *ret;
     WIN32_FIND_DATA FindFileData;
@@ -632,15 +632,25 @@ static char *resultFilename(const char *filename, const char *out,
       suffixbuff[0]='_';
 #endif
 
-    snprintf(res, 499, "%s%s%s", out, base, suffixbuff);
-    res[499] = 0;
+    if (snprintf(res, 499, "%s%s%s", out, base, suffixbuff) >= 499)
+        res[499] = 0;
     return(strdup(res));
 }
 
 static int checkTestFile(const char *filename) {
+#if defined(_MSC_VER) && _MSC_VER >= 1500
+    struct _stat64 buf;
+#else
     struct stat buf;
+#endif
 
-    if (stat(filename, &buf) == -1)
+    if (
+#if defined(_MSC_VER) && _MSC_VER >= 1500
+        _stat64(filename, &buf)
+#else
+        stat(filename, &buf)
+#endif
+        == -1)
         return(0);
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
