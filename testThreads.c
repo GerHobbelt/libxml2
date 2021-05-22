@@ -106,8 +106,12 @@ thread_specific_data(void *private_data)
 }
 
 #ifdef HAVE_PTHREAD_H
-int
-main(void)
+
+#if defined(BUILD_MONOLITHIC)
+#define main()      xml_testthreads_main()
+#endif
+
+int main(void)
 {
     unsigned int i, repeat;
     int ret;
@@ -157,10 +161,14 @@ win32_thread_specific_data(void *private_data)
     return(0);
 }
 
-int
-main(void)
+
+#if defined(BUILD_MONOLITHIC)
+#define main()      xml_testthreads_main()
+#endif
+
+int main(void)
 {
-    unsigned int i, repeat;
+	unsigned int i, repeat;
     BOOL ret;
 
     xmlInitParser();
@@ -214,10 +222,14 @@ main(void)
     return (0);
 }
 #elif defined HAVE_BEOS_THREADS
-int
-main(void)
+
+#if defined(BUILD_MONOLITHIC)
+#define main()      xml_testthreads_main()
+#endif
+
+int main(void)
 {
-    unsigned int i, repeat;
+	unsigned int i, repeat;
     status_t ret;
 
     xmlInitParser();
@@ -268,19 +280,27 @@ main(void)
     return (0);
 }
 #else /* no pthreads or BeOS threads */
-int
-main(void)
+
+#if defined(BUILD_MONOLITHIC)
+#define main()      xml_testthreads_main()
+#endif
+
+int main(void)
 {
-    fprintf(stderr, "libxml was not compiled with pthread or BeOS pthread support\n");
+	fprintf(stderr, "libxml was not compiled with pthread or BeOS pthread support\n");
     return (0);
 }
 #endif /* pthreads or BeOS threads */
 
 #else /* !LIBXML_THREADS_ENABLED */
-int
-main(void)
+
+#if defined(BUILD_MONOLITHIC)
+#define main()      xml_testthreads_main()
+#endif
+
+int main(void)
 {
-    fprintf(stderr, "libxml was not compiled with thread or catalog support\n");
+	fprintf(stderr, "libxml was not compiled with thread or catalog support\n");
     return (0);
 }
 #endif

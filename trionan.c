@@ -769,7 +769,7 @@ TRIO_ARGS1((number),
  *  Unix : -DSTANDALONE
  *  VMS  : /DEFINE=(STANDALONE)
  */
-#if defined(STANDALONE)
+#if defined(STANDALONE) || defined(BUILD_MONOLITHIC)
 # include <stdio.h>
 
 static TRIO_CONST char *
@@ -805,6 +805,11 @@ TRIO_ARGS2((prefix, number),
 	 getClassification(TRIO_FPCLASSIFY(number)),
 	 number);
 }
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main()      xml_trionan_main()
+#endif
 
 int main(TRIO_NOARGS)
 {

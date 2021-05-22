@@ -1188,7 +1188,12 @@ parseAndPrintFile(char *filename) {
 }
 
 
-int main(int argc, char **argv) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_testSAX_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     int i;
     int files = 0;
 
@@ -1253,7 +1258,12 @@ int main(int argc, char **argv) {
     return(0);
 }
 #else
-int main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_testSAX_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     printf("%s : SAX1 parsing support not compiled in\n", argv[0]);
     return(0);
 }

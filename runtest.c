@@ -125,7 +125,7 @@ static int glob(const char *pattern, ATTRIBUTE_UNUSED int flags,
                 ATTRIBUTE_UNUSED int errfunc(const char *epath, int eerrno),
                 glob_t *pglob) {
     glob_t *ret;
-    WIN32_FIND_DATA FindFileData;
+    WIN32_FIND_DATAA FindFileData;
     HANDLE hFind;
     unsigned int nb_paths = 0;
     char directory[500];
@@ -4575,8 +4575,11 @@ runtest(int i) {
     return(ret);
 }
 
-int
-main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_runtest_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     int i, a, ret = 0;
     int subset = 0;
 
@@ -4630,8 +4633,11 @@ main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
 }
 
 #else /* ! LIBXML_OUTPUT_ENABLED */
-int
-main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_runtest_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     fprintf(stderr, "runtest requires output to be enabled in libxml2\n");
     return(1);
 }

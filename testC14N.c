@@ -132,7 +132,12 @@ test_c14n(const char* xml_filename, int with_comments, int mode,
     return(ret);
 }
 
-int main(int argc, char **argv) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_testC14N_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     int ret = -1;
 
     /*
@@ -364,7 +369,12 @@ print_xpath_nodes(xmlNodeSetPtr nodes) {
 
 #else
 #include <stdio.h>
-int main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_testC14N_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     printf("%s : XPath/Canonicalization and output support not compiled in\n", argv[0]);
     return(0);
 }

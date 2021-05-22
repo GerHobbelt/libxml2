@@ -422,9 +422,12 @@ static int run_test1(void) {
     return(ret);
 }
 
-int main(void)
-{
-    int ret;
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_testdict_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
+	int ret;
 
     LIBXML_TEST_VERSION
     fill_strings();

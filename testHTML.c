@@ -798,7 +798,11 @@ parseAndPrintFile(char *filename) {
     xmlFreeDoc(doc);
 }
 
-int main(int argc, char **argv) {
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_testhtml_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     int i, count;
     int files = 0;
 
@@ -873,7 +877,12 @@ int main(int argc, char **argv) {
 }
 #else /* !LIBXML_HTML_ENABLED */
 #include <stdio.h>
-int main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_testhtml_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     printf("%s : HTML support not compiled in\n", argv[0]);
     return(0);
 }

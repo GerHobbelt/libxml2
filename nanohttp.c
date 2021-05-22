@@ -1864,8 +1864,13 @@ xmlNanoHTTPFetchContent( void * ctx, char ** ptr, int * len ) {
     return ( rc );
 }
 
-#ifdef STANDALONE
-int main(int argc, char **argv) {
+#if defined(STANDALONE) || defined(BUILD_MONOLITHIC)
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_nanohttp_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     char *contentType = NULL;
 
     if (argv[1] != NULL) {
@@ -1886,9 +1891,14 @@ int main(int argc, char **argv) {
 }
 #endif /* STANDALONE */
 #else /* !LIBXML_HTTP_ENABLED */
-#ifdef STANDALONE
+#if defined(STANDALONE) || defined(BUILD_MONOLITHIC)
 #include <stdio.h>
-int main(int argc, char **argv) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_nanohttp_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     xmlGenericError(xmlGenericErrorContext,
 	    "%s : HTTP support not compiled in\n", argv[0]);
     return(0);

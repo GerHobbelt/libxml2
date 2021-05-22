@@ -584,8 +584,11 @@ error:
     xmlFreeParserCtxt(ctxt);
 }
 
-int main(void) {
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_testchar_main(cnt, arr)
+#endif
 
+int main(int argc, const char** argv) {
     /*
      * this initialize the library and check potential ABI mismatches
      * between the version it was compiled for and the actual shared

@@ -3182,8 +3182,12 @@ static void deregisterNode(xmlNodePtr node)
     nbregister--;
 }
 
-int
-main(int argc, char **argv) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_xmllint_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     int i, acount;
     int files = 0;
     int version = 0;

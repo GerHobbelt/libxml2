@@ -327,7 +327,12 @@ Usage : %s [options] catalogfile entities...\n\
 \t--no-super-update: do not update the SGML super catalog\n\
 \t-v --verbose : provide debug information\n");
 }
-int main(int argc, char **argv) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_xmlcatalog_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     int i;
     int ret;
     int exit_value = 0;
@@ -617,7 +622,12 @@ int main(int argc, char **argv) {
     return(exit_value);
 }
 #else
-int main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_xmlcatalog_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     fprintf(stderr, "libxml was not compiled with catalog and output support\n");
     return(1);
 }

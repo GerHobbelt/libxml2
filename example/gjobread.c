@@ -285,8 +285,13 @@ handleGjob(gJobPtr cur) {
     for (i = 0; i < cur->nbJobs; i++) printJob(cur->jobs[i]);
 }
 
-int main(int argc, char **argv) {
-    int i;
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_gio_bread_example_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
+	int i;
     gJobPtr cur;
 
     /* COMPAT: Do not generate nodes for formatting spaces */

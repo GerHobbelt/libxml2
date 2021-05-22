@@ -117,7 +117,11 @@ get_api_attr(void) {
 
 static int quiet = 0;
 
-int main(int argc, char **argv) {
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_testapi_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     int ret;
     int blocks, mem;
 

@@ -1600,8 +1600,12 @@ runcrazy(void) {
 }
 
 
-int
-main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_testlimits_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     int i, a, ret = 0;
     int subset = 0;
 

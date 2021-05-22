@@ -40,7 +40,12 @@
 
 typedef int (*hello_world_t)(void);
 
-int main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_testmodule_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     xmlChar filename[PATH_MAX];
     xmlModulePtr module = NULL;
     hello_world_t hello_world = NULL;
@@ -75,7 +80,12 @@ int main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
 
 #else
 #include <stdio.h>
-int main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_testmodule_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     printf("%s : Module support not compiled in\n", argv[0]);
     return(0);
 }

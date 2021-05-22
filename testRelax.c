@@ -54,7 +54,12 @@ static int memory = 0;
 #endif
 
 
-int main(int argc, char **argv) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_testrelax_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     int i;
     int files = 0;
     xmlRelaxNGPtr schema = NULL;
@@ -181,7 +186,12 @@ int main(int argc, char **argv) {
 
 #else
 #include <stdio.h>
-int main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_testrelax_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     printf("%s : RelaxNG support not compiled in\n", argv[0]);
     return(0);
 }

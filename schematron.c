@@ -1739,10 +1739,13 @@ xmlSchematronValidateDoc(xmlSchematronValidCtxtPtr ctxt, xmlDocPtr instance)
     return(ctxt->nberrors);
 }
 
-#ifdef STANDALONE
-int
-main(void)
-{
+#if defined(STANDALONE) || defined(BUILD_MONOLITHIC)
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_schematron_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     int ret;
     xmlDocPtr instance;
     xmlSchematronParserCtxtPtr pctxt;

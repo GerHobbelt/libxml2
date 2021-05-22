@@ -1040,8 +1040,12 @@ done:
  *									*
  ************************************************************************/
 
-int
-main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_runsuite_tests_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     int ret = 0;
     int old_errors, old_tests, old_leaks;
 
@@ -1160,8 +1164,11 @@ main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
     return(ret);
 }
 #else /* !SCHEMAS */
-int
-main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_runsuite_tests_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     fprintf(stderr, "runsuite requires support for schemas and xpath in libxml2\n");
 }
 #endif

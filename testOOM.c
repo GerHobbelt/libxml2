@@ -315,7 +315,12 @@ check_load_file_memory_func (void *data)
      return status;
 }
 
-int main(int argc, char **argv) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_testOOM_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     int i;
     int files = 0;
 

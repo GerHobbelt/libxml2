@@ -2069,7 +2069,12 @@ void ftpData(void *userData, const char *data, int len) {
     fwrite(data, len, 1, (FILE*)userData);
 }
 
-int main(int argc, char **argv) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_nanoftp_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     void *ctxt;
     FILE *output;
     char *tstfile = NULL;
@@ -2107,7 +2112,12 @@ int main(int argc, char **argv) {
 #else /* !LIBXML_FTP_ENABLED */
 #ifdef STANDALONE
 #include <stdio.h>
-int main(int argc, char **argv) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_nanoftp_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     xmlGenericError(xmlGenericErrorContext,
 	    "%s : FTP support not compiled in\n", argv[0]);
     return(0);

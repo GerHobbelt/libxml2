@@ -140,7 +140,12 @@ testXPathFile(const char *filename) {
     fclose(input);
 }
 
-int main(int argc, char **argv) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_testXPath_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     int i;
     int strings = 0;
     int usefile = 0;
@@ -222,7 +227,12 @@ int main(int argc, char **argv) {
 }
 #else
 #include <stdio.h>
-int main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_testXPath_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     printf("%s : XPath/Debug support not compiled in\n", argv[0]);
     return(0);
 }

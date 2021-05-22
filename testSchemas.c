@@ -54,7 +54,12 @@ static int memory = 0;
 #endif
 
 
-int main(int argc, char **argv) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_testschemas_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     int i;
     int files = 0;
     xmlSchemaPtr schema = NULL;
@@ -172,7 +177,12 @@ failed_schemas:
 
 #else
 #include <stdio.h>
-int main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_testschemas_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     printf("%s : Schemas support not compiled in\n", argv[0]);
     return(0);
 }

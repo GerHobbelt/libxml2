@@ -77,7 +77,12 @@ static void handleURI(const char *str) {
     xmlFreeURI(uri);
 }
 
-int main(int argc, char **argv) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_testURI_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     int i, arg = 1;
 
     if ((argc > arg) && (argv[arg] != NULL) &&

@@ -1511,6 +1511,7 @@ xmlConvertCRNG(const char *schemas, int len, const char *encoding) {
  */
 xmlDocPtr
 xmlConvertCRNGFile(const char *URL, const char *encoding) {
+	return NULL;
 }
 
 #ifdef STANDALONE

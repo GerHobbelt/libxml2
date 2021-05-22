@@ -267,7 +267,12 @@ static void usage(const char *name) {
     fprintf(stderr, "   --input filename: use the given filename for exp\n");
 }
 
-int main(int argc, char **argv) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_testregexp_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     xmlRegexpPtr comp = NULL;
 #ifdef LIBXML_EXPR_ENABLED
     xmlExpNodePtr expr = NULL;
@@ -395,7 +400,12 @@ int main(int argc, char **argv) {
 
 #else
 #include <stdio.h>
-int main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_testregexp_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     printf("%s : Regexp support not compiled in\n", argv[0]);
     return(0);
 }

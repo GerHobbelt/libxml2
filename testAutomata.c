@@ -214,8 +214,11 @@ testRegexpFile(const char *filename) {
 	xmlFreeAutomata(am);
 }
 
-int main(int argc, char **argv) {
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_testAutomata_main(cnt, arr)
+#endif
 
+int main(int argc, const char** argv) {
     xmlInitMemory();
 
     if (argc == 1) {
@@ -302,7 +305,12 @@ int main(int argc, char **argv) {
 
 #else
 #include <stdio.h>
-int main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_testAutomata_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     printf("%s : Automata support not compiled in\n", argv[0]);
     return(0);
 }
