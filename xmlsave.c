@@ -951,7 +951,7 @@ xmlNodeDumpOutputInternal(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
         case XML_TEXT_NODE:
 	    if (cur->content == NULL)
                 break;
-	    if (cur->name != xmlStringTextNoenc) {
+	    if (cur->name != xmlStringTextNoenc()) {
                 xmlOutputBufferWriteEscape(buf, cur->content, ctxt->escape);
 	    } else {
 		/*
@@ -1607,8 +1607,8 @@ xhtmlNodeDumpOutput(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
         case XML_TEXT_NODE:
 	    if (cur->content == NULL)
                 break;
-	    if ((cur->name == xmlStringText) ||
-		(cur->name != xmlStringTextNoenc)) {
+	    if ((cur->name == xmlStringText()) ||
+		(cur->name != xmlStringTextNoenc())) {
                 xmlOutputBufferWriteEscape(buf, cur->content, ctxt->escape);
 	    } else {
 		/*

@@ -2555,7 +2555,7 @@ xmlSAX2Text(xmlParserCtxtPtr ctxt, const xmlChar *ch, int len,
 	int coalesceText = (lastChild != NULL) &&
 	    (lastChild->type == type) &&
 	    ((type != XML_TEXT_NODE) ||
-             (lastChild->name == xmlStringText));
+             (lastChild->name == xmlStringText()));
 	if ((coalesceText) && (ctxt->nodemem != 0)) {
 	    /*
 	     * The whole point of maintaining nodelen and nodemem,
