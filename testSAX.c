@@ -110,7 +110,7 @@ my_gettimeofday(struct timeval *tvp, void *tzp)
 /* FILETIME of Jan 1 1970 00:00:00. */
 #define EPOCH    116444736000000000LL
 
-int gettimeofday(struct timeval *tv, struct timezone *tzp)
+static int gettimeofday(struct timeval *tv, struct timezone *tzp)
 {
   union
   {
@@ -298,7 +298,7 @@ static xmlSAXHandler emptySAXHandlerStruct = {
 };
 
 static xmlSAXHandlerPtr emptySAXHandler = &emptySAXHandlerStruct;
-extern xmlSAXHandlerPtr debugSAXHandler;
+static xmlSAXHandlerPtr debugSAXHandler;
 
 /************************************************************************
  *									*
@@ -930,7 +930,7 @@ static xmlSAXHandler debugSAXHandlerStruct = {
     NULL
 };
 
-xmlSAXHandlerPtr debugSAXHandler = &debugSAXHandlerStruct;
+static xmlSAXHandlerPtr debugSAXHandler = &debugSAXHandlerStruct;
 
 /*
  * SAX2 specific callbacks
@@ -1063,7 +1063,7 @@ static xmlSAXHandlerPtr debugSAX2Handler = &debugSAX2HandlerStruct;
  ************************************************************************/
 
 static void
-parseAndPrintFile(char *filename) {
+parseAndPrintFile(const char *filename) {
     int res;
 
 #ifdef LIBXML_PUSH_ENABLED

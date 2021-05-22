@@ -105,7 +105,7 @@ struct testDesc {
 };
 
 static int update_results = 0;
-static char* temp_directory = NULL;
+static const char* temp_directory = NULL;
 static int checkTestFile(const char *filename);
 
 #if defined(_WIN32) && !defined(__CYGWIN__)

@@ -47,7 +47,7 @@ static int noout = 0;
 #ifdef LIBXML_PUSH_ENABLED
 static int push = 0;
 #endif /* LIBXML_PUSH_ENABLED */
-static char *encoding = NULL;
+static const char *encoding = NULL;
 static int options = 0;
 
 static xmlSAXHandler emptySAXHandlerStruct = {
@@ -86,7 +86,7 @@ static xmlSAXHandler emptySAXHandlerStruct = {
 };
 
 static xmlSAXHandlerPtr emptySAXHandler = &emptySAXHandlerStruct;
-extern xmlSAXHandlerPtr debugSAXHandler;
+static xmlSAXHandlerPtr debugSAXHandler;
 
 /************************************************************************
  *									*
@@ -609,7 +609,7 @@ static xmlSAXHandler debugSAXHandlerStruct = {
     NULL
 };
 
-xmlSAXHandlerPtr debugSAXHandler = &debugSAXHandlerStruct;
+static xmlSAXHandlerPtr debugSAXHandler = &debugSAXHandlerStruct;
 /************************************************************************
  *									*
  *				Debug					*
@@ -617,7 +617,7 @@ xmlSAXHandlerPtr debugSAXHandler = &debugSAXHandlerStruct;
  ************************************************************************/
 
 static void
-parseSAXFile(char *filename) {
+parseSAXFile(const char *filename) {
     htmlDocPtr doc = NULL;
 
     /*
@@ -711,7 +711,7 @@ parseSAXFile(char *filename) {
 }
 
 static void
-parseAndPrintFile(char *filename) {
+parseAndPrintFile(const char *filename) {
     htmlDocPtr doc = NULL;
 
     /*

@@ -143,22 +143,22 @@ XMLPUBFUN void XMLCALL
 	xmlShellPrintXPathResult(xmlXPathObjectPtr list);
 XMLPUBFUN int XMLCALL
 	xmlShellList		(xmlShellCtxtPtr ctxt,
-				 char *arg,
+				 const char *arg,
 				 xmlNodePtr node,
 				 xmlNodePtr node2);
 XMLPUBFUN int XMLCALL
 	xmlShellBase		(xmlShellCtxtPtr ctxt,
-				 char *arg,
+				 const char *arg,
 				 xmlNodePtr node,
 				 xmlNodePtr node2);
 XMLPUBFUN int XMLCALL
 	xmlShellDir		(xmlShellCtxtPtr ctxt,
-				 char *arg,
+				 const char *arg,
 				 xmlNodePtr node,
 				 xmlNodePtr node2);
 XMLPUBFUN int XMLCALL
 	xmlShellLoad		(xmlShellCtxtPtr ctxt,
-				 char *filename,
+				 const char *filename,
 				 xmlNodePtr node,
 				 xmlNodePtr node2);
 #ifdef LIBXML_OUTPUT_ENABLED
@@ -166,30 +166,30 @@ XMLPUBFUN void XMLCALL
 	xmlShellPrintNode	(xmlNodePtr node);
 XMLPUBFUN int XMLCALL
 	xmlShellCat		(xmlShellCtxtPtr ctxt,
-				 char *arg,
+				 const char *arg,
 				 xmlNodePtr node,
 				 xmlNodePtr node2);
 XMLPUBFUN int XMLCALL
 	xmlShellWrite		(xmlShellCtxtPtr ctxt,
-				 char *filename,
+				 const char *filename,
 				 xmlNodePtr node,
 				 xmlNodePtr node2);
 XMLPUBFUN int XMLCALL
 	xmlShellSave		(xmlShellCtxtPtr ctxt,
-				 char *filename,
+				 const char *filename,
 				 xmlNodePtr node,
 				 xmlNodePtr node2);
 #endif /* LIBXML_OUTPUT_ENABLED */
 #ifdef LIBXML_VALID_ENABLED
 XMLPUBFUN int XMLCALL
 	xmlShellValidate	(xmlShellCtxtPtr ctxt,
-				 char *dtd,
+				 const char *dtd,
 				 xmlNodePtr node,
 				 xmlNodePtr node2);
 #endif /* LIBXML_VALID_ENABLED */
 XMLPUBFUN int XMLCALL
 	xmlShellDu		(xmlShellCtxtPtr ctxt,
-				 char *arg,
+				 const char *arg,
 				 xmlNodePtr tree,
 				 xmlNodePtr node2);
 XMLPUBFUN int XMLCALL
@@ -203,7 +203,7 @@ XMLPUBFUN int XMLCALL
  */
 XMLPUBFUN void XMLCALL
 	xmlShell		(xmlDocPtr doc,
-				 char *filename,
+				 const char *filename,
 				 xmlShellReadlineFunc input,
 				 FILE *output);
 

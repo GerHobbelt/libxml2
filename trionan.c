@@ -811,7 +811,7 @@ TRIO_ARGS2((prefix, number),
 #define main()      xml_trionan_main()
 #endif
 
-int main(TRIO_NOARGS)
+int main()
 {
   double my_nan;
   double my_pinf;

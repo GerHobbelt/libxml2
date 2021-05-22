@@ -39,7 +39,7 @@ static int del = 0;
 static int convert = 0;
 static int no_super_update = 0;
 static int verbose = 0;
-static char *filename = NULL;
+static const char *filename = NULL;
 
 
 #ifndef XML_SGML_DEFAULT_CATALOG

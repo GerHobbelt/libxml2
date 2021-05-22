@@ -166,7 +166,7 @@ win32_thread_specific_data(void *private_data)
 #define main()      xml_testthreads_main()
 #endif
 
-int main(void)
+int main()
 {
 	unsigned int i, repeat;
     BOOL ret;

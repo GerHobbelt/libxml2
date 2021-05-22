@@ -1768,7 +1768,7 @@ int main(int argc, const char** argv) {
 	fprintf(stderr, "failed to parse instance\n");
     }
     if ((schema != NULL) && (instance != NULL)) {
-        vctxt = xmlSchematronNewValidCtxt(schema);
+        vctxt = xmlSchematronNewValidCtxt(schema, 0 /* options */ );
 	if (vctxt == NULL) {
 	    fprintf(stderr, "failed to build schematron validator\n");
 	} else {

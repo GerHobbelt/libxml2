@@ -149,7 +149,7 @@ int main(int argc, const char** argv) {
     int i;
     int strings = 0;
     int usefile = 0;
-    char *filename = NULL;
+	const char *filename = NULL;
 
     for (i = 1; i < argc ; i++) {
 #if defined(LIBXML_XPTR_ENABLED)

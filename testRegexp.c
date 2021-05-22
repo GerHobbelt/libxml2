@@ -280,7 +280,7 @@ int main(int argc, const char** argv) {
     xmlExpCtxtPtr ctxt = NULL;
 #endif
     const char *pattern = NULL;
-    char *filename = NULL;
+	const char *filename = NULL;
     int i;
 
     xmlInitMemory();
