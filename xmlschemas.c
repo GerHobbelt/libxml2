@@ -4228,6 +4228,7 @@ xmlSchemaFree(xmlSchemaPtr schema)
  ************************************************************************/
 
 #ifdef LIBXML_OUTPUT_ENABLED
+#ifdef HAVE_STDIO_FOPEN_H
 
 static void
 xmlSchemaTypeDump(xmlSchemaTypePtr type, FILE * output); /* forward */
@@ -4318,6 +4319,7 @@ xmlSchemaElementDump(void *payload, void *data,
 	    fprintf(output, "\n");
     }
 }
+#endif
 
 /**
  * xmlSchemaAnnotDump:
@@ -4326,6 +4328,7 @@ xmlSchemaElementDump(void *payload, void *data,
  *
  * Dump the annotation
  */
+#ifdef HAVE_STDIO_FOPEN_H
 static void
 xmlSchemaAnnotDump(FILE * output, xmlSchemaAnnotPtr annot)
 {
@@ -4676,6 +4679,7 @@ xmlSchemaDebugDumpIDCTable(FILE * output,
 	bind = bind->next;
     } while (bind != NULL);
 }
+#endif
 #endif /* DEBUG_IDC */
 #endif /* LIBXML_OUTPUT_ENABLED */
 

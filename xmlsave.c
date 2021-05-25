@@ -2249,6 +2249,7 @@ xmlBufNodeDump(xmlBufPtr buf, xmlDocPtr doc, xmlNodePtr cur, int level,
  *
  * Dump an XML/HTML node, recursive behaviour, children are printed too.
  */
+#ifdef HAVE_STDIO_FOPEN_H
 void
 xmlElemDump(FILE * f, xmlDocPtr doc, xmlNodePtr cur)
 {
@@ -2283,6 +2284,7 @@ xmlElemDump(FILE * f, xmlDocPtr doc, xmlNodePtr cur)
         xmlNodeDumpOutput(outbuf, doc, cur, 0, 1, NULL);
     xmlOutputBufferClose(outbuf);
 }
+#endif
 
 /************************************************************************
  *									*
@@ -2496,6 +2498,7 @@ xmlDocDumpMemoryEnc(xmlDocPtr out_doc, xmlChar **doc_txt_ptr,
  * Note that @format = 1 provide node indenting only if xmlIndentTreeOutput = 1
  * or xmlKeepBlanksDefault(0) was called
  */
+#ifdef HAVE_STDIO_FOPEN_H
 int
 xmlDocFormatDump(FILE *f, xmlDocPtr cur, int format) {
     xmlSaveCtxt ctxt;
@@ -2549,6 +2552,7 @@ int
 xmlDocDump(FILE *f, xmlDocPtr cur) {
     return(xmlDocFormatDump (f, cur, 0));
 }
+#endif
 
 /**
  * xmlSaveFileTo:

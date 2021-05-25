@@ -158,12 +158,14 @@ XMLPUBFUN xmlRelaxNGPtr XMLCALL
 XMLPUBFUN void XMLCALL
 		    xmlRelaxNGFree		(xmlRelaxNGPtr schema);
 #ifdef LIBXML_OUTPUT_ENABLED
+#ifdef HAVE_STDIO_FOPEN_H
 XMLPUBFUN void XMLCALL
 		    xmlRelaxNGDump		(FILE *output,
 					 xmlRelaxNGPtr schema);
 XMLPUBFUN void XMLCALL
 		    xmlRelaxNGDumpTree	(FILE * output,
 					 xmlRelaxNGPtr schema);
+#endif
 #endif /* LIBXML_OUTPUT_ENABLED */
 /*
  * Interfaces for validating

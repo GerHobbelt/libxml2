@@ -165,9 +165,11 @@ XMLPUBFUN xmlSchemaPtr XMLCALL
 XMLPUBFUN void XMLCALL
 	    xmlSchemaFree		(xmlSchemaPtr schema);
 #ifdef LIBXML_OUTPUT_ENABLED
+#ifdef HAVE_STDIO_FOPEN_H
 XMLPUBFUN void XMLCALL
 	    xmlSchemaDump		(FILE *output,
 					 xmlSchemaPtr schema);
+#endif
 #endif /* LIBXML_OUTPUT_ENABLED */
 /*
  * Interfaces for validating

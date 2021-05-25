@@ -7709,6 +7709,7 @@ xmlRelaxNGSetParserStructuredErrors(xmlRelaxNGParserCtxtPtr ctxt,
  *			Dump back a compiled form			*
  *									*
  ************************************************************************/
+#ifdef HAVE_STDIO_FOPEN_H
 static void xmlRelaxNGDumpDefine(FILE * output,
                                  xmlRelaxNGDefinePtr define);
 
@@ -7938,6 +7939,7 @@ xmlRelaxNGDumpTree(FILE * output, xmlRelaxNGPtr schema)
         xmlDocDump(output, schema->doc);
     }
 }
+#endif
 #endif /* LIBXML_OUTPUT_ENABLED */
 
 /************************************************************************

@@ -914,6 +914,7 @@ xmlFileOpen (const char *filename) {
  *
  * Returns an I/O context or NULL in case of error
  */
+#ifdef HAVE_STDIO_FOPEN_H
 static void *
 xmlFileOpenW (const char *filename) {
     const char *path = NULL;
@@ -953,6 +954,7 @@ xmlFileOpenW (const char *filename) {
     if (fd == NULL) xmlIOErr(0, path);
     return((void *) fd);
 }
+#endif
 #endif /* LIBXML_OUTPUT_ENABLED */
 
 /**
@@ -992,6 +994,7 @@ xmlFileRead (void * context, char * buffer, int len) {
  */
 static int
 xmlFileWrite (void * context, const char * buffer, int len) {
+#ifdef HAVE_STDIO_FOPEN_H
     int items;
 
     if ((context == NULL) || (buffer == NULL))
@@ -1002,6 +1005,9 @@ xmlFileWrite (void * context, const char * buffer, int len) {
 	return(-1);
     }
     return(items * len);
+#else
+    return -1;
+#endif
 }
 #endif /* LIBXML_OUTPUT_ENABLED */
 
@@ -2304,8 +2310,10 @@ xmlRegisterDefaultOutputCallbacks (void) {
     if (xmlOutputCallbackInitialized)
 	return;
 
+#ifdef HAVE_STDIO_FOPEN_H
     xmlRegisterOutputCallbacks(xmlFileMatch, xmlFileOpenW,
 	                      xmlFileWrite, xmlFileClose);
+#endif
 
 #ifdef LIBXML_HTTP_ENABLED
     xmlRegisterOutputCallbacks(xmlIOHTTPMatch, xmlIOHTTPDfltOpenW,
@@ -2855,6 +2863,7 @@ xmlParserInputBufferCreateFile(FILE *file, xmlCharEncoding enc) {
  *
  * Returns the new parser output or NULL
  */
+#ifdef HAVE_STDIO_FOPEN_H
 xmlOutputBufferPtr
 xmlOutputBufferCreateFile(FILE *file, xmlCharEncodingHandlerPtr encoder) {
     xmlOutputBufferPtr ret;
@@ -2873,6 +2882,7 @@ xmlOutputBufferCreateFile(FILE *file, xmlCharEncodingHandlerPtr encoder) {
 
     return(ret);
 }
+#endif
 
 /**
  * xmlOutputBufferCreateBuffer:
