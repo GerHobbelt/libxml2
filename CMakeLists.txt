@@ -55,8 +55,9 @@ option(LIBXML2_WITH_SGXSDX "Use with intel sgxsdk")
 set(LIBXML2_XMLCONF_WORKING_DIR ${CMAKE_CURRENT_BINARY_DIR} CACHE PATH "Working directory for XML Conformance Test Suite")
 
 if(LIBXML2_WITH_SGXSDK)
-        set(CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES "")
+	set(CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES "")
 	set(CMAKE_C_FLAGS "-I${LIBXML2_WITH_SGXSDK}/include/tlibc -m64 -Wall -Wextra -Winit-self -Wpointer-arith -Wreturn-type -Waddress -Wsequence-point -Wformat-security -Wmissing-include-dirs -Wundef -Wshadow -Wcast-align -Wredundant-decls -Wwrite-strings -Waggregate-return -Wmissing-prototypes -Wnested-externs -Winline -Wno-format-extra-args -Wno-stringop-overflow -Wno-stringop-truncation -Wno-unused-but-set-variable -nostdinc -fvisibility=hidden -fpie -fexceptions -ffunction-sections -fdata-sections -fstack-protector-strong")
+	set(CMAKE_C_ARCHIVE_CREATE "<CMAKE_AR> cru <TARGET> <LINK_FLAGS> <OBJECTS>")
 endif()
 
 if(LIBXML2_WITH_ICONV)
