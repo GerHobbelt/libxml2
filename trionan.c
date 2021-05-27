@@ -799,6 +799,9 @@ TRIO_ARGS2((prefix, number),
 	   TRIO_CONST char *prefix,
 	   double number)
 {
+#ifndef TRIO_FPCLASSIFY
+#define TRIO_FPCLASSIFY(n) fpclassify(n)
+#endif
   printf("%-6s: %s %-15s %g\n",
 	 prefix,
 	 trio_signbit(number) ? "-" : "+",
