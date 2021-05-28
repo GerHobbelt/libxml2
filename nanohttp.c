@@ -63,8 +63,11 @@
 #ifdef HAVE_STRINGS_H
 #include <strings.h>
 #endif
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) && !defined(LIBXML_ZLIB_NG_ENABLED)
 #include <zlib.h>
+#endif
+#ifdef LIBXML_ZLIB_NG_ENABLED
+#include <zlib-ng.h>
 #endif
 
 
@@ -145,8 +148,8 @@ typedef struct xmlNanoHTTPCtxt {
     char *authHeader;	/* contents of {WWW,Proxy}-Authenticate header */
     char *encoding;	/* encoding extracted from the contentType */
     char *mimeType;	/* Mime-Type extracted from the contentType */
-#ifdef LIBXML_ZLIB_ENABLED
-    z_stream *strm;	/* Zlib stream object */
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
+	zng_stream *strm;	/* Zlib stream object */
     int usesGzip;	/* "Content-Encoding: gzip" was detected */
 #endif
 } xmlNanoHTTPCtxt, *xmlNanoHTTPCtxtPtr;
@@ -434,9 +437,9 @@ xmlNanoHTTPFreeCtxt(xmlNanoHTTPCtxtPtr ctxt) {
     if (ctxt->mimeType != NULL) xmlFree(ctxt->mimeType);
     if (ctxt->location != NULL) xmlFree(ctxt->location);
     if (ctxt->authHeader != NULL) xmlFree(ctxt->authHeader);
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
     if (ctxt->strm != NULL) {
-	inflateEnd(ctxt->strm);
+		zng_inflateEnd(ctxt->strm);
 	xmlFree(ctxt->strm);
     }
 #endif
@@ -817,14 +820,14 @@ xmlNanoHTTPScanAnswer(xmlNanoHTTPCtxtPtr ctxt, const char *line) {
 	if (ctxt->authHeader != NULL)
 	    xmlFree(ctxt->authHeader);
 	ctxt->authHeader = xmlMemStrdup(cur);
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
     } else if ( !xmlStrncasecmp( BAD_CAST line, BAD_CAST"Content-Encoding:", 17) ) {
 	cur += 17;
 	while ((*cur == ' ') || (*cur == '\t')) cur++;
 	if ( !xmlStrncasecmp( BAD_CAST cur, BAD_CAST"gzip", 4) ) {
 	    ctxt->usesGzip = 1;
 
-	    ctxt->strm = xmlMalloc(sizeof(z_stream));
+	    ctxt->strm = xmlMalloc(sizeof(*ctxt->strm));
 
 	    if (ctxt->strm != NULL) {
 		ctxt->strm->zalloc = Z_NULL;
@@ -833,7 +836,7 @@ xmlNanoHTTPScanAnswer(xmlNanoHTTPCtxtPtr ctxt, const char *line) {
 		ctxt->strm->avail_in = 0;
 		ctxt->strm->next_in = Z_NULL;
 
-		inflateInit2( ctxt->strm, 31 );
+		zng_inflateInit2( ctxt->strm, 31 );
 	    }
 	}
 #endif
@@ -1273,7 +1276,7 @@ xmlNanoHTTPOpenRedir(const char *URL, char **contentType, char **redir) {
 int
 xmlNanoHTTPRead(void *ctx, void *dest, int len) {
     xmlNanoHTTPCtxtPtr ctxt = (xmlNanoHTTPCtxtPtr) ctx;
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
     int bytes_read = 0;
     int orig_avail_in;
     int z_ret;
@@ -1283,7 +1286,7 @@ xmlNanoHTTPRead(void *ctx, void *dest, int len) {
     if (dest == NULL) return(-1);
     if (len <= 0) return(0);
 
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
     if (ctxt->usesGzip == 1) {
         if (ctxt->strm == NULL) return(0);
 
@@ -1297,7 +1300,7 @@ xmlNanoHTTPRead(void *ctx, void *dest, int len) {
 			    ctxt->inptr - ctxt->inrptr - bytes_read;
             ctxt->strm->next_in = BAD_CAST (ctxt->inrptr + bytes_read);
 
-            z_ret = inflate(ctxt->strm, Z_NO_FLUSH);
+            z_ret = zng_inflate(ctxt->strm, Z_NO_FLUSH);
             bytes_read += orig_avail_in - ctxt->strm->avail_in;
 
             if (z_ret != Z_OK) break;
@@ -1424,7 +1427,7 @@ retry:
 	/* 1 for '?' */
 	blen += strlen(ctxt->query) + 1;
     blen += strlen(method) + strlen(ctxt->path) + 24;
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
     /* reserve for possible 'Accept-Encoding: gzip' string */
     blen += 23;
 #endif
@@ -1468,7 +1471,7 @@ retry:
 		    ctxt->hostname, ctxt->port);
     }
 
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
     p += snprintf(p, blen - (p - bp), "Accept-Encoding: gzip\r\n");
 #endif
 

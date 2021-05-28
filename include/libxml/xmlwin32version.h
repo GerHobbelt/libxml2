@@ -30,21 +30,21 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * the version string like "1.2.3"
  */
-#define LIBXML_DOTTED_VERSION "2.4.26"
+#define LIBXML_DOTTED_VERSION "2.9.9"
 
 /**
  * LIBXML_VERSION:
  *
- * the version number: 1.2.3 value is 1002003
+ * the version number: 1.2.3 value is 10203
  */
-#define LIBXML_VERSION 20426
+#define LIBXML_VERSION 20909
 
 /**
  * LIBXML_VERSION_STRING:
  *
- * the version number string, 1.2.3 value is "1002003"
+ * the version number string, 1.2.3 value is "10203"
  */
-#define LIBXML_VERSION_STRING "20426"
+#define LIBXML_VERSION_STRING "20909"
 
 /**
  * LIBXML_VERSION_EXTRA:
@@ -59,8 +59,9 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  * Macro to check that the libxml version in use is compatible with
  * the version the software has been compiled against
  */
-#define LIBXML_TEST_VERSION xmlCheckVersion(20426);
+#define LIBXML_TEST_VERSION xmlCheckVersion(20909);
 
+#ifndef VMS
 #if 0
 /**
  * WITH_TRIO:
@@ -76,6 +77,14 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  */
 #define WITHOUT_TRIO
 #endif
+#else /* VMS */
+/**
+ * WITH_TRIO:
+ *
+ * defined if the trio support need to be configured in
+ */
+#define WITH_TRIO 1
+#endif /* VMS */
 
 /**
  * LIBXML_THREAD_ENABLED:
@@ -84,6 +93,15 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  */
 #if 1
 #define LIBXML_THREAD_ENABLED
+#endif
+
+/**
+ * LIBXML_THREAD_ALLOC_ENABLED:
+ *
+ * Whether the allocation hooks are per-thread
+ */
+#if 0
+#define LIBXML_THREAD_ALLOC_ENABLED
 #endif
 
 /**
@@ -172,7 +190,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * Whether the DTD validation support is configured in
  */
-#if 0
+#if 1
 #define LIBXML_VALID_ENABLED
 #endif
 
@@ -190,7 +208,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * Whether the deprecated APIs are compiled in for compatibility
  */
-#if 0
+#if 1
 #define LIBXML_LEGACY_ENABLED
 #endif
 
@@ -199,7 +217,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * Whether the Canonicalization support is configured in
  */
-#if 0
+#if 1
 #define LIBXML_C14N_ENABLED
 #endif
 
@@ -271,7 +289,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * Whether ISO-8859-* support is made available in case iconv is not
  */
-#if 0
+#if 1
 #define LIBXML_ISO8859X_ENABLED
 #endif
 
@@ -307,7 +325,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * Whether the Unicode related interfaces are compiled in
  */
-#if 0
+#if 1
 #define LIBXML_UNICODE_ENABLED
 #endif
 
@@ -316,7 +334,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * Whether the regular expressions interfaces are compiled in
  */
-#if 0
+#if 1
 #define LIBXML_REGEXP_ENABLED
 #endif
 
@@ -325,7 +343,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * Whether the automata interfaces are compiled in
  */
-#if 0
+#if 1
 #define LIBXML_AUTOMATA_ENABLED
 #endif
 
@@ -334,7 +352,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * Whether the formal expressions interfaces are compiled in
  */
-#if 0
+#if 1
 #define LIBXML_EXPR_ENABLED
 #endif
 
@@ -343,7 +361,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * Whether the Schemas validation interfaces are compiled in
  */
-#if 0
+#if 1
 #define LIBXML_SCHEMAS_ENABLED
 #endif
 
@@ -361,14 +379,14 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * Whether the module interfaces are compiled in
  */
-#if 0
+#if 1
 #define LIBXML_MODULES_ENABLED
 /**
  * LIBXML_MODULE_EXTENSION:
  *
  * the string suffix used by dynamic modules (usually shared libraries)
  */
-#define LIBXML_MODULE_EXTENSION "@MODULE_EXTENSION@" 
+#define LIBXML_MODULE_EXTENSION ".dll" 
 #endif
 
 /**
@@ -376,8 +394,17 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * Whether the Zlib support is compiled in
  */
-#if 0
+#if 1
 #define LIBXML_ZLIB_ENABLED
+#endif
+
+/**
+ * LIBXML_ZLIB_NG_ENABLED:
+ *
+ * Whether the Zlib-NG support is compiled in
+ */
+#if 1
+#define LIBXML_ZLIB_NG_ENABLED
 #endif
 
 /**
@@ -422,7 +449,11 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  */
 
 #ifndef ATTRIBUTE_UNUSED
-#define ATTRIBUTE_UNUSED __attribute__((unused))
+# if ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ >= 7)))
+#  define ATTRIBUTE_UNUSED __attribute__((unused))
+# else
+#  define ATTRIBUTE_UNUSED
+# endif
 #endif
 
 /**
@@ -432,7 +463,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  */
 
 #ifndef LIBXML_ATTR_ALLOC_SIZE
-# if ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 3)))
+# if (!defined(__clang__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 3))))
 #  define LIBXML_ATTR_ALLOC_SIZE(x) __attribute__((alloc_size(x)))
 # else
 #  define LIBXML_ATTR_ALLOC_SIZE(x)

@@ -33,8 +33,11 @@
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) && !defined(LIBXML_ZLIB_NG_ENABLED)
 #include <zlib.h>
+#endif
+#ifdef LIBXML_ZLIB_NG_ENABLED
+#include <zlib-ng.h>
 #endif
 #ifdef LIBXML_LZMA_ENABLED
 #include <lzma.h>
@@ -634,14 +637,14 @@ xmlWrapOpenUtf8(const char *path,int mode)
     return fd;
 }
 
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
 static gzFile
 xmlWrapGzOpenUtf8(const char *path, const char *mode)
 {
     gzFile fd;
     wchar_t *wPath;
 
-    fd = gzopen (path, mode);
+    fd = zng_gzopen (path, mode);
     if (fd)
         return fd;
 
@@ -654,7 +657,7 @@ xmlWrapGzOpenUtf8(const char *path, const char *mode)
 #endif
 	d = _wopen(wPath, m);
 	if (d >= 0)
-	    fd = gzdopen(d, mode);
+	    fd = zng_gzdopen(d, mode);
         xmlFree(wPath);
     }
 
@@ -1079,7 +1082,7 @@ xmlBufferWrite (void * context, const char * buffer, int len) {
 }
 #endif
 
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
 /************************************************************************
  *									*
  *		I/O for compressed file accesses			*
@@ -1114,7 +1117,7 @@ xmlGzfileOpen_real (const char *filename) {
 
     if (!strcmp(filename, "-")) {
         int duped_fd = dup(fileno(stdin));
-        fd = gzdopen(duped_fd, "rb");
+        fd = zng_gzdopen(duped_fd, "rb");
         if (fd == Z_NULL && duped_fd >= 0) {
             close(duped_fd);  /* gzdOpen() does not close on failure */
         }
@@ -1145,7 +1148,7 @@ xmlGzfileOpen_real (const char *filename) {
 #if defined(_WIN32) || defined (__DJGPP__) && !defined (__CYGWIN__)
     fd = xmlWrapGzOpenUtf8(path, "rb");
 #else
-    fd = gzopen(path, "rb");
+    fd = zng_gzopen(path, "rb");
 #endif
     return((void *) fd);
 }
@@ -1193,7 +1196,7 @@ xmlGzfileOpenW (const char *filename, int compression) {
     snprintf(mode, sizeof(mode), "wb%d", compression);
     if (!strcmp(filename, "-")) {
         int duped_fd = dup(fileno(stdout));
-        fd = gzdopen(duped_fd, "rb");
+        fd = zng_gzdopen(duped_fd, "rb");
         if (fd == Z_NULL && duped_fd >= 0) {
             close(duped_fd);  /* gzdOpen() does not close on failure */
         }
@@ -1222,7 +1225,7 @@ xmlGzfileOpenW (const char *filename, int compression) {
 #if defined(_WIN32) || defined (__DJGPP__) && !defined (__CYGWIN__)
     fd = xmlWrapGzOpenUtf8(path, mode);
 #else
-    fd = gzopen(path, mode);
+    fd = zng_gzopen(path, mode);
 #endif
     return((void *) fd);
 }
@@ -1242,7 +1245,7 @@ static int
 xmlGzfileRead (void * context, char * buffer, int len) {
     int ret;
 
-    ret = gzread((gzFile) context, &buffer[0], len);
+    ret = zng_gzread((gzFile) context, &buffer[0], len);
     if (ret < 0) xmlIOErr(0, "gzread()");
     return(ret);
 }
@@ -1262,7 +1265,7 @@ static int
 xmlGzfileWrite (void * context, const char * buffer, int len) {
     int ret;
 
-    ret = gzwrite((gzFile) context, (char *) &buffer[0], len);
+    ret = zng_gzwrite((gzFile) context, (char *) &buffer[0], len);
     if (ret < 0) xmlIOErr(0, "gzwrite()");
     return(ret);
 }
@@ -1278,7 +1281,7 @@ static int
 xmlGzfileClose (void * context) {
     int ret;
 
-    ret =  (gzclose((gzFile) context) == Z_OK ) ? 0 : -1;
+    ret =  (zng_gzclose((gzFile) context) == Z_OK ) ? 0 : -1;
     if (ret < 0) xmlIOErr(0, "gzclose()");
     return(ret);
 }
@@ -1421,7 +1424,7 @@ typedef struct xmlIOHTTPWriteCtxt_
 
 } xmlIOHTTPWriteCtxt, *xmlIOHTTPWriteCtxtPtr;
 
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
 
 #define DFLT_WBITS		( -15 )
 #define DFLT_MEM_LVL		( 8 )
@@ -1442,7 +1445,7 @@ typedef struct xmlZMemBuff_
    unsigned long	crc;
 
    unsigned char *	zbuff;
-   z_stream		zctrl;
+   zng_stream		zctrl;
 
 } xmlZMemBuff, *xmlZMemBuffPtr;
 
@@ -1497,13 +1500,13 @@ xmlFreeZMemBuff( xmlZMemBuffPtr buff ) {
 
     xmlFree( buff->zbuff );
 #ifdef DEBUG_HTTP
-    z_err = deflateEnd( &buff->zctrl );
+    z_err = zng_deflateEnd( &buff->zctrl );
     if ( z_err != Z_OK )
 	xmlGenericError( xmlGenericErrorContext,
 			"xmlFreeZMemBuff:  Error releasing zlib context:  %d\n",
 			z_err );
 #else
-    deflateEnd( &buff->zctrl );
+	zng_deflateEnd( &buff->zctrl );
 #endif
 
     xmlFree( buff );
@@ -1547,7 +1550,7 @@ xmlCreateZMemBuff( int compression ) {
 	return ( NULL );
     }
 
-    z_err = deflateInit2( &buff->zctrl, compression, Z_DEFLATED,
+    z_err = zng_deflateInit2( &buff->zctrl, compression, Z_DEFLATED,
 			    DFLT_WBITS, DFLT_MEM_LVL, Z_DEFAULT_STRATEGY );
     if ( z_err != Z_OK ) {
 	xmlChar msg[500];
@@ -1562,7 +1565,7 @@ xmlCreateZMemBuff( int compression ) {
     }
 
     /*  Set the header data.  The CRC will be needed for the trailer  */
-    buff->crc = crc32( 0L, NULL, 0 );
+    buff->crc = zng_crc32( 0L, NULL, 0 );
     hdr_lgth = snprintf( (char *)buff->zbuff, buff->size,
 			"%c%c%c%c%c%c%c%c%c%c",
 			GZ_MAGIC1, GZ_MAGIC2, Z_DEFLATED,
@@ -1664,7 +1667,7 @@ xmlZMemBuffAppend( xmlZMemBuffPtr buff, const char * src, int len ) {
 		return ( -1 );
 	}
 
-	z_err = deflate( &buff->zctrl, Z_NO_FLUSH );
+	z_err = zng_deflate( &buff->zctrl, Z_NO_FLUSH );
 	if ( z_err != Z_OK ) {
 	    xmlChar msg[500];
 	    xmlStrPrintf(msg, 500,
@@ -1676,7 +1679,7 @@ xmlZMemBuffAppend( xmlZMemBuffPtr buff, const char * src, int len ) {
 	}
     }
 
-    buff->crc = crc32( buff->crc, (unsigned char *)src, len );
+    buff->crc = zng_crc32( buff->crc, (unsigned char *)src, len );
 
     return ( len );
 }
@@ -1705,7 +1708,7 @@ xmlZMemBuffGetContent( xmlZMemBuffPtr buff, char ** data_ref ) {
 
     do
     {
-	z_err = deflate( &buff->zctrl, Z_FINISH );
+	z_err = zng_deflate( &buff->zctrl, Z_FINISH );
 	if ( z_err == Z_OK ) {
 	    /*  In this case Z_OK means more buffer space needed  */
 
@@ -1768,7 +1771,7 @@ xmlFreeHTTPWriteCtxt( xmlIOHTTPWriteCtxtPtr ctxt )
 
     if ( ctxt->doc_buff != NULL ) {
 
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
 	if ( ctxt->compression > 0 ) {
 	    xmlFreeZMemBuff( ctxt->doc_buff );
 	}
@@ -1855,7 +1858,7 @@ xmlIOHTTPOpenW(const char *post_uri, int compression ATTRIBUTE_UNUSED)
      * **  is being used to avoid pushing the data to disk and back.
      */
 
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
     if ((compression > 0) && (compression <= 9)) {
 
         ctxt->compression = compression;
@@ -1935,7 +1938,7 @@ xmlIOHTTPWrite( void * context, const char * buffer, int len ) {
 
 	/*  Use gzwrite or fwrite as previously setup in the open call  */
 
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
 	if ( ctxt->compression > 0 )
 	    len = xmlZMemBuffAppend( ctxt->doc_buff, buffer, len );
 
@@ -1999,7 +2002,7 @@ xmlIOHTTPCloseWrite( void * context, const char * http_mthd ) {
 
     /*  Retrieve the content from the appropriate buffer  */
 
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
 
     if ( ctxt->compression > 0 ) {
 	content_lgth = xmlZMemBuffGetContent( ctxt->doc_buff, &http_content );
@@ -2270,7 +2273,7 @@ xmlRegisterDefaultInputCallbacks(void) {
 
     xmlRegisterInputCallbacks(xmlFileMatch, xmlFileOpen,
 	                      xmlFileRead, xmlFileClose);
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
     xmlRegisterInputCallbacks(xmlGzfileMatch, xmlGzfileOpen,
 	                      xmlGzfileRead, xmlGzfileClose);
 #endif /* LIBXML_ZLIB_ENABLED */
@@ -2315,7 +2318,7 @@ xmlRegisterDefaultOutputCallbacks (void) {
  uncompressed ones except opening if existing then closing
  and saving with same compression ratio ... a pain.
 
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
     xmlRegisterOutputCallbacks(xmlGzfileMatch, xmlGzfileOpen,
 	                       xmlGzfileWrite, xmlGzfileClose);
 #endif
@@ -2607,21 +2610,21 @@ __xmlParserInputBufferCreateFilename(const char *URI, xmlCharEncoding enc) {
 	ret->context = context;
 	ret->readcallback = xmlInputCallbackTable[i].readcallback;
 	ret->closecallback = xmlInputCallbackTable[i].closecallback;
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
 	if ((xmlInputCallbackTable[i].opencallback == xmlGzfileOpen) &&
 		(strcmp(URI, "-") != 0)) {
 #if defined(ZLIB_VERNUM) && ZLIB_VERNUM >= 0x1230
-            ret->compressed = !gzdirect(context);
+            ret->compressed = !zng_gzdirect(context);
 #else
-	    if (((z_stream *)context)->avail_in > 4) {
+	    if (((zng_stream *)context)->avail_in > 4) {
 	        char *cptr, buff4[4];
-		cptr = (char *) ((z_stream *)context)->next_in;
-		if (gzread(context, buff4, 4) == 4) {
+		cptr = (char *) ((zng_stream *)context)->next_in;
+		if (zng_gzread(context, buff4, 4) == 4) {
 		    if (strncmp(buff4, cptr, 4) == 0)
 		        ret->compressed = 0;
 		    else
 		        ret->compressed = 1;
-		    gzrewind(context);
+			zng_gzrewind(context);
 		}
 	    }
 #endif
@@ -2671,7 +2674,7 @@ __xmlOutputBufferCreateFilename(const char *URI,
     int i = 0;
     void *context = NULL;
     char *unescaped = NULL;
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
     int is_file_uri = 1;
 #endif
 
@@ -2682,7 +2685,7 @@ __xmlOutputBufferCreateFilename(const char *URI,
 
     puri = xmlParseURI(URI);
     if (puri != NULL) {
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
         if ((puri->scheme != NULL) &&
 	    (!xmlStrEqual(BAD_CAST puri->scheme, BAD_CAST "file")))
 	    is_file_uri = 0;
@@ -2702,7 +2705,7 @@ __xmlOutputBufferCreateFilename(const char *URI,
      * try with an unescaped version of the URI
      */
     if (unescaped != NULL) {
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
 	if ((compression > 0) && (compression <= 9) && (is_file_uri == 1)) {
 	    context = xmlGzfileOpenW(unescaped, compression);
 	    if (context != NULL) {
@@ -2720,7 +2723,7 @@ __xmlOutputBufferCreateFilename(const char *URI,
 	for (i = xmlOutputCallbackNr - 1;i >= 0;i--) {
 	    if ((xmlOutputCallbackTable[i].matchcallback != NULL) &&
 		(xmlOutputCallbackTable[i].matchcallback(unescaped) != 0)) {
-#if defined(LIBXML_HTTP_ENABLED) && defined(LIBXML_ZLIB_ENABLED)
+#if defined(LIBXML_HTTP_ENABLED) && (defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED))
 		/*  Need to pass compression parameter into HTTP open calls  */
 		if (xmlOutputCallbackTable[i].matchcallback == xmlIOHTTPMatch)
 		    context = xmlIOHTTPOpenW(unescaped, compression);
@@ -2739,7 +2742,7 @@ __xmlOutputBufferCreateFilename(const char *URI,
      * filename
      */
     if (context == NULL) {
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
 	if ((compression > 0) && (compression <= 9) && (is_file_uri == 1)) {
 	    context = xmlGzfileOpenW(URI, compression);
 	    if (context != NULL) {
@@ -2756,7 +2759,7 @@ __xmlOutputBufferCreateFilename(const char *URI,
 	for (i = xmlOutputCallbackNr - 1;i >= 0;i--) {
 	    if ((xmlOutputCallbackTable[i].matchcallback != NULL) &&
 		(xmlOutputCallbackTable[i].matchcallback(URI) != 0)) {
-#if defined(LIBXML_HTTP_ENABLED) && defined(LIBXML_ZLIB_ENABLED)
+#if defined(LIBXML_HTTP_ENABLED) && (defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED))
 		/*  Need to pass compression parameter into HTTP open calls  */
 		if (xmlOutputCallbackTable[i].matchcallback == xmlIOHTTPMatch)
 		    context = xmlIOHTTPOpenW(URI, compression);

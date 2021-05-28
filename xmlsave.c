@@ -2657,8 +2657,8 @@ xmlSaveFormatFileEnc( const char * filename, xmlDocPtr cur,
 		return(-1);
     }
 
-#ifdef LIBXML_ZLIB_ENABLED
-    if (cur->compression < 0) cur->compression = xmlGetCompressMode();
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
+	if (cur->compression < 0) cur->compression = xmlGetCompressMode();
 #endif
     /*
      * save the content to a temp buffer.

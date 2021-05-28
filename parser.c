@@ -1066,8 +1066,8 @@ xmlHasFeature(xmlFeature feature)
             return(0);
 #endif
         case XML_WITH_ZLIB:
-#ifdef LIBXML_ZLIB_ENABLED
-            return(1);
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
+			return(1);
 #else
             return(0);
 #endif

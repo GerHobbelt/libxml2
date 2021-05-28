@@ -398,6 +398,15 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
 #define LIBXML_ZLIB_ENABLED
 #endif
 
+ /**
+  * LIBXML_ZLIB_NG_ENABLED:
+  *
+  * Whether the Zlib-NG support is compiled in
+  */
+#if 1
+#define LIBXML_ZLIB_NG_ENABLED
+#endif
+
 /**
  * LIBXML_LZMA_ENABLED:
  *

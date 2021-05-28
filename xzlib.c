@@ -31,8 +31,11 @@
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) && !defined(LIBXML_ZLIB_NG_ENABLED)
 #include <zlib.h>
+#endif
+#ifdef LIBXML_ZLIB_NG_ENABLED
+#include <zlib-ng.h>
 #endif
 #ifdef LIBXML_LZMA_ENABLED
 #include <lzma.h>
@@ -76,9 +79,9 @@ typedef struct {
     char padding1[32];          /* padding allowing to cope with possible
                                    extensions of above structure without
 				   too much side effect */
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
     /* zlib inflate or deflate stream */
-    z_stream zstrm;             /* stream structure in-place (not a pointer) */
+	zng_stream zstrm;             /* stream structure in-place (not a pointer) */
 #endif
     char padding2[32];          /* padding allowing to cope with possible
                                    extensions of above structure without
@@ -130,7 +133,7 @@ xz_reset(xz_statep state)
     xz_error(state, LZMA_OK, NULL);     /* clear error */
     state->pos = 0;             /* no uncompressed data yet */
     state->strm.avail_in = 0;   /* no input data yet */
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
     state->zstrm.avail_in = 0;  /* no input data yet */
 #endif
 }
@@ -272,7 +275,7 @@ xz_avail(xz_statep state)
     return 0;
 }
 
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
 static int
 xz_avail_zstrm(xz_statep state)
 {
@@ -349,7 +352,7 @@ is_format_lzma(xz_statep state)
     return 1;
 }
 
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
 
 /* Get next byte from input, or -1 if end or error. */
 #define NEXT() ((strm->avail_in == 0 && xz_avail(state) == -1) ? -1 : \
@@ -415,7 +418,7 @@ xz_head(xz_statep state)
             xz_error(state, LZMA_MEM_ERROR, "out of memory");
             return -1;
         }
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
         /* allocate inflate memory */
         state->zstrm.zalloc = Z_NULL;
         state->zstrm.zfree = Z_NULL;
@@ -423,7 +426,7 @@ xz_head(xz_statep state)
         state->zstrm.avail_in = 0;
         state->zstrm.next_in = Z_NULL;
         if (state->init == 0) {
-            if (inflateInit2(&(state->zstrm), -15) != Z_OK) {/* raw inflate */
+            if (zng_inflateInit2(&(state->zstrm), -15) != Z_OK) {/* raw inflate */
                 xmlFree(state->out);
                 xmlFree(state->in);
                 state->size = 0;
@@ -449,7 +452,7 @@ xz_head(xz_statep state)
         state->direct = 0;
         return 0;
     }
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
     /* look for the gzip magic header bytes 31 and 139 */
     if (strm->next_in[0] == 31) {
         strm->avail_in--;
@@ -498,7 +501,7 @@ xz_head(xz_statep state)
              * noticed on the first request for uncompressed data */
 
             /* set up for decompression */
-            inflateReset(&state->zstrm);
+			zng_inflateReset(&state->zstrm);
             state->zstrm.adler = crc32(0L, Z_NULL, 0);
             state->how = GZIP;
             state->direct = 0;
@@ -550,13 +553,13 @@ xz_decomp(xz_statep state)
             action = LZMA_FINISH;
 
         /* decompress and handle errors */
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
         if (state->how == GZIP) {
             state->zstrm.avail_in = (uInt) state->strm.avail_in;
             state->zstrm.next_in = (Bytef *) state->strm.next_in;
             state->zstrm.avail_out = (uInt) state->strm.avail_out;
             state->zstrm.next_out = (Bytef *) state->strm.next_out;
-            ret = inflate(&state->zstrm, Z_NO_FLUSH);
+            ret = zng_inflate(&state->zstrm, Z_NO_FLUSH);
             if (ret == Z_STREAM_ERROR || ret == Z_NEED_DICT) {
                 xz_error(state, Z_STREAM_ERROR,
                          "internal error: inflate stream corrupt");
@@ -601,13 +604,13 @@ xz_decomp(xz_statep state)
     /* update available output and crc check value */
     state->have = had - strm->avail_out;
     state->next = strm->next_out - state->have;
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
     state->zstrm.adler =
         crc32(state->zstrm.adler, state->next, state->have);
 #endif
 
     if (ret == LZMA_STREAM_END) {
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
         if (state->how == GZIP) {
             if (gz_next4(state, &crc) == -1 || gz_next4(state, &len) == -1) {
                 xz_error(state, LZMA_DATA_ERROR, "unexpected end of file");
@@ -797,9 +800,9 @@ __libxml2_xzclose(xzFile file)
     /* free memory and close file */
     if (state->size) {
         lzma_end(&(state->strm));
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
         if (state->init == 1)
-            inflateEnd(&(state->zstrm));
+			zng_inflateEnd(&(state->zstrm));
         state->init = 0;
 #endif
         xmlFree(state->out);

@@ -1490,8 +1490,11 @@ xmlConvertCRNG(const char *schemas, int len, const char *encoding) {
     ctxt.key_ref = xmlDictLookup(ctxt.dict, BAD_CAST "ref", 3);
     ctxt.key_define = xmlDictLookup(ctxt.dict, BAD_CAST "define", 6);
 
-    /* xmlConvertCRNGTokenize(&ctxt); */
+#if 0
+	xmlConvertCRNGTokenize(&ctxt);
     xmlConvertCRNG_topLevel(&ctxt);
+#endif
+	xmlParseCRNG_topLevel(&ctxt);
 
     xmlDictFree(ctxt.dict);
 
