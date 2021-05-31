@@ -3077,7 +3077,9 @@ xmlRegCheckCharacter(xmlRegAtomPtr atom, int codepoint) {
 	    return(accept);
 	}
         case XML_REGEXP_STRING:
+#ifndef USE_SGXSDK
 	    printf("TODO: XML_REGEXP_STRING\n");
+#endif
 	    return(-1);
         case XML_REGEXP_ANYCHAR:
         case XML_REGEXP_ANYSPACE:
