@@ -362,7 +362,11 @@ static void TIM_SORT_RESIZE(TEMP_STORAGE_T *store, const size_t new_size) {
       fprintf(stderr, "Error allocating temporary storage for tim sort: need %lu bytes",
               (unsigned long)(sizeof(SORT_TYPE) * new_size));
 #endif
+#ifdef USE_SGXSDK
+      return;
+#else
       exit(1);
+#endif
     }
 
     store->storage = tempstore;

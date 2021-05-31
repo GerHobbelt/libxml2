@@ -1301,13 +1301,25 @@ xmlSnprintfElementContent(char *buf, int size, xmlElementContentPtr content, int
     len = strlen(buf);
     if (size - len < 50) {
 	if ((size - len > 4) && (buf[len - 1] != '.'))
+#ifdef USE_SGXSDK
+            strncat(buf, " ...", 4);
+#else
 	    strcat(buf, " ...");
+#endif
 	return;
     }
+#ifdef USE_SGXSDK
+    if (englob) strncat(buf, "(", 1);
+#else
     if (englob) strcat(buf, "(");
+#endif
     switch (content->type) {
         case XML_ELEMENT_CONTENT_PCDATA:
+#ifdef USE_SGXSDK
+            strncat(buf, "#PCDATA", 7);
+#else
             strcat(buf, "#PCDATA");
+#endif
 	    break;
 	case XML_ELEMENT_CONTENT_ELEMENT: {
             int qnameLen = xmlStrlen(content->name);
@@ -1315,15 +1327,28 @@ xmlSnprintfElementContent(char *buf, int size, xmlElementContentPtr content, int
 	    if (content->prefix != NULL)
                 qnameLen += xmlStrlen(content->prefix) + 1;
 	    if (size - len < qnameLen + 10) {
+#ifdef USE_SGXSDK
+                strncat(buf, " ...", 4);
+#else
 		strcat(buf, " ...");
+#endif
 		return;
 	    }
 	    if (content->prefix != NULL) {
+#ifdef USE_SGXSDK
+                strncat(buf, (char *) content->prefix, strlen((char *)content->prefix));
+		strncat(buf, ":", 1);
+#else
 		strcat(buf, (char *) content->prefix);
 		strcat(buf, ":");
+#endif
 	    }
 	    if (content->name != NULL)
+#ifdef USE_SGXSDK
+                strncat(buf, (char *) content->name, strlen((char *)content->name));
+#else
 		strcat(buf, (char *) content->name);
+#endif
 	    break;
         }
 	case XML_ELEMENT_CONTENT_SEQ:
@@ -1335,10 +1360,18 @@ xmlSnprintfElementContent(char *buf, int size, xmlElementContentPtr content, int
 	    len = strlen(buf);
 	    if (size - len < 50) {
 		if ((size - len > 4) && (buf[len - 1] != '.'))
+#ifdef USE_SGXSDK
+                    strncat(buf, " ...", 4);
+#else
 		    strcat(buf, " ...");
+#endif
 		return;
 	    }
+#ifdef USE_SGXSDK
+            strncat(buf, " , ", 3);
+#else
             strcat(buf, " , ");
+#endif
 	    if (((content->c2->type == XML_ELEMENT_CONTENT_OR) ||
 		 (content->c2->ocur != XML_ELEMENT_CONTENT_ONCE)) &&
 		(content->c2->type != XML_ELEMENT_CONTENT_ELEMENT))
@@ -1355,10 +1388,18 @@ xmlSnprintfElementContent(char *buf, int size, xmlElementContentPtr content, int
 	    len = strlen(buf);
 	    if (size - len < 50) {
 		if ((size - len > 4) && (buf[len - 1] != '.'))
+#ifdef USE_SGXSDK
+                    strncat(buf, " ...", 4);
+#else
 		    strcat(buf, " ...");
+#endif
 		return;
 	    }
+#ifdef USE_SGXSDK
+            strncat(buf, " | ", 3);
+#else
             strcat(buf, " | ");
+#endif
 	    if (((content->c2->type == XML_ELEMENT_CONTENT_SEQ) ||
 		 (content->c2->ocur != XML_ELEMENT_CONTENT_ONCE)) &&
 		(content->c2->type != XML_ELEMENT_CONTENT_ELEMENT))
@@ -1369,18 +1410,34 @@ xmlSnprintfElementContent(char *buf, int size, xmlElementContentPtr content, int
     }
     if (size - strlen(buf) <= 2) return;
     if (englob)
+#ifdef USE_SGXSDK
+        strncat(buf, ")", 1);
+#else
         strcat(buf, ")");
+#endif
     switch (content->ocur) {
         case XML_ELEMENT_CONTENT_ONCE:
 	    break;
         case XML_ELEMENT_CONTENT_OPT:
+#ifdef USE_SGXSDK
+            strncat(buf, "?", 1);
+#else
 	    strcat(buf, "?");
+#endif
 	    break;
         case XML_ELEMENT_CONTENT_MULT:
+#ifdef USE_SGXSDK
+            strncat(buf, "*", 1);
+#else
 	    strcat(buf, "*");
+#endif
 	    break;
         case XML_ELEMENT_CONTENT_PLUS:
+#ifdef USE_SGXSDK
+            strncat(buf, "+", 1);
+#else
 	    strcat(buf, "+");
+#endif
 	    break;
     }
 }
@@ -5226,13 +5283,21 @@ xmlSnprintfElements(char *buf, int size, xmlNodePtr node, int glob) {
     int len;
 
     if (node == NULL) return;
+#ifdef USE_SGXSDK
+    if (glob) strncat(buf, "(", 1);
+#else
     if (glob) strcat(buf, "(");
+#endif
     cur = node;
     while (cur != NULL) {
 	len = strlen(buf);
 	if (size - len < 50) {
 	    if ((size - len > 4) && (buf[len - 1] != '.'))
+#ifdef USE_SGXSDK
+                strncat(buf, " ...", 4);
+#else
 		strcat(buf, " ...");
+#endif
 	    return;
 	}
         switch (cur->type) {
@@ -5240,20 +5305,41 @@ xmlSnprintfElements(char *buf, int size, xmlNodePtr node, int glob) {
 		if ((cur->ns != NULL) && (cur->ns->prefix != NULL)) {
 		    if (size - len < xmlStrlen(cur->ns->prefix) + 10) {
 			if ((size - len > 4) && (buf[len - 1] != '.'))
+#ifdef USE_SGXSDK
+                            strncat(buf, " ...", 4);
+#else
 			    strcat(buf, " ...");
+#endif
 			return;
 		    }
+#ifdef USE_SGXSDK
+                    strncat(buf, (char *) cur->ns->prefix, strlen(cur->ns->prefix));
+		    strncat(buf, ":", 1);
+#else
 		    strcat(buf, (char *) cur->ns->prefix);
 		    strcat(buf, ":");
+#endif
 		}
                 if (size - len < xmlStrlen(cur->name) + 10) {
 		    if ((size - len > 4) && (buf[len - 1] != '.'))
+#ifdef USE_SGXSDK
+                        strncat(buf, " ...", 4);
+#else
 			strcat(buf, " ...");
+#endif
 		    return;
 		}
+#ifdef USE_SGXSDK
+                strncat(buf, (char *) cur->name, strlen(cur->name));
+#else
 	        strcat(buf, (char *) cur->name);
+#endif
 		if (cur->next != NULL)
+#ifdef USE_SGXSDK
+                    strncat(buf, " ", 1);
+#else
 		    strcat(buf, " ");
+#endif
 		break;
             case XML_TEXT_NODE:
 		if (xmlIsBlankNode(cur))
@@ -5261,9 +5347,17 @@ xmlSnprintfElements(char *buf, int size, xmlNodePtr node, int glob) {
                 /* Falls through. */
             case XML_CDATA_SECTION_NODE:
             case XML_ENTITY_REF_NODE:
+#ifdef USE_SGXSDK
+                strncat(buf, "CDATA", 5);
+#else
 	        strcat(buf, "CDATA");
+#endif
 		if (cur->next != NULL)
+#ifdef USE_SGXSDK
+                    strncat(buf, " ", 1);
+#else
 		    strcat(buf, " ");
+#endif
 		break;
             case XML_ATTRIBUTE_NODE:
             case XML_DOCUMENT_NODE:
@@ -5275,9 +5369,17 @@ xmlSnprintfElements(char *buf, int size, xmlNodePtr node, int glob) {
             case XML_DOCUMENT_FRAG_NODE:
             case XML_NOTATION_NODE:
 	    case XML_NAMESPACE_DECL:
+#ifdef USE_SGXSDK
+                strncat(buf, "???", 3);
+#else
 	        strcat(buf, "???");
+#endif
 		if (cur->next != NULL)
+#ifdef USE_SGXSDK
+                    strncat(buf, " ", 1);
+#else
 		    strcat(buf, " ");
+#endif
 		break;
             case XML_ENTITY_NODE:
             case XML_PI_NODE:
@@ -5292,7 +5394,11 @@ xmlSnprintfElements(char *buf, int size, xmlNodePtr node, int glob) {
 	}
 	cur = cur->next;
     }
+#ifdef USE_SGXSDK
+    if (glob) strncat(buf, ")", 1);
+#else
     if (glob) strcat(buf, ")");
+#endif
 }
 
 /**

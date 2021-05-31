@@ -2612,6 +2612,12 @@ xmlSchemaValAtomicType(xmlSchemaTypePtr type, const xmlChar * value,
                     if (type == xmlSchemaTypeFloatDef) {
                         v = xmlSchemaNewValue(XML_SCHEMAS_FLOAT);
                         if (v != NULL) {
+#ifdef USE_SGXSDK
+                            /* No sscanf for SGX, use strtof instead */
+                            char *endptr = NULL;
+                            v->value.f = strtof((char *)value, &endptr);
+                            if (endptr != (char *)value) {
+#else
 			    /*
 			    * TODO: sscanf seems not to give the correct
 			    * value for extremely high/low values.
@@ -2619,6 +2625,7 @@ xmlSchemaValAtomicType(xmlSchemaTypePtr type, const xmlChar * value,
 			    */
                             if (sscanf((const char *) value, "%f",
                                  &(v->value.f)) == 1) {
+#endif
                                 *val = v;
                             } else {
                                 xmlSchemaFreeValue(v);
@@ -2630,12 +2637,19 @@ xmlSchemaValAtomicType(xmlSchemaTypePtr type, const xmlChar * value,
                     } else {
                         v = xmlSchemaNewValue(XML_SCHEMAS_DOUBLE);
                         if (v != NULL) {
+#ifdef USE_SGXSDK
+                            /* No sscanf for SGX, use strtod instead */
+                            char *endptr = NULL;
+                            v->value.d = strtod((char *)value, &endptr);
+                            if (endptr != (char *)value) {
+#else
 			    /*
 			    * TODO: sscanf seems not to give the correct
 			    * value for extremely high/low values.
 			    */
                             if (sscanf((const char *) value, "%lf",
                                  &(v->value.d)) == 1) {
+#endif
                                 *val = v;
                             } else {
                                 xmlSchemaFreeValue(v);

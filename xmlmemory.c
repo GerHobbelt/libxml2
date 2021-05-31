@@ -543,7 +543,11 @@ xmlMemStrdupLoc(const char *str, const char *file, int line)
 
     if (xmlMemStopAtBlock == p->mh_number) xmlMallocBreakpoint();
 
+#ifdef USE_SGXSDK
+    strncpy(s,str,strlen(str) + 1);
+#else
     strcpy(s,str);
+#endif
 
     TEST_POINT
 
@@ -981,17 +985,21 @@ xmlInitMemory(void)
      xmlMemInitialized = 1;
      xmlMemMutex = xmlNewMutex();
 
+#ifndef USE_SGXSDK
 #ifdef HAVE_STDLIB_H
      breakpoint = getenv("XML_MEM_BREAKPOINT");
      if (breakpoint != NULL) {
          sscanf(breakpoint, "%ud", &xmlMemStopAtBlock);
      }
 #endif
+#endif
+#ifndef USE_SGXSDK
 #ifdef HAVE_STDLIB_H
      breakpoint = getenv("XML_MEM_TRACE");
      if (breakpoint != NULL) {
          sscanf(breakpoint, "%p", &xmlMemTraceBlockAt);
      }
+#endif
 #endif
 
 #ifdef DEBUG_MEMORY
