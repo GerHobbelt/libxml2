@@ -96,9 +96,11 @@ XMLPUBFUN xmlChar * XMLCALL
 		xmlACatalogResolveURI	(xmlCatalogPtr catal,
 					 const xmlChar *URI);
 #ifdef LIBXML_OUTPUT_ENABLED
+#ifdef HAVE_STDIO_FOPEN_H
 XMLPUBFUN void XMLCALL
 		xmlACatalogDump		(xmlCatalogPtr catal,
 					 FILE *out);
+#endif
 #endif /* LIBXML_OUTPUT_ENABLED */
 XMLPUBFUN void XMLCALL
 		xmlFreeCatalog		(xmlCatalogPtr catal);
@@ -116,9 +118,11 @@ XMLPUBFUN void XMLCALL
 		xmlLoadCatalogs		(const char *paths);
 XMLPUBFUN void XMLCALL
 		xmlCatalogCleanup	(void);
+#ifdef HAVE_STDIO_FOPEN_H
 #ifdef LIBXML_OUTPUT_ENABLED
 XMLPUBFUN void XMLCALL
 		xmlCatalogDump		(FILE *out);
+#endif
 #endif /* LIBXML_OUTPUT_ENABLED */
 XMLPUBFUN xmlChar * XMLCALL
 		xmlCatalogResolve	(const xmlChar *pubID,

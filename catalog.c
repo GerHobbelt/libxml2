@@ -453,6 +453,7 @@ xmlFreeCatalog(xmlCatalogPtr catal) {
  *									*
  ************************************************************************/
 
+#ifdef HAVE_STDIO_FOPEN_H
 #ifdef LIBXML_OUTPUT_ENABLED
 /**
  * xmlCatalogDumpEntry:
@@ -713,6 +714,7 @@ BAD_CAST "http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd");
     return(ret);
 }
 #endif /* LIBXML_OUTPUT_ENABLED */
+#endif
 
 /************************************************************************
  *									*
@@ -959,6 +961,7 @@ xmlParseCatalogFile(const char *filename) {
 static xmlChar *
 xmlLoadFileContent(const char *filename)
 {
+#ifdef HAVE_STDIO_FOPEN_H
 #ifdef HAVE_STAT
     int fd;
 #else
@@ -1020,6 +1023,9 @@ xmlLoadFileContent(const char *filename)
     content[len] = 0;
 
     return(content);
+#else
+    return NULL;
+#endif
 }
 
 /**
@@ -2925,6 +2931,7 @@ xmlACatalogResolveURI(xmlCatalogPtr catal, const xmlChar *URI) {
     return(ret);
 }
 
+#ifdef HAVE_STDIO_FOPEN_H
 #ifdef LIBXML_OUTPUT_ENABLED
 /**
  * xmlACatalogDump:
@@ -2945,6 +2952,7 @@ xmlACatalogDump(xmlCatalogPtr catal, FILE *out) {
     }
 }
 #endif /* LIBXML_OUTPUT_ENABLED */
+#endif
 
 /**
  * xmlACatalogAdd:
@@ -3378,6 +3386,7 @@ xmlCatalogResolveURI(const xmlChar *URI) {
     return(ret);
 }
 
+#ifdef HAVE_STDIO_FOPEN_H
 #ifdef LIBXML_OUTPUT_ENABLED
 /**
  * xmlCatalogDump:
@@ -3396,6 +3405,7 @@ xmlCatalogDump(FILE *out) {
     xmlACatalogDump(xmlDefaultCatalog, out);
 }
 #endif /* LIBXML_OUTPUT_ENABLED */
+#endif
 
 /**
  * xmlCatalogAdd:
