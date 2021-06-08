@@ -754,10 +754,15 @@ xmlInputReadCallbackNop(void *context ATTRIBUTE_UNUSED,
  * Returns the number of bytes written
  */
 static int
-xmlFdRead (void * context, char * buffer, int len) {
+xmlFdRead (void * context ATTRIBUTE_UNUSED, char * buffer ATTRIBUTE_UNUSED, int len ATTRIBUTE_UNUSED) {
     int ret;
 
+#ifdef HAVE_STDIO_FOPEN_H
     ret = read((int) (ptrdiff_t) context, &buffer[0], len);
+#else
+    /* No file I/O in SGX enclave */
+    ret = -1;
+#endif
     if (ret < 0) xmlIOErr(0, "read()");
     return(ret);
 }
@@ -774,11 +779,16 @@ xmlFdRead (void * context, char * buffer, int len) {
  * Returns the number of bytes written
  */
 static int
-xmlFdWrite (void * context, const char * buffer, int len) {
+xmlFdWrite (void * context ATTRIBUTE_UNUSED, const char * buffer ATTRIBUTE_UNUSED, int len ATTRIBUTE_UNUSED) {
     int ret = 0;
 
     if (len > 0) {
+#ifdef HAVE_STDIO_FOPEN_H
 	ret = write((int) (ptrdiff_t) context, &buffer[0], len);
+#else
+	/* No file I/O in SGX enclave */
+	ret = -1;
+#endif
 	if (ret < 0) xmlIOErr(0, "write()");
     }
     return(ret);
@@ -794,9 +804,14 @@ xmlFdWrite (void * context, const char * buffer, int len) {
  * Returns 0 in case of success and error code otherwise
  */
 static int
-xmlFdClose (void * context) {
+xmlFdClose (void * context ATTRIBUTE_UNUSED) {
     int ret;
+#ifdef HAVE_STDIO_FOPEN_H
     ret = close((int) (ptrdiff_t) context);
+#else
+    /* No file I/O in SGX enclave */
+    ret = -1;
+#endif
     if (ret < 0) xmlIOErr(0, "close()");
     return(ret);
 }
@@ -884,7 +899,7 @@ xmlFileOpen_real (const char *filename) {
  * Returns a handler or NULL in case or failure
  */
 void *
-xmlFileOpen (const char *filename) {
+xmlFileOpen (const char *filename ATTRIBUTE_UNUSED) {
     char *unescaped;
     void *retval;
 
@@ -968,7 +983,7 @@ xmlFileOpenW (const char *filename) {
  * Returns the number of bytes written or < 0 in case of failure
  */
 int
-xmlFileRead (void * context, char * buffer, int len) {
+xmlFileRead (void * context ATTRIBUTE_UNUSED, char * buffer ATTRIBUTE_UNUSED, int len ATTRIBUTE_UNUSED) {
 #ifdef HAVE_STDIO_FOPEN_H
     int ret;
     if ((context == NULL) || (buffer == NULL))
@@ -993,7 +1008,7 @@ xmlFileRead (void * context, char * buffer, int len) {
  * Returns the number of bytes written
  */
 static int
-xmlFileWrite (void * context, const char * buffer, int len) {
+xmlFileWrite (void * context ATTRIBUTE_UNUSED, const char * buffer ATTRIBUTE_UNUSED, int len ATTRIBUTE_UNUSED) {
 #ifdef HAVE_STDIO_FOPEN_H
     int items;
 
@@ -1020,7 +1035,7 @@ xmlFileWrite (void * context, const char * buffer, int len) {
  * Returns 0 or -1 in case of error
  */
 int
-xmlFileClose (void * context) {
+xmlFileClose (void * context ATTRIBUTE_UNUSED) {
 #ifdef HAVE_STDIO_FOPEN_H
     FILE *fil;
     int ret;
@@ -3834,7 +3849,7 @@ xmlParserGetDirectory(const char *filename) {
  * Returns the input or NULL in case of HTTP error.
  */
 xmlParserInputPtr
-xmlCheckHTTPInput(xmlParserCtxtPtr ctxt, xmlParserInputPtr ret) {
+xmlCheckHTTPInput(xmlParserCtxtPtr ctxt ATTRIBUTE_UNUSED, xmlParserInputPtr ret) {
 #ifdef LIBXML_HTTP_ENABLED
     if ((ret != NULL) && (ret->buf != NULL) &&
         (ret->buf->readcallback == xmlIOHTTPRead) &&

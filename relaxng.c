@@ -2034,6 +2034,7 @@ xmlRelaxNGLoadExternalRef(xmlRelaxNGParserCtxtPtr ctxt,
 #define VALID_ERR2P(a, b) xmlRelaxNGAddValidError(ctxt, a, b, NULL, 1);
 #define VALID_ERR3P(a, b, c) xmlRelaxNGAddValidError(ctxt, a, b, c, 1);
 
+#if defined(DEBUG_COMPILE) || defined(DEBUG)
 static const char *
 xmlRelaxNGDefName(xmlRelaxNGDefinePtr def)
 {
@@ -2087,6 +2088,7 @@ xmlRelaxNGDefName(xmlRelaxNGDefinePtr def)
     }
     return ("unknown");
 }
+#endif
 
 /**
  * xmlRelaxNGGetErrorString:

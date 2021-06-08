@@ -2306,7 +2306,7 @@ xmlElemDump(FILE * f, xmlDocPtr doc, xmlNodePtr cur)
  * or xmlKeepBlanksDefault(0) was called
  */
 void
-xmlNodeDumpOutput(xmlOutputBufferPtr buf, xmlDocPtr doc, xmlNodePtr cur,
+xmlNodeDumpOutput(xmlOutputBufferPtr buf, xmlDocPtr doc ATTRIBUTE_UNUSED, xmlNodePtr cur,
                   int level, int format, const char *encoding)
 {
     xmlSaveCtxt ctxt;

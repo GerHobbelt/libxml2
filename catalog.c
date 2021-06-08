@@ -959,7 +959,7 @@ xmlParseCatalogFile(const char *filename) {
  * Returns a pointer to the 0 terminated string or NULL in case of error
  */
 static xmlChar *
-xmlLoadFileContent(const char *filename)
+xmlLoadFileContent(const char *filename ATTRIBUTE_UNUSED)
 {
 #ifdef HAVE_STDIO_FOPEN_H
 #ifdef HAVE_STAT
@@ -3098,8 +3098,10 @@ xmlInitializeCatalogData(void) {
     if (xmlCatalogInitialized != 0)
 	return;
 
+#ifndef USE_SGXSDK
     if (getenv("XML_DEBUG_CATALOG"))
 	xmlDebugCatalogs = 1;
+#endif
     xmlCatalogMutex = xmlNewRMutex();
 
     xmlCatalogInitialized = 1;
@@ -3119,8 +3121,10 @@ xmlInitializeCatalog(void) {
     xmlInitializeCatalogData();
     xmlRMutexLock(xmlCatalogMutex);
 
+#ifndef USE_SGXSDK
     if (getenv("XML_DEBUG_CATALOG"))
 	xmlDebugCatalogs = 1;
+#endif
 
     if (xmlDefaultCatalog == NULL) {
 	const char *catalogs;
@@ -3129,7 +3133,11 @@ xmlInitializeCatalog(void) {
 	xmlCatalogPtr catal;
 	xmlCatalogEntryPtr *nextent;
 
+#ifdef USE_SGXSDK
+	catalogs = XML_XML_DEFAULT_CATALOG;
+#else
 	catalogs = (const char *) getenv("XML_CATALOG_FILES");
+#endif
 	if (catalogs == NULL)
 #if defined(_WIN32) && defined(_MSC_VER)
     {
