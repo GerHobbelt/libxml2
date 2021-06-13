@@ -1,6 +1,6 @@
 [submodule "pthread-win32"]
 	path = pthread-win32
-	url = git@github.com:GerHobbelt/pthread-win32.git
+	url = https://github.com/GerHobbelt/pthread-win32.git
 [submodule "zlib"]
 	path = zlib
-	url = git@github.com:GerHobbelt/zlib.git
+	url = https://github.com/GerHobbelt/zlib.git
