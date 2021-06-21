@@ -31,8 +31,9 @@
 #include <string.h>
 #endif
 
-
 #include <libxml/xmlreader.h>
+
+#include <libxml/monolithic_examples.h>
 
 static int debug = 0;
 static int dump = 0;

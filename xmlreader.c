@@ -31,6 +31,7 @@
 #include <libxml/xmlmemory.h>
 #include <libxml/xmlIO.h>
 #include <libxml/xmlreader.h>
+#include <libxml/parser.h>
 #include <libxml/parserInternals.h>
 #ifdef LIBXML_SCHEMAS_ENABLED
 #include <libxml/relaxng.h>
@@ -43,6 +44,8 @@
 #ifdef LIBXML_PATTERN_ENABLED
 #include <libxml/pattern.h>
 #endif
+
+#include <libxml/monolithic_examples.h>
 
 #include "buf.h"
 
@@ -5954,7 +5957,7 @@ xmlBase64Decode(const unsigned char *in, unsigned long *inlen,
 /*
  * Test routine for the xmlBase64Decode function
  */
-#if 0
+#if defined(STANDALONE) || defined(BUILD_MONOLITHIC)
 
 #if defined(BUILD_MONOLITHIC)
 #define main(cnt, arr)      xml_test_xmlreader_main(cnt, arr)

@@ -43,6 +43,8 @@
 #include <note.h>
 #endif
 
+#include <libxml/monolithic_examples.h>
+
 /* #define DEBUG_THREADS */
 
 #ifdef HAVE_PTHREAD_H

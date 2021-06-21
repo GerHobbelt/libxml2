@@ -86,6 +86,8 @@
 #include <libxml/xmlsave.h>
 #endif
 
+#include <libxml/monolithic_examples.h>
+
 #ifndef XML_XML_DEFAULT_CATALOG
 #define XML_XML_DEFAULT_CATALOG "file:///etc/xml/catalog"
 #endif

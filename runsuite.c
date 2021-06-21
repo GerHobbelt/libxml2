@@ -31,6 +31,8 @@
 #include <libxml/xmlschemas.h>
 #include <libxml/xmlschemastypes.h>
 
+#include <libxml/monolithic_examples.h>
+
 #define LOGFILE "runsuite.log"
 static FILE *logfile = NULL;
 static int verbose = 0;

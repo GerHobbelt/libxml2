@@ -28,6 +28,8 @@
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
 
+#include <libxml/monolithic_examples.h>
+
 #define LOGFILE "runxmlconf.log"
 static FILE *logfile = NULL;
 static int verbose = 0;

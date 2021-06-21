@@ -21,6 +21,8 @@
 #endif
 #include <assert.h>
 
+#include <libxml/monolithic_examples.h>
+
 #define	MAX_ARGC	20
 #define TEST_REPEAT_COUNT 500
 #ifdef HAVE_PTHREAD_H

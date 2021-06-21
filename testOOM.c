@@ -26,6 +26,8 @@
 
 #include <libxml/xmlreader.h>
 
+#include <libxml/monolithic_examples.h>
+
 #include "testOOMlib.h"
 
 #ifndef TRUE

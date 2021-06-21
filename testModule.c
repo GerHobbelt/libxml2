@@ -19,6 +19,8 @@
 #include <libxml/debugXML.h>
 #include <libxml/xmlmodule.h>
 
+#include <libxml/monolithic_examples.h>
+
 #ifdef _WIN32
 #define MODULE_PATH "."
 #include <stdlib.h> /* for _MAX_PATH */

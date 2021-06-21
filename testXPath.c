@@ -37,10 +37,14 @@
 #include <libxml/xpathInternals.h>
 #include <libxml/xmlerror.h>
 #include <libxml/globals.h>
+
+#include <libxml/monolithic_examples.h>
+
 #if defined(LIBXML_XPTR_ENABLED)
 #include <libxml/xpointer.h>
 static int xptr = 0;
 #endif
+
 static int debug = 0;
 static int valid = 0;
 static int expr = 0;

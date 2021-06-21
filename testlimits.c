@@ -30,6 +30,8 @@
 #include <libxml/xmlreader.h>
 #endif
 
+#include <libxml/monolithic_examples.h>
+
 static int verbose = 0;
 static int tests_quiet = 0;
 

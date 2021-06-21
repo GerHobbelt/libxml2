@@ -37,6 +37,8 @@
 #include <libxml/xmlerror.h>
 #include <libxml/globals.h>
 
+#include <libxml/monolithic_examples.h>
+
 #ifdef LIBXML_DEBUG_ENABLED
 static int debug = 0;
 #endif

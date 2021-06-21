@@ -62,6 +62,9 @@
 #if defined(TRIO_DOCUMENTATION)
 # include "doc/doc_nan.h"
 #endif
+
+#include <libxml/monolithic_examples.h>
+
 /** @addtogroup SpecialQuantities
     @{
 */

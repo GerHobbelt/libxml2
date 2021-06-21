@@ -13,6 +13,8 @@
 #include <libxml/tree.h>
 #include <libxml/xmlregexp.h>
 
+#include <libxml/monolithic_examples.h>
+
 static int repeat = 0;
 static int debug = 0;
 

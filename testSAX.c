@@ -53,6 +53,8 @@
 #include <libxml/debugXML.h>
 #include <libxml/xmlmemory.h>
 
+#include <libxml/monolithic_examples.h>
+
 static int debug = 0;
 static int copy = 0;
 static int recovery = 0;

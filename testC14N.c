@@ -32,6 +32,8 @@
 
 #include <libxml/c14n.h>
 
+#include <libxml/monolithic_examples.h>
+
 
 static void usage(const char *name) {
     fprintf(stderr,

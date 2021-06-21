@@ -2,6 +2,8 @@
 #include <libxml/parser.h>
 #include <libxml/dict.h>
 
+#include <libxml/monolithic_examples.h>
+
 /* #define WITH_PRINT */
 
 static const char *seeds1[] = {

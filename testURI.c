@@ -16,6 +16,8 @@
 #include <libxml/uri.h>
 #include <libxml/globals.h>
 
+#include <libxml/monolithic_examples.h>
+
 static const char *base = NULL;
 static int escape = 0;
 static int debug = 0;

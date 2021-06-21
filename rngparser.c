@@ -18,6 +18,8 @@
 #include <libxml/relaxng.h>
 #include <libxml/dict.h>
 
+#include <libxml/monolithic_examples.h>
+
 #define TODO								\
     xmlGenericError(xmlGenericErrorContext,				\
 	    "Unimplemented block at %s:%d\n",				\

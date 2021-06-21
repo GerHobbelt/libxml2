@@ -10,9 +10,11 @@
 #include <libxml/parser.h>
 #include <libxml/parserInternals.h>
 
+#include <libxml/monolithic_examples.h>
+
 #include "buf.h"
 
-int lastError;
+static int lastError;
 
 static void errorHandler(void *unused, xmlErrorPtr err) {
     if ((unused == NULL) && (err != NULL) && (lastError == 0)) {
@@ -20,8 +22,8 @@ static void errorHandler(void *unused, xmlErrorPtr err) {
     }
 }
 
-char document1[100] = "<doc>XXXX</doc>";
-char document2[100] = "<doc foo='XXXX'/>";
+static char document1[100] = "<doc>XXXX</doc>";
+static char document2[100] = "<doc foo='XXXX'/>";
 
 static void testDocumentRangeByte1(xmlParserCtxtPtr ctxt, char *document,
                   int len,  char *data, int forbid1, int forbid2) {

@@ -88,6 +88,8 @@
 #include <libxml/globals.h>
 #include <libxml/uri.h>
 
+#include <libxml/monolithic_examples.h>
+
 /**
  * A couple portability macros
  */

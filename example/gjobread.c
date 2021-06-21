@@ -23,6 +23,8 @@
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 
+#include <libxml/monolithic_examples.h>
+
 #define DEBUG(x) printf(x)
 
 /*

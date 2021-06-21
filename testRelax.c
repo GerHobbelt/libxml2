@@ -44,6 +44,8 @@
 #include <libxml/debugXML.h>
 #include <libxml/relaxng.h>
 
+#include <libxml/monolithic_examples.h>
+
 #ifdef LIBXML_DEBUG_ENABLED
 static int debug = 0;
 #endif

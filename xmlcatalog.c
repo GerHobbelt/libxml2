@@ -29,6 +29,8 @@
 #include <libxml/parser.h>
 #include <libxml/globals.h>
 
+#include <libxml/monolithic_examples.h>
+
 #if defined(LIBXML_CATALOG_ENABLED) && defined(LIBXML_OUTPUT_ENABLED)
 static int shell = 0;
 static int sgml = 0;

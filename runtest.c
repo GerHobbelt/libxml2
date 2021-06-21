@@ -77,6 +77,8 @@
 #include <string.h>
 #endif
 
+#include <libxml/monolithic_examples.h>
+
 /*
  * O_BINARY is just for Windows compatibility - if it isn't defined
  * on this system, avoid any compilation error

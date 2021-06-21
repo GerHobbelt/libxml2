@@ -13,6 +13,8 @@
 #include <libxml/tree.h>
 #include <libxml/xmlautomata.h>
 
+#include <libxml/monolithic_examples.h>
+
 static int scanNumber(char **ptr) {
     int ret = 0;
     char *cur;
