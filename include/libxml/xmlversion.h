@@ -51,7 +51,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * extra version information, used to show a CVS compilation
  */
-#define LIBXML_VERSION_EXTRA "-git"
+#define LIBXML_VERSION_EXTRA "-GITv2.9.9-rc2-2-g7c4949afa"
 
 /**
  * LIBXML_TEST_VERSION:
@@ -92,7 +92,10 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  * Whether the thread support is configured in
  */
 #if 1
+#if defined(_REENTRANT) || defined(__MT__) || \
+    (defined(_POSIX_C_SOURCE) && (_POSIX_C_SOURCE - 0 >= 199506L))
 #define LIBXML_THREAD_ENABLED
+#endif
 #endif
 
 /**
@@ -279,8 +282,19 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  * LIBXML_ICU_ENABLED:
  *
  * Whether icu support is available
+ *
+ * This is disabled when libxml2 is
+ * 1. built for the VNDK.
+ * libicuuc.so isn't available in the VNDK.
+ * 2. built as an static library on Android
+ * libicuuc.so isn't available for static linking.
  */
-#if 0
+#undef LIBXML_ICU_ENABLED
+#ifdef __ANDROID_VNDK__
+#undef LIBXML_ICU_ENABLED
+#elif defined(__ANDROID__) && defined(STATIC_LIBXML)
+#undef LIBXML_ICU_ENABLED
+#else
 #define LIBXML_ICU_ENABLED
 #endif
 
@@ -289,7 +303,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * Whether ISO-8859-* support is made available in case iconv is not
  */
-#if 0
+#if 1
 #define LIBXML_ISO8859X_ENABLED
 #endif
 
@@ -412,7 +426,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * Whether the Lzma support is compiled in
  */
-#if 0
+#if 1
 #define LIBXML_LZMA_ENABLED
 #endif
 

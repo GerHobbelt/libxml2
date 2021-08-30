@@ -165,10 +165,10 @@ win32_thread_specific_data(void *private_data)
 
 
 #if defined(BUILD_MONOLITHIC)
-#define main()      xml_testthreads_main()
+#define main(void)      xml_testthreads_main(void)
 #endif
 
-int main()
+int main(void)
 {
 	unsigned int i, repeat;
     BOOL ret;
