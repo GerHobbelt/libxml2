@@ -370,7 +370,7 @@ gz_next4(xz_statep state, unsigned long *ret)
 {
     int ch;
     unsigned long val;
-    z_streamp strm = &(state->zstrm);
+    zng_streamp strm = &(state->zstrm);
 
     val = NEXTZ();
     val += (unsigned) NEXTZ() << 8;
@@ -502,7 +502,7 @@ xz_head(xz_statep state)
 
             /* set up for decompression */
 			zng_inflateReset(&state->zstrm);
-            state->zstrm.adler = crc32(0L, Z_NULL, 0);
+            state->zstrm.adler = zng_crc32(0L, Z_NULL, 0);
             state->how = GZIP;
             state->direct = 0;
             return 0;
