@@ -284,7 +284,7 @@ int main(void)
 #else /* no pthreads or BeOS threads */
 
 #if defined(BUILD_MONOLITHIC)
-#define main()      xml_testthreads_main()
+#define main(void)      xml_testthreads_main(void)
 #endif
 
 int main(void)
@@ -297,7 +297,7 @@ int main(void)
 #else /* !LIBXML_THREADS_ENABLED */
 
 #if defined(BUILD_MONOLITHIC)
-#define main()      xml_testthreads_main()
+#define main(void)      xml_testthreads_main(void)
 #endif
 
 int main(void)
