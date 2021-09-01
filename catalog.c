@@ -78,7 +78,7 @@
 
 #if defined(_WIN32) && defined(_MSC_VER)
 #undef XML_XML_DEFAULT_CATALOG
-static char XML_XML_DEFAULT_CATALOG[256] = "file:///etc/xml/catalog";
+static char XML_XML_DEFAULT_CATALOG[MAX_PATH] = "file:///etc/xml/catalog";
 #if defined(_WIN32_WCE)
 /* Windows CE don't have a A variant */
 #define GetModuleHandleA GetModuleHandle
@@ -3153,7 +3153,7 @@ xmlInitializeCatalog(void) {
 		if (hmodule == NULL)
 			hmodule = GetModuleHandleA(NULL);
 		if (hmodule != NULL) {
-			char buf[256];
+			char buf[MAX_PATH];
 			unsigned long len = GetModuleFileNameA(hmodule, buf, 255);
 			if (len != 0) {
 				char* p = &(buf[len]);
@@ -3161,10 +3161,10 @@ xmlInitializeCatalog(void) {
 					p--;
 				if (p != buf) {
 					xmlChar* uri;
-					strncpy(p, "\\..\\etc\\catalog", 255 - (p - buf));
+					strncpy(p, "\\..\\etc\\catalog", MAX_PATH - (p - buf));
 					uri = xmlCanonicPath((const xmlChar*)buf);
 					if (uri != NULL) {
-						strncpy(XML_XML_DEFAULT_CATALOG, uri, 255);
+						strncpy(XML_XML_DEFAULT_CATALOG, uri, MAX_PATH);
 						xmlFree(uri);
 					}
 				}
