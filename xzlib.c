@@ -606,7 +606,7 @@ xz_decomp(xz_statep state)
     state->next = strm->next_out - state->have;
 #if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
     state->zstrm.adler =
-        crc32(state->zstrm.adler, state->next, state->have);
+        zng_crc32(state->zstrm.adler, state->next, state->have);
 #endif
 
     if (ret == LZMA_STREAM_END) {

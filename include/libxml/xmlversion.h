@@ -294,8 +294,6 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
 #undef LIBXML_ICU_ENABLED
 #elif defined(__ANDROID__) && defined(STATIC_LIBXML)
 #undef LIBXML_ICU_ENABLED
-#else
-#define LIBXML_ICU_ENABLED
 #endif
 
 /**
@@ -339,7 +337,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * Whether the Unicode related interfaces are compiled in
  */
-#if 1
+#if 0
 #define LIBXML_UNICODE_ENABLED
 #endif
 
@@ -400,7 +398,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * the string suffix used by dynamic modules (usually shared libraries)
  */
-#define LIBXML_MODULE_EXTENSION ".dll" 
+#define LIBXML_MODULE_EXTENSION ".dll"
 #endif
 
 /**
@@ -426,7 +424,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * Whether the Lzma support is compiled in
  */
-#if 1
+#if 0
 #define LIBXML_LZMA_ENABLED
 #endif
 
