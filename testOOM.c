@@ -39,12 +39,12 @@
 
 #define EXIT_OOM 2
 
-int error = FALSE;
-int errcount = 0;
-int noent = 0;
-int count = 0;
-int valid = 0;
-int showErrs = 0;
+static int error = FALSE;
+static int errcount = 0;
+static int noent = 0;
+static int count = 0;
+static int valid = 0;
+static int showErrs = 0;
 
 /*
  * Since we are using the xmlTextReader functions, we set up
