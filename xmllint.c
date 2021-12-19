@@ -426,6 +426,15 @@ my_gettimeofday(struct timeval *tvp, void *tzp)
 
 /* adapted from code ripped from Curl mailing list & PostgreSQL sources */
 
+#include <time.h>
+#include <windows.h>
+
+struct timezone
+{
+	int  tz_minuteswest; /* minutes W of Greenwich */
+	int  tz_dsttime;     /* type of dst correction */
+};
+
 /* FILETIME of Jan 1 1970 00:00:00. */
 #define EPOCH    116444736000000000LL
 
