@@ -1265,7 +1265,7 @@ charactersDebug(void *ctx ATTRIBUTE_UNUSED, const xmlChar *ch, int len)
     if (quiet)
 	return;
     for (i = 0;(i<len) && (i < 30);i++)
-	output[i] = ch[i];
+	output[i] = (char) ch[i];
     output[i] = 0;
 
     fprintf(SAXdebug, "SAX.characters(%s, %d)\n", output, len);
@@ -1307,7 +1307,7 @@ ignorableWhitespaceDebug(void *ctx ATTRIBUTE_UNUSED, const xmlChar *ch, int len)
     if (quiet)
 	return;
     for (i = 0;(i<len) && (i < 30);i++)
-	output[i] = ch[i];
+	output[i] = (char) ch[i];
     output[i] = 0;
     fprintf(SAXdebug, "SAX.ignorableWhitespace(%s, %d)\n", output, len);
 }
