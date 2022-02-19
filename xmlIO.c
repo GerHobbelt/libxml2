@@ -2752,6 +2752,8 @@ __xmlOutputBufferCreateFilename(const char *URI,
 		    ret->writecallback = xmlGzfileWrite;
 		    ret->closecallback = xmlGzfileClose;
 		}
+		else
+		    xmlGzfileClose(context);
 		return(ret);
 	    }
 	}

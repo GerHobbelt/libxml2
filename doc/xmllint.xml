@@ -785,8 +785,8 @@
 	<listitem>
 		<para><acronym>XML</acronym> catalog behavior can be changed by redirecting
 			queries to the user's own set of catalogs. This can be done by setting
-			the <envar>XML_CATALOG_FILES</envar> environment variable to a list
-			of catalogs. An empty one should deactivate loading the
+			the <envar>XML_CATALOG_FILES</envar> environment variable to a space-separated
+			list of catalogs. An empty one should deactivate loading the
 			default <filename>/etc/xml/catalog</filename> catalog.
 		</para>
 	</listitem>
@@ -896,6 +896,13 @@
 	<term><errorcode>9</errorcode></term>
 	<listitem>
 		<para>Out of memory error</para>
+	</listitem>
+		</varlistentry>
+
+		<varlistentry>
+	<term><errorcode>10</errorcode></term>
+	<listitem>
+		<para>XPath evaluation error</para>
 	</listitem>
 		</varlistentry>
 
