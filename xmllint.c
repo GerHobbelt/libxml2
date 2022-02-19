@@ -3270,7 +3270,7 @@ int main(int argc, const char** argv) {
     LIBXML_TEST_VERSION
 
     for (i = 1; i < argc ; i++) {
-	if (argv[i][0] != '-')
+	if (argv[i][0] != '-' || argv[i][1] == 0)
 	    continue;
 
 	if ((!strcmp(argv[i], "-debug")) || (!strcmp(argv[i], "--debug")))
