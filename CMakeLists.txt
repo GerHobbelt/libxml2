@@ -117,7 +117,7 @@ set(PACKAGE_BUGREPORT "xml@gnome.org")
 set(PACKAGE_NAME "libxml2")
 set(PACKAGE_STRING "libxml2 ${VERSION}")
 set(PACKAGE_TARNAME "libxml2")
-set(PACKAGE_URL "http://www.xmlsoft.org/")
+set(PACKAGE_URL "https://gitlab.gnome.org/GNOME/libxml2")
 set(PACKAGE_VERSION ${VERSION})
 
 if(LIBLZMA_FOUND)
@@ -685,11 +685,6 @@ install(
 
 configure_file(include/libxml/xmlversion.h.in libxml/xmlversion.h)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libxml/xmlversion.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libxml2/libxml COMPONENT development)
-
-if(MSVC)
-	configure_file(include/libxml/xmlwin32version.h.in libxml/xmlwin32version.h)
-	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libxml/xmlwin32version.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libxml2/libxml COMPONENT development)
-endif()
 
 if(LIBXML2_WITH_PYTHON)
 	set(prefix "${CMAKE_INSTALL_PREFIX}")
