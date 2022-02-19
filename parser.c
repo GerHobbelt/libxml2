@@ -2194,7 +2194,8 @@ xmlSkipBlankChars(xmlParserCtxtPtr ctxt) {
      * It's Okay to use CUR/NEXT here since all the blanks are on
      * the ASCII range.
      */
-    if (ctxt->instate != XML_PARSER_DTD) {
+    if (((ctxt->inputNr == 1) && (ctxt->instate != XML_PARSER_DTD)) ||
+        (ctxt->instate == XML_PARSER_START)) {
 	const xmlChar *cur;
 	/*
 	 * if we are in the document content, go really fast
@@ -4587,6 +4588,9 @@ xmlParseCharDataComplex(xmlParserCtxtPtr ctxt, int cdata) {
 	    }
 	}
 	COPY_BUF(l,buf,nbchar,cur);
+	/* move current position before possible calling of ctxt->sax->characters */
+	NEXTL(l);
+	cur = CUR_CHAR(l);
 	if (nbchar >= XML_PARSER_BIG_BUFFER_SIZE) {
 	    buf[nbchar] = 0;
 
@@ -4620,8 +4624,6 @@ xmlParseCharDataComplex(xmlParserCtxtPtr ctxt, int cdata) {
             if (ctxt->instate == XML_PARSER_EOF)
 		return;
 	}
-	NEXTL(l);
-	cur = CUR_CHAR(l);
     }
     if (nbchar != 0) {
         buf[nbchar] = 0;

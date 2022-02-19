@@ -28,7 +28,7 @@
 #include <windows.h>
 #include <crtdbg.h>
 
-/* Taken from info on MSDN site, as we may not have the Windows DDK headers */
+/* Taken from info on MSDN site, as we may not have the Windows WDK/DDK headers */
 typedef struct _IO_STATUS_BLOCK {
   union {
     NTSTATUS Status;
@@ -147,7 +147,7 @@ libxml_PyFileGet(PyObject *f) {
                     mode = "a";
                 else
                     mode = "w";
-		}
+        }
 
     FreeLibrary(hntdll);
 
