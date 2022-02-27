@@ -2681,6 +2681,7 @@ xptrDocTest(const char *filename,
 }
 #endif /* LIBXML_XPTR_ENABLED */
 
+#ifdef LIBXML_VALID_ENABLED
 /**
  * xmlidDocTest:
  * @filename: the file to parse
@@ -2748,6 +2749,7 @@ xmlidDocTest(const char *filename,
     }
     return(res);
 }
+#endif /* LIBXML_VALID_ENABLED */
 
 #endif /* LIBXML_DEBUG_ENABLED */
 #endif /* XPATH */
@@ -4349,6 +4351,7 @@ testDesc testDescriptions[] = {
     { "XML Namespaces regression tests",
       errParseTest, "./test/namespaces/*", "result/namespaces/", "", ".err",
       0 },
+#ifdef LIBXML_VALID_ENABLED
     { "Error cases regression tests",
       errParseTest, "./test/errors/*.xml", "result/errors/", "", ".err",
       0 },
@@ -4361,10 +4364,13 @@ testDesc testDescriptions[] = {
     { "Error cases regression tests (old 1.0)",
       errParseTest, "./test/errors10/*.xml", "result/errors10/", "", ".err",
       XML_PARSE_OLD10 },
+#endif
 #ifdef LIBXML_READER_ENABLED
+#ifdef LIBXML_VALID_ENABLED
     { "Error cases stream regression tests",
       streamParseTest, "./test/errors/*.xml", "result/errors/", NULL, ".str",
       0 },
+#endif
     { "Reader regression tests",
       streamParseTest, "./test/*", "result/", ".rdr", NULL,
       0 },
@@ -4464,9 +4470,11 @@ testDesc testDescriptions[] = {
       xptrDocTest, "./test/XPath/docs/*", NULL, NULL, NULL,
       0 },
 #endif
+#ifdef LIBXML_VALID_ENABLED
     { "xml:id regression tests" ,
       xmlidDocTest, "./test/xmlid/*", "result/xmlid/", "", ".err",
       0 },
+#endif
 #endif
 #endif
     { "URI parsing tests" ,

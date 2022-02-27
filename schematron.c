@@ -1787,6 +1787,5 @@ int main(int argc, const char** argv) {
     return (0);
 }
 #endif
-#define bottom_schematron
-#include "elfgcchack.h"
+
 #endif /* LIBXML_SCHEMATRON_ENABLED */

@@ -6549,6 +6549,9 @@ xmlGetPropNodeInternal(const xmlNode *node, const xmlChar *name,
 {
     xmlAttrPtr prop;
 
+    /* Avoid unused variable warning if features are disabled. */
+    (void) useDTD;
+
     if ((node == NULL) || (node->type != XML_ELEMENT_NODE) || (name == NULL))
 	return(NULL);
 
@@ -10203,5 +10206,3 @@ xmlDOMWrapAdoptNode(xmlDOMWrapCtxtPtr ctxt,
     return (0);
 }
 
-#define bottom_tree
-#include "elfgcchack.h"

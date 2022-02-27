@@ -1736,7 +1736,7 @@ xmlInitParserCtxt(xmlParserCtxtPtr ctxt)
 	ctxt->options |= XML_PARSE_NOBLANKS;
     }
 
-    ctxt->vctxt.finishDtd = XML_CTXT_FINISH_DTD_0;
+    ctxt->vctxt.flags = XML_VCTXT_USE_PCTXT;
     ctxt->vctxt.userData = ctxt;
     ctxt->vctxt.error = xmlParserValidityError;
     ctxt->vctxt.warning = xmlParserValidityWarning;
@@ -2165,5 +2165,3 @@ xmlKeepBlanksDefault(int val) {
     return(old);
 }
 
-#define bottom_parserInternals
-#include "elfgcchack.h"

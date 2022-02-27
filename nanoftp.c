@@ -2132,5 +2132,3 @@ int main(int argc, const char** argv) {
 
 #endif /* LIBXML_FTP_ENABLED */
 
-#define bottom_nanoftp
-#include "elfgcchack.h"

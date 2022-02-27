@@ -1104,6 +1104,10 @@ xmlHasFeature(xmlFeature feature)
 static void
 xmlDetectSAX2(xmlParserCtxtPtr ctxt) {
     xmlSAXHandlerPtr sax;
+
+    /* Avoid unused variable warning if features are disabled. */
+    (void) sax;
+
     if (ctxt == NULL) return;
     sax = ctxt->sax;
 #ifdef LIBXML_SAX1_ENABLED
@@ -15551,5 +15555,3 @@ xmlCtxtReadIO(xmlParserCtxtPtr ctxt, xmlInputReadCallback ioread,
     return (xmlDoRead(ctxt, URL, encoding, options, 1));
 }
 
-#define bottom_parser
-#include "elfgcchack.h"
