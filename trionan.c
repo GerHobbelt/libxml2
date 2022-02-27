@@ -814,7 +814,7 @@ TRIO_ARGS2((prefix, number),
 
 
 #if defined(BUILD_MONOLITHIC)
-#define main()      xml_trionan_main()
+#define main(void)      xml_trionan_main()
 #endif
 
 int main()

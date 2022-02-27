@@ -110,7 +110,7 @@ thread_specific_data(void *private_data)
 #ifdef HAVE_PTHREAD_H
 
 #if defined(BUILD_MONOLITHIC)
-#define main()      xml_testthreads_main()
+#define main(void)      xml_testthreads_main()
 #endif
 
 int main(void)
@@ -226,7 +226,7 @@ int main(void)
 #elif defined HAVE_BEOS_THREADS
 
 #if defined(BUILD_MONOLITHIC)
-#define main()      xml_testthreads_main()
+#define main(void)      xml_testthreads_main()
 #endif
 
 int main(void)
