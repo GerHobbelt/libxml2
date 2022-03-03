@@ -442,23 +442,12 @@ LIBS=${_libs}
 echo Checking headers
 
 dnl Checks for header files.
-AC_HEADER_DIRENT
-AC_HEADER_STDC
 AC_CHECK_HEADERS([fcntl.h])
 AC_CHECK_HEADERS([unistd.h])
-AC_CHECK_HEADERS([ctype.h])
-AC_CHECK_HEADERS([errno.h])
-AC_CHECK_HEADERS([malloc.h])
-AC_CHECK_HEADERS([stdarg.h])
 AC_CHECK_HEADERS([sys/stat.h])
 AC_CHECK_HEADERS([sys/types.h])
 AC_CHECK_HEADERS([stdint.h])
 AC_CHECK_HEADERS([inttypes.h])
-AC_CHECK_HEADERS([time.h])
-AC_CHECK_HEADERS([math.h])
-AC_CHECK_HEADERS([limits.h])
-AC_CHECK_HEADERS([float.h])
-AC_CHECK_HEADERS([stdlib.h])
 AC_CHECK_HEADERS([sys/socket.h], [], [],
 [#if HAVE_SYS_TYPES_H
 # include <sys/types.h>
@@ -483,7 +472,6 @@ AC_CHECK_HEADERS([sys/select.h])
 AC_CHECK_HEADERS([poll.h])
 AC_CHECK_HEADERS([sys/mman.h])
 AC_CHECK_HEADERS([sys/timeb.h])
-AC_CHECK_HEADERS([signal.h])
 AC_CHECK_HEADERS([arpa/nameser.h], [], [],
 [#if HAVE_SYS_TYPES_H
 # include <sys/types.h>
@@ -512,10 +500,9 @@ AC_TYPE_UINT32_T
 echo Checking libraries
 
 dnl Checks for library functions.
-AC_FUNC_STRFTIME
-AC_CHECK_FUNCS(strftime localtime gettimeofday ftime)
-AC_CHECK_FUNCS(stat signal)
-AC_CHECK_FUNCS(rand rand_r srand time)
+AC_CHECK_FUNCS(gettimeofday ftime)
+AC_CHECK_FUNCS(stat)
+AC_CHECK_FUNCS(rand_r)
 AC_CHECK_FUNCS(isascii mmap munmap putenv)
 
 AH_VERBATIM([HAVE_MUNMAP_AFTER],[/* mmap() is no good without munmap() */
@@ -1443,8 +1430,6 @@ else
         else
             if test "$with_icu" != "yes" -a "$with_iconv" != "" ; then
                 CPPFLAGS="${CPPFLAGS} -I$with_icu"
-                # Export this since our headers include icu.h
-                XML_INCLUDEDIR="${XML_INCLUDEDIR} -I$with_icu"
             fi
 
             AC_CHECK_HEADER(unicode/ucnv.h,
@@ -1606,7 +1591,7 @@ dnl  AC_DEFINE([snprintf],[_snprintf],[Win32 Std C name mangling work-around])
 dnl  AC_DEFINE([vsnprintf],[_vsnprintf],[Win32 Std C name mangling work-around])
 dnl and do not redefine those functions is C-source files.
 dnl
-AC_CHECK_FUNCS(printf sprintf fprintf snprintf vfprintf vsprintf vsnprintf sscanf,,
+AC_CHECK_FUNCS(snprintf vsnprintf,,
 	NEED_TRIO=1)
 
 if test "$with_coverage" = "yes" -a "${GCC}" = "yes"

@@ -21,12 +21,9 @@
 #include <string.h> /* for memset() only ! */
 #include <stddef.h>
 #include <limits.h>
-#ifdef HAVE_CTYPE_H
 #include <ctype.h>
-#endif
-#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
-#endif
+
 #if defined(LIBXML_ZLIB_ENABLED) && !defined(LIBXML_ZLIB_NG_ENABLED)
 #include <zlib.h>
 #endif

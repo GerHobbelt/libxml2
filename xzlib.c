@@ -11,10 +11,8 @@
 #ifdef LIBXML_LZMA_ENABLED
 
 #include <string.h>
-#ifdef HAVE_ERRNO_H
+#include <stdlib.h>
 #include <errno.h>
-#endif
-
 
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
@@ -27,9 +25,6 @@
 #endif
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
-#endif
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
 #endif
 #if defined(LIBXML_ZLIB_ENABLED) && !defined(LIBXML_ZLIB_NG_ENABLED)
 #include <zlib.h>

@@ -20,8 +20,6 @@
 #endif
 #endif
 
-#if defined(macintosh)
-#include "config-mac.h"
 #if defined(_WIN32) || defined(WIN32)
 /*
  * [i_a] Windows NT/XP/Vista/2003 compatibility definitions and functions
@@ -107,12 +105,10 @@ void __xmlGlobalInitMutexDestroy(void);
 
 int __xmlInitializeDict(void);
 
-#if defined(HAVE_RAND) && defined(HAVE_SRAND) && defined(HAVE_TIME)
 /*
  * internal thread safe random function
  */
 int __xmlRandom(void);
-#endif
 
 XMLPUBFUN xmlChar * XMLCALL xmlEscapeFormatString(xmlChar **msg);
 int xmlInputReadCallbackNop(void *context, char *buffer, int len);
