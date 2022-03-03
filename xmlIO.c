@@ -705,11 +705,7 @@ int
 xmlCheckFilename (const char *path)
 {
 #ifdef HAVE_STAT
-#if defined(_WIN32)
-    struct _stat stat_buffer;
-#else
-    struct stat stat_buffer;
-#endif
+    _stat_t stat_buffer;
 #endif
     if (path == NULL)
 	return(0);
