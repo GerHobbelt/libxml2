@@ -79,15 +79,9 @@
 #if defined(_WIN32) && defined(_MSC_VER)
 #undef XML_XML_DEFAULT_CATALOG
 static char XML_XML_DEFAULT_CATALOG[MAX_PATH] = "file:///etc/xml/catalog";
-#if defined(_WIN32_WCE)
-/* Windows CE don't have a A variant */
-#define GetModuleHandleA GetModuleHandle
-#define GetModuleFileNameA GetModuleFileName
-#else
 #if !defined(_WINDOWS_)
 void* __stdcall GetModuleHandleA(const char*);
 unsigned long __stdcall GetModuleFileNameA(void*, char*, unsigned long);
-#endif
 #endif
 #endif
 
