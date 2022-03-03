@@ -14,7 +14,7 @@
 #include "libxml.h"
 #include <stdio.h>
 
-#if !defined(_WIN32) || defined(__CYGWIN__)
+#if !defined(_WIN32)
 #include <unistd.h>
 #endif
 #include <string.h>
@@ -110,7 +110,7 @@ static int update_results = 0;
 static const char* temp_directory = NULL;
 static int checkTestFile(const char *filename);
 
-#if defined(_WIN32) && !defined(__CYGWIN__)
+#if defined(_WIN32)
 
 #include <windows.h>
 #include <io.h>
@@ -611,7 +611,7 @@ static int checkTestFile(const char *filename) {
         == -1)
         return(0);
 
-#if defined(_WIN32) && !defined(__CYGWIN__)
+#if defined(_WIN32)
     if (!(buf.st_mode & _S_IFREG))
         return(0);
 #else
@@ -4139,7 +4139,7 @@ thread_specific_data(void *private_data)
     return(NULL);
 }
 
-#if defined(_WIN32) && !defined(__CYGWIN__)
+#if defined(_WIN32)
 #include <windows.h>
 #include <string.h>
 
@@ -4668,7 +4668,7 @@ int main(int argc, const char** argv) {
     int i, a, ret = 0;
     int subset = 0;
 
-#if defined(_WIN32) && !defined(__CYGWIN__)
+#if defined(_WIN32)
     setvbuf(stdout, NULL, _IONBF, 0);
     setvbuf(stderr, NULL, _IONBF, 0);
 #endif

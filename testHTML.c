@@ -629,11 +629,7 @@ parseSAXFile(const char *filename) {
     if (push) {
 	FILE *f;
 
-#if defined(_WIN32) || defined (__DJGPP__) && !defined (__CYGWIN__)
 	f = fopen(filename, "rb");
-#else
-	f = fopen(filename, "r");
-#endif
 	if (f != NULL) {
 	    int res, size = 3;
 	    char chars[4096];
@@ -659,11 +655,7 @@ parseSAXFile(const char *filename) {
 	    fclose(f);
 	}
 	if (!noout) {
-#if defined(_WIN32) || defined (__DJGPP__) && !defined (__CYGWIN__)
-		f = fopen(filename, "rb");
-#else
-		f = fopen(filename, "r");
-#endif
+	    f = fopen(filename, "rb");
 	    if (f != NULL) {
 		int res, size = 3;
 		char chars[4096];
@@ -723,11 +715,7 @@ parseAndPrintFile(const char *filename) {
     if (push) {
 	FILE *f;
 
-#if defined(_WIN32) || defined (__DJGPP__) && !defined (__CYGWIN__)
 	f = fopen(filename, "rb");
-#else
-	f = fopen(filename, "r");
-#endif
 	if (f != NULL) {
 	    int res, size = 3;
 	    char chars[4096];

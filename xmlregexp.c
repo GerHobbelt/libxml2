@@ -1693,12 +1693,12 @@ xmlFAGenerateTransitions(xmlRegParserCtxtPtr ctxt, xmlRegStatePtr from,
 		    counter = xmlRegGetCounter(ctxt);
 		    ctxt->counters[counter].min = atom->min - 1;
 		    ctxt->counters[counter].max = atom->max - 1;
-		    /* count the number of times we see it again */
-		    xmlFAGenerateCountedEpsilonTransition(ctxt, atom->stop,
-						   atom->start, counter);
 		    /* allow a way out based on the count */
 		    xmlFAGenerateCountedTransition(ctxt, atom->stop,
 			                           newstate, counter);
+		    /* count the number of times we see it again */
+		    xmlFAGenerateCountedEpsilonTransition(ctxt, atom->stop,
+						   atom->start, counter);
 		    /* and if needed allow a direct exit for 0 */
 		    if (atom->min == 0)
 			xmlFAGenerateEpsilonTransition(ctxt, atom->start0,
@@ -3424,7 +3424,6 @@ xmlFARegExec(xmlRegexpPtr comp, const xmlChar *content) {
 		    /*
 		     * this is a multiple input sequence
 		     * If there is a counter associated increment it now.
-		     * before potentially saving and rollback
 		     * do not increment if the counter is already over the
 		     * maximum limit in which case get to next transition
 		     */
@@ -3440,14 +3439,16 @@ xmlFARegExec(xmlRegexpPtr comp, const xmlChar *content) {
 			counter = &exec->comp->counters[trans->counter];
 			if (exec->counts[trans->counter] >= counter->max)
 			    continue; /* for loop on transitions */
-
+                    }
+                    /* Save before incrementing */
+		    if (exec->state->nbTrans > exec->transno + 1) {
+			xmlFARegExecSave(exec);
+		    }
+		    if (trans->counter >= 0) {
 #ifdef DEBUG_REGEXP_EXEC
 			printf("Increasing count %d\n", trans->counter);
 #endif
 			exec->counts[trans->counter]++;
-		    }
-		    if (exec->state->nbTrans > exec->transno + 1) {
-			xmlFARegExecSave(exec);
 		    }
 		    exec->transcount = 1;
 		    do {

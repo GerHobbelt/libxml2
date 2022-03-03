@@ -9,7 +9,7 @@
 #include "libxml.h"
 #include <stdio.h>
 
-#if !defined(_WIN32) || defined(__CYGWIN__)
+#if !defined(_WIN32)
 #include <unistd.h>
 #endif
 #include <string.h>
@@ -60,7 +60,7 @@ static int checkTestFile(const char *filename) {
         == -1)
         return(0);
 
-#if defined(_WIN32) && !defined(__CYGWIN__)
+#if defined(_WIN32)
     if (!(buf.st_mode & _S_IFREG))
         return(0);
 #else
