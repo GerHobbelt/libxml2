@@ -27,7 +27,6 @@
  * Tested with MSVC2005 on WinXP.
  */
 #include <win32config.h>
-#include <libxml/xmlversion.h>
 #else
 /*
  * Currently supported platforms use either autoconf or
@@ -35,8 +34,8 @@
  * As result ifdef HAVE_CONFIG_H is omitted here.
  */
 #include "config.h"
-#include <libxml/xmlversion.h>
 #endif
+#include <libxml/xmlversion.h>
 
 #if defined(__Lynx__)
 #include <stdio.h> /* pull definition of size_t */
