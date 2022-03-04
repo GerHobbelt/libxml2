@@ -1,6 +1,6 @@
 /*
- * Summary: compile-time version informations
- * Description: compile-time version informations for the XML library
+ * Summary: compile-time version information
+ * Description: compile-time version information for the XML library
  *
  * Copy: See Copyright for the status of this software.
  *
@@ -11,7 +11,7 @@
 #define __XML_VERSION_H__
 
 #include <libxml/xmlexports.h>
-#include <libxml/xmlwin32version.h>
+//#include <libxml/xmlwin32version.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,9 +49,9 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
 /**
  * LIBXML_VERSION_EXTRA:
  *
- * extra version information, used to show a CVS compilation
+ * extra version information, used to show a git commit description
  */
-#define LIBXML_VERSION_EXTRA "-GITv2.9.9-rc2-2-g7c4949afa"
+#define LIBXML_VERSION_EXTRA "-git"
 
 /**
  * LIBXML_TEST_VERSION:
@@ -92,10 +92,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  * Whether the thread support is configured in
  */
 #if 1
-#if defined(_REENTRANT) || defined(__MT__) || \
-    (defined(_POSIX_C_SOURCE) && (_POSIX_C_SOURCE - 0 >= 199506L))
 #define LIBXML_THREAD_ENABLED
-#endif
 #endif
 
 /**
@@ -282,18 +279,9 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  * LIBXML_ICU_ENABLED:
  *
  * Whether icu support is available
- *
- * This is disabled when libxml2 is
- * 1. built for the VNDK.
- * libicuuc.so isn't available in the VNDK.
- * 2. built as an static library on Android
- * libicuuc.so isn't available for static linking.
  */
-#undef LIBXML_ICU_ENABLED
-#ifdef __ANDROID_VNDK__
-#undef LIBXML_ICU_ENABLED
-#elif defined(__ANDROID__) && defined(STATIC_LIBXML)
-#undef LIBXML_ICU_ENABLED
+#if 0
+#define LIBXML_ICU_ENABLED
 #endif
 
 /**
@@ -363,8 +351,10 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  * LIBXML_EXPR_ENABLED:
  *
  * Whether the formal expressions interfaces are compiled in
+ *
+ * This code is unused and disabled unconditionally for now.
  */
-#if 1
+#if 0
 #define LIBXML_EXPR_ENABLED
 #endif
 
@@ -410,11 +400,11 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
 #define LIBXML_ZLIB_ENABLED
 #endif
 
- /**
-  * LIBXML_ZLIB_NG_ENABLED:
-  *
-  * Whether the Zlib-NG support is compiled in
-  */
+/**
+ * LIBXML_ZLIB_NG_ENABLED:
+ *
+ * Whether the Zlib-NG support is compiled in
+ */
 #if 1
 #define LIBXML_ZLIB_NG_ENABLED
 #endif
@@ -476,6 +466,15 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
 # define LIBXML_ATTR_FORMAT(fmt,args)
 #endif
 
+#ifndef XML_DEPRECATED
+#  ifdef IN_LIBXML
+#    define XML_DEPRECATED
+#  else
+/* Available since at least GCC 3.1 */
+#    define XML_DEPRECATED __attribute__((deprecated))
+#  endif
+#endif
+
 #else /* ! __GNUC__ */
 /**
  * ATTRIBUTE_UNUSED:
@@ -495,6 +494,15 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  * Macro used to indicate to GCC the parameter are printf like
  */
 #define LIBXML_ATTR_FORMAT(fmt,args)
+/**
+ * XML_DEPRECATED:
+ *
+ * Macro used to indicate that a function, variable, type or struct member
+ * is deprecated.
+ */
+#ifndef XML_DEPRECATED
+#define XML_DEPRECATED
+#endif
 #endif /* __GNUC__ */
 
 #ifdef __cplusplus

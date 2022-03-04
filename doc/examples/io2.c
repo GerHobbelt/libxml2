@@ -12,10 +12,8 @@
 #include <libxml/parser.h>
 
 #if defined(LIBXML_TREE_ENABLED) && defined(LIBXML_OUTPUT_ENABLED)
-int
-main(void)
+int main(void)
 {
-
     xmlNodePtr n;
     xmlDocPtr doc;
     xmlChar *xmlbuff;
