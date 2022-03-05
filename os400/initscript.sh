@@ -77,7 +77,6 @@ setenv WITH_HTML                1    # Compile HTML support.
 setenv WITH_LEGACY              1    # Compile deprecated API.
 setenv WITH_C14N                1    # Compile canonicalization support.
 setenv WITH_CATALOG             1    # Compile catalog support.
-setenv WITH_DOCB                1    # Compile SGML Docbook support.
 setenv WITH_XPATH               1    # Compile XPath support.
 setenv WITH_XPTR                1    # Compile XPointer support.
 setenv WITH_XINCLUDE            1    # Compile XInclude support.
@@ -296,7 +295,6 @@ versioned_copy()
         -e "s#@WITH_LEGACY@#${WITH_LEGACY}#g"                           \
         -e "s#@WITH_C14N@#${WITH_C14N}#g"                               \
         -e "s#@WITH_CATALOG@#${WITH_CATALOG}#g"                         \
-        -e "s#@WITH_DOCB@#${WITH_DOCB}#g"                               \
         -e "s#@WITH_XPATH@#${WITH_XPATH}#g"                             \
         -e "s#@WITH_XPTR@#${WITH_XPTR}#g"                               \
         -e "s#@WITH_XINCLUDE@#${WITH_XINCLUDE}#g"                       \

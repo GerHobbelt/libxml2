@@ -3721,36 +3721,10 @@ test_HTMLtree(void) {
 }
 
 static int
-test_docbDefaultSAXHandlerInit(void) {
-    int test_ret = 0;
-
-#if defined(LIBXML_DOCB_ENABLED)
-    int mem_base;
-
-        mem_base = xmlMemBlocks();
-
-        docbDefaultSAXHandlerInit();
-        call_tests++;
-        xmlResetLastError();
-        if (mem_base != xmlMemBlocks()) {
-            printf("Leak of %d blocks found in docbDefaultSAXHandlerInit",
-	           xmlMemBlocks() - mem_base);
-	    test_ret++;
-            printf("\n");
-        }
-    function_tests++;
-#endif
-
-    return(test_ret);
-}
-
-
-static int
 test_htmlDefaultSAXHandlerInit(void) {
     int test_ret = 0;
 
 #if defined(LIBXML_HTML_ENABLED)
-#ifdef LIBXML_HTML_ENABLED
     int mem_base;
 
         mem_base = xmlMemBlocks();
@@ -3765,7 +3739,6 @@ test_htmlDefaultSAXHandlerInit(void) {
             printf("\n");
         }
     function_tests++;
-#endif
 #endif
 
     return(test_ret);
@@ -4090,7 +4063,7 @@ static int
 test_xmlSAX2EndElement(void) {
     int test_ret = 0;
 
-#if defined(LIBXML_SAX1_ENABLED) || defined(LIBXML_HTML_ENABLED) || defined(LIBXML_WRITER_ENABLED) || defined(LIBXML_DOCB_ENABLED) || defined(LIBXML_LEGACY_ENABLED)
+#if defined(LIBXML_SAX1_ENABLED) || defined(LIBXML_HTML_ENABLED) || defined(LIBXML_WRITER_ENABLED) || defined(LIBXML_LEGACY_ENABLED)
 #ifdef LIBXML_SAX1_ENABLED
     int mem_base;
     void * ctx; /* the user data (XML parser context) */
@@ -4656,38 +4629,6 @@ test_xmlSAX2InitDefaultSAXHandler(void) {
 
 
 static int
-test_xmlSAX2InitDocbDefaultSAXHandler(void) {
-    int test_ret = 0;
-
-#if defined(LIBXML_DOCB_ENABLED)
-    int mem_base;
-    xmlSAXHandler * hdlr; /* the SAX handler */
-    int n_hdlr;
-
-    for (n_hdlr = 0;n_hdlr < gen_nb_xmlSAXHandler_ptr;n_hdlr++) {
-        mem_base = xmlMemBlocks();
-        hdlr = gen_xmlSAXHandler_ptr(n_hdlr, 0);
-
-        xmlSAX2InitDocbDefaultSAXHandler(hdlr);
-        call_tests++;
-        des_xmlSAXHandler_ptr(n_hdlr, hdlr, 0);
-        xmlResetLastError();
-        if (mem_base != xmlMemBlocks()) {
-            printf("Leak of %d blocks found in xmlSAX2InitDocbDefaultSAXHandler",
-	           xmlMemBlocks() - mem_base);
-	    test_ret++;
-            printf(" %d", n_hdlr);
-            printf("\n");
-        }
-    }
-    function_tests++;
-#endif
-
-    return(test_ret);
-}
-
-
-static int
 test_xmlSAX2InitHtmlDefaultSAXHandler(void) {
     int test_ret = 0;
 
@@ -5058,7 +4999,7 @@ static int
 test_xmlSAX2StartElement(void) {
     int test_ret = 0;
 
-#if defined(LIBXML_SAX1_ENABLED) || defined(LIBXML_HTML_ENABLED) || defined(LIBXML_WRITER_ENABLED) || defined(LIBXML_DOCB_ENABLED) || defined(LIBXML_LEGACY_ENABLED)
+#if defined(LIBXML_SAX1_ENABLED) || defined(LIBXML_HTML_ENABLED) || defined(LIBXML_WRITER_ENABLED) || defined(LIBXML_LEGACY_ENABLED)
 #ifdef LIBXML_SAX1_ENABLED
     int mem_base;
     void * ctx; /* the user data (XML parser context) */
@@ -5324,8 +5265,7 @@ static int
 test_SAX2(void) {
     int test_ret = 0;
 
-    if (quiet == 0) printf("Testing SAX2 : 38 of 38 functions ...\n");
-    test_ret += test_docbDefaultSAXHandlerInit();
+    if (quiet == 0) printf("Testing SAX2 : 36 of 36 functions ...\n");
     test_ret += test_htmlDefaultSAXHandlerInit();
     test_ret += test_xmlDefaultSAXHandlerInit();
     test_ret += test_xmlSAX2AttributeDecl();
@@ -5348,7 +5288,6 @@ test_SAX2(void) {
     test_ret += test_xmlSAX2HasInternalSubset();
     test_ret += test_xmlSAX2IgnorableWhitespace();
     test_ret += test_xmlSAX2InitDefaultSAXHandler();
-    test_ret += test_xmlSAX2InitDocbDefaultSAXHandler();
     test_ret += test_xmlSAX2InitHtmlDefaultSAXHandler();
     test_ret += test_xmlSAX2InternalSubset();
     test_ret += test_xmlSAX2IsStandalone();
@@ -23942,7 +23881,7 @@ static int
 test_xmlValidateNCName(void) {
     int test_ret = 0;
 
-#if defined(LIBXML_TREE_ENABLED) || defined(LIBXML_XPATH_ENABLED) || defined(LIBXML_SCHEMAS_ENABLED) || defined(LIBXML_DEBUG_ENABLED) || defined (LIBXML_HTML_ENABLED) || defined(LIBXML_SAX1_ENABLED) || defined(LIBXML_HTML_ENABLED) || defined(LIBXML_WRITER_ENABLED) || defined(LIBXML_DOCB_ENABLED) || defined(LIBXML_LEGACY_ENABLED)
+#if defined(LIBXML_TREE_ENABLED) || defined(LIBXML_XPATH_ENABLED) || defined(LIBXML_SCHEMAS_ENABLED) || defined(LIBXML_DEBUG_ENABLED) || defined (LIBXML_HTML_ENABLED) || defined(LIBXML_SAX1_ENABLED) || defined(LIBXML_HTML_ENABLED) || defined(LIBXML_WRITER_ENABLED) || defined(LIBXML_LEGACY_ENABLED)
 #ifdef LIBXML_TREE_ENABLED
     int mem_base;
     int ret_val;

@@ -1,29 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <api name='libxml2'>
   <files>
-    <file name='DOCBparser'>
-     <summary>old DocBook SGML parser</summary>
-     <description>interface for a DocBook SGML non-verifying parser This code is DEPRECATED, and should not be used anymore. </description>
-     <author>Daniel Veillard </author>
-     <deprecated/>
-     <exports symbol='docbParserInputPtr' type='typedef'/>
-     <exports symbol='docbParserCtxt' type='typedef'/>
-     <exports symbol='docbParserCtxtPtr' type='typedef'/>
-     <exports symbol='docbParserInput' type='typedef'/>
-     <exports symbol='docbDocPtr' type='typedef'/>
-     <exports symbol='docbSAXHandler' type='typedef'/>
-     <exports symbol='docbSAXHandlerPtr' type='typedef'/>
-     <exports symbol='docbFreeParserCtxt' type='function'/>
-     <exports symbol='docbParseDoc' type='function'/>
-     <exports symbol='docbCreateFileParserCtxt' type='function'/>
-     <exports symbol='docbSAXParseFile' type='function'/>
-     <exports symbol='docbSAXParseDoc' type='function'/>
-     <exports symbol='docbCreatePushParserCtxt' type='function'/>
-     <exports symbol='docbEncodeEntities' type='function'/>
-     <exports symbol='docbParseFile' type='function'/>
-     <exports symbol='docbParseDocument' type='function'/>
-     <exports symbol='docbParseChunk' type='function'/>
-    </file>
     <file name='HTMLparser'>
      <summary>interface for an HTML 4.0 non-verifying parser</summary>
      <description>this module implements an HTML 4.0 non-verifying parser with API compatible with the XML parser ones. It should be able to parse &quot;real world&quot; HTML, even if severely broken from a specification point of view. </description>
@@ -161,7 +138,6 @@
      <exports symbol='processingInstruction' type='function'/>
      <exports symbol='endElement' type='function'/>
      <exports symbol='namespaceDecl' type='function'/>
-     <exports symbol='initdocbDefaultSAXHandler' type='function'/>
      <exports symbol='getEntity' type='function'/>
      <exports symbol='characters' type='function'/>
      <exports symbol='elementDecl' type='function'/>
@@ -185,7 +161,6 @@
      <exports symbol='xmlSAX2GetColumnNumber' type='function'/>
      <exports symbol='xmlSAX2GetEntity' type='function'/>
      <exports symbol='xmlSAX2UnparsedEntityDecl' type='function'/>
-     <exports symbol='xmlSAX2InitDocbDefaultSAXHandler' type='function'/>
      <exports symbol='xmlSAXVersion' type='function'/>
      <exports symbol='xmlSAX2IgnorableWhitespace' type='function'/>
      <exports symbol='xmlSAX2NotationDecl' type='function'/>
@@ -209,7 +184,6 @@
      <exports symbol='xmlSAX2GetLineNumber' type='function'/>
      <exports symbol='xmlSAX2HasInternalSubset' type='function'/>
      <exports symbol='xmlSAX2InitHtmlDefaultSAXHandler' type='function'/>
-     <exports symbol='docbDefaultSAXHandlerInit' type='function'/>
      <exports symbol='xmlDefaultSAXHandlerInit' type='function'/>
      <exports symbol='xmlSAX2InitDefaultSAXHandler' type='function'/>
      <exports symbol='xmlSAX2GetParameterEntity' type='function'/>
@@ -487,7 +461,6 @@
      <exports symbol='xmlDefaultBufferSize' type='variable'/>
      <exports symbol='xmlRegisterNodeDefaultValue' type='variable'/>
      <exports symbol='xmlGetWarningsDefaultValue' type='variable'/>
-     <exports symbol='docbDefaultSAXHandler' type='variable'/>
      <exports symbol='xmlGenericErrorContext' type='variable'/>
      <exports symbol='xmlDeregisterNodeDefaultValue' type='variable'/>
      <exports symbol='xmlGenericError' type='variable'/>
@@ -1468,7 +1441,6 @@
      <exports symbol='XML_HTML_DOCUMENT_NODE' type='enum'/>
      <exports symbol='XML_ELEMENT_TYPE_UNDEFINED' type='enum'/>
      <exports symbol='XML_DOCUMENT_NODE' type='enum'/>
-     <exports symbol='XML_DOCB_DOCUMENT_NODE' type='enum'/>
      <exports symbol='XML_COMMENT_NODE' type='enum'/>
      <exports symbol='XML_ATTRIBUTE_NONE' type='enum'/>
      <exports symbol='XML_DTD_NODE' type='enum'/>
@@ -3394,7 +3366,6 @@
      <exports symbol='LIBXML_DEBUG_ENABLED' type='macro'/>
      <exports symbol='LIBXML_XINCLUDE_ENABLED' type='macro'/>
      <exports symbol='ATTRIBUTE_UNUSED' type='macro'/>
-     <exports symbol='LIBXML_DOCB_ENABLED' type='macro'/>
      <exports symbol='LIBXML_PUSH_ENABLED' type='macro'/>
      <exports symbol='LIBXML_SAX1_ENABLED' type='macro'/>
      <exports symbol='WITHOUT_TRIO' type='macro'/>
@@ -3992,9 +3963,6 @@
       <info>Whether the runtime debugging is configured in</info>
     </macro>
     <macro name='LIBXML_DLL_IMPORT' file='xmlexports'>
-    </macro>
-    <macro name='LIBXML_DOCB_ENABLED' file='xmlversion'>
-      <info>Whether the SGML Docbook support is configured in</info>
     </macro>
     <macro name='LIBXML_DOTTED_VERSION' file='xmlversion'>
       <info>the version string like &quot;1.2.3&quot;</info>
@@ -4807,7 +4775,6 @@
     <enum name='XML_CHECK_WRONG_PARENT' file='xmlerror' value='5029' type='xmlParserErrors' info='5029'/>
     <enum name='XML_CHECK_WRONG_PREV' file='xmlerror' value='5019' type='xmlParserErrors' info='5019'/>
     <enum name='XML_COMMENT_NODE' file='tree' value='8' type='xmlElementType'/>
-    <enum name='XML_DOCB_DOCUMENT_NODE' file='tree' value='21' type='xmlElementType'/>
     <enum name='XML_DOCUMENT_FRAG_NODE' file='tree' value='11' type='xmlElementType'/>
     <enum name='XML_DOCUMENT_NODE' file='tree' value='9' type='xmlElementType'/>
     <enum name='XML_DOCUMENT_TYPE_NODE' file='tree' value='10' type='xmlElementType'/>
@@ -5921,13 +5888,6 @@ crash if you try to modify the tree)'/>
     <enum name='XPTR_RESOURCE_ERROR' file='xpath' value='17' type='xmlXPathError'/>
     <enum name='XPTR_SUB_RESOURCE_ERROR' file='xpath' value='18' type='xmlXPathError'/>
     <enum name='XPTR_SYNTAX_ERROR' file='xpath' value='16' type='xmlXPathError'/>
-    <typedef name='docbDocPtr' file='DOCBparser' type='xmlDocPtr'/>
-    <typedef name='docbParserCtxt' file='DOCBparser' type='xmlParserCtxt'/>
-    <typedef name='docbParserCtxtPtr' file='DOCBparser' type='xmlParserCtxtPtr'/>
-    <typedef name='docbParserInput' file='DOCBparser' type='xmlParserInput'/>
-    <typedef name='docbParserInputPtr' file='DOCBparser' type='xmlParserInputPtr'/>
-    <typedef name='docbSAXHandler' file='DOCBparser' type='xmlSAXHandler'/>
-    <typedef name='docbSAXHandlerPtr' file='DOCBparser' type='xmlSAXHandlerPtr'/>
     <typedef name='htmlDocPtr' file='HTMLparser' type='xmlDocPtr'/>
     <struct name='htmlElemDesc' file='HTMLparser' type='struct _htmlElemDesc'>
       <field name='name' type='const char *' info=' The tag name'/>
@@ -6249,7 +6209,6 @@ set at the end of parsing'/>
       <field name='xmlParserVersion' type='const char *' info=''/>
       <field name='xmlDefaultSAXLocator' type='xmlSAXLocator' info=''/>
       <field name='xmlDefaultSAXHandler' type='xmlSAXHandlerV1' info=''/>
-      <field name='docbDefaultSAXHandler' type='xmlSAXHandlerV1' info=''/>
       <field name='htmlDefaultSAXHandler' type='xmlSAXHandlerV1' info=''/>
       <field name='xmlFree' type='xmlFreeFunc' info=''/>
       <field name='xmlMalloc' type='xmlMallocFunc' info=''/>
@@ -6374,7 +6333,7 @@ set at the end of parsing'/>
       <field name='version' type='const xmlChar *' info=' the XML version string'/>
       <field name='encoding' type='const xmlChar *' info=' the declared encoding, if any'/>
       <field name='standalone' type='int' info=' standalone document'/>
-      <field name='html' type='int' info=' an HTML(1)/Docbook(2) document
+      <field name='html' type='int' info=' an HTML(1) document
 * 3 is HTML after &lt;head&gt;
 * 10 is HTML after &lt;body&gt;
 * Input stream stack'/>
@@ -6991,7 +6950,6 @@ Could we use @subtypes for this?'/>
       <field name='value' type='xmlXPathObjectPtr' info=' the value'/>
     </struct>
     <typedef name='xmlXPathVariablePtr' file='xpath' type='xmlXPathVariable *'/>
-    <variable name='docbDefaultSAXHandler' file='globals' type='xmlSAXHandlerV1'/>
     <variable name='emptyExp' file='xmlregexp' type='xmlExpNodePtr'/>
     <variable name='forbiddenExp' file='xmlregexp' type='xmlExpNodePtr'/>
     <variable name='htmlDefaultSAXHandler' file='globals' type='xmlSAXHandlerV1'/>
@@ -7146,92 +7104,6 @@ Could we use @subtypes for this?'/>
       <arg name='ctx' type='void *' info='the user data (XML parser context)'/>
       <arg name='value' type='const xmlChar *' info='the comment content'/>
     </functype>
-    <function name='docbCreateFileParserCtxt' file='DOCBparser' module='DOCBparser'>
-      <cond>defined(LIBXML_DOCB_ENABLED)</cond>
-      <info>Create a parser context for a file content. Automatic support for ZLIB/Compress compressed document is provided by default if found at compile-time.</info>
-      <return type='docbParserCtxtPtr' info='the new parser context or NULL'/>
-      <arg name='filename' type='const char *' info='the filename'/>
-      <arg name='encoding' type='const char *' info='the SGML document encoding, or NULL'/>
-    </function>
-    <function name='docbCreatePushParserCtxt' file='DOCBparser' module='DOCBparser'>
-      <cond>defined(LIBXML_DOCB_ENABLED)</cond>
-      <info>Create a parser context for using the DocBook SGML parser in push mode To allow content encoding detection, @size should be &gt;= 4 The value of @filename is used for fetching external entities and error/warning reports.</info>
-      <return type='docbParserCtxtPtr' info='the new parser context or NULL'/>
-      <arg name='sax' type='docbSAXHandlerPtr' info='a SAX handler'/>
-      <arg name='user_data' type='void *' info='The user data returned on SAX callbacks'/>
-      <arg name='chunk' type='const char *' info='a pointer to an array of chars'/>
-      <arg name='size' type='int' info='number of chars in the array'/>
-      <arg name='filename' type='const char *' info='an optional file name or URI'/>
-      <arg name='enc' type='xmlCharEncoding' info='an optional encoding'/>
-    </function>
-    <function name='docbDefaultSAXHandlerInit' file='SAX2' module='SAX2'>
-      <cond>defined(LIBXML_DOCB_ENABLED)</cond>
-      <info>Initialize the default SAX handler</info>
-      <return type='void'/>
-    </function>
-    <function name='docbEncodeEntities' file='DOCBparser' module='DOCBparser'>
-      <cond>defined(LIBXML_DOCB_ENABLED)</cond>
-      <info>Take a block of UTF-8 chars in and try to convert it to an ASCII plus SGML entities block of chars out.</info>
-      <return type='int' info='0 if success, -2 if the transcoding fails, or -1 otherwise The value of @inlen after return is the number of octets consumed as the return value is positive, else unpredictable. The value of @outlen after return is the number of octets consumed.'/>
-      <arg name='out' type='unsigned char *' info='a pointer to an array of bytes to store the result'/>
-      <arg name='outlen' type='int *' info='the length of @out'/>
-      <arg name='in' type='const unsigned char *' info='a pointer to an array of UTF-8 chars'/>
-      <arg name='inlen' type='int *' info='the length of @in'/>
-      <arg name='quoteChar' type='int' info='the quote character to escape (&apos; or &quot;) or zero.'/>
-    </function>
-    <function name='docbFreeParserCtxt' file='DOCBparser' module='DOCBparser'>
-      <cond>defined(LIBXML_DOCB_ENABLED)</cond>
-      <info>Free all the memory used by a parser context. However the parsed document in ctxt-&gt;myDoc is not freed.</info>
-      <return type='void'/>
-      <arg name='ctxt' type='docbParserCtxtPtr' info='an SGML parser context'/>
-    </function>
-    <function name='docbParseChunk' file='DOCBparser' module='DOCBparser'>
-      <cond>defined(LIBXML_DOCB_ENABLED)</cond>
-      <info>Parse a Chunk of memory</info>
-      <return type='int' info='zero if no error, the xmlParserErrors otherwise.'/>
-      <arg name='ctxt' type='docbParserCtxtPtr' info='an XML parser context'/>
-      <arg name='chunk' type='const char *' info='an char array'/>
-      <arg name='size' type='int' info='the size in byte of the chunk'/>
-      <arg name='terminate' type='int' info='last chunk indicator'/>
-    </function>
-    <function name='docbParseDoc' file='DOCBparser' module='DOCBparser'>
-      <cond>defined(LIBXML_DOCB_ENABLED)</cond>
-      <info>parse an SGML in-memory document and build a tree.</info>
-      <return type='docbDocPtr' info='the resulting document tree'/>
-      <arg name='cur' type='xmlChar *' info='a pointer to an array of xmlChar'/>
-      <arg name='encoding' type='const char *' info='a free form C string describing the SGML document encoding, or NULL'/>
-    </function>
-    <function name='docbParseDocument' file='DOCBparser' module='DOCBparser'>
-      <cond>defined(LIBXML_DOCB_ENABLED)</cond>
-      <info>parse an SGML document (and build a tree if using the standard SAX interface).</info>
-      <return type='int' info='0, -1 in case of error. the parser context is augmented as a result of the parsing.'/>
-      <arg name='ctxt' type='docbParserCtxtPtr' info='an SGML parser context'/>
-    </function>
-    <function name='docbParseFile' file='DOCBparser' module='DOCBparser'>
-      <cond>defined(LIBXML_DOCB_ENABLED)</cond>
-      <info>parse a Docbook SGML file and build a tree. Automatic support for ZLIB/Compress compressed document is provided by default if found at compile-time.</info>
-      <return type='docbDocPtr' info='the resulting document tree'/>
-      <arg name='filename' type='const char *' info='the filename'/>
-      <arg name='encoding' type='const char *' info='a free form C string describing document encoding, or NULL'/>
-    </function>
-    <function name='docbSAXParseDoc' file='DOCBparser' module='DOCBparser'>
-      <cond>defined(LIBXML_DOCB_ENABLED)</cond>
-      <info>parse an SGML in-memory document and build a tree. It use the given SAX function block to handle the parsing callback. If sax is NULL, fallback to the default DOM tree building routines.</info>
-      <return type='docbDocPtr' info='the resulting document tree'/>
-      <arg name='cur' type='xmlChar *' info='a pointer to an array of xmlChar'/>
-      <arg name='encoding' type='const char *' info='a free form C string describing the SGML document encoding, or NULL'/>
-      <arg name='sax' type='docbSAXHandlerPtr' info='the SAX handler block'/>
-      <arg name='userData' type='void *' info='if using SAX, this pointer will be provided on callbacks.'/>
-    </function>
-    <function name='docbSAXParseFile' file='DOCBparser' module='DOCBparser'>
-      <cond>defined(LIBXML_DOCB_ENABLED)</cond>
-      <info>parse an SGML file and build a tree. Automatic support for ZLIB/Compress compressed document is provided by default if found at compile-time. It use the given SAX function block to handle the parsing callback. If sax is NULL, fallback to the default DOM tree building routines.</info>
-      <return type='docbDocPtr' info='the resulting document tree'/>
-      <arg name='filename' type='const char *' info='the filename'/>
-      <arg name='encoding' type='const char *' info='a free form C string describing the SGML document encoding, or NULL'/>
-      <arg name='sax' type='docbSAXHandlerPtr' info='the SAX handler block'/>
-      <arg name='userData' type='void *' info='if using SAX, this pointer will be provided on callbacks.'/>
-    </function>
     <function name='elementDecl' file='SAX' module='legacy'>
       <cond>defined(LIBXML_LEGACY_ENABLED)</cond>
       <info>An element definition has been parsed DEPRECATED: use xmlSAX2ElementDecl()</info>
@@ -7914,12 +7786,6 @@ Could we use @subtypes for this?'/>
       <info>Set or reset (if NULL) the default handler for generic errors to the builtin error function.</info>
       <return type='void'/>
       <arg name='handler' type='xmlGenericErrorFunc *' info='the handler'/>
-    </function>
-    <function name='initdocbDefaultSAXHandler' file='SAX' module='SAX'>
-      <cond>defined(LIBXML_LEGACY_ENABLED) &amp;&amp; defined(LIBXML_SAX1_ENABLED) &amp;&amp; defined(LIBXML_DOCB_ENABLED)</cond>
-      <info>Initialize the default DocBook SAX version 1 handler DEPRECATED: use xmlSAX2InitDocbDefaultSAXHandler() for the new SAX2 blocks</info>
-      <return type='void'/>
-      <arg name='hdlr' type='xmlSAXHandlerV1 *' info='the SAX handler'/>
     </function>
     <function name='inithtmlDefaultSAXHandler' file='SAX' module='SAX'>
       <cond>defined(LIBXML_LEGACY_ENABLED) &amp;&amp; defined(LIBXML_SAX1_ENABLED) &amp;&amp; defined(LIBXML_HTML_ENABLED)</cond>
@@ -13267,7 +13133,7 @@ Could we use @subtypes for this?'/>
       <arg name='ctx' type='void *' info='the user data (XML parser context)'/>
     </function>
     <function name='xmlSAX2EndElement' file='SAX2' module='SAX2'>
-      <cond>defined(LIBXML_SAX1_ENABLED) || defined(LIBXML_HTML_ENABLED) || defined(LIBXML_WRITER_ENABLED) || defined(LIBXML_DOCB_ENABLED) || defined(LIBXML_LEGACY_ENABLED)</cond>
+      <cond>defined(LIBXML_SAX1_ENABLED) || defined(LIBXML_HTML_ENABLED) || defined(LIBXML_WRITER_ENABLED) || defined(LIBXML_LEGACY_ENABLED)</cond>
       <info>called when the end of an element has been detected.</info>
       <return type='void'/>
       <arg name='ctx' type='void *' info='the user data (XML parser context)'/>
@@ -13354,12 +13220,6 @@ Could we use @subtypes for this?'/>
       <arg name='hdlr' type='xmlSAXHandler *' info='the SAX handler'/>
       <arg name='warning' type='int' info='flag if non-zero sets the handler warning procedure'/>
     </function>
-    <function name='xmlSAX2InitDocbDefaultSAXHandler' file='SAX2' module='SAX2'>
-      <cond>defined(LIBXML_DOCB_ENABLED)</cond>
-      <info>Initialize the default DocBook SAX2 handler</info>
-      <return type='void'/>
-      <arg name='hdlr' type='xmlSAXHandler *' info='the SAX handler'/>
-    </function>
     <function name='xmlSAX2InitHtmlDefaultSAXHandler' file='SAX2' module='SAX2'>
       <cond>defined(LIBXML_HTML_ENABLED)</cond>
       <info>Initialize the default HTML SAX2 handler</info>
@@ -13419,7 +13279,7 @@ Could we use @subtypes for this?'/>
       <arg name='ctx' type='void *' info='the user data (XML parser context)'/>
     </function>
     <function name='xmlSAX2StartElement' file='SAX2' module='SAX2'>
-      <cond>defined(LIBXML_SAX1_ENABLED) || defined(LIBXML_HTML_ENABLED) || defined(LIBXML_WRITER_ENABLED) || defined(LIBXML_DOCB_ENABLED) || defined(LIBXML_LEGACY_ENABLED)</cond>
+      <cond>defined(LIBXML_SAX1_ENABLED) || defined(LIBXML_HTML_ENABLED) || defined(LIBXML_WRITER_ENABLED) || defined(LIBXML_LEGACY_ENABLED)</cond>
       <info>called when an opening tag has been processed.</info>
       <return type='void'/>
       <arg name='ctx' type='void *' info='the user data (XML parser context)'/>
@@ -17105,7 +16965,7 @@ Could we use @subtypes for this?'/>
       <arg name='elem' type='xmlElementPtr' info='an element definition'/>
     </function>
     <function name='xmlValidateNCName' file='tree' module='tree'>
-      <cond>defined(LIBXML_TREE_ENABLED) || defined(LIBXML_XPATH_ENABLED) || defined(LIBXML_SCHEMAS_ENABLED) || defined(LIBXML_DEBUG_ENABLED) || defined (LIBXML_HTML_ENABLED) || defined(LIBXML_SAX1_ENABLED) || defined(LIBXML_HTML_ENABLED) || defined(LIBXML_WRITER_ENABLED) || defined(LIBXML_DOCB_ENABLED) || defined(LIBXML_LEGACY_ENABLED)</cond>
+      <cond>defined(LIBXML_TREE_ENABLED) || defined(LIBXML_XPATH_ENABLED) || defined(LIBXML_SCHEMAS_ENABLED) || defined(LIBXML_DEBUG_ENABLED) || defined (LIBXML_HTML_ENABLED) || defined(LIBXML_SAX1_ENABLED) || defined(LIBXML_HTML_ENABLED) || defined(LIBXML_WRITER_ENABLED) || defined(LIBXML_LEGACY_ENABLED)</cond>
       <info>Check that a value conforms to the lexical space of NCName</info>
       <return type='int' info='0 if this validates, a positive error code number otherwise and -1 in case of internal or API error.'/>
       <arg name='value' type='const xmlChar *' info='the value to check'/>

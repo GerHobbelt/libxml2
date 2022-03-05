@@ -192,14 +192,6 @@
       /define LIBXML_CATALOG_ENABLED
       /endif
 
-      * LIBXML_DOCB_ENABLED:
-      *
-      * Whether the SGML Docbook support is configured in
-
-      /if defined(DEFINED_@WITH_DOCB@)
-      /define LIBXML_DOCB_ENABLED
-      /endif
-
       * LIBXML_XPATH_ENABLED:
       *
       * Whether XPath is configured in

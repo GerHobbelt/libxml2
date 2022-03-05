@@ -92,7 +92,6 @@ EXTRA_DIST = \
 	html/home.png \
 	html/index.html \
 	html/left.png \
-	html/libxml-DOCBparser.html \
 	html/libxml-HTMLparser.html \
 	html/libxml-HTMLtree.html \
 	html/libxml-SAX.html \

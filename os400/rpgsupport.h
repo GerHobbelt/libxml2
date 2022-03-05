@@ -32,11 +32,6 @@ XMLPUBFUN xmlStrdupFunc __get_xmlMemStrdup(void);
 XMLPUBFUN void          __set_xmlMemStrdup(xmlStrdupFunc strdupfunc);
 XMLPUBFUN char *        __call_xmlMemStrdup(const char * str);
 
-#ifdef LIBXML_DOCB_ENABLED
-XMLPUBFUN xmlSAXHandlerV1 __get_docbDefaultSAXHandler(void);
-XMLPUBFUN void          __set_docbDefaultSAXHandler(xmlSAXHandlerV1 hdlr);
-#endif
-
 #ifdef LIBXML_HTML_ENABLED
 XMLPUBFUN xmlSAXHandlerV1 __get_htmlDefaultSAXHandler(void);
 XMLPUBFUN void          __set_htmlDefaultSAXHandler(xmlSAXHandlerV1 hdlr);
