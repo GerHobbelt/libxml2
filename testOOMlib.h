@@ -1,15 +1,7 @@
 #ifndef TEST_OOM_LIB_H
 #define TEST_OOM_LIB_H
 
-#if 0 /* [i_a] */
-#include <config.h>
-#else
-#include "libxml.h"
-#endif
-
-#ifdef HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
+#include <stddef.h>
 
 void* test_malloc  (size_t      bytes);
 void* test_realloc (void       *memory,

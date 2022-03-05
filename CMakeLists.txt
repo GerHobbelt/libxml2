@@ -26,7 +26,6 @@ set(LIBXML2_WITH_AUTOMATA ON)
 option(LIBXML2_WITH_C14N "Add the Canonicalization support" ON)
 option(LIBXML2_WITH_CATALOG "Add the Catalog support" ON)
 option(LIBXML2_WITH_DEBUG "Add the debugging module" ON)
-option(LIBXML2_WITH_DOCB "Add Docbook SGML support" ON)
 set(LIBXML2_WITH_EXPR ON)
 option(LIBXML2_WITH_FTP "Add the FTP support" ON)
 option(LIBXML2_WITH_HTML "Add the HTML support" ON)
@@ -97,7 +96,7 @@ if(LIBXML2_WITH_ZLIB)
 	find_package(ZLIB REQUIRED)
 endif()
 
-foreach(VARIABLE IN ITEMS WITH_AUTOMATA WITH_C14N WITH_CATALOG WITH_DEBUG WITH_DOCB WITH_EXPR WITH_FTP WITH_HTML WITH_HTTP WITH_ICONV WITH_ICU WITH_ISO8859X WITH_LEGACY WITH_LZMA WITH_MEM_DEBUG WITH_MODULES WITH_OUTPUT WITH_PATTERN WITH_PUSH WITH_READER WITH_REGEXPS WITH_RUN_DEBUG WITH_SAX1 WITH_SCHEMAS WITH_SCHEMATRON WITH_THREADS WITH_THREAD_ALLOC WITH_TREE WITH_TRIO WITH_UNICODE WITH_VALID WITH_WRITER WITH_XINCLUDE WITH_XPATH WITH_XPTR WITH_ZLIB)
+foreach(VARIABLE IN ITEMS WITH_AUTOMATA WITH_C14N WITH_CATALOG WITH_DEBUG WITH_EXPR WITH_FTP WITH_HTML WITH_HTTP WITH_ICONV WITH_ICU WITH_ISO8859X WITH_LEGACY WITH_LZMA WITH_MEM_DEBUG WITH_MODULES WITH_OUTPUT WITH_PATTERN WITH_PUSH WITH_READER WITH_REGEXPS WITH_RUN_DEBUG WITH_SAX1 WITH_SCHEMAS WITH_SCHEMATRON WITH_THREADS WITH_THREAD_ALLOC WITH_TREE WITH_TRIO WITH_UNICODE WITH_VALID WITH_WRITER WITH_XINCLUDE WITH_XPATH WITH_XPTR WITH_ZLIB)
 	if(LIBXML2_${VARIABLE})
 		set(${VARIABLE} 1)
 	else()
@@ -194,23 +193,6 @@ else()
 	check_include_files(unistd.h HAVE_UNISTD_H)
 	check_function_exists(va_copy HAVE_VA_COPY)
 	check_function_exists(__va_copy HAVE___VA_COPY)
-	check_c_source_compiles("
-		#include <stdlib.h>
-		#include <iconv.h>
-		extern
-		#ifdef __cplusplus
-		\"C\"
-		#endif
-		#if defined(__STDC__) || defined(__cplusplus)
-		size_t iconv(iconv_t cd, char** inbuf, size_t* inbytesleft, char** outbuf, size_t* outbytesleft);
-		#else
-		size_t iconv();
-		#endif
-		int main() { return 0; }
-	" ICONV_CONST_TEST)
-	if(NOT ICONV_CONST_TEST)
-		set(ICONV_CONST "const")
-	endif()
 	set(LT_OBJDIR ".libs/")
 	check_c_source_compiles("
 		#include <sys/socket.h>
@@ -270,7 +252,6 @@ set(
 	include/libxml/chvalid.h
 	include/libxml/debugXML.h
 	include/libxml/dict.h
-	include/libxml/DOCBparser.h
 	include/libxml/encoding.h
 	include/libxml/entities.h
 	include/libxml/globals.h
@@ -371,10 +352,6 @@ if(WIN32)
 		"#define LIBXML_MICRO_VERSION ${LIBXML_MICRO_VERSION}\n"
 		"#define LIBXML_DOTTED_VERSION \"${VERSION}\"\n"
 	)
-endif()
-
-if(LIBXML2_WITH_SAX1)
-	list(APPEND LIBXML2_SRCS DOCBparser.c)
 endif()
 
 if(LIBXML2_WITH_TRIO)
