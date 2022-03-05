@@ -3725,7 +3725,6 @@ test_docbDefaultSAXHandlerInit(void) {
     int test_ret = 0;
 
 #if defined(LIBXML_DOCB_ENABLED)
-#ifdef LIBXML_DOCB_ENABLED
     int mem_base;
 
         mem_base = xmlMemBlocks();
@@ -3740,7 +3739,6 @@ test_docbDefaultSAXHandlerInit(void) {
             printf("\n");
         }
     function_tests++;
-#endif
 #endif
 
     return(test_ret);
