@@ -29,7 +29,5 @@
 #define vsnprintf _vsnprintf
 #endif
 
-#define HAVE_WIN32_THREADS
-
 #endif /* __LIBXML_WIN32_CONFIG__ */
 
