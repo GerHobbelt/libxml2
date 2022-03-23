@@ -1299,7 +1299,7 @@ xmlStringLenGetNodeList(const xmlDoc *doc, const xmlChar *value, int len) {
 
     buf = xmlBufCreateSize(0);
     if (buf == NULL) return(NULL);
-    xmlBufSetAllocationScheme(buf, XML_BUFFER_ALLOC_HYBRID);
+    xmlBufSetAllocationScheme(buf, XML_BUFFER_ALLOC_DOUBLEIT);
 
     q = cur;
     while ((cur < end) && (*cur != 0)) {
@@ -1520,7 +1520,7 @@ xmlStringGetNodeList(const xmlDoc *doc, const xmlChar *value) {
 
     buf = xmlBufCreateSize(0);
     if (buf == NULL) return(NULL);
-    xmlBufSetAllocationScheme(buf, XML_BUFFER_ALLOC_HYBRID);
+    xmlBufSetAllocationScheme(buf, XML_BUFFER_ALLOC_DOUBLEIT);
 
     q = cur;
     while (*cur != 0) {
@@ -5574,6 +5574,7 @@ xmlNodeGetContent(const xmlNode *cur)
                 buf = xmlBufCreateSize(64);
                 if (buf == NULL)
                     return (NULL);
+                xmlBufSetAllocationScheme(buf, XML_BUFFER_ALLOC_DOUBLEIT);
 		xmlBufGetNodeContent(buf, cur);
                 ret = xmlBufDetach(buf);
                 xmlBufFree(buf);
@@ -5599,6 +5600,7 @@ xmlNodeGetContent(const xmlNode *cur)
                 buf = xmlBufCreate();
                 if (buf == NULL)
                     return (NULL);
+                xmlBufSetAllocationScheme(buf, XML_BUFFER_ALLOC_DOUBLEIT);
 
                 xmlBufGetNodeContent(buf, cur);
 
@@ -5621,6 +5623,7 @@ xmlNodeGetContent(const xmlNode *cur)
 	    buf = xmlBufCreate();
 	    if (buf == NULL)
 		return (NULL);
+            xmlBufSetAllocationScheme(buf, XML_BUFFER_ALLOC_DOUBLEIT);
 
 	    xmlBufGetNodeContent(buf, (xmlNodePtr) cur);
 

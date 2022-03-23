@@ -48,23 +48,20 @@ static int libxml_is_threaded = -1;
 
 #define XML_PTHREAD_WEAK
 
-#pragma weak pthread_once
+#pragma weak pthread_equal
 #pragma weak pthread_getspecific
-#pragma weak pthread_setspecific
 #pragma weak pthread_key_create
 #pragma weak pthread_key_delete
-#pragma weak pthread_mutex_init
 #pragma weak pthread_mutex_destroy
+#pragma weak pthread_mutex_init
 #pragma weak pthread_mutex_lock
 #pragma weak pthread_mutex_unlock
-#pragma weak pthread_cond_init
-#pragma weak pthread_cond_destroy
-#pragma weak pthread_cond_wait
-#pragma weak pthread_equal
+#pragma weak pthread_mutexattr_destroy
+#pragma weak pthread_mutexattr_init
+#pragma weak pthread_mutexattr_settype
+#pragma weak pthread_once
 #pragma weak pthread_self
-#pragma weak pthread_key_create
-#pragma weak pthread_key_delete
-#pragma weak pthread_cond_signal
+#pragma weak pthread_setspecific
 
 #else /* __GNUC__, __GLIBC__, __linux__ */
 
@@ -87,7 +84,7 @@ struct _xmlMutex {
 #ifdef HAVE_PTHREAD_H
     pthread_mutex_t lock;
 #elif defined HAVE_WIN32_THREADS
-    HANDLE mutex;
+    CRITICAL_SECTION cs;
 #elif defined HAVE_BEOS_THREADS
     sem_id sem;
     thread_id tid;
@@ -102,13 +99,8 @@ struct _xmlMutex {
 struct _xmlRMutex {
 #ifdef HAVE_PTHREAD_H
     pthread_mutex_t lock;
-    unsigned int held;
-    unsigned int waiters;
-    pthread_t tid;
-    pthread_cond_t cv;
 #elif defined HAVE_WIN32_THREADS
     CRITICAL_SECTION cs;
-    unsigned int count;
 #elif defined HAVE_BEOS_THREADS
     xmlMutexPtr lock;
     thread_id tid;
@@ -178,7 +170,7 @@ xmlNewMutex(void)
     if (libxml_is_threaded != 0)
         pthread_mutex_init(&tok->lock, NULL);
 #elif defined HAVE_WIN32_THREADS
-    tok->mutex = CreateMutex(NULL, FALSE, NULL);
+    InitializeCriticalSection(&tok->cs);
 #elif defined HAVE_BEOS_THREADS
     if ((tok->sem = create_sem(1, "xmlMutex")) < B_OK) {
         free(tok);
@@ -206,7 +198,7 @@ xmlFreeMutex(xmlMutexPtr tok)
     if (libxml_is_threaded != 0)
         pthread_mutex_destroy(&tok->lock);
 #elif defined HAVE_WIN32_THREADS
-    CloseHandle(tok->mutex);
+    DeleteCriticalSection(&tok->cs);
 #elif defined HAVE_BEOS_THREADS
     delete_sem(tok->sem);
 #endif
@@ -228,7 +220,7 @@ xmlMutexLock(xmlMutexPtr tok)
     if (libxml_is_threaded != 0)
         pthread_mutex_lock(&tok->lock);
 #elif defined HAVE_WIN32_THREADS
-    WaitForSingleObject(tok->mutex, INFINITE);
+    EnterCriticalSection(&tok->cs);
 #elif defined HAVE_BEOS_THREADS
     if (acquire_sem(tok->sem) != B_NO_ERROR) {
 #ifdef DEBUG_THREADS
@@ -256,7 +248,7 @@ xmlMutexUnlock(xmlMutexPtr tok)
     if (libxml_is_threaded != 0)
         pthread_mutex_unlock(&tok->lock);
 #elif defined HAVE_WIN32_THREADS
-    ReleaseMutex(tok->mutex);
+    LeaveCriticalSection(&tok->cs);
 #elif defined HAVE_BEOS_THREADS
     if (tok->tid == find_thread(NULL)) {
         tok->tid = -1;
@@ -284,14 +276,14 @@ xmlNewRMutex(void)
         return (NULL);
 #ifdef HAVE_PTHREAD_H
     if (libxml_is_threaded != 0) {
-        pthread_mutex_init(&tok->lock, NULL);
-        tok->held = 0;
-        tok->waiters = 0;
-        pthread_cond_init(&tok->cv, NULL);
+        pthread_mutexattr_t attr;
+        pthread_mutexattr_init(&attr);
+        pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+        pthread_mutex_init(&tok->lock, &attr);
+        pthread_mutexattr_destroy(&attr);
     }
 #elif defined HAVE_WIN32_THREADS
     InitializeCriticalSection(&tok->cs);
-    tok->count = 0;
 #elif defined HAVE_BEOS_THREADS
     if ((tok->lock = xmlNewMutex()) == NULL) {
         free(tok);
@@ -317,7 +309,6 @@ xmlFreeRMutex(xmlRMutexPtr tok ATTRIBUTE_UNUSED)
 #ifdef HAVE_PTHREAD_H
     if (libxml_is_threaded != 0) {
         pthread_mutex_destroy(&tok->lock);
-        pthread_cond_destroy(&tok->cv);
     }
 #elif defined HAVE_WIN32_THREADS
     DeleteCriticalSection(&tok->cs);
@@ -339,28 +330,10 @@ xmlRMutexLock(xmlRMutexPtr tok)
     if (tok == NULL)
         return;
 #ifdef HAVE_PTHREAD_H
-    if (libxml_is_threaded == 0)
-        return;
-
-    pthread_mutex_lock(&tok->lock);
-    if (tok->held) {
-        if (pthread_equal(tok->tid, pthread_self())) {
-            tok->held++;
-            pthread_mutex_unlock(&tok->lock);
-            return;
-        } else {
-            tok->waiters++;
-            while (tok->held)
-                pthread_cond_wait(&tok->cv, &tok->lock);
-            tok->waiters--;
-        }
-    }
-    tok->tid = pthread_self();
-    tok->held = 1;
-    pthread_mutex_unlock(&tok->lock);
+    if (libxml_is_threaded != 0)
+        pthread_mutex_lock(&tok->lock);
 #elif defined HAVE_WIN32_THREADS
     EnterCriticalSection(&tok->cs);
-    tok->count++;
 #elif defined HAVE_BEOS_THREADS
     if (tok->lock->tid == find_thread(NULL)) {
         tok->count++;
@@ -384,22 +357,10 @@ xmlRMutexUnlock(xmlRMutexPtr tok ATTRIBUTE_UNUSED)
     if (tok == NULL)
         return;
 #ifdef HAVE_PTHREAD_H
-    if (libxml_is_threaded == 0)
-        return;
-
-    pthread_mutex_lock(&tok->lock);
-    tok->held--;
-    if (tok->held == 0) {
-        if (tok->waiters)
-            pthread_cond_signal(&tok->cv);
-        memset(&tok->tid, 0, sizeof(tok->tid));
-    }
-    pthread_mutex_unlock(&tok->lock);
+    if (libxml_is_threaded != 0)
+        pthread_mutex_unlock(&tok->lock);
 #elif defined HAVE_WIN32_THREADS
-    if (tok->count > 0) {
-	tok->count--;
-        LeaveCriticalSection(&tok->cs);
-    }
+    LeaveCriticalSection(&tok->cs);
 #elif defined HAVE_BEOS_THREADS
     if (tok->lock->tid == find_thread(NULL)) {
         tok->count--;
@@ -845,6 +806,9 @@ xmlUnlockLibrary(void)
 /**
  * xmlInitThreads:
  *
+ * DEPRECATED: This function will be made private. Call xmlInitParser to
+ * initialize the library.
+ *
  * xmlInitThreads() is used to to initialize all the thread related
  * data of the libxml2 library.
  */
@@ -863,12 +827,8 @@ xmlInitThreads(void)
             (pthread_mutex_destroy != NULL) &&
             (pthread_mutex_lock != NULL) &&
             (pthread_mutex_unlock != NULL) &&
-            (pthread_cond_init != NULL) &&
-            (pthread_cond_destroy != NULL) &&
-            (pthread_cond_wait != NULL) &&
             (pthread_equal != NULL) &&
-            (pthread_self != NULL) &&
-            (pthread_cond_signal != NULL)) {
+            (pthread_self != NULL)) {
             libxml_is_threaded = 1;
 
 /* fprintf(stderr, "Running multithreaded\n"); */
@@ -884,6 +844,11 @@ xmlInitThreads(void)
 
 /**
  * xmlCleanupThreads:
+ *
+ * DEPRECATED: This function will be made private. Call xmlCleanupParser
+ * to free global state but see the warnings there. xmlCleanupParser
+ * should be only called once at program exit. In most cases, you don't
+ * have call cleanup functions at all.
  *
  * xmlCleanupThreads() is used to to cleanup all the thread related
  * data of the libxml2 library once processing has ended.
