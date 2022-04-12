@@ -125,7 +125,7 @@ xmlAllocOutputBufferInternal(xmlCharEncodingHandlerPtr encoder);
  *									*
  ************************************************************************/
 
-static const char *IOerr[] = {
+static const char* const IOerr[] = {
     "Unknown IO error",         /* UNKNOWN */
     "Permission denied",	/* EACCES */
     "Resource temporarily unavailable",/* EAGAIN */

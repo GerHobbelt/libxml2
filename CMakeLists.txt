@@ -600,13 +600,13 @@ endif()
 install(FILES doc/xml2-config.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1 COMPONENT documentation)
 install(FILES doc/xmlcatalog.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1 COMPONENT documentation)
 install(FILES doc/xmllint.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1 COMPONENT documentation)
-install(DIRECTORY doc/ DESTINATION ${CMAKE_INSTALL_DATADIR}/doc/libxml2 COMPONENT documentation
+install(DIRECTORY doc/ DESTINATION ${CMAKE_INSTALL_DOCDIR} COMPONENT documentation
 	PATTERN "Makefile.*" EXCLUDE
-	PATTERN "*.xsl" EXCLUDE
+	PATTERN "*.1" EXCLUDE
 	PATTERN "*.py" EXCLUDE
+	PATTERN "*.res" EXCLUDE
 	PATTERN "*.xml" EXCLUDE
-	PATTERN "examples/*" EXCLUDE)
-install(DIRECTORY doc/examples/ DESTINATION ${CMAKE_INSTALL_DATADIR}/doc/libxml2/examples COMPONENT documentation PATTERN "Makefile.*" EXCLUDE)
+	PATTERN "*.xsl" EXCLUDE)
 
 configure_package_config_file(
 	libxml2-config.cmake.cmake.in libxml2-config.cmake

@@ -4302,6 +4302,14 @@ xmlStaticCopyNode(xmlNodePtr node, xmlDocPtr doc, xmlNodePtr parent,
 	if ((__xmlRegisterCallbacks) && (xmlRegisterNodeDefaultValue))
 	    xmlRegisterNodeDefaultValue((xmlNodePtr)ret);
 
+        /*
+         * Note that since ret->parent is already set, xmlAddChild will
+         * return early and not actually insert the node. It will only
+         * coalesce text nodes and unnecessarily call xmlSetTreeDoc.
+         * Assuming that the subtree to be copied always has its text
+         * nodes coalesced, the somewhat confusing call to xmlAddChild
+         * could be removed.
+         */
         tmp = xmlAddChild(parent, ret);
 	/* node could have coalesced */
 	if (tmp != ret)
@@ -4368,13 +4376,16 @@ xmlStaticCopyNode(xmlNodePtr node, xmlDocPtr doc, xmlNodePtr parent,
                 return(NULL);
             }
 
-            if (insert->last == NULL) {
-                insert->children = copy;
-            } else {
-                copy->prev = insert->last;
-                insert->last->next = copy;
+            /* Check for coalesced text nodes */
+            if (insert->last != copy) {
+                if (insert->last == NULL) {
+                    insert->children = copy;
+                } else {
+                    copy->prev = insert->last;
+                    insert->last->next = copy;
+                }
+                insert->last = copy;
             }
-            insert->last = copy;
 
             if (cur->children != NULL) {
                 cur = cur->children;
