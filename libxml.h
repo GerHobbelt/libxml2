@@ -37,6 +37,10 @@
 #endif
 #include <libxml/xmlversion.h>
 
+#ifndef SYSCONFDIR
+  #define SYSCONFDIR "/etc"
+#endif
+
 #if defined(__Lynx__)
 #include <stdio.h> /* pull definition of size_t */
 #include <varargs.h>

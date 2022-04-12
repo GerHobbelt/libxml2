@@ -475,9 +475,9 @@ int wrap_cmp( xmlNodePtr x, xmlNodePtr y );
  *									*
  ************************************************************************/
 
-double xmlXPathNAN;
-double xmlXPathPINF;
-double xmlXPathNINF;
+double xmlXPathNAN = 0.0;
+double xmlXPathPINF = 0.0;
+double xmlXPathNINF = 0.0;
 
 /**
  * xmlXPathInit:
@@ -13858,7 +13858,7 @@ xmlXPathRunEval(xmlXPathParserContextPtr ctxt, int toBool)
 			 xmlMalloc(10 * sizeof(xmlXPathObjectPtr));
 	if (ctxt->valueTab == NULL) {
 	    xmlXPathPErrMemory(ctxt, "creating evaluation context\n");
-	    xmlFree(ctxt);
+	    return(-1);
 	}
 	ctxt->valueNr = 0;
 	ctxt->valueMax = 10;

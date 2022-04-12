@@ -30,10 +30,14 @@ gcc:
 
 gcc:python3:
   extends: .test
-  only:
-    - schedules
   variables:
-    CONFIG: "--with-python=/usr/bin/python3"
+    CFLAGS: "-O2"
+    PYTHON: "/usr/bin/python3"
+
+gcc:static:
+  extends: .test
+  variables:
+    CONFIG: "--disable-shared --without-python"
     CFLAGS: "-O2"
 
 clang:asan:
@@ -279,7 +283,7 @@ cmake:msvc:v141:x86:static:
 pages:
   script:
     - mkdir -p public
-    - cp -r doc/devhelp doc/tutorial doc/xmllint.html doc/xmlcatalog_man.html public
+    - cp -r doc/devhelp doc/tutorial doc/xmllint.html doc/xmlcatalog.html public
     - mkdir -p public/examples
     - cp doc/examples/*.html doc/examples/*.c public/examples
   artifacts:

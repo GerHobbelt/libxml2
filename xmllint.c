@@ -83,7 +83,7 @@
 #include <libxml/monolithic_examples.h>
 
 #ifndef XML_XML_DEFAULT_CATALOG
-#define XML_XML_DEFAULT_CATALOG "file:///etc/xml/catalog"
+#define XML_XML_DEFAULT_CATALOG "file://" SYSCONFDIR "/xml/catalog"
 #endif
 
 typedef enum {
