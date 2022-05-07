@@ -38,6 +38,7 @@
 #include "config.h"
 #endif
 #include <libxml/xmlversion.h>
+#include <libxml/xmlstring.h>
 
 #ifndef SYSCONFDIR
   #define SYSCONFDIR "/etc"

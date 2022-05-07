@@ -619,7 +619,7 @@ int main(int argc, const char** argv) {
 #define main(cnt, arr)      xml_runxmlconfig_main(cnt, arr)
 #endif
 
-int main(int argc, const char** argv) {
+int main(int argc ATTRIBUTE_UNUSED, const char** argv) {
     fprintf(stderr, "%s need XPath support\n", argv[0]);
 }
 #endif

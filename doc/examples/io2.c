@@ -51,6 +51,6 @@ main(void)
 {
     fprintf(stderr,
             "library not configured with tree and output support\n");
-    return (1);
+    return (0);
 }
 #endif
