@@ -327,7 +327,7 @@ int main(int argc, const char** argv) {
 	return(1);
     }
 
-    LIBXML_TEST_VERSION
+	LIBXML_TEST_VERSION();
     for (i = 1; i < argc ; i++) {
 	if (!strcmp(argv[i], "-"))
 	    break;

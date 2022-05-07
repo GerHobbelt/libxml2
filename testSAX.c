@@ -1137,7 +1137,7 @@ int main(int argc, const char** argv) {
     int i;
     int files = 0;
 
-    LIBXML_TEST_VERSION	/* be safe, plus calls xmlInitParser */
+	LIBXML_TEST_VERSION();	/* be safe, plus calls xmlInitParser */
 
     for (i = 1; i < argc ; i++) {
 	if ((!strcmp(argv[i], "-debug")) || (!strcmp(argv[i], "--debug")))

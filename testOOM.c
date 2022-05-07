@@ -318,7 +318,7 @@ int main(int argc, const char** argv) {
 	usage(argv[0]);
 	return(1);
     }
-    LIBXML_TEST_VERSION;
+    LIBXML_TEST_VERSION();
 
     xmlMemSetup (test_free,
                  test_malloc,

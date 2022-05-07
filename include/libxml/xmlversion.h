@@ -59,7 +59,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  * Macro to check that the libxml version in use is compatible with
  * the version the software has been compiled against
  */
-#define LIBXML_TEST_VERSION xmlCheckVersion(20909);
+#define LIBXML_TEST_VERSION xmlCheckVersion(20909)
 
 #ifndef VMS
 #if 0

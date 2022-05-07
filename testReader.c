@@ -97,7 +97,7 @@ int main(int argc, const char** argv) {
 	usage(argv[0]);
 	return(1);
     }
-    LIBXML_TEST_VERSION
+	LIBXML_TEST_VERSION();
     for (i = 1; i < argc ; i++) {
 	if ((!strcmp(argv[i], "-debug")) || (!strcmp(argv[i], "--debug")))
 	    debug++;

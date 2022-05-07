@@ -145,7 +145,7 @@ int main(int argc, const char** argv) {
      * Init libxml
      */
     xmlInitParser();
-    LIBXML_TEST_VERSION
+	LIBXML_TEST_VERSION();
 
     /*
      * Parse command line and process file

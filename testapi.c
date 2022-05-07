@@ -143,7 +143,7 @@ int main(int argc, const char** argv) {
     xmlRelaxNGInitTypes();
 #endif
 
-    LIBXML_TEST_VERSION
+	LIBXML_TEST_VERSION();
 
     xmlSetStructuredErrorFunc(NULL, structured_errors);
 

@@ -3206,7 +3206,7 @@ int main(int argc, const char** argv) {
     if (maxmem != 0)
         xmlMemSetup(myFreeFunc, myMallocFunc, myReallocFunc, myStrdupFunc);
 
-    LIBXML_TEST_VERSION
+	LIBXML_TEST_VERSION();
 
     for (i = 1; i < argc ; i++) {
 	if (argv[i][0] != '-' || argv[i][1] == 0)

@@ -431,7 +431,7 @@ static int run_test1(void) {
 int main(int argc, const char** argv) {
 	int ret;
 
-    LIBXML_TEST_VERSION
+	LIBXML_TEST_VERSION();
     fill_strings();
 #ifdef WITH_PRINT
     print_strings();
