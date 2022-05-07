@@ -75,8 +75,6 @@
 #endif
 
 #if defined(_WIN32) && defined(_MSC_VER)
-#undef XML_XML_DEFAULT_CATALOG
-static const char XML_XML_DEFAULT_CATALOG[] = "file://" SYSCONFDIR "/xml/catalog";
 #if !defined(_WINDOWS_)
 void* __stdcall GetModuleHandleA(const char*);
 unsigned long __stdcall GetModuleFileNameA(void*, char*, unsigned long);
@@ -3123,82 +3121,87 @@ xmlInitializeCatalogData(void) {
 void
 xmlInitializeCatalog(void) {
     if (xmlCatalogInitialized != 0)
-	return;
+		return;
 
     xmlInitializeCatalogData();
     xmlRMutexLock(xmlCatalogMutex);
 
     if (getenv("XML_DEBUG_CATALOG"))
-	xmlDebugCatalogs = 1;
+		xmlDebugCatalogs = 1;
 
-    if (xmlDefaultCatalog == NULL) {
-	const char *catalogs;
-	char *path;
-	const char *cur, *paths;
-	xmlCatalogPtr catal;
-	xmlCatalogEntryPtr *nextent;
+	if (xmlDefaultCatalog == NULL) {
+		const char* catalogs;
+		char* path;
+		const char* cur;
+		const char* paths;
+		xmlChar* uri = NULL;
+		xmlCatalogPtr catal;
+		xmlCatalogEntryPtr* nextent;
 
-	catalogs = (const char *) getenv("XML_CATALOG_FILES");
-	if (catalogs == NULL)
+		catalogs = (const char*)getenv("XML_CATALOG_FILES");
+		if (catalogs == NULL)
 #if defined(_WIN32) && defined(_MSC_VER)
-    {
-		void* hmodule;
-		hmodule = GetModuleHandleA("libxml2.dll");
-		if (hmodule == NULL)
-			hmodule = GetModuleHandleA(NULL);
-		if (hmodule != NULL) {
-			char buf[MAX_PATH];
-			unsigned long len = GetModuleFileNameA(hmodule, buf, 255);
-			if (len != 0) {
-				char* p = &(buf[len]);
-				while (*p != '\\' && p > buf)
-					p--;
-				if (p != buf) {
-					xmlChar* uri;
-					strncpy(p, "\\..\\etc\\catalog", MAX_PATH - (p - buf));
-					uri = xmlCanonicPath((const xmlChar*)buf);
-					if (uri != NULL) {
-						strncpy(XML_XML_DEFAULT_CATALOG, uri, MAX_PATH);
-						xmlFree(uri);
+		{
+			void* hmodule;
+
+			catalogs = XML_XML_DEFAULT_CATALOG;
+
+			hmodule = GetModuleHandleA("libxml2.dll");
+			if (hmodule == NULL)
+				hmodule = GetModuleHandleA(NULL);
+			if (hmodule != NULL) {
+				char buf[MAX_PATH + sizeof("\\..\\etc\\catalog")];
+				unsigned long len = GetModuleFileNameA(hmodule, buf, MAX_PATH);
+				if (len != 0) {
+					char* p = &(buf[len]);
+					while (*p != '\\' && p > buf)
+						p--;
+					if (p != buf) {
+						strcpy(p, "\\..\\etc\\catalog");
+						uri = xmlCanonicPath((const xmlChar*)buf);
+						if (uri != NULL) {
+							catalogs = uri;
+						}
 					}
 				}
 			}
 		}
-		catalogs = XML_XML_DEFAULT_CATALOG;
-    }
 #else
-	    catalogs = XML_XML_DEFAULT_CATALOG;
+			catalogs = XML_XML_DEFAULT_CATALOG;
 #endif
 
-	catal = xmlCreateNewCatalog(XML_XML_CATALOG_TYPE,
-		xmlCatalogDefaultPrefer);
-	if (catal != NULL) {
-	    /* the XML_CATALOG_FILES envvar is allowed to contain a
-	       space-separated list of entries. */
-	    cur = catalogs;
-	    nextent = &catal->xml;
-	    while (*cur != '\0') {
-		while (xmlIsBlank_ch(*cur))
-		    cur++;
-		if (*cur != 0) {
-		    paths = cur;
-		    while ((*cur != 0) && (!xmlIsBlank_ch(*cur)))
-			cur++;
-		    path = (char *) xmlStrndup((const xmlChar *)paths, cur - paths);
-		    if (path != NULL) {
-			*nextent = xmlNewCatalogEntry(XML_CATA_CATALOG, NULL,
-				NULL, BAD_CAST path, xmlCatalogDefaultPrefer, NULL);
-			if (*nextent != NULL)
-			    nextent = &((*nextent)->next);
-			xmlFree(path);
-		    }
+		catal = xmlCreateNewCatalog(XML_XML_CATALOG_TYPE,
+			xmlCatalogDefaultPrefer);
+		if (catal != NULL) {
+			/* the XML_CATALOG_FILES envvar is allowed to contain a
+			   space-separated list of entries. */
+			cur = catalogs;
+			nextent = &catal->xml;
+			while (*cur != '\0') {
+				while (xmlIsBlank_ch(*cur))
+					cur++;
+				if (*cur != 0) {
+					paths = cur;
+					while ((*cur != 0) && (!xmlIsBlank_ch(*cur)))
+						cur++;
+					path = (char*)xmlStrndup((const xmlChar*)paths, cur - paths);
+					if (path != NULL) {
+						*nextent = xmlNewCatalogEntry(XML_CATA_CATALOG, NULL,
+							NULL, BAD_CAST path, xmlCatalogDefaultPrefer, NULL);
+						if (*nextent != NULL)
+							nextent = &((*nextent)->next);
+						xmlFree(path);
+					}
+				}
+			}
+			xmlDefaultCatalog = catal;
 		}
-	    }
-	    xmlDefaultCatalog = catal;
-	}
-    }
 
-    xmlRMutexUnlock(xmlCatalogMutex);
+		if (uri)
+			xmlFree(uri);
+	}
+
+	xmlRMutexUnlock(xmlCatalogMutex);
 }
 
 
