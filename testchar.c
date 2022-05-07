@@ -176,87 +176,99 @@ static int testDocumentRanges(void) {
 	return(1);
     }
 
-    printf("testing 1 byte char in document: 1");
-    fflush(stdout);
-    data = &document1[5];
-    data[0] = ' ';
-    data[1] = ' ';
-    data[2] = ' ';
-    data[3] = ' ';
-    /* test 1 byte injection at beginning of area */
-    test_ret += testDocumentRangeByte1(ctxt, &document1[0], strlen(document1),
-                           data, -1, -1);
-    printf(" 2");
-    fflush(stdout);
-    data[0] = ' ';
-    data[1] = ' ';
-    data[2] = ' ';
-    data[3] = ' ';
-    /* test 1 byte injection at end of area */
-    test_ret += testDocumentRangeByte1(ctxt, &document1[0], strlen(document1),
-                           data + 3, -1, -1);
+	{
+		printf("testing 1 byte char in document: 1");
+		fflush(stdout);
 
-    printf(" 3");
-    fflush(stdout);
-    data = &document2[10];
-    data[0] = ' ';
-    data[1] = ' ';
-    data[2] = ' ';
-    data[3] = ' ';
-    /* test 1 byte injection at beginning of area */
-    test_ret += testDocumentRangeByte1(ctxt, &document2[0], strlen(document2),
-                           data, '\'', -1);
-    printf(" 4");
-    fflush(stdout);
-    data[0] = ' ';
-    data[1] = ' ';
-    data[2] = ' ';
-    data[3] = ' ';
-    /* test 1 byte injection at end of area */
-    test_ret += testDocumentRangeByte1(ctxt, &document2[0], strlen(document2),
-                           data + 3, '\'', -1);
-    printf(" done\n");
+		char document1[] = "<doc>XXXX</doc>";
+		char document2[] = "<doc foo='XXXX'/>";
+
+		data = &document1[5];
+		data[0] = ' ';
+		data[1] = ' ';
+		data[2] = ' ';
+		data[3] = ' ';
+		/* test 1 byte injection at beginning of area */
+		test_ret += testDocumentRangeByte1(ctxt, &document1[0], strlen(document1),
+			data, -1, -1);
+		printf(" 2");
+		fflush(stdout);
+		data[0] = ' ';
+		data[1] = ' ';
+		data[2] = ' ';
+		data[3] = ' ';
+		/* test 1 byte injection at end of area */
+		test_ret += testDocumentRangeByte1(ctxt, &document1[0], strlen(document1),
+			data + 3, -1, -1);
+
+		printf(" 3");
+		fflush(stdout);
+		data = &document2[10];
+		data[0] = ' ';
+		data[1] = ' ';
+		data[2] = ' ';
+		data[3] = ' ';
+		/* test 1 byte injection at beginning of area */
+		test_ret += testDocumentRangeByte1(ctxt, &document2[0], strlen(document2),
+			data, '\'', -1);
+		printf(" 4");
+		fflush(stdout);
+		data[0] = ' ';
+		data[1] = ' ';
+		data[2] = ' ';
+		data[3] = ' ';
+		/* test 1 byte injection at end of area */
+		test_ret += testDocumentRangeByte1(ctxt, &document2[0], strlen(document2),
+			data + 3, '\'', -1);
+		printf(" done\n");
+	}
 
     printf("testing 2 byte char in document: 1");
     fflush(stdout);
-    data = &document1[5];
-    data[0] = ' ';
-    data[1] = ' ';
-    data[2] = ' ';
-    data[3] = ' ';
-    /* test 2 byte injection at beginning of area */
-    test_ret += testDocumentRangeByte2(ctxt, &document1[0], strlen(document1),
-                           data);
-    printf(" 2");
-    fflush(stdout);
-    data[0] = ' ';
-    data[1] = ' ';
-    data[2] = ' ';
-    data[3] = ' ';
-    /* test 2 byte injection at end of area */
-    test_ret += testDocumentRangeByte2(ctxt, &document1[0], strlen(document1),
-                           data + 2);
 
-    printf(" 3");
-    fflush(stdout);
-    data = &document2[10];
-    data[0] = ' ';
-    data[1] = ' ';
-    data[2] = ' ';
-    data[3] = ' ';
-    /* test 2 byte injection at beginning of area */
-    test_ret += testDocumentRangeByte2(ctxt, &document2[0], strlen(document2),
-                           data);
-    printf(" 4");
-    fflush(stdout);
-    data[0] = ' ';
-    data[1] = ' ';
-    data[2] = ' ';
-    data[3] = ' ';
-    /* test 2 byte injection at end of area */
-    test_ret += testDocumentRangeByte2(ctxt, &document2[0], strlen(document2),
-                           data + 2);
-    printf(" done\n");
+	{
+		char document1[] = "<doc>XXXX</doc>";
+		char document2[] = "<doc foo='XXXX'/>";
+
+		data = &document1[5];
+		data[0] = ' ';
+		data[1] = ' ';
+		data[2] = ' ';
+		data[3] = ' ';
+		/* test 2 byte injection at beginning of area */
+		test_ret += testDocumentRangeByte2(ctxt, &document1[0], strlen(document1),
+			data);
+		printf(" 2");
+		fflush(stdout);
+		data[0] = ' ';
+		data[1] = ' ';
+		data[2] = ' ';
+		data[3] = ' ';
+		/* test 2 byte injection at end of area */
+		test_ret += testDocumentRangeByte2(ctxt, &document1[0], strlen(document1),
+			data + 2);
+
+		printf(" 3");
+		fflush(stdout);
+		data = &document2[10];
+		data[0] = ' ';
+		data[1] = ' ';
+		data[2] = ' ';
+		data[3] = ' ';
+		/* test 2 byte injection at beginning of area */
+		test_ret += testDocumentRangeByte2(ctxt, &document2[0], strlen(document2),
+			data);
+		printf(" 4");
+		fflush(stdout);
+		data[0] = ' ';
+		data[1] = ' ';
+		data[2] = ' ';
+		data[3] = ' ';
+		/* test 2 byte injection at end of area */
+		test_ret += testDocumentRangeByte2(ctxt, &document2[0], strlen(document2),
+			data + 2);
+		printf(" done\n");
+	}
 
     xmlFreeParserCtxt(ctxt);
     return(test_ret);
@@ -662,7 +674,7 @@ int main(void) {
      * between the version it was compiled for and the actual shared
      * library used.
      */
-    LIBXML_TEST_VERSION
+	LIBXML_TEST_VERSION();
 
     /*
      * Catch errors separately
