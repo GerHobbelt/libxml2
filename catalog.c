@@ -3160,7 +3160,7 @@ xmlInitializeCatalog(void) {
 						strcpy(p, "\\..\\etc\\catalog");
 						uri = xmlCanonicPath((const xmlChar*)buf);
 						if (uri != NULL) {
-							catalogs = uri;
+							catalogs = (const char *)uri;
 						}
 					}
 				}

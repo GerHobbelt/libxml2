@@ -49,6 +49,8 @@ void xmlInitGlobals(void)
 {
     if (xmlThrDefMutex == NULL)
         xmlThrDefMutex = xmlNewMutex();
+}
+
 /************************************************************************
  *									*
  *	All the user accessible global variables of the library		*
