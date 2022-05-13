@@ -7344,10 +7344,14 @@ xmlBufferGrow(xmlBufferPtr buf, unsigned int len) {
     if (buf == NULL) return(-1);
 
     if (buf->alloc == XML_BUFFER_ALLOC_IMMUTABLE) return(0);
-    if (len < buf->size - buf->use)
+    if (len < buf->size - buf->use) {
+        buf->content[buf->use + len] = 0;
         return(0);
-    if (len > UINT_MAX - buf->use)
+    }
+    if (len > UINT_MAX - buf->use - 1) {
+        xmlTreeErrMemory("growing buffer past UINT_MAX");
         return(-1);
+    }
 
     if (buf->size > (size_t) len) {
         size = buf->size > UINT_MAX / 2 ? UINT_MAX : buf->size * 2;
@@ -7375,7 +7379,9 @@ xmlBufferGrow(xmlBufferPtr buf, unsigned int len) {
 	buf->content = newbuf;
     }
     buf->size = size;
-    return(buf->size - buf->use);
+    buf->content[buf->use] = 0;
+    buf->content[buf->use + len] = 0;
+    return(buf->size - buf->use - 1);
 }
 
 /**
@@ -7388,7 +7394,7 @@ xmlBufferGrow(xmlBufferPtr buf, unsigned int len) {
  */
 int
 xmlBufferDump(FILE *file, xmlBufferPtr buf) {
-    int ret;
+    size_t ret;
 
     if (buf == NULL) {
 #ifdef DEBUG_BUFFER
@@ -7407,7 +7413,7 @@ xmlBufferDump(FILE *file, xmlBufferPtr buf) {
     if (file == NULL)
 	file = stdout;
     ret = fwrite(buf->content, sizeof(xmlChar), buf->use, file);
-    return(ret);
+    return(ret > INT_MAX ? INT_MAX : (int)ret);
 }
 
 /**
@@ -7472,7 +7478,7 @@ xmlBufferResize(xmlBufferPtr buf, unsigned int size)
         return 1;
 
     if (size > UINT_MAX - 10) {
-        xmlTreeErrMemory("growing buffer");
+        xmlTreeErrMemory("growing buffer past UINT_MAX");
         return 0;
     }
 
@@ -7494,7 +7500,7 @@ xmlBufferResize(xmlBufferPtr buf, unsigned int size)
 	    }
 	    break;
 	case XML_BUFFER_ALLOC_EXACT:
-	    newSize = (size > UINT_MAX - 10 ? UINT_MAX : size + 10);;
+	    newSize = (size > UINT_MAX - 10 ? UINT_MAX : size + 10);
 	    break;
         case XML_BUFFER_ALLOC_HYBRID:
             if (buf->use < BASE_BUFFER_SIZE)
@@ -7512,7 +7518,7 @@ xmlBufferResize(xmlBufferPtr buf, unsigned int size)
             break;
 
 	default:
-	    newSize = (size > UINT_MAX - 10 ? UINT_MAX : size + 10);;
+	    newSize = (size > UINT_MAX - 10 ? UINT_MAX : size + 10);
 	    break;
     }
 
@@ -7523,7 +7529,6 @@ xmlBufferResize(xmlBufferPtr buf, unsigned int size)
 	    /* move data back to start */
 	    memmove(buf->contentIO, buf->content, buf->use);
 	    buf->content = buf->contentIO;
-	    buf->content[buf->use] = 0;
 	    buf->size += start_buf;
 	} else {
 	    rebuf = (xmlChar *) xmlRealloc(buf->contentIO, start_buf + newSize);
@@ -7549,7 +7554,6 @@ xmlBufferResize(xmlBufferPtr buf, unsigned int size)
 	    if (rebuf != NULL) {
 		memcpy(rebuf, buf->content, buf->use);
 		xmlFree(buf->content);
-		rebuf[buf->use] = 0;
 	    }
 	}
 	if (rebuf == NULL) {
@@ -7559,6 +7563,7 @@ xmlBufferResize(xmlBufferPtr buf, unsigned int size)
 	buf->content = rebuf;
     }
     buf->size = newSize;
+    buf->content[buf->use] = 0;
 
     return 1;
 }
@@ -7598,9 +7603,12 @@ xmlBufferAdd(xmlBufferPtr buf, const xmlChar *str, int len) {
     if (len < 0) return -1;
     if (len == 0) return 0;
 
+    /* Note that both buf->size and buf->use can be zero here. */
     if ((unsigned) len >= buf->size - buf->use) {
-        if ((unsigned) len >= UINT_MAX - buf->use)
+        if ((unsigned) len >= UINT_MAX - buf->use) {
+            xmlTreeErrMemory("growing buffer past UINT_MAX");
             return XML_ERR_NO_MEMORY;
+        }
         needSize = buf->use + len + 1;
         if (!xmlBufferResize(buf, needSize)){
 	    xmlTreeErrMemory("growing buffer");
@@ -7665,11 +7673,17 @@ xmlBufferAddHead(xmlBufferPtr buf, const xmlChar *str, int len) {
             memmove(&buf->content[0], str, len);
 	    buf->use += len;
 	    buf->size += len;
+	    buf->content[buf->use] = 0;
 	    return(0);
 	}
     }
-    needSize = buf->use + len + 2;
-    if (needSize > buf->size){
+    /* Note that both buf->size and buf->use can be zero here. */
+    if ((unsigned) len >= buf->size - buf->use) {
+        if ((unsigned) len >= UINT_MAX - buf->use) {
+            xmlTreeErrMemory("growing buffer past UINT_MAX");
+            return(-1);
+        }
+        needSize = buf->use + len + 1;
         if (!xmlBufferResize(buf, needSize)){
 	    xmlTreeErrMemory("growing buffer");
             return XML_ERR_NO_MEMORY;
