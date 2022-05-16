@@ -3116,6 +3116,9 @@ ISO8859xToUTF8(unsigned char* out, int *outlen,
     return (*outlen);
 }
 
+#if defined(_MSC_VER)
+#pragma warning(disable: 4295) // warning C4295: 'xmltranscodetable_ISO8859_6': array is too small to include a terminating null character
+#endif
 
 /************************************************************************
  * Lookup tables for ISO-8859-2..ISO-8859-16 transcoding                *
