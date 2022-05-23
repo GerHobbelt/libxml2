@@ -146,6 +146,7 @@ int main(int argc, const char** argv) {
 	LIBXML_TEST_VERSION();
 
     xmlSetStructuredErrorFunc(NULL, structured_errors);
+    xmlSetExternalEntityLoader(xmlNoNetExternalEntityLoader);
 
     if (argc >= 2) {
         if (!strcmp(argv[1], "-q")) {
