@@ -7400,6 +7400,7 @@ xmlBufferGrow(xmlBufferPtr buf, unsigned int len) {
 	buf->content = newbuf;
     }
     buf->size = size;
+    buf->content[buf->use] = 0;
     return(buf->size - buf->use);
 }
 
@@ -7548,7 +7549,6 @@ xmlBufferResize(xmlBufferPtr buf, unsigned int size)
 	    /* move data back to start */
 	    memmove(buf->contentIO, buf->content, buf->use);
 	    buf->content = buf->contentIO;
-	    buf->content[buf->use] = 0;
 	    buf->size += start_buf;
 	} else {
 	    rebuf = (xmlChar *) xmlRealloc(buf->contentIO, start_buf + newSize);
@@ -7574,7 +7574,6 @@ xmlBufferResize(xmlBufferPtr buf, unsigned int size)
 	    if (rebuf != NULL) {
 		memcpy(rebuf, buf->content, buf->use);
 		xmlFree(buf->content);
-		rebuf[buf->use] = 0;
 	    }
 	}
 	if (rebuf == NULL) {
@@ -7584,6 +7583,7 @@ xmlBufferResize(xmlBufferPtr buf, unsigned int size)
 	buf->content = rebuf;
     }
     buf->size = newSize;
+    buf->content[buf->use] = 0;
 
     return 1;
 }
@@ -7690,6 +7690,7 @@ xmlBufferAddHead(xmlBufferPtr buf, const xmlChar *str, int len) {
             memmove(&buf->content[0], str, len);
 	    buf->use += len;
 	    buf->size += len;
+            buf->content[buf->use] = 0;
 	    return(0);
 	}
     }

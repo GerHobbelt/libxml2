@@ -478,6 +478,7 @@ xmlBufGrowInternal(xmlBufPtr buf, size_t len) {
 	buf->content = newbuf;
     }
     buf->size = size;
+    buf->content[buf->use] = 0;
     UPDATE_COMPAT(buf)
     return(buf->size - buf->use);
 }
@@ -591,14 +592,11 @@ xmlBufAddLen(xmlBufPtr buf, size_t len) {
     if ((buf == NULL) || (buf->error))
         return(-1);
     CHECK_COMPAT(buf)
-    if (len > (buf->size - buf->use))
+    if (len >= (buf->size - buf->use))
         return(-1);
     buf->use += len;
+    buf->content[buf->use] = 0;
     UPDATE_COMPAT(buf)
-    if (buf->size > buf->use)
-        buf->content[buf->use] = 0;
-    else
-        return(-1);
     return(0);
 }
 
@@ -762,7 +760,6 @@ xmlBufResize(xmlBufPtr buf, size_t size)
 	    /* move data back to start */
 	    memmove(buf->contentIO, buf->content, buf->use);
 	    buf->content = buf->contentIO;
-	    buf->content[buf->use] = 0;
 	    buf->size += start_buf;
 	} else {
 	    rebuf = (xmlChar *) xmlRealloc(buf->contentIO, start_buf + newSize);
@@ -788,7 +785,6 @@ xmlBufResize(xmlBufPtr buf, size_t size)
 	    if (rebuf != NULL) {
 		memcpy(rebuf, buf->content, buf->use);
 		xmlFree(buf->content);
-		rebuf[buf->use] = 0;
 	    }
 	}
 	if (rebuf == NULL) {
@@ -798,6 +794,7 @@ xmlBufResize(xmlBufPtr buf, size_t size)
 	buf->content = rebuf;
     }
     buf->size = newSize;
+    buf->content[buf->use] = 0;
     UPDATE_COMPAT(buf)
 
     return 1;
