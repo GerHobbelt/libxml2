@@ -2594,7 +2594,7 @@ retry:
                              "&#%d;", cur);
             xmlBufShrink(in, len);
             xmlBufGrow(out, charrefLen * 4);
-            c_out = xmlBufAvail(out) - 1;
+            c_out = xmlBufAvail(out);
             c_in = charrefLen;
             ret = xmlEncOutputChunk(output->encoder, xmlBufEnd(out), &c_out,
                                     charref, &c_in);
