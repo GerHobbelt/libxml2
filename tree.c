@@ -7400,7 +7400,7 @@ xmlBufferGrow(xmlBufferPtr buf, unsigned int len) {
         buf->content[buf->use + len] = 0;
         return(0);
     }
-    if (len > UINT_MAX - buf->use - 1) {
+    if (len >= UINT_MAX - buf->use) {
         xmlTreeErrMemory("growing buffer past UINT_MAX");
         return(-1);
     }
@@ -7601,6 +7601,8 @@ xmlBufferResize(xmlBufferPtr buf, unsigned int size)
     } else {
 	if (buf->content == NULL) {
 	    rebuf = (xmlChar *) xmlMallocAtomic(newSize);
+	    buf->use = 0;
+	    rebuf[buf->use] = 0;
 	} else if (buf->size - buf->use < 100) {
 	    rebuf = (xmlChar *) xmlRealloc(buf->content, newSize);
         } else {

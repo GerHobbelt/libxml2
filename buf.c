@@ -439,7 +439,7 @@ xmlBufGrowInternal(xmlBufPtr buf, size_t len) {
         buf->content[buf->use + len] = 0;
         return(buf->size - buf->use - 1);
     }
-    if (len > SIZE_MAX - buf->use - 1) {
+    if (len >= SIZE_MAX - buf->use) {
         xmlBufMemoryError(buf, "growing buffer past SIZE_MAX");
         return(0);
     }
@@ -779,6 +779,8 @@ xmlBufResize(xmlBufPtr buf, size_t size)
     } else {
 	if (buf->content == NULL) {
 	    rebuf = (xmlChar *) xmlMallocAtomic(newSize);
+	    buf->use = 0;
+	    rebuf[buf->use] = 0;
 	} else if (buf->size - buf->use < 100) {
 	    rebuf = (xmlChar *) xmlRealloc(buf->content, newSize);
         } else {
