@@ -490,11 +490,17 @@ double xmlXPathNINF = 0.0;
 ATTRIBUTE_NO_SANITIZE("float-divide-by-zero")
 void
 xmlXPathInit(void) {
+#if defined(NAN) && defined(INFINITY)
+    xmlXPathNAN = NAN;
+    xmlXPathPINF = INFINITY;
+    xmlXPathNINF = -INFINITY;
+#else
     /* MSVC doesn't allow division by zero in constant expressions. */
     double zero = 0.0;
     xmlXPathNAN = 0.0 / zero;
     xmlXPathPINF = 1.0 / zero;
     xmlXPathNINF = -xmlXPathPINF;
+#endif
 }
 
 /**
@@ -13878,11 +13884,10 @@ static int
 xmlXPathRunEval(xmlXPathParserContextPtr ctxt, int toBool)
 {
     xmlXPathCompExprPtr comp;
+    int oldDepth;
 
     if ((ctxt == NULL) || (ctxt->comp == NULL))
 	return(-1);
-
-    ctxt->context->depth = 0;
 
     if (ctxt->valueTab == NULL) {
 	/* Allocate the value stack */
@@ -13937,11 +13942,13 @@ xmlXPathRunEval(xmlXPathParserContextPtr ctxt, int toBool)
 	    "xmlXPathRunEval: last is less than zero\n");
 	return(-1);
     }
+    oldDepth = ctxt->context->depth;
     if (toBool)
 	return(xmlXPathCompOpEvalToBoolean(ctxt,
 	    &comp->steps[comp->last], 0));
     else
 	xmlXPathCompOpEval(ctxt, &comp->steps[comp->last]);
+    ctxt->context->depth = oldDepth;
 
     return(0);
 }
@@ -14212,6 +14219,7 @@ xmlXPathCompExprPtr
 xmlXPathCtxtCompile(xmlXPathContextPtr ctxt, const xmlChar *str) {
     xmlXPathParserContextPtr pctxt;
     xmlXPathCompExprPtr comp;
+    int oldDepth = 0;
 
 #ifdef XPATH_STREAMING
     comp = xmlXPathTryStreamCompile(ctxt, str);
@@ -14225,8 +14233,10 @@ xmlXPathCtxtCompile(xmlXPathContextPtr ctxt, const xmlChar *str) {
     if (pctxt == NULL)
         return NULL;
     if (ctxt != NULL)
-        ctxt->depth = 0;
+        oldDepth = ctxt->depth;
     xmlXPathCompileExpr(pctxt, 1);
+    if (ctxt != NULL)
+        ctxt->depth = oldDepth;
 
     if( pctxt->error != XPATH_EXPRESSION_OK )
     {
@@ -14247,8 +14257,10 @@ xmlXPathCtxtCompile(xmlXPathContextPtr ctxt, const xmlChar *str) {
 	comp = pctxt->comp;
 	if ((comp->nbStep > 1) && (comp->last >= 0)) {
             if (ctxt != NULL)
-                ctxt->depth = 0;
+                oldDepth = ctxt->depth;
 	    xmlXPathOptimizeExpression(pctxt, &comp->steps[comp->last]);
+            if (ctxt != NULL)
+                ctxt->depth = oldDepth;
 	}
 	pctxt->comp = NULL;
     }
@@ -14404,6 +14416,7 @@ xmlXPathEvalExpr(xmlXPathParserContextPtr ctxt) {
 #ifdef XPATH_STREAMING
     xmlXPathCompExprPtr comp;
 #endif
+    int oldDepth = 0;
 
     if (ctxt == NULL) return;
 
@@ -14417,8 +14430,10 @@ xmlXPathEvalExpr(xmlXPathParserContextPtr ctxt) {
 #endif
     {
         if (ctxt->context != NULL)
-            ctxt->context->depth = 0;
+            oldDepth = ctxt->context->depth;
 	xmlXPathCompileExpr(ctxt, 1);
+        if (ctxt->context != NULL)
+            ctxt->context->depth = oldDepth;
         CHECK_ERROR;
 
         /* Check for trailing characters. */
@@ -14427,9 +14442,11 @@ xmlXPathEvalExpr(xmlXPathParserContextPtr ctxt) {
 
 	if ((ctxt->comp->nbStep > 1) && (ctxt->comp->last >= 0)) {
             if (ctxt->context != NULL)
-                ctxt->context->depth = 0;
+                oldDepth = ctxt->context->depth;
 	    xmlXPathOptimizeExpression(ctxt,
 		&ctxt->comp->steps[ctxt->comp->last]);
+            if (ctxt->context != NULL)
+                ctxt->context->depth = oldDepth;
         }
     }
 

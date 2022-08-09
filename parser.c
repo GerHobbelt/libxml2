@@ -1752,9 +1752,7 @@ inputPush(xmlParserCtxtPtr ctxt, xmlParserInputPtr value)
                                              sizeof(ctxt->inputTab[0]));
         if (ctxt->inputTab == NULL) {
             xmlErrMemory(ctxt, NULL);
-	    xmlFreeInputStream(value);
 	    ctxt->inputMax /= 2;
-	    value = NULL;
             return (-1);
         }
     }
@@ -7234,7 +7232,8 @@ xmlParseReference(xmlParserCtxtPtr ctxt) {
                     ent->owner = 1;
                     while (list != NULL) {
                         list->parent = (xmlNodePtr) ent;
-                        xmlSetTreeDoc(list, ent->doc);
+                        if (list->doc != ent->doc)
+                            xmlSetTreeDoc(list, ent->doc);
                         if (list->next == NULL)
                             ent->last = list;
                         list = list->next;
@@ -8089,6 +8088,7 @@ xmlLoadEntityContent(xmlParserCtxtPtr ctxt, xmlEntityPtr entity) {
      */
     if (xmlPushInput(ctxt, input) < 0) {
         xmlBufferFree(buf);
+	xmlFreeInputStream(input);
 	return(-1);
     }
 
@@ -13583,7 +13583,7 @@ xmlParseInNodeContext(xmlNodePtr node, const char *data, int datalen,
     ctxt->input_id = 2;
     ctxt->instate = XML_PARSER_CONTENT;
 
-    fake = xmlNewComment(NULL);
+    fake = xmlNewDocComment(node->doc, NULL);
     if (fake == NULL) {
         xmlFreeParserCtxt(ctxt);
 	return(XML_ERR_NO_MEMORY);
@@ -14819,6 +14819,8 @@ xmlCtxtReset(xmlParserCtxtPtr ctxt)
 
     ctxt->nameNr = 0;
     ctxt->name = NULL;
+
+    ctxt->nsNr = 0;
 
     DICT_FREE(ctxt->version);
     ctxt->version = NULL;
