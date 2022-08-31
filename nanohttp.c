@@ -81,6 +81,9 @@
 #include <libxml/globals.h>
 #include <libxml/uri.h>
 
+#include "private/error.h"
+#include "private/io.h"
+
 #include <libxml/monolithic_examples.h>
 
 /**

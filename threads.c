@@ -35,6 +35,9 @@
 #include <note.h>
 #endif
 
+#include "private/dict.h"
+#include "private/threads.h"
+
 #include <libxml/monolithic_examples.h>
 
 /* #define DEBUG_THREADS */

@@ -28,7 +28,7 @@ check_PROGRAMS = \
 
 bin_PROGRAMS = xmllint xmlcatalog
 
-bin_SCRIPTS=xml2-config
+nodist_bin_SCRIPTS = xml2-config
 
 lib_LTLIBRARIES = libxml2.la
 libxml2_la_CFLAGS = $(EXTRA_CFLAGS) $(THREAD_CFLAGS) $(Z_CFLAGS) $(LZMA_CFLAGS)
@@ -135,14 +135,6 @@ rebuild_testapi:
 	-@(if [ "$(PYTHON)" != "" ] ; then \
 	    $(PYTHON) $(srcdir)/gentest.py $(srcdir) ; fi )
 
-# that one is just to make sure it is rebuilt if missing
-# but adding the dependances generate mess
-testapi.c: $(srcdir)/gentest.py
-	-@(if [ "$(PYTHON)" != "" ] ; then \
-	    $(PYTHON) $(srcdir)/gentest.py $(srcdir) ; fi )
-
-BUILT_SOURCES = testapi.c
-
 testapi_SOURCES=testapi.c
 testapi_LDFLAGS = 
 testapi_DEPENDENCIES = $(DEPS)
@@ -181,9 +173,6 @@ check-valgrind valgrind:
 asan:
 	@echo '## rebuilding for ASAN'
 	./configure CFLAGS="-fsanitize=address,undefined -Wformat -Werror=format-security -Werror=array-bounds -g" CXXFLAGS="-fsanitize=address,undefined -Wformat -Werror=format-security -Werror=array-bounds -g" LDFLAGS="-fsanitize=address,undefined" CC="clang" CXX="clang++" --disable-shared ; OptimOff  ; $(MAKE) clean ; $(MAKE)
-
-clean-local:
-	rm -f missing.xml # created by testapi
 
 # Old test suite. This should be ported to C.
 tests: $(TEST_DEBUG) $(TEST_CATALOG) $(TEST_REGEXPS) $(TEST_SCHEMATRON) Timingtests $(TEST_VTIME) $(PYTHON_TESTS)
@@ -395,7 +384,7 @@ rpm: cleanup cleantar
 CLEANFILES = runxmlconf.log test.out *.gcda *.gcno *.res
 DISTCLEANFILES = COPYING missing.lst
 
-EXTRA_DIST = xml2-config.in libxml.spec.in libxml2.spec \
+EXTRA_DIST = xml2-config.in libxml.spec.in \
              libxml.m4 Copyright check-xml-test-suite.py gentest.py \
 	     check-relaxng-test-suite.py check-relaxng-test-suite2.py \
 	     check-xsddata-test-suite.py check-xinclude-test-suite.py \
@@ -403,8 +392,8 @@ EXTRA_DIST = xml2-config.in libxml.spec.in libxml2.spec \
 	     libxml-2.0.pc.in libxml-2.0-uninstalled.pc.in \
 	     libxml2-config.cmake.in autogen.sh \
 	     trionan.c trionan.h triostr.c triostr.h trio.c trio.h \
-	     triop.h triodef.h libxml.h xzlib.h buf.h \
-	     enc.h save.h genUnicode.py TODO_SCHEMAS \
+	     triop.h triodef.h libxml.h \
+	     genUnicode.py TODO_SCHEMAS \
 	     dbgen.pl dbgenattr.pl \
 	     README.tests Makefile.tests libxml2.syms timsort.h \
 	     README.zOS README.md \
@@ -412,7 +401,7 @@ EXTRA_DIST = xml2-config.in libxml.spec.in libxml2.spec \
 
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = libxml-2.0.pc
+nodist_pkgconfig_DATA = libxml-2.0.pc
 
 cmakedir = $(libdir)/cmake/libxml2
 cmake_DATA = libxml2-config.cmake

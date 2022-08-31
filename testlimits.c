@@ -1263,19 +1263,15 @@ saxTest(const char *filename, size_t limit, int options, int fail) {
     int res = 0;
     xmlParserCtxtPtr ctxt;
     xmlDocPtr doc;
-    xmlSAXHandlerPtr old_sax;
 
     nb_tests++;
 
     maxlen = limit;
-    ctxt = xmlNewParserCtxt();
+    ctxt = xmlNewSAXParserCtxt(callbackSAX2Handler, NULL);
     if (ctxt == NULL) {
         fprintf(stderr, "Failed to create parser context\n");
 	return(1);
     }
-    old_sax = ctxt->sax;
-    ctxt->sax = callbackSAX2Handler;
-    ctxt->userData = NULL;
     doc = xmlCtxtReadFile(ctxt, filename, NULL, options);
 
     if (doc != NULL) {
@@ -1298,7 +1294,6 @@ saxTest(const char *filename, size_t limit, int options, int fail) {
         } else
             res = 0;
     }
-    ctxt->sax = old_sax;
     xmlFreeParserCtxt(ctxt);
 
     return(res);

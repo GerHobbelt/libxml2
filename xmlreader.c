@@ -40,9 +40,11 @@
 #include <libxml/pattern.h>
 #endif
 
+#include "private/buf.h"
+#include "private/tree.h"
+
 #include <libxml/monolithic_examples.h>
 
-#include "buf.h"
 
 #define MAX_ERR_MSG_SIZE 64000
 

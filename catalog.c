@@ -39,7 +39,8 @@
 #include <libxml/threads.h>
 #include <libxml/globals.h>
 
-#include "buf.h"
+#include "private/buf.h"
+#include "private/error.h"
 
 #define MAX_DELEGATE	50
 #define MAX_CATAL_DEPTH	50
@@ -889,11 +890,7 @@ xmlParseCatalogFile(const char *filename) {
 
     ctxt = xmlNewParserCtxt();
     if (ctxt == NULL) {
-#ifdef LIBXML_SAX1_ENABLED
-	if (xmlDefaultSAXHandler.error != NULL) {
-	    xmlDefaultSAXHandler.error(NULL, "out of memory\n");
-	}
-#endif
+        xmlCatalogErrMemory("allocating parser context");
 	return(NULL);
     }
 

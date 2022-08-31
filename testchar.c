@@ -7,12 +7,12 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <libxml/tree.h>
 #include <libxml/parser.h>
 #include <libxml/parserInternals.h>
 
 #include <libxml/monolithic_examples.h>
 
-#include "buf.h"
 
 static int lastError;
 

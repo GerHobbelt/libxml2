@@ -43,8 +43,11 @@
 #define END(ctxt) ctxt->input->end
 #define VALID_CTXT(ctxt) (CUR(ctxt) <= END(ctxt))
 
-#include "buf.h"
-#include "enc.h"
+#include "private/buf.h"
+#include "private/enc.h"
+#include "private/error.h"
+#include "private/io.h"
+#include "private/parser.h"
 
 /*
  * Various global defaults for parsing
@@ -260,7 +263,7 @@ void check_buffer(xmlParserInputPtr in) {
  * @in:  an XML parser input
  * @len:  an indicative size for the lookahead
  *
- * This function was internal and is deprecated.
+ * DEPRECATED: This function was internal and is deprecated.
  *
  * Returns -1 as this is an error to use it.
  */
@@ -273,6 +276,8 @@ xmlParserInputRead(xmlParserInputPtr in ATTRIBUTE_UNUSED, int len ATTRIBUTE_UNUS
  * xmlParserInputGrow:
  * @in:  an XML parser input
  * @len:  an indicative size for the lookahead
+ *
+ * DEPRECATED: Don't use.
  *
  * This function increase the input for the parser. It tries to
  * preserve pointers to the input buffer, and keep already read data
@@ -1345,6 +1350,7 @@ xmlNewEntityInputStream(xmlParserCtxtPtr ctxt, xmlEntityPtr entity) {
 xmlParserInputPtr
 xmlNewStringInputStream(xmlParserCtxtPtr ctxt, const xmlChar *buffer) {
     xmlParserInputPtr input;
+    xmlParserInputBufferPtr buf;
 
     if (buffer == NULL) {
         xmlErrInternal(ctxt, "xmlNewStringInputStream string = NULL\n",
@@ -1354,15 +1360,21 @@ xmlNewStringInputStream(xmlParserCtxtPtr ctxt, const xmlChar *buffer) {
     if (xmlParserDebugEntities)
 	xmlGenericError(xmlGenericErrorContext,
 		"new fixed input: %.30s\n", buffer);
+    buf = xmlParserInputBufferCreateMem((const char *) buffer,
+                                        xmlStrlen(buffer),
+                                        XML_CHAR_ENCODING_NONE);
+    if (buf == NULL) {
+	xmlErrMemory(ctxt, NULL);
+        return(NULL);
+    }
     input = xmlNewInputStream(ctxt);
     if (input == NULL) {
         xmlErrMemory(ctxt,  "couldn't allocate a new input stream\n");
+	xmlFreeParserInputBuffer(buf);
 	return(NULL);
     }
-    input->base = buffer;
-    input->cur = buffer;
-    input->length = xmlStrlen(buffer);
-    input->end = &buffer[input->length];
+    input->buf = buf;
+    xmlBufResetInput(input->buf->buffer, input);
     return(input);
 }
 
@@ -1432,16 +1444,19 @@ xmlNewInputFromFile(xmlParserCtxtPtr ctxt, const char *filename) {
  ************************************************************************/
 
 /**
- * xmlInitParserCtxt:
- * @ctxt:  an XML parser context
+ * xmlInitSAXParserCtxt:
+ * @ctxt:  XML parser context
+ * @sax:  SAX handlert
+ * @userData:  user data
  *
- * Initialize a parser context
+ * Initialize a SAX parser context
  *
  * Returns 0 in case of success and -1 in case of error
  */
 
-int
-xmlInitParserCtxt(xmlParserCtxtPtr ctxt)
+static int
+xmlInitSAXParserCtxt(xmlParserCtxtPtr ctxt, xmlSAXHandlerPtr sax,
+                     void *userData)
 {
     xmlParserInputPtr input;
 
@@ -1466,8 +1481,19 @@ xmlInitParserCtxt(xmlParserCtxtPtr ctxt)
         xmlErrMemory(NULL, "cannot initialize parser context\n");
 	return(-1);
     }
-    else
+    if (sax == NULL) {
+	memset(ctxt->sax, 0, sizeof(xmlSAXHandler));
         xmlSAXVersion(ctxt->sax, 2);
+        ctxt->userData = ctxt;
+    } else {
+	if (sax->initialized == XML_SAX2_MAGIC) {
+	    memcpy(ctxt->sax, sax, sizeof(xmlSAXHandler));
+        } else {
+	    memset(ctxt->sax, 0, sizeof(xmlSAXHandler));
+	    memcpy(ctxt->sax, sax, sizeof(xmlSAXHandlerV1));
+        }
+        ctxt->userData = userData ? userData : ctxt;
+    }
 
     ctxt->maxatts = 0;
     ctxt->atts = NULL;
@@ -1565,7 +1591,6 @@ xmlInitParserCtxt(xmlParserCtxtPtr ctxt)
     ctxt->spaceMax = 10;
     ctxt->spaceTab[0] = -1;
     ctxt->space = &ctxt->spaceTab[0];
-    ctxt->userData = ctxt;
     ctxt->myDoc = NULL;
     ctxt->wellFormed = 1;
     ctxt->nsWellFormed = 1;
@@ -1615,6 +1640,24 @@ xmlInitParserCtxt(xmlParserCtxtPtr ctxt)
     ctxt->input_id = 1;
     xmlInitNodeInfoSeq(&ctxt->node_seq);
     return(0);
+}
+
+/**
+ * xmlInitParserCtxt:
+ * @ctxt:  an XML parser context
+ *
+ * DEPRECATED: Internal function which will be made private in a future
+ * version.
+ *
+ * Initialize a parser context
+ *
+ * Returns 0 in case of success and -1 in case of error
+ */
+
+int
+xmlInitParserCtxt(xmlParserCtxtPtr ctxt)
+{
+    return(xmlInitSAXParserCtxt(ctxt, NULL, NULL));
 }
 
 /**
@@ -1714,6 +1757,22 @@ xmlFreeParserCtxt(xmlParserCtxtPtr ctxt)
 xmlParserCtxtPtr
 xmlNewParserCtxt(void)
 {
+    return(xmlNewSAXParserCtxt(NULL, NULL));
+}
+
+/**
+ * xmlNewSAXParserCtxt:
+ * @sax:  SAX handler
+ * @userData:  user data
+ *
+ * Allocate and initialize a new SAX parser context.
+ *
+ * Returns the xmlParserCtxtPtr or NULL
+ */
+
+xmlParserCtxtPtr
+xmlNewSAXParserCtxt(xmlSAXHandlerPtr sax, void *userData)
+{
     xmlParserCtxtPtr ctxt;
 
     ctxt = (xmlParserCtxtPtr) xmlMalloc(sizeof(xmlParserCtxt));
@@ -1722,7 +1781,7 @@ xmlNewParserCtxt(void)
 	return(NULL);
     }
     memset(ctxt, 0, sizeof(xmlParserCtxt));
-    if (xmlInitParserCtxt(ctxt) < 0) {
+    if (xmlInitSAXParserCtxt(ctxt, sax, userData) < 0) {
         xmlFreeParserCtxt(ctxt);
 	return(NULL);
     }
@@ -1757,6 +1816,8 @@ xmlClearParserCtxt(xmlParserCtxtPtr ctxt)
  * @ctx:  an XML parser context
  * @node:  an XML node within the tree
  *
+ * DEPRECATED: Don't use.
+ *
  * Find the parser node info struct for a given node
  *
  * Returns an xmlParserNodeInfo block pointer or NULL
@@ -1782,6 +1843,8 @@ xmlParserFindNodeInfo(const xmlParserCtxtPtr ctx, const xmlNodePtr node)
  * xmlInitNodeInfoSeq:
  * @seq:  a node info sequence pointer
  *
+ * DEPRECATED: Don't use.
+ *
  * -- Initialize (set to initial state) node info sequence
  */
 void
@@ -1797,6 +1860,8 @@ xmlInitNodeInfoSeq(xmlParserNodeInfoSeqPtr seq)
 /**
  * xmlClearNodeInfoSeq:
  * @seq:  a node info sequence pointer
+ *
+ * DEPRECATED: Don't use.
  *
  * -- Clear (release memory and reinitialize) node
  *   info sequence
@@ -1816,6 +1881,7 @@ xmlClearNodeInfoSeq(xmlParserNodeInfoSeqPtr seq)
  * @seq:  a node info sequence pointer
  * @node:  an XML node pointer
  *
+ * DEPRECATED: Don't use.
  *
  * xmlParserFindNodeInfoIndex : Find the index that the info record for
  *   the given node is or should be at in a sorted sequence
@@ -1858,6 +1924,8 @@ xmlParserFindNodeInfoIndex(const xmlParserNodeInfoSeqPtr seq,
  * xmlParserAddNodeInfo:
  * @ctxt:  an XML parser context
  * @info:  a node info sequence pointer
+ *
+ * DEPRECATED: Don't use.
  *
  * Insert node info record into the sorted sequence
  */
@@ -1929,6 +1997,8 @@ xmlParserAddNodeInfo(xmlParserCtxtPtr ctxt,
  * xmlPedanticParserDefault:
  * @val:  int 0 or 1
  *
+ * DEPRECATED: Use the modern options API with XML_PARSE_PEDANTIC.
+ *
  * Set and return the previous value for enabling pedantic warnings.
  *
  * Returns the last value for 0 for no substitution, 1 for substitution.
@@ -1945,6 +2015,8 @@ xmlPedanticParserDefault(int val) {
 /**
  * xmlLineNumbersDefault:
  * @val:  int 0 or 1
+ *
+ * DEPRECATED: The modern options API always enables line numbers.
  *
  * Set and return the previous value for enabling line numbers in elements
  * contents. This may break on old application and is turned off by default.
@@ -1963,6 +2035,8 @@ xmlLineNumbersDefault(int val) {
 /**
  * xmlSubstituteEntitiesDefault:
  * @val:  int 0 or 1
+ *
+ * DEPRECATED: Use the modern options API with XML_PARSE_NOENT.
  *
  * Set and return the previous value for default entity support.
  * Initially the parser always keep entity references instead of substituting
@@ -1985,6 +2059,8 @@ xmlSubstituteEntitiesDefault(int val) {
 /**
  * xmlKeepBlanksDefault:
  * @val:  int 0 or 1
+ *
+ * DEPRECATED: Use the modern options API with XML_PARSE_NOBLANKS.
  *
  * Set and return the previous value for default blanks text nodes support.
  * The 1.x version of the parser used an heuristic to try to detect

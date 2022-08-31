@@ -28,6 +28,10 @@
 #include <libxml/HTMLtree.h>
 #include <libxml/globals.h>
 
+#include "private/error.h"
+#include "private/parser.h"
+#include "private/tree.h"
+
 /* Define SIZE_T_MAX unless defined through <limits.h>. */
 #ifndef SIZE_T_MAX
 # define SIZE_T_MAX     ((size_t)-1)
@@ -2829,6 +2833,8 @@ static int xmlSAX2DefaultVersionValue = 2;
  * xmlSAXDefaultVersion:
  * @version:  the version, 1 or 2
  *
+ * DEPRECATED: Use parser option XML_PARSE_SAX1.
+ *
  * Set the default version of SAX used globally by the library.
  * By default, during initialization the default is set to 2.
  * Note that it is generally a better coding style to use
@@ -2998,7 +3004,9 @@ xmlSAX2InitHtmlDefaultSAXHandler(xmlSAXHandler *hdlr)
 void
 htmlDefaultSAXHandlerInit(void)
 {
+#ifdef LIBXML_SAX1_ENABLED
     xmlSAX2InitHtmlDefaultSAXHandler((xmlSAXHandlerPtr) &htmlDefaultSAXHandler);
+#endif
 }
 
 #endif /* LIBXML_HTML_ENABLED */
