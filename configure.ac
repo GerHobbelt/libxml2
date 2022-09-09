@@ -286,15 +286,14 @@ fi
 dnl
 dnl Checks for header files.
 dnl
-AC_CHECK_HEADERS([
-    stdint.h inttypes.h
-    fcntl.h unistd.h sys/stat.h
-    sys/mman.h
-    sys/socket.h netinet/in.h arpa/inet.h netdb.h
-    sys/select.h poll.h
-    sys/time.h sys/timeb.h
-    dl.h dlfcn.h
-    glob.h])
+AC_CHECK_HEADERS([stdint.h inttypes.h])
+AC_CHECK_HEADERS([fcntl.h unistd.h sys/stat.h])
+AC_CHECK_HEADERS([sys/mman.h])
+AC_CHECK_HEADERS([sys/socket.h netinet/in.h arpa/inet.h netdb.h])
+AC_CHECK_HEADERS([sys/select.h poll.h])
+AC_CHECK_HEADERS([sys/time.h sys/timeb.h])
+AC_CHECK_HEADERS([dl.h dlfcn.h])
+AC_CHECK_HEADERS([glob.h])
 AM_CONDITIONAL(WITH_GLOB, test "$ac_cv_header_glob_h" = "yes")
 
 dnl
@@ -308,13 +307,7 @@ dnl
 AC_CHECK_FUNCS(snprintf vsnprintf,, NEED_TRIO=1)
 
 dnl Checks for library functions.
-AC_CHECK_FUNCS([
-    gettimeofday ftime
-    stat
-    rand_r
-    isascii
-    mmap munmap
-    putenv])
+AC_CHECK_FUNCS([gettimeofday ftime stat rand_r isascii mmap munmap putenv])
 
 AH_VERBATIM([HAVE_MUNMAP_AFTER],[/* mmap() is no good without munmap() */
 #if defined(HAVE_MMAP) && !defined(HAVE_MUNMAP)
@@ -355,120 +348,85 @@ va_list ap1, ap2; a(&ap1); ap2 = (va_list) ap1],[
 dnl
 dnl Checks for inet libraries
 dnl
-_libs=$LIBS
-AC_SEARCH_LIBS(gethostbyname, [nsl ws2_32], [
-    if test "$ac_cv_search_gethostbyname" != "none required"; then
-        NET_LIBS="$NET_LIBS $ac_cv_search_gethostbyname"
-    fi], [:], [$NET_LIBS])
-AC_SEARCH_LIBS(connect, [bsd socket inet ws2_32], [
-    if test "$ac_cv_search_connect" != "none required"; then
-        NET_LIBS="$NET_LIBS $ac_cv_search_connect"
-    fi], [:], [$NET_LIBS])
-LIBS=$_libs
+if test "$with_http" != "no" || test "with_ftp" = "yes"; then
+    case "$host" in
+        *-*-mingw*)
+            dnl AC_SEARCH_LIBS doesn't work because of non-standard calling
+            dnl conventions on 32-bit Windows.
+            NET_LIBS="$NET_LIBS -lws2_32"
+            ;;
+        *)
+            _libs=$LIBS
+            AC_SEARCH_LIBS(gethostbyname, [nsl], [
+                if test "$ac_cv_search_gethostbyname" != "none required"; then
+                    NET_LIBS="$NET_LIBS $ac_cv_search_gethostbyname"
+                fi], [:], [$NET_LIBS])
+            AC_SEARCH_LIBS(connect, [bsd socket inet], [
+                if test "$ac_cv_search_connect" != "none required"; then
+                    NET_LIBS="$NET_LIBS $ac_cv_search_connect"
+                fi], [:], [$NET_LIBS])
+            LIBS=$_libs
+            ;;
+    esac
 
-dnl Determine what socket length (socklen_t) data type is
-AC_MSG_CHECKING([for type of socket length (socklen_t)])
-AC_TRY_COMPILE2([
-#include <stddef.h>
-#ifdef _WIN32
-  #include <ws2tcpip.h>
-#else
-  #include <sys/socket.h>
-#endif],[
-(void)getsockopt (1, 1, 1, NULL, (socklen_t *)NULL)],[
-  AC_MSG_RESULT(socklen_t *)
-  XML_SOCKLEN_T=socklen_t],[
-  AC_TRY_COMPILE2([
-#include <stddef.h>
-#include <sys/socket.h>],[
-(void)getsockopt (1, 1, 1, NULL, (size_t *)NULL)],[
-    AC_MSG_RESULT(size_t *)
-    XML_SOCKLEN_T=size_t],[
+    dnl Determine what socket length (socklen_t) data type is
+    AC_MSG_CHECKING([for type of socket length (socklen_t)])
     AC_TRY_COMPILE2([
-#include <stddef.h>
-#include <sys/socket.h>],[
-(void)getsockopt (1, 1, 1, NULL, (int *)NULL)],[
-      AC_MSG_RESULT(int *)
-      XML_SOCKLEN_T=int],[
-      AC_MSG_WARN(could not determine)
-      XML_SOCKLEN_T="int"])])])
-AC_DEFINE_UNQUOTED(XML_SOCKLEN_T, $XML_SOCKLEN_T, [Determine what socket length (socklen_t) data type is])
-
-dnl
-dnl Checking for availability of IPv6
-dnl
-AC_MSG_CHECKING([whether to enable IPv6])
-AC_ARG_ENABLE(ipv6, [  --enable-ipv6[[=yes/no]]  enables compilation of IPv6 code [[default=yes]]],, enable_ipv6=yes)
-if test "$with_minimum" = "yes"
-then
-    enable_ipv6=no
-fi
-if test $enable_ipv6 = yes; then
-  have_ipv6=no
-  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+    #include <stddef.h>
     #ifdef _WIN32
-      #include <winsock2.h>
+      #include <ws2tcpip.h>
     #else
       #include <sys/socket.h>
-      #ifdef HAVE_NETDB_H
-        #include <netdb.h>
-      #endif
-    #endif
-    ]], [[
-    struct sockaddr_storage ss;
-    socket(AF_INET6, SOCK_STREAM, 0);
-    getaddrinfo(0, 0, 0, 0);
-    ]])],
-    have_ipv6=yes,
-    have_ipv6=no
-  )
-  AC_MSG_RESULT($have_ipv6)
+    #endif],[
+    (void)getsockopt (1, 1, 1, NULL, (socklen_t *)NULL)],[
+      AC_MSG_RESULT(socklen_t *)
+      XML_SOCKLEN_T=socklen_t],[
+      AC_TRY_COMPILE2([
+    #include <stddef.h>
+    #include <sys/socket.h>],[
+    (void)getsockopt (1, 1, 1, NULL, (size_t *)NULL)],[
+        AC_MSG_RESULT(size_t *)
+        XML_SOCKLEN_T=size_t],[
+        AC_TRY_COMPILE2([
+    #include <stddef.h>
+    #include <sys/socket.h>],[
+    (void)getsockopt (1, 1, 1, NULL, (int *)NULL)],[
+          AC_MSG_RESULT(int *)
+          XML_SOCKLEN_T=int],[
+          AC_MSG_WARN(could not determine)
+          XML_SOCKLEN_T="int"])])])
+    AC_DEFINE_UNQUOTED(XML_SOCKLEN_T, $XML_SOCKLEN_T, [Determine what socket length (socklen_t) data type is])
 
-  if test $have_ipv6 = yes; then
-    AC_DEFINE([SUPPORT_IP6], [], [Support for IPv6])
-    have_broken_ss_family=no
-
-    dnl *********************************************************************
-    dnl on some platforms (like AIX 5L), the structure sockaddr doesn't have
-    dnl a ss_family member, but rather __ss_family. Let's detect that
-    dnl and define the HAVE_BROKEN_SS_FAMILY when we are on one of these
-    dnl platforms.  However, we should only do this if ss_family is not
-    dnl present.
-    dnl ********************************************************************
-    AC_MSG_CHECKING([struct sockaddr::ss_family])
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-#     include <sys/socket.h>
-      ]], [[
-      struct sockaddr_storage ss ;
-      ss.ss_family = 0 ;
-      ]])],
-      have_ss_family=yes,
-      have_ss_family=no
-    )
-    AC_MSG_RESULT($have_ss_family)
-    if test x$have_ss_family = xno ; then
-      AC_MSG_CHECKING([broken struct sockaddr::ss_family])
-      AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-#       include <sys/socket.h>
-        ]], [[
-        struct sockaddr_storage ss ;
-        ss.__ss_family = 0 ;
-        ]])],
-        have_broken_ss_family=yes,
-        have_broken_ss_family=no
-      )
-      AC_MSG_RESULT($have_broken_ss_family)
-      if test x$have_broken_ss_family = xyes ; then
-        AC_DEFINE(HAVE_BROKEN_SS_FAMILY, [],
-	  [Whether struct sockaddr::__ss_family exists]) 
-        AC_DEFINE(ss_family, __ss_family,
-	  [ss_family is not defined here, use __ss_family instead])
-      else
-        AC_MSG_WARN(ss_family and __ss_family not found)
-      fi
+    dnl
+    dnl Checking for availability of IPv6
+    dnl
+    AC_ARG_ENABLE(ipv6, [  --enable-ipv6[[=yes/no]]  enables compilation of IPv6 code [[default=yes]]],, enable_ipv6=yes)
+    if test "$with_minimum" = "yes"
+    then
+        enable_ipv6=no
     fi
-  fi
-fi 
+    if test $enable_ipv6 = yes; then
+        AC_MSG_CHECKING([whether to enable IPv6])
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+            #ifdef _WIN32
+              #include <winsock2.h>
+            #else
+              #include <sys/socket.h>
+              #ifdef HAVE_NETDB_H
+                #include <netdb.h>
+              #endif
+            #endif
+            ]], [[
+            struct sockaddr_storage ss;
+            socket(AF_INET6, SOCK_STREAM, 0);
+            getaddrinfo(0, 0, 0, 0);
+            ]])], [
+            AC_DEFINE([SUPPORT_IP6], [], [Support for IPv6])
+            AC_MSG_RESULT([yes])], [
+            AC_MSG_RESULT([no])]
+        )
+    fi
+fi
 
 dnl
 dnl Extra flags
@@ -801,7 +759,7 @@ PYTHON_LDFLAGS=
 if test "${PYTHON}" != ""; then
     case "$host" in
         *-*-cygwin* | *-*-mingw* | *-*-msys* )
-            PYTHON_LDFLAGS="-no-undefined"
+            PYTHON_LDFLAGS="-no-undefined -shrext .pyd"
             ;;
     esac
 fi

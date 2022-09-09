@@ -42,7 +42,8 @@ clang:asan:
     ASAN_OPTIONS: "detect_leaks=0"
     UBSAN_OPTIONS: "print_stacktrace=1"
 
-clang:msan:
+# Disabled, MSan seems broken on Ubntu 22.04
+.clang:msan:
   extends: .test
   only:
     - schedules
@@ -58,25 +59,28 @@ clang:msan:
     BASE_CONFIG: "--with-ftp --with-legacy --with-xptr-locs"
     CHERE_INVOKING: "yes"
   before_script:
-    - "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12"
-    - $Env:Path="C:\msys64\$Env:MINGW_PATH\bin;C:\msys64\usr\bin;$Env:Path"
-    - bash -lc 'sh .gitlab-ci/setup_mingw.sh'
-    - .gitlab-ci/Install-7-Zip
-    - .gitlab-ci/Fetch-W3C-Tests
+    - $Env:Path="C:\msys64\usr\bin;$Env:Path"
+    - bash -lc 'sh .gitlab-ci/setup_mingw.sh autotools'
   script:
     - bash -lc 'sh .gitlab-ci/test.sh'
   cache:
     key: "$MSYSTEM"
     paths:
       - libxml2-build/xmlconf/
-      - 7za.exe
 
 mingw:w64-x86_64:shared:
   extends: .mingw
   variables:
     CFLAGS: "-O2"
     MSYSTEM: MINGW64
-    MINGW_PATH: mingw64
+
+mingw:w64-i686:shared:
+  extends: .mingw
+  only:
+    - schedules
+  variables:
+    CFLAGS: "-O2"
+    MSYSTEM: MINGW32
 
 # Disabled, GCC missing?
 .mingw:msys:shared:
@@ -84,33 +88,26 @@ mingw:w64-x86_64:shared:
   variables:
     CFLAGS: "-O2"
     MSYSTEM: MSYS
-    MINGW_PATH: usr
 
 .cmake:linux:
   image: registry.gitlab.gnome.org/gnome/libxml2
+  before_script:
+    - rm -rf libxml2-build
+    - mkdir libxml2-build
+    - ln -s /tests/xmlconf libxml2-build
   script:
-    - cmake -DBUILD_SHARED_LIBS=$BUILD_SHARED_LIBS -DCMAKE_INSTALL_PREFIX=libxml2-install -DCMAKE_C_FLAGS='-Werror' -DCMAKE_BUILD_TYPE=RelWithDebInfo -DLIBXML2_XMLCONF_WORKING_DIR=/tests -S . -B libxml2-build
-    - cmake --build libxml2-build --target install
-    - mkdir -p libxml2-install/share/libxml2
-    - cp Copyright libxml2-install/share/libxml2
-    - cd libxml2-build
-    - ctest -VV
-  after_script:
-    - cd libxml2-install
-    - tar -czf ../libxml2-$CI_COMMIT_SHORT_SHA-$CC-$SUFFIX.tar.gz *
+    - sh .gitlab-ci/test_cmake.sh
   artifacts:
     paths:
-      - libxml2-$CI_COMMIT_SHORT_SHA-$CC-$SUFFIX.tar.gz
+      - libxml2-$CI_COMMIT_SHORT_SHA-$SUFFIX.tar.gz
     expire_in: 1 day
 
 cmake:linux:gcc:shared:
   extends: .cmake:linux
-  only:
-    - schedules
   variables:
     BUILD_SHARED_LIBS: "ON"
     CC: gcc
-    SUFFIX: shared
+    SUFFIX: linux-gcc-shared
 
 cmake:linux:gcc:static:
   extends: .cmake:linux
@@ -119,7 +116,7 @@ cmake:linux:gcc:static:
   variables:
     BUILD_SHARED_LIBS: "OFF"
     CC: gcc
-    SUFFIX: static
+    SUFFIX: linux-gcc-static
 
 cmake:linux:clang:shared:
   extends: .cmake:linux
@@ -128,7 +125,7 @@ cmake:linux:clang:shared:
   variables:
     BUILD_SHARED_LIBS: "ON"
     CC: clang
-    SUFFIX: shared
+    SUFFIX: linux-clang-shared
 
 cmake:linux:clang:static:
   extends: .cmake:linux
@@ -137,7 +134,7 @@ cmake:linux:clang:static:
   variables:
     BUILD_SHARED_LIBS: "OFF"
     CC: clang
-    SUFFIX: static
+    SUFFIX: linux-clang-static
 
 .cmake:mingw:
   tags:
@@ -145,28 +142,17 @@ cmake:linux:clang:static:
   variables:
     CHERE_INVOKING: "yes"
   before_script:
-    - "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12"
-    - $Env:Path="C:\msys64\$Env:MINGW_PATH\bin;C:\msys64\usr\bin;$Env:Path"
-    - bash -lc 'sh .gitlab-ci/setup_mingw.sh'
-    - .gitlab-ci/Install-7-Zip
-    - .gitlab-ci/Fetch-W3C-Tests
+    - $Env:Path="C:\msys64\usr\bin;$Env:Path"
+    - bash -lc 'sh .gitlab-ci/setup_mingw.sh cmake ninja'
   script:
-    - cmake -G Ninja -DBUILD_SHARED_LIBS="$Env:BUILD_SHARED_LIBS" -DCMAKE_INSTALL_PREFIX=libxml2-install -DCMAKE_C_FLAGS='-Werror' -DCMAKE_BUILD_TYPE=RelWithDebInfo -S . -B libxml2-build
-    - cmake --build libxml2-build --target install
-    - New-Item -ItemType Directory libxml2-install\share\libxml2
-    - Copy-Item Copyright libxml2-install\share\libxml2
-    - cd libxml2-build
-    - ctest -VV
-  after_script:
-    - .\7za.exe a libxml2-$Env:CI_COMMIT_SHORT_SHA-$Env:MSYSTEM-$Env:SUFFIX.7z .\libxml2-install\*
+    - bash -lc 'sh .gitlab-ci/test_cmake.sh -G Ninja'
   cache:
     key: "$MSYSTEM"
     paths:
       - libxml2-build/xmlconf/
-      - 7za.exe
   artifacts:
     paths:
-      - libxml2-$Env:CI_COMMIT_SHORT_SHA-$Env:MSYSTEM-$Env:SUFFIX.7z
+      - libxml2-$Env:CI_COMMIT_SHORT_SHA-$Env:SUFFIX.tar.gz
     expire_in: 1 day
 
 cmake:mingw:w64-i686:shared:
@@ -176,8 +162,7 @@ cmake:mingw:w64-i686:shared:
   variables:
     BUILD_SHARED_LIBS: "ON"
     MSYSTEM: MINGW32
-    MINGW_PATH: mingw32
-    SUFFIX: shared
+    SUFFIX: mingw-w64-i686-shared
 
 cmake:mingw:w64-i686:static:
   extends: .cmake:mingw
@@ -186,16 +171,14 @@ cmake:mingw:w64-i686:static:
   variables:
     BUILD_SHARED_LIBS: "OFF"
     MSYSTEM: MINGW32
-    MINGW_PATH: mingw32
-    SUFFIX: static
+    SUFFIX: mingw-w64-i686-static
 
 cmake:mingw:w64-x86_64:shared:
   extends: .cmake:mingw
   variables:
     BUILD_SHARED_LIBS: "ON"
     MSYSTEM: MINGW64
-    MINGW_PATH: mingw64
-    SUFFIX: shared
+    SUFFIX: mingw-w64-x86_64-shared
 
 cmake:mingw:w64-x86_64:static:
   extends: .cmake:mingw
@@ -204,34 +187,15 @@ cmake:mingw:w64-x86_64:static:
   variables:
     BUILD_SHARED_LIBS: "OFF"
     MSYSTEM: MINGW64
-    MINGW_PATH: mingw64
-    SUFFIX: static
+    SUFFIX: mingw-w64-x86_64-static
 
 .cmake:msvc:
   tags:
     - win32-ps
   variables:
     CMAKE_VERSION: 3.19.4
-  before_script:
-    - "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12"
-    - if (-not (Test-Path cmake-$Env:CMAKE_VERSION-win64-x64)) {
-        Invoke-WebRequest -Uri http://github.com/Kitware/CMake/releases/download/v$Env:CMAKE_VERSION/cmake-$Env:CMAKE_VERSION-win64-x64.zip -OutFile cmake-$Env:CMAKE_VERSION-win64-x64.zip ;
-        Expand-Archive cmake-$Env:CMAKE_VERSION-win64-x64.zip -DestinationPath .
-      }
-    - $Env:Path="$Env:CI_PROJECT_DIR\cmake-$Env:CMAKE_VERSION-win64-x64\bin;$Env:Path"
-    - .gitlab-ci/Install-7-Zip
-    - .gitlab-ci/Fetch-W3C-Tests
   script:
-    - cmake -DBUILD_SHARED_LIBS="$Env:BUILD_SHARED_LIBS" -DCMAKE_INSTALL_PREFIX=libxml2-install -DLIBXML2_WITH_ICONV=OFF -DLIBXML2_WITH_LZMA=OFF -DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_ZLIB=OFF -S . -B libxml2-build
-    - cmake --build libxml2-build --config Debug --target install
-    - cmake --build libxml2-build --config Release --target install
-    - New-Item -ItemType Directory libxml2-install\share\libxml2
-    - Copy-Item Copyright libxml2-install\share\libxml2
-    - cd libxml2-build
-    - ctest -C Debug -VV
-    - ctest -C Release -VV
-  after_script:
-    - .\7za.exe a libxml2-$Env:CI_COMMIT_SHORT_SHA-$Env:CMAKE_GENERATOR_TOOLSET-$Env:CMAKE_GENERATOR_PLATFORM-$Env:SUFFIX.7z .\libxml2-install\*
+    - .gitlab-ci/Test-Msvc
   cache:
     key: "msvc"
     paths:
