@@ -274,8 +274,6 @@ htmlNodeInfoPop(htmlParserCtxtPtr ctxt)
  *
  * Clean macros, not dependent of an ASCII context, expect UTF-8 encoding
  *
- *   CURRENT Returns the current char value, with the full decoding of
- *           UTF-8 if we are using this mode. It returns an int.
  *   NEXT    Skip to the next character, this does the proper decoding
  *           in UTF-8 mode. It also pop-up unfinished entities on the fly.
  *   NEXTL(l) Skip the current unicode character of l xmlChars long.
@@ -301,14 +299,11 @@ htmlNodeInfoPop(htmlParserCtxtPtr ctxt)
 		 (ctxt->input->end - ctxt->input->cur < INPUT_CHUNK))	\
 	xmlParserInputGrow(ctxt->input, INPUT_CHUNK)
 
-#define CURRENT ((int) (*ctxt->input->cur))
-
 #define SKIP_BLANKS htmlSkipBlankChars(ctxt)
 
 /* Imported from XML */
 
-/* #define CUR (ctxt->token ? ctxt->token : (int) (*ctxt->input->cur)) */
-#define CUR ((int) (*ctxt->input->cur))
+#define CUR (*ctxt->input->cur)
 #define NEXT xmlNextChar(ctxt)
 
 #define RAW (ctxt->token ? -1 : (*ctxt->input->cur))
@@ -331,7 +326,7 @@ htmlNodeInfoPop(htmlParserCtxtPtr ctxt)
 #define CUR_SCHAR(s, l) xmlStringCurrentChar(ctxt, s, &l)
 
 #define COPY_BUF(l,b,i,v)						\
-    if (l == 1) b[i++] = (xmlChar) v;					\
+    if (l == 1) b[i++] = v;						\
     else i += xmlCopyChar(l,&b[i],v)
 
 /**
@@ -422,7 +417,7 @@ htmlCurrentChar(xmlParserCtxtPtr ctxt, int *len) {
          * a compatible encoding for the ASCII set, since
          * HTML constructs only use < 128 chars
          */
-        if ((int) *ctxt->input->cur < 0x80) {
+        if (*ctxt->input->cur < 0x80) {
             *len = 1;
             if ((*ctxt->input->cur == 0) &&
                 (ctxt->input->cur < ctxt->input->end)) {
@@ -430,7 +425,7 @@ htmlCurrentChar(xmlParserCtxtPtr ctxt, int *len) {
                                 "Char 0x%X out of allowed range\n", 0);
                 return(' ');
             }
-            return((int) *ctxt->input->cur);
+            return(*ctxt->input->cur);
         }
 
         /*
@@ -537,7 +532,7 @@ htmlCurrentChar(xmlParserCtxtPtr ctxt, int *len) {
         }
         /* 1-byte code */
         *len = 1;
-        return((int) *ctxt->input->cur);
+        return(*ctxt->input->cur);
     }
 
 encoding_error:
@@ -574,7 +569,7 @@ encoding_error:
         (ctxt->input->buf->encoder == NULL))
         xmlSwitchEncoding(ctxt, XML_CHAR_ENCODING_8859_1);
     *len = 1;
-    return((int) *ctxt->input->cur);
+    return(*ctxt->input->cur);
 }
 
 /**
@@ -2079,8 +2074,8 @@ static const htmlEntityDesc  html40EntitiesTable[] = {
 #define growBuffer(buffer) {						\
     xmlChar *tmp;							\
     buffer##_size *= 2;							\
-    tmp = (xmlChar *) xmlRealloc(buffer, buffer##_size * sizeof(xmlChar)); \
-    if (tmp == NULL) {						\
+    tmp = (xmlChar *) xmlRealloc(buffer, buffer##_size); 		\
+    if (tmp == NULL) {							\
 	htmlErrMemory(ctxt, "growing buffer\n");			\
 	xmlFree(buffer);						\
 	return(NULL);							\
@@ -2749,7 +2744,7 @@ htmlParseHTMLAttribute(htmlParserCtxtPtr ctxt, const xmlChar stop) {
      * allocate a translation buffer.
      */
     buffer_size = HTML_PARSER_BUFFER_SIZE;
-    buffer = (xmlChar *) xmlMallocAtomic(buffer_size * sizeof(xmlChar));
+    buffer = (xmlChar *) xmlMallocAtomic(buffer_size);
     if (buffer == NULL) {
 	htmlErrMemory(ctxt, "buffer allocation failed\n");
 	return(NULL);
@@ -3385,7 +3380,7 @@ htmlParsePI(htmlParserCtxtPtr ctxt) {
 		ctxt->instate = state;
 		return;
 	    }
-	    buf = (xmlChar *) xmlMallocAtomic(size * sizeof(xmlChar));
+	    buf = (xmlChar *) xmlMallocAtomic(size);
 	    if (buf == NULL) {
 		htmlErrMemory(ctxt, NULL);
 		ctxt->instate = state;
@@ -3403,7 +3398,7 @@ htmlParsePI(htmlParserCtxtPtr ctxt) {
 		    xmlChar *tmp;
 
 		    size *= 2;
-		    tmp = (xmlChar *) xmlRealloc(buf, size * sizeof(xmlChar));
+		    tmp = (xmlChar *) xmlRealloc(buf, size);
 		    if (tmp == NULL) {
 			htmlErrMemory(ctxt, NULL);
 			xmlFree(buf);
@@ -3485,7 +3480,7 @@ htmlParseComment(htmlParserCtxtPtr ctxt) {
     ctxt->instate = XML_PARSER_COMMENT;
     SHRINK;
     SKIP(4);
-    buf = (xmlChar *) xmlMallocAtomic(size * sizeof(xmlChar));
+    buf = (xmlChar *) xmlMallocAtomic(size);
     if (buf == NULL) {
         htmlErrMemory(ctxt, "buffer allocation failed\n");
 	ctxt->instate = state;
@@ -3534,7 +3529,7 @@ htmlParseComment(htmlParserCtxtPtr ctxt) {
 	    xmlChar *tmp;
 
 	    size *= 2;
-	    tmp = (xmlChar *) xmlRealloc(buf, size * sizeof(xmlChar));
+	    tmp = (xmlChar *) xmlRealloc(buf, size);
 	    if (tmp == NULL) {
 	        xmlFree(buf);
 	        htmlErrMemory(ctxt, "growing buffer failed\n");
@@ -5047,7 +5042,8 @@ htmlParseDocument(htmlParserCtxtPtr ctxt) {
  */
 
 static int
-htmlInitParserCtxt(htmlParserCtxtPtr ctxt, htmlSAXHandler *sax, void *userData)
+htmlInitParserCtxt(htmlParserCtxtPtr ctxt, const htmlSAXHandler *sax,
+                   void *userData)
 {
     if (ctxt == NULL) return(-1);
     memset(ctxt, 0, sizeof(htmlParserCtxt));
@@ -5181,13 +5177,14 @@ htmlNewParserCtxt(void)
  * @sax:  SAX handler
  * @userData:  user data
  *
- * Allocate and initialize a new parser context.
+ * Allocate and initialize a new SAX parser context. If userData is NULL,
+ * the parser context will be passed as user data.
  *
  * Returns the htmlParserCtxtPtr or NULL in case of allocation error
  */
 
 htmlParserCtxtPtr
-htmlNewSAXParserCtxt(htmlSAXHandlerPtr sax, void *userData)
+htmlNewSAXParserCtxt(const htmlSAXHandler *sax, void *userData)
 {
     xmlParserCtxtPtr ctxt;
 
@@ -5927,7 +5924,7 @@ htmlParseTryOrFinish(htmlParserCtxtPtr ctxt, int terminate) {
 		 * Handle preparsed entities and charRef
 		 */
 		if (ctxt->token != 0) {
-		    chr[0] = (xmlChar) ctxt->token;
+		    chr[0] = ctxt->token;
 		    htmlCheckParagraph(ctxt);
 		    if ((ctxt->sax != NULL) && (ctxt->sax->characters != NULL))
 			ctxt->sax->characters(ctxt->userData, chr, 1);

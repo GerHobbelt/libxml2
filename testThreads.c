@@ -10,10 +10,8 @@
 #include <libxml/catalog.h>
 #ifdef HAVE_PTHREAD_H
 #include <pthread.h>
-#elif defined HAVE_WIN32_THREADS
+#elif defined(_WIN32)
 #include <windows.h>
-#elif defined HAVE_BEOS_THREADS
-#include <OS.h>
 #endif
 #include <string.h>
 #if !defined(_MSC_VER)
@@ -27,10 +25,8 @@
 #define TEST_REPEAT_COUNT 500
 #ifdef HAVE_PTHREAD_H
 static pthread_t tid[MAX_ARGC];
-#elif defined HAVE_WIN32_THREADS
+#elif defined(_WIN32)
 static HANDLE tid[MAX_ARGC];
-#elif defined HAVE_BEOS_THREADS
-static thread_id tid[MAX_ARGC];
 #endif
 
 typedef struct {
@@ -155,7 +151,7 @@ int main(void)
     xmlMemoryDump();
     return (0);
 }
-#elif defined HAVE_WIN32_THREADS
+#elif defined(_WIN32)
 static DWORD WINAPI
 win32_thread_specific_data(void *private_data)
 {
@@ -223,76 +219,7 @@ int main(void)
 
     return (0);
 }
-#elif defined HAVE_BEOS_THREADS
-
-#if defined(BUILD_MONOLITHIC)
-#define main(void)      xml_testthreads_main()
-#endif
-
-int main(void)
-{
-	unsigned int i, repeat;
-    status_t ret;
-
-    xmlInitParser();
-    printf("Parser initialized\n");
-    for (repeat = 0;repeat < TEST_REPEAT_COUNT;repeat++) {
-    printf("repeat: %d\n",repeat);
-	xmlLoadCatalog(catalog);
-	printf("loaded catalog: %s\n", catalog);
-	for (i = 0; i < num_threads; i++) {
-	    tid[i] = (thread_id) -1;
-	}
-	printf("cleaned threads\n");
-	for (i = 0; i < num_threads; i++) {
-		tid[i] = spawn_thread(thread_specific_data, "xmlTestThread", B_NORMAL_PRIORITY, (void *) &threadParams[i]);
-		if (tid[i] < B_OK) {
-			perror("beos_thread_create");
-			exit(1);
-		}
-		printf("beos_thread_create %d -> %d\n", i, tid[i]);
-	}
-	for (i = 0; i < num_threads; i++) {
-            void *result;
-	    ret = wait_for_thread(tid[i], &result);
-	    printf("beos_thread_wait %d -> %d\n", i, ret);
-	    if (ret != B_OK) {
-			perror("beos_thread_wait");
-			exit(1);
-	    }
-	}
-
-	xmlCatalogCleanup();
-	ret = B_OK;
-	for (i = 0; i < num_threads; i++)
-	    if (threadParams[i].okay == 0) {
-			printf("Thread %d handling %s failed\n", i,
-                               threadParams[i].filename);
-			ret = B_ERROR;
-		}
-    }
-    xmlCleanupParser();
-    xmlMemoryDump();
-
-	if (ret == B_OK)
-		printf("testThread : BeOS : SUCCESS!\n");
-	else
-		printf("testThread : BeOS : FAILED!\n");
-
-    return (0);
-}
-#else /* no pthreads or BeOS threads */
-
-#if defined(BUILD_MONOLITHIC)
-#define main(void)      xml_testthreads_main(void)
-#endif
-
-int main(void)
-{
-	fprintf(stderr, "libxml was not compiled with pthread or BeOS pthread support\n");
-    return (0);
-}
-#endif /* pthreads or BeOS threads */
+#endif /* pthreads */
 
 #else /* !LIBXML_THREADS_ENABLED */
 

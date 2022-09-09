@@ -3618,7 +3618,7 @@ xmlTextReaderQuoteChar(xmlTextReaderPtr reader) {
     if (reader == NULL)
 	return(-1);
     /* TODO maybe lookup the attribute value for " first */
-    return((int) '"');
+    return('"');
 }
 
 /**

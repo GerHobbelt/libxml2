@@ -15,9 +15,6 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#ifdef HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
@@ -2052,8 +2049,7 @@ xmlIOHTTPCloseWrite( void * context, const char * http_mthd ) {
 		    xmlGenericError( xmlGenericErrorContext,
 			"Transmitted content saved in file:  %s\n", buffer );
 
-		    fwrite( http_content, sizeof( char ),
-					content_lgth, tst_file );
+		    fwrite( http_content, 1, content_lgth, tst_file );
 		    fclose( tst_file );
 		}
 
@@ -2067,7 +2063,7 @@ xmlIOHTTPCloseWrite( void * context, const char * http_mthd ) {
 		    while ( (avail = xmlNanoHTTPRead( http_ctxt,
 					buffer, sizeof( buffer ) )) > 0 ) {
 
-			fwrite( buffer, sizeof( char ), avail, tst_file );
+			fwrite( buffer, 1, avail, tst_file );
 		    }
 
 		    fclose( tst_file );
@@ -2363,7 +2359,7 @@ xmlAllocParserInputBuffer(xmlCharEncoding enc) {
 	xmlIOErrMemory("creating input buffer");
 	return(NULL);
     }
-    memset(ret, 0, (size_t) sizeof(xmlParserInputBuffer));
+    memset(ret, 0, sizeof(xmlParserInputBuffer));
     ret->buffer = xmlBufCreateSize(2 * xmlDefaultBufferSize);
     if (ret->buffer == NULL) {
         xmlFree(ret);
@@ -2402,7 +2398,7 @@ xmlAllocOutputBuffer(xmlCharEncodingHandlerPtr encoder) {
 	xmlIOErrMemory("creating output buffer");
 	return(NULL);
     }
-    memset(ret, 0, (size_t) sizeof(xmlOutputBuffer));
+    memset(ret, 0, sizeof(xmlOutputBuffer));
     ret->buffer = xmlBufCreate();
     if (ret->buffer == NULL) {
         xmlFree(ret);
@@ -2450,7 +2446,7 @@ xmlAllocOutputBufferInternal(xmlCharEncodingHandlerPtr encoder) {
 	xmlIOErrMemory("creating output buffer");
 	return(NULL);
     }
-    memset(ret, 0, (size_t) sizeof(xmlOutputBuffer));
+    memset(ret, 0, sizeof(xmlOutputBuffer));
     ret->buffer = xmlBufCreate();
     if (ret->buffer == NULL) {
         xmlFree(ret);
@@ -3005,8 +3001,8 @@ xmlParserInputBufferCreateStatic(const char *mem, int size,
 	xmlIOErrMemory("creating input buffer");
 	return(NULL);
     }
-    memset(ret, 0, (size_t) sizeof(xmlParserInputBuffer));
-    ret->buffer = xmlBufCreateStatic((void *)mem, (size_t) size);
+    memset(ret, 0, sizeof(xmlParserInputBuffer));
+    ret->buffer = xmlBufCreateStatic((void *)mem, size);
     if (ret->buffer == NULL) {
         xmlFree(ret);
 	return(NULL);
@@ -3513,7 +3509,7 @@ xmlEscapeContent(unsigned char* out, int *outlen,
 	    *out++ = '3';
 	    *out++ = ';';
 	} else {
-	    *out++ = (unsigned char) *in;
+	    *out++ = *in;
 	}
 	++in;
     }

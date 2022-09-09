@@ -9,9 +9,6 @@
 #define _CRT_NONSTDC_NO_WARNINGS 1
 
 
-#define SEND_ARG2_CAST
-#define GETHOSTBYNAME_ARG_CAST
-
 #define HAVE_SYS_STAT_H
 #define HAVE_STAT
 #define HAVE_FCNTL_H

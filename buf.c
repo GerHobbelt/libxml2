@@ -135,7 +135,7 @@ xmlBufCreate(void) {
     ret->size = xmlDefaultBufferSize;
     UPDATE_COMPAT(ret);
     ret->alloc = xmlBufferAllocScheme;
-    ret->content = (xmlChar *) xmlMallocAtomic(ret->size * sizeof(xmlChar));
+    ret->content = (xmlChar *) xmlMallocAtomic(ret->size);
     if (ret->content == NULL) {
 	xmlBufMemoryError(ret, "creating buffer");
 	xmlFree(ret);
@@ -171,7 +171,7 @@ xmlBufCreateSize(size_t size) {
     ret->size = (size ? size + 1 : 0);         /* +1 for ending null */
     UPDATE_COMPAT(ret);
     if (ret->size){
-        ret->content = (xmlChar *) xmlMallocAtomic(ret->size * sizeof(xmlChar));
+        ret->content = (xmlChar *) xmlMallocAtomic(ret->size);
         if (ret->content == NULL) {
 	    xmlBufMemoryError(ret, "creating buffer");
             xmlFree(ret);
@@ -510,7 +510,7 @@ xmlBufGrow(xmlBufPtr buf, int len) {
     ret = xmlBufGrowInternal(buf, len);
     if (buf->error != 0)
         return(-1);
-    return((int) ret);
+    return(ret > INT_MAX ? INT_MAX : ret);
 }
 
 /**
@@ -542,7 +542,7 @@ xmlBufDump(FILE *file, xmlBufPtr buf) {
     CHECK_COMPAT(buf)
     if (file == NULL)
 	file = stdout;
-    ret = fwrite(buf->content, sizeof(xmlChar), buf->use, file);
+    ret = fwrite(buf->content, 1, buf->use, file);
     return(ret);
 }
 
@@ -868,7 +868,7 @@ xmlBufAdd(xmlBufPtr buf, const xmlChar *str, int len) {
         }
     }
 
-    memmove(&buf->content[buf->use], str, len*sizeof(xmlChar));
+    memmove(&buf->content[buf->use], str, len);
     buf->use += len;
     buf->content[buf->use] = 0;
     UPDATE_COMPAT(buf)
@@ -1047,11 +1047,11 @@ xmlBufBackToBuffer(xmlBufPtr buf) {
          * Keep the buffer but provide a truncated size value.
          */
         xmlBufOverflowError(buf, "Allocated size too big for xmlBuffer");
-        ret->use = (int) buf->use;
+        ret->use = buf->use;
         ret->size = INT_MAX;
     } else {
-        ret->use = (int) buf->use;
-        ret->size = (int) buf->size;
+        ret->use = buf->use;
+        ret->size = buf->size;
     }
     ret->alloc = buf->alloc;
     ret->content = buf->content;
