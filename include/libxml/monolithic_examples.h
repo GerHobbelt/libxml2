@@ -15,7 +15,6 @@ extern int xml_runtest_main(int argc, const char** argv);
 extern int xml_runxmlconfig_main(int argc, const char** argv);
 extern int xml_schematron_main(int argc, const char** argv);
 extern int xml_testapi_main(int argc, const char** argv);
-extern int xml_testAutomata_main(int argc, const char** argv);
 extern int xml_testC14N_main(int argc, const char** argv);
 extern int xml_testchar_main(int argc, const char** argv);
 extern int xml_testdict_main(int argc, const char** argv);
