@@ -87,6 +87,14 @@ my_gettimeofday(struct timeval *tvp, void *tzp)
 #ifndef HAVE_GETTIMEOFDAY
 #if defined (WIN32) || defined (_WIN32)
 #include <assert.h>
+#include <time.h>
+#include <windows.h>
+
+struct timezone
+{
+	int  tz_minuteswest; /* minutes W of Greenwich */
+	int  tz_dsttime;     /* type of dst correction */
+};
 
 /* adapted from code ripped from Curl mailing list & PostgreSQL sources */
 
