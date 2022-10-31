@@ -343,7 +343,7 @@ static int
 xmlModulePlatformSymbol(void *handle, const char *name, void **symbol)
 {
 XML_IGNORE_FPTR_CAST_WARNINGS
-    *symbol = GetProcAddress(handle, name);
+    *symbol = (void *)GetProcAddress(handle, name);
     return (NULL == *symbol) ? -1 : 0;
 XML_POP_WARNINGS
 }
