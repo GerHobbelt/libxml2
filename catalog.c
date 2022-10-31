@@ -2192,7 +2192,6 @@ xmlParseSGMLCatalogPubid(const xmlChar *cur, xmlChar **id) {
     int len = 0;
     int size = 50;
     xmlChar stop;
-    int count = 0;
 
     *id = NULL;
 
@@ -2226,7 +2225,6 @@ xmlParseSGMLCatalogPubid(const xmlChar *cur, xmlChar **id) {
 	    buf = tmp;
 	}
 	buf[len++] = *cur;
-	count++;
 	NEXT;
     }
     buf[len] = 0;
