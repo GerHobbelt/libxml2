@@ -42,6 +42,9 @@
 
 #include "private/buf.h"
 #include "private/tree.h"
+#ifdef LIBXML_XINCLUDE_ENABLED
+#include "private/xinclude.h"
+#endif
 
 #include <libxml/monolithic_examples.h>
 
@@ -1458,6 +1461,7 @@ node_found:
 	    reader->xincctxt = xmlXIncludeNewContext(reader->ctxt->myDoc);
 	    xmlXIncludeSetFlags(reader->xincctxt,
 	                        reader->parserFlags & (~XML_PARSE_NOXINCNODE));
+            xmlXIncludeSetStreamingMode(reader->xincctxt, 1);
 	}
 	/*
 	 * expand that node and process it

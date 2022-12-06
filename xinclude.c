@@ -30,6 +30,7 @@
 #include "private/buf.h"
 #include "private/error.h"
 #include "private/tree.h"
+#include "private/xinclude.h"
 
 #define XINCLUDE_MAX_DEPTH 40
 
@@ -103,6 +104,7 @@ struct _xmlXIncludeCtxt {
 
     unsigned long    incTotal; /* total number of processed inclusions */
     int			depth; /* recursion depth */
+    int		     isStream; /* streaming mode */
 };
 
 static xmlXIncludeRefPtr
@@ -601,17 +603,19 @@ xmlXIncludeRecurseDoc(xmlXIncludeCtxtPtr ctxt, xmlDocPtr doc,
 	              const xmlURL url ATTRIBUTE_UNUSED) {
     xmlDocPtr oldDoc;
     xmlXIncludeRefPtr *oldIncTab;
-    int oldIncMax, oldIncNr;
+    int oldIncMax, oldIncNr, oldIsStream;
     int i;
 
     oldDoc = ctxt->doc;
     oldIncMax = ctxt->incMax;
     oldIncNr = ctxt->incNr;
     oldIncTab = ctxt->incTab;
+    oldIsStream = ctxt->isStream;
     ctxt->doc = doc;
     ctxt->incMax = 0;
     ctxt->incNr = 0;
     ctxt->incTab = NULL;
+    ctxt->isStream = 0;
 
     xmlXIncludeDoProcess(ctxt, xmlDocGetRootElement(doc));
 
@@ -625,6 +629,7 @@ xmlXIncludeRecurseDoc(xmlXIncludeCtxtPtr ctxt, xmlDocPtr doc,
     ctxt->incMax = oldIncMax;
     ctxt->incNr = oldIncNr;
     ctxt->incTab = oldIncTab;
+    ctxt->isStream = oldIsStream;
 }
 
 /************************************************************************
@@ -1247,9 +1252,10 @@ xmlXIncludeLoadDoc(xmlXIncludeCtxtPtr ctxt, const xmlChar *url,
     xmlXIncludeDocPtr cache;
     xmlDocPtr doc;
     xmlURIPtr uri;
-    xmlChar *URL;
+    xmlChar *URL = NULL;
     xmlChar *fragment = NULL;
     int i = 0;
+    int ret = -1;
 #ifdef LIBXML_XPTR_ENABLED
     int saveFlags;
 #endif
@@ -1264,7 +1270,7 @@ xmlXIncludeLoadDoc(xmlXIncludeCtxtPtr ctxt, const xmlChar *url,
     if (uri == NULL) {
 	xmlXIncludeErr(ctxt, ref->elem, XML_XINCLUDE_HREF_URI,
 		       "invalid value URI %s\n", url);
-	return(-1);
+        goto error;
     }
     if (uri->fragment != NULL) {
 	fragment = (xmlChar *) uri->fragment;
@@ -1279,9 +1285,7 @@ xmlXIncludeLoadDoc(xmlXIncludeCtxtPtr ctxt, const xmlChar *url,
     if (URL == NULL) {
         xmlXIncludeErr(ctxt, ref->elem, XML_XINCLUDE_HREF_URI,
                        "invalid value URI %s\n", url);
-	if (fragment != NULL)
-	    xmlFree(fragment);
-	return(-1);
+        goto error;
     }
 
     /*
@@ -1305,13 +1309,11 @@ xmlXIncludeLoadDoc(xmlXIncludeCtxtPtr ctxt, const xmlChar *url,
             if (ctxt->urlTab[i].expanding) {
                 xmlXIncludeErr(ctxt, ref->elem, XML_XINCLUDE_RECURSION,
                                "inclusion loop detected\n", NULL);
-                return(-1);
+                goto error;
             }
 	    doc = ctxt->urlTab[i].doc;
-            if (doc == NULL) {
-                xmlFree(URL);
-                return(-1);
-            }
+            if (doc == NULL)
+                goto error;
 	    goto loaded;
 	}
     }
@@ -1348,7 +1350,7 @@ xmlXIncludeLoadDoc(xmlXIncludeCtxtPtr ctxt, const xmlChar *url,
         if (tmp == NULL) {
             xmlXIncludeErrMemory(ctxt, ref->elem,
                                  "growing XInclude URL table");
-            return(-1);
+            goto error;
         }
         ctxt->urlMax = newSize;
         ctxt->urlTab = tmp;
@@ -1358,12 +1360,8 @@ xmlXIncludeLoadDoc(xmlXIncludeCtxtPtr ctxt, const xmlChar *url,
     cache->url = xmlStrdup(URL);
     cache->expanding = 0;
 
-    if (doc == NULL) {
-	xmlFree(URL);
-	if (fragment != NULL)
-	    xmlFree(fragment);
-	return(-1);
-    }
+    if (doc == NULL)
+        goto error;
     /*
      * It's possible that the requested URL has been mapped to a
      * completely different location (e.g. through a catalog entry).
@@ -1414,13 +1412,18 @@ loaded:
 	xmlXPathContextPtr xptrctxt;
 	xmlNodeSetPtr set;
 
+        if (ctxt->isStream && doc == ctxt->doc) {
+	    xmlXIncludeErr(ctxt, ref->elem, XML_XINCLUDE_XPTR_FAILED,
+			   "XPointer expressions not allowed in streaming"
+                           " mode\n", NULL);
+            goto error;
+        }
+
 	xptrctxt = xmlXPtrNewContext(doc, NULL, NULL);
 	if (xptrctxt == NULL) {
 	    xmlXIncludeErr(ctxt, ref->elem, XML_XINCLUDE_XPTR_FAILED,
 			   "could not create XPointer context\n", NULL);
-	    xmlFree(URL);
-	    xmlFree(fragment);
-	    return(-1);
+            goto error;
 	}
 	xptr = xmlXPtrEval(fragment, xptrctxt);
 	if (xptr == NULL) {
@@ -1428,9 +1431,7 @@ loaded:
 			   "XPointer evaluation failed: #%s\n",
 			   fragment);
 	    xmlXPathFreeContext(xptrctxt);
-	    xmlFree(URL);
-	    xmlFree(fragment);
-	    return(-1);
+            goto error;
 	}
 	switch (xptr->type) {
 	    case XPATH_UNDEFINED:
@@ -1447,17 +1448,13 @@ loaded:
 			       fragment);
                 xmlXPathFreeObject(xptr);
 		xmlXPathFreeContext(xptrctxt);
-		xmlFree(URL);
-		xmlFree(fragment);
-		return(-1);
+                goto error;
 	    case XPATH_NODESET:
 	        if ((xptr->nodesetval == NULL) ||
 		    (xptr->nodesetval->nodeNr <= 0)) {
                     xmlXPathFreeObject(xptr);
 		    xmlXPathFreeContext(xptrctxt);
-		    xmlFree(URL);
-		    xmlFree(fragment);
-		    return(-1);
+                    goto error;
 		}
 
 #ifdef LIBXML_XPTR_LOCS_ENABLED
@@ -1519,7 +1516,6 @@ loaded:
         ref->inc = xmlXIncludeCopyXPointer(ctxt, xptr);
         xmlXPathFreeObject(xptr);
 	xmlXPathFreeContext(xptrctxt);
-	xmlFree(fragment);
     }
 #endif
 
@@ -1605,8 +1601,12 @@ loaded:
 	    xmlFree(base);
 	}
     }
+    ret = 0;
+
+error:
     xmlFree(URL);
-    return(0);
+    xmlFree(fragment);
+    return(ret);
 }
 
 /**
@@ -2227,7 +2227,7 @@ xmlXIncludeDoProcess(xmlXIncludeCtxtPtr ctxt, xmlNodePtr tree) {
     xmlXIncludeRefPtr ref;
     xmlNodePtr cur;
     int ret = 0;
-    int i;
+    int i, start;
 
     if ((tree == NULL) || (tree->type == XML_NAMESPACE_DECL))
 	return(-1);
@@ -2237,6 +2237,7 @@ xmlXIncludeDoProcess(xmlXIncludeCtxtPtr ctxt, xmlNodePtr tree) {
     /*
      * First phase: lookup the elements in the document
      */
+    start = ctxt->incNr;
     cur = tree;
     do {
 	/* TODO: need to work on entities -> stack */
@@ -2247,7 +2248,7 @@ xmlXIncludeDoProcess(xmlXIncludeCtxtPtr ctxt, xmlNodePtr tree) {
              * of replacements.
              */
             if (ctxt->incTotal >= 20)
-                return(-1);
+                break;
 #endif
             ctxt->incTotal++;
             ref = xmlXIncludeExpandNode(ctxt, cur);
@@ -2276,13 +2277,13 @@ xmlXIncludeDoProcess(xmlXIncludeCtxtPtr ctxt, xmlNodePtr tree) {
     /*
      * Second phase: extend the original document infoset.
      */
-    for (i = 0; i < ctxt->incNr; i++) {
+    for (i = start; i < ctxt->incNr; i++) {
 	if (ctxt->incTab[i]->replace != 0) {
             if ((ctxt->incTab[i]->inc != NULL) ||
                 (ctxt->incTab[i]->emptyFb != 0)) {	/* (empty fallback) */
                 xmlXIncludeIncludeNode(ctxt, ctxt->incTab[i]);
-                ctxt->incTab[i]->replace = 0;
             }
+            ctxt->incTab[i]->replace = 0;
         } else {
             /*
              * Ignore includes which were added indirectly, for example
@@ -2294,6 +2295,18 @@ xmlXIncludeDoProcess(xmlXIncludeCtxtPtr ctxt, xmlNodePtr tree) {
             }
         }
 	ret++;
+    }
+
+    if (ctxt->isStream) {
+        /*
+         * incTab references nodes which will eventually be deleted in
+         * streaming mode. The table is only required for XPointer
+         * expressions which aren't allowed in streaming mode.
+         */
+        for (i = 0;i < ctxt->incNr;i++) {
+            xmlXIncludeFreeRef(ctxt->incTab[i]);
+        }
+        ctxt->incNr = 0;
     }
 
     return(ret);
@@ -2313,6 +2326,23 @@ xmlXIncludeSetFlags(xmlXIncludeCtxtPtr ctxt, int flags) {
     if (ctxt == NULL)
         return(-1);
     ctxt->parseFlags = flags;
+    return(0);
+}
+
+/**
+ * xmlXIncludeSetStreamingMode:
+ * @ctxt:  an XInclude processing context
+ * @mode:  whether streaming mode should be enabled
+ *
+ * In streaming mode, XPointer expressions aren't allowed.
+ *
+ * Returns 0 in case of success and -1 in case of error.
+ */
+int
+xmlXIncludeSetStreamingMode(xmlXIncludeCtxtPtr ctxt, int mode) {
+    if (ctxt == NULL)
+        return(-1);
+    ctxt->isStream = !!mode;
     return(0);
 }
 
