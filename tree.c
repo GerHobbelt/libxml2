@@ -1506,9 +1506,9 @@ out:
  */
 xmlNodePtr
 xmlStringGetNodeList(const xmlDoc *doc, const xmlChar *value) {
-    xmlNodePtr ret = NULL, last = NULL;
+    xmlNodePtr ret = NULL, head = NULL, last = NULL;
     xmlNodePtr node;
-    xmlChar *val;
+    xmlChar *val = NULL;
     const xmlChar *cur = value;
     const xmlChar *q;
     xmlEntityPtr ent;
@@ -1606,14 +1606,12 @@ xmlStringGetNodeList(const xmlDoc *doc, const xmlChar *value) {
 			 */
 			if (!xmlBufIsEmpty(buf)) {
 			    node = xmlNewDocText(doc, NULL);
-			    if (node == NULL) {
-				if (val != NULL) xmlFree(val);
-				goto out;
-			    }
+                            if (node == NULL)
+                                goto out;
 			    node->content = xmlBufDetach(buf);
 
 			    if (last == NULL) {
-				last = ret = node;
+				last = head = node;
 			    } else {
 				last = xmlAddNextSibling(last, node);
 			    }
@@ -1623,11 +1621,9 @@ xmlStringGetNodeList(const xmlDoc *doc, const xmlChar *value) {
 			 * Create a new REFERENCE_REF node
 			 */
 			node = xmlNewReference(doc, val);
-			if (node == NULL) {
-			    if (val != NULL) xmlFree(val);
+			if (node == NULL)
 			    goto out;
-			}
-			else if ((ent != NULL) && (ent->children == NULL)) {
+			if ((ent != NULL) && (ent->children == NULL)) {
 			    xmlNodePtr temp;
 
                             /* Set to non-NULL value to avoid recursion. */
@@ -1643,12 +1639,13 @@ xmlStringGetNodeList(const xmlDoc *doc, const xmlChar *value) {
 			    }
 			}
 			if (last == NULL) {
-			    last = ret = node;
+			    last = head = node;
 			} else {
 			    last = xmlAddNextSibling(last, node);
 			}
 		    }
 		    xmlFree(val);
+                    val = NULL;
 		}
 		cur++;
 		q = cur;
@@ -1667,7 +1664,7 @@ xmlStringGetNodeList(const xmlDoc *doc, const xmlChar *value) {
 	} else
 	    cur++;
     }
-    if ((cur != q) || (ret == NULL)) {
+    if ((cur != q) || (head == NULL)) {
         /*
 	 * Handle the last piece of text.
 	 */
@@ -1676,21 +1673,24 @@ xmlStringGetNodeList(const xmlDoc *doc, const xmlChar *value) {
 
     if (!xmlBufIsEmpty(buf)) {
 	node = xmlNewDocText(doc, NULL);
-        if (node == NULL) {
-            xmlBufFree(buf);
-            return(NULL);
-        }
+        if (node == NULL)
+            goto out;
 	node->content = xmlBufDetach(buf);
 
 	if (last == NULL) {
-	    ret = node;
+	    head = node;
 	} else {
 	    xmlAddNextSibling(last, node);
 	}
     }
 
+    ret = head;
+    head = NULL;
+
 out:
     xmlBufFree(buf);
+    if (val != NULL) xmlFree(val);
+    if (head != NULL) xmlFreeNodeList(head);
     return(ret);
 }
 
