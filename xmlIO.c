@@ -734,20 +734,6 @@ xmlCheckFilename (const char *path)
 }
 
 /**
- * xmlInputReadCallbackNop:
- *
- * No Operation xmlInputReadCallback function, does nothing.
- *
- * Returns zero
- */
-int
-xmlInputReadCallbackNop(void *context ATTRIBUTE_UNUSED,
-                        char *buffer ATTRIBUTE_UNUSED,
-                        int len ATTRIBUTE_UNUSED) {
-    return(0);
-}
-
-/**
  * xmlFdRead:
  * @context:  the I/O context
  * @buffer:  where to drop data
@@ -2963,7 +2949,7 @@ xmlParserInputBufferCreateMem(const char *mem, int size, xmlCharEncoding enc) {
     ret = xmlAllocParserInputBuffer(enc);
     if (ret != NULL) {
         ret->context = (void *) mem;
-	ret->readcallback = xmlInputReadCallbackNop;
+	ret->readcallback = NULL;
 	ret->closecallback = NULL;
 	errcode = xmlBufAdd(ret->buffer, (const xmlChar *) mem, size);
 	if (errcode != 0) {
@@ -3239,41 +3225,41 @@ endOfInput (void * context ATTRIBUTE_UNUSED,
  */
 int
 xmlParserInputBufferGrow(xmlParserInputBufferPtr in, int len) {
-    char *buffer = NULL;
+    xmlBufPtr buf;
     int res = 0;
-    int nbchars = 0;
 
     if ((in == NULL) || (in->error)) return(-1);
     if ((len <= MINLEN) && (len != 4))
         len = MINLEN;
 
-    if (xmlBufAvail(in->buffer) <= 0) {
-	xmlIOErr(XML_IO_BUFFER_FULL, NULL);
-	in->error = XML_IO_BUFFER_FULL;
-	return(-1);
+    if (in->encoder == NULL) {
+        if (in->readcallback == NULL)
+            return(0);
+        buf = in->buffer;
+    } else {
+        if (in->raw == NULL) {
+	    in->raw = xmlBufCreate();
+	}
+        buf = in->raw;
     }
-
-    if (xmlBufGrow(in->buffer, len + 1) < 0) {
-        xmlIOErrMemory("growing input buffer");
-        in->error = XML_ERR_NO_MEMORY;
-        return(-1);
-    }
-    buffer = (char *)xmlBufEnd(in->buffer);
 
     /*
      * Call the read method for this I/O type.
      */
     if (in->readcallback != NULL) {
-	res = in->readcallback(in->context, &buffer[0], len);
+        if (xmlBufGrow(buf, len + 1) < 0) {
+            xmlIOErrMemory("growing input buffer");
+            in->error = XML_ERR_NO_MEMORY;
+            return(-1);
+        }
+
+	res = in->readcallback(in->context, (char *)xmlBufEnd(buf), len);
 	if (res <= 0)
 	    in->readcallback = endOfInput;
-    } else {
-	xmlIOErr(XML_IO_NO_INPUT, NULL);
-	in->error = XML_IO_NO_INPUT;
-	return(-1);
-    }
-    if (res < 0) {
-	return(-1);
+        if (res < 0)
+            return(-1);
+
+        xmlBufAddLen(buf, res);
     }
 
     /*
@@ -3286,41 +3272,27 @@ xmlParserInputBufferGrow(xmlParserInputBufferPtr in, int len) {
 #endif
     }
 
-    len = res;
     if (in->encoder != NULL) {
         unsigned int use;
-
-        /*
-	 * Store the data in the incoming raw buffer
-	 */
-        if (in->raw == NULL) {
-	    in->raw = xmlBufCreate();
-	}
-	res = xmlBufAdd(in->raw, (const xmlChar *) buffer, len);
-	if (res != 0)
-	    return(-1);
 
 	/*
 	 * convert as much as possible to the parser reading buffer.
 	 */
-	use = xmlBufUse(in->raw);
-	nbchars = xmlCharEncInput(in, 1);
-	if (nbchars < 0) {
+	use = xmlBufUse(buf);
+	res = xmlCharEncInput(in, 1);
+	if (res < 0) {
 	    xmlIOErr(XML_IO_ENCODER, NULL);
 	    in->error = XML_IO_ENCODER;
 	    return(-1);
 	}
-	in->rawconsumed += (use - xmlBufUse(in->raw));
-    } else {
-	nbchars = len;
-        xmlBufAddLen(in->buffer, nbchars);
+	in->rawconsumed += (use - xmlBufUse(buf));
     }
 #ifdef DEBUG_INPUT
     xmlGenericError(xmlGenericErrorContext,
 	    "I/O: read %d chars, buffer %d\n",
             nbchars, xmlBufUse(in->buffer));
 #endif
-    return(nbchars);
+    return(res);
 }
 
 /**
@@ -3337,13 +3309,7 @@ xmlParserInputBufferGrow(xmlParserInputBufferPtr in, int len) {
  */
 int
 xmlParserInputBufferRead(xmlParserInputBufferPtr in, int len) {
-    if ((in == NULL) || (in->error)) return(-1);
-    if (in->readcallback != NULL)
-	return(xmlParserInputBufferGrow(in, len));
-    else if (xmlBufGetAllocationScheme(in->buffer) == XML_BUFFER_ALLOC_IMMUTABLE)
-	return(0);
-    else
-        return(-1);
+    return(xmlParserInputBufferGrow(in, len));
 }
 
 #ifdef LIBXML_OUTPUT_ENABLED
