@@ -76,6 +76,7 @@
 #endif
 
 #include "private/buf.h"
+#include "private/dict.h"
 #include "private/enc.h"
 #include "private/error.h"
 #include "private/globals.h"
@@ -14495,10 +14496,10 @@ xmlInitParser(void) {
     __xmlGlobalInitMutexLock();
     if (xmlParserInitialized == 0) {
 #endif
-	xmlInitThreads();
+	xmlInitThreadsInternal();
 	xmlInitGlobalsInternal();
 	xmlInitMemoryInternal();
-        xmlInitializeDict();
+        __xmlInitializeDict();
 	xmlInitCharEncodingHandlers();
 	xmlRegisterDefaultInputCallbacks();
 #ifdef LIBXML_OUTPUT_ENABLED
@@ -14545,7 +14546,7 @@ xmlCleanupParser(void) {
 #ifdef LIBXML_CATALOG_ENABLED
     xmlCatalogCleanup();
 #endif
-    xmlDictCleanup();
+    xmlCleanupDictInternal();
     xmlCleanupInputCallbacks();
 #ifdef LIBXML_OUTPUT_ENABLED
     xmlCleanupOutputCallbacks();
@@ -14555,7 +14556,7 @@ xmlCleanupParser(void) {
     xmlRelaxNGCleanupTypes();
 #endif
     xmlCleanupGlobalsInternal();
-    xmlCleanupThreads(); /* must be last if called not from the main thread */
+    xmlCleanupThreadsInternal();
     xmlCleanupMemoryInternal();
     xmlParserInitialized = 0;
 }

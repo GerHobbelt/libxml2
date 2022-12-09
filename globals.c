@@ -40,7 +40,7 @@
 /*
  * Mutex to protect "ForNewThreads" variables
  */
-static xmlMutexPtr xmlThrDefMutex = NULL;
+static xmlMutex xmlThrDefMutex;
 
 /**
  * xmlInitGlobals:
@@ -57,8 +57,7 @@ void xmlInitGlobals(void) {
  * Additional initialisation for multi-threading
  */
 void xmlInitGlobalsInternal(void) {
-    if (xmlThrDefMutex == NULL)
-        xmlThrDefMutex = xmlNewMutex();
+    xmlInitMutex(&xmlThrDefMutex);
 }
 
 /************************************************************************
@@ -502,13 +501,7 @@ xmlInitializeGlobalState(xmlGlobalStatePtr gs)
 	    (void *) gs, xmlGetThreadId());
 #endif
 
-    /*
-     * Perform initialization as required by libxml
-     */
-    if (xmlThrDefMutex == NULL)
-        xmlInitGlobalsInternal();
-
-    xmlMutexLock(xmlThrDefMutex);
+    xmlMutexLock(&xmlThrDefMutex);
 
 #if defined(LIBXML_HTML_ENABLED) && defined(LIBXML_LEGACY_ENABLED) && defined(LIBXML_SAX1_ENABLED)
     inithtmlDefaultSAXHandler(&gs->htmlDefaultSAXHandler);
@@ -563,7 +556,7 @@ xmlInitializeGlobalState(xmlGlobalStatePtr gs)
 	gs->xmlOutputBufferCreateFilenameValue = xmlOutputBufferCreateFilenameValueThrDef;
     memset(&gs->xmlLastError, 0, sizeof(xmlError));
 
-    xmlMutexUnlock(xmlThrDefMutex);
+    xmlMutexUnlock(&xmlThrDefMutex);
 }
 
 /**
@@ -585,30 +578,27 @@ void xmlCleanupGlobals(void) {
 void xmlCleanupGlobalsInternal(void) {
     xmlResetError(&xmlLastError);
 
-    if (xmlThrDefMutex != NULL) {
-	xmlFreeMutex(xmlThrDefMutex);
-	xmlThrDefMutex = NULL;
-    }
+    xmlCleanupMutex(&xmlThrDefMutex);
     __xmlGlobalInitMutexDestroy();
 }
 
 void
 xmlThrDefSetGenericErrorFunc(void *ctx, xmlGenericErrorFunc handler) {
-    xmlMutexLock(xmlThrDefMutex);
+    xmlMutexLock(&xmlThrDefMutex);
     xmlGenericErrorContextThrDef = ctx;
     if (handler != NULL)
 	xmlGenericErrorThrDef = handler;
     else
 	xmlGenericErrorThrDef = xmlGenericErrorDefaultFunc;
-    xmlMutexUnlock(xmlThrDefMutex);
+    xmlMutexUnlock(&xmlThrDefMutex);
 }
 
 void
 xmlThrDefSetStructuredErrorFunc(void *ctx, xmlStructuredErrorFunc handler) {
-    xmlMutexLock(xmlThrDefMutex);
+    xmlMutexLock(&xmlThrDefMutex);
     xmlStructuredErrorContextThrDef = ctx;
     xmlStructuredErrorThrDef = handler;
-    xmlMutexUnlock(xmlThrDefMutex);
+    xmlMutexUnlock(&xmlThrDefMutex);
 }
 
 /**
@@ -634,12 +624,12 @@ xmlThrDefRegisterNodeDefault(xmlRegisterNodeFunc func)
 {
     xmlRegisterNodeFunc old;
 
-    xmlMutexLock(xmlThrDefMutex);
+    xmlMutexLock(&xmlThrDefMutex);
     old = xmlRegisterNodeDefaultValueThrDef;
 
     __xmlRegisterCallbacks = 1;
     xmlRegisterNodeDefaultValueThrDef = func;
-    xmlMutexUnlock(xmlThrDefMutex);
+    xmlMutexUnlock(&xmlThrDefMutex);
 
     return(old);
 }
@@ -667,12 +657,12 @@ xmlThrDefDeregisterNodeDefault(xmlDeregisterNodeFunc func)
 {
     xmlDeregisterNodeFunc old;
 
-    xmlMutexLock(xmlThrDefMutex);
+    xmlMutexLock(&xmlThrDefMutex);
     old = xmlDeregisterNodeDefaultValueThrDef;
 
     __xmlRegisterCallbacks = 1;
     xmlDeregisterNodeDefaultValueThrDef = func;
-    xmlMutexUnlock(xmlThrDefMutex);
+    xmlMutexUnlock(&xmlThrDefMutex);
 
     return(old);
 }
@@ -682,14 +672,14 @@ xmlThrDefParserInputBufferCreateFilenameDefault(xmlParserInputBufferCreateFilena
 {
     xmlParserInputBufferCreateFilenameFunc old;
 
-    xmlMutexLock(xmlThrDefMutex);
+    xmlMutexLock(&xmlThrDefMutex);
     old = xmlParserInputBufferCreateFilenameValueThrDef;
     if (old == NULL) {
 		old = __xmlParserInputBufferCreateFilename;
 	}
 
     xmlParserInputBufferCreateFilenameValueThrDef = func;
-    xmlMutexUnlock(xmlThrDefMutex);
+    xmlMutexUnlock(&xmlThrDefMutex);
 
     return(old);
 }
@@ -699,7 +689,7 @@ xmlThrDefOutputBufferCreateFilenameDefault(xmlOutputBufferCreateFilenameFunc fun
 {
     xmlOutputBufferCreateFilenameFunc old;
 
-    xmlMutexLock(xmlThrDefMutex);
+    xmlMutexLock(&xmlThrDefMutex);
     old = xmlOutputBufferCreateFilenameValueThrDef;
 #ifdef LIBXML_OUTPUT_ENABLED
     if (old == NULL) {
@@ -707,7 +697,7 @@ xmlThrDefOutputBufferCreateFilenameDefault(xmlOutputBufferCreateFilenameFunc fun
 	}
 #endif
     xmlOutputBufferCreateFilenameValueThrDef = func;
-    xmlMutexUnlock(xmlThrDefMutex);
+    xmlMutexUnlock(&xmlThrDefMutex);
 
     return(old);
 }
@@ -810,10 +800,10 @@ __xmlBufferAllocScheme(void) {
 }
 xmlBufferAllocationScheme xmlThrDefBufferAllocScheme(xmlBufferAllocationScheme v) {
     xmlBufferAllocationScheme ret;
-    xmlMutexLock(xmlThrDefMutex);
+    xmlMutexLock(&xmlThrDefMutex);
     ret = xmlBufferAllocSchemeThrDef;
     xmlBufferAllocSchemeThrDef = v;
-    xmlMutexUnlock(xmlThrDefMutex);
+    xmlMutexUnlock(&xmlThrDefMutex);
     return ret;
 }
 
@@ -827,10 +817,10 @@ __xmlDefaultBufferSize(void) {
 }
 int xmlThrDefDefaultBufferSize(int v) {
     int ret;
-    xmlMutexLock(xmlThrDefMutex);
+    xmlMutexLock(&xmlThrDefMutex);
     ret = xmlDefaultBufferSizeThrDef;
     xmlDefaultBufferSizeThrDef = v;
-    xmlMutexUnlock(xmlThrDefMutex);
+    xmlMutexUnlock(&xmlThrDefMutex);
     return ret;
 }
 
@@ -864,10 +854,10 @@ __xmlDoValidityCheckingDefaultValue(void) {
 }
 int xmlThrDefDoValidityCheckingDefaultValue(int v) {
     int ret;
-    xmlMutexLock(xmlThrDefMutex);
+    xmlMutexLock(&xmlThrDefMutex);
     ret = xmlDoValidityCheckingDefaultValueThrDef;
     xmlDoValidityCheckingDefaultValueThrDef = v;
-    xmlMutexUnlock(xmlThrDefMutex);
+    xmlMutexUnlock(&xmlThrDefMutex);
     return ret;
 }
 
@@ -917,10 +907,10 @@ __xmlGetWarningsDefaultValue(void) {
 }
 int xmlThrDefGetWarningsDefaultValue(int v) {
     int ret;
-    xmlMutexLock(xmlThrDefMutex);
+    xmlMutexLock(&xmlThrDefMutex);
     ret = xmlGetWarningsDefaultValueThrDef;
     xmlGetWarningsDefaultValueThrDef = v;
-    xmlMutexUnlock(xmlThrDefMutex);
+    xmlMutexUnlock(&xmlThrDefMutex);
     return ret;
 }
 
@@ -934,10 +924,10 @@ __xmlIndentTreeOutput(void) {
 }
 int xmlThrDefIndentTreeOutput(int v) {
     int ret;
-    xmlMutexLock(xmlThrDefMutex);
+    xmlMutexLock(&xmlThrDefMutex);
     ret = xmlIndentTreeOutputThrDef;
     xmlIndentTreeOutputThrDef = v;
-    xmlMutexUnlock(xmlThrDefMutex);
+    xmlMutexUnlock(&xmlThrDefMutex);
     return ret;
 }
 
@@ -951,10 +941,10 @@ __xmlTreeIndentString(void) {
 }
 const char * xmlThrDefTreeIndentString(const char * v) {
     const char * ret;
-    xmlMutexLock(xmlThrDefMutex);
+    xmlMutexLock(&xmlThrDefMutex);
     ret = xmlTreeIndentStringThrDef;
     xmlTreeIndentStringThrDef = v;
-    xmlMutexUnlock(xmlThrDefMutex);
+    xmlMutexUnlock(&xmlThrDefMutex);
     return ret;
 }
 
@@ -968,10 +958,10 @@ __xmlKeepBlanksDefaultValue(void) {
 }
 int xmlThrDefKeepBlanksDefaultValue(int v) {
     int ret;
-    xmlMutexLock(xmlThrDefMutex);
+    xmlMutexLock(&xmlThrDefMutex);
     ret = xmlKeepBlanksDefaultValueThrDef;
     xmlKeepBlanksDefaultValueThrDef = v;
-    xmlMutexUnlock(xmlThrDefMutex);
+    xmlMutexUnlock(&xmlThrDefMutex);
     return ret;
 }
 
@@ -985,10 +975,10 @@ __xmlLineNumbersDefaultValue(void) {
 }
 int xmlThrDefLineNumbersDefaultValue(int v) {
     int ret;
-    xmlMutexLock(xmlThrDefMutex);
+    xmlMutexLock(&xmlThrDefMutex);
     ret = xmlLineNumbersDefaultValueThrDef;
     xmlLineNumbersDefaultValueThrDef = v;
-    xmlMutexUnlock(xmlThrDefMutex);
+    xmlMutexUnlock(&xmlThrDefMutex);
     return ret;
 }
 
@@ -1002,10 +992,10 @@ __xmlLoadExtDtdDefaultValue(void) {
 }
 int xmlThrDefLoadExtDtdDefaultValue(int v) {
     int ret;
-    xmlMutexLock(xmlThrDefMutex);
+    xmlMutexLock(&xmlThrDefMutex);
     ret = xmlLoadExtDtdDefaultValueThrDef;
     xmlLoadExtDtdDefaultValueThrDef = v;
-    xmlMutexUnlock(xmlThrDefMutex);
+    xmlMutexUnlock(&xmlThrDefMutex);
     return ret;
 }
 
@@ -1019,10 +1009,10 @@ __xmlParserDebugEntities(void) {
 }
 int xmlThrDefParserDebugEntities(int v) {
     int ret;
-    xmlMutexLock(xmlThrDefMutex);
+    xmlMutexLock(&xmlThrDefMutex);
     ret = xmlParserDebugEntitiesThrDef;
     xmlParserDebugEntitiesThrDef = v;
-    xmlMutexUnlock(xmlThrDefMutex);
+    xmlMutexUnlock(&xmlThrDefMutex);
     return ret;
 }
 
@@ -1045,10 +1035,10 @@ __xmlPedanticParserDefaultValue(void) {
 }
 int xmlThrDefPedanticParserDefaultValue(int v) {
     int ret;
-    xmlMutexLock(xmlThrDefMutex);
+    xmlMutexLock(&xmlThrDefMutex);
     ret = xmlPedanticParserDefaultValueThrDef;
     xmlPedanticParserDefaultValueThrDef = v;
-    xmlMutexUnlock(xmlThrDefMutex);
+    xmlMutexUnlock(&xmlThrDefMutex);
     return ret;
 }
 
@@ -1062,10 +1052,10 @@ __xmlSaveNoEmptyTags(void) {
 }
 int xmlThrDefSaveNoEmptyTags(int v) {
     int ret;
-    xmlMutexLock(xmlThrDefMutex);
+    xmlMutexLock(&xmlThrDefMutex);
     ret = xmlSaveNoEmptyTagsThrDef;
     xmlSaveNoEmptyTagsThrDef = v;
-    xmlMutexUnlock(xmlThrDefMutex);
+    xmlMutexUnlock(&xmlThrDefMutex);
     return ret;
 }
 
@@ -1079,10 +1069,10 @@ __xmlSubstituteEntitiesDefaultValue(void) {
 }
 int xmlThrDefSubstituteEntitiesDefaultValue(int v) {
     int ret;
-    xmlMutexLock(xmlThrDefMutex);
+    xmlMutexLock(&xmlThrDefMutex);
     ret = xmlSubstituteEntitiesDefaultValueThrDef;
     xmlSubstituteEntitiesDefaultValueThrDef = v;
-    xmlMutexUnlock(xmlThrDefMutex);
+    xmlMutexUnlock(&xmlThrDefMutex);
     return ret;
 }
 
