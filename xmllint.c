@@ -2779,7 +2779,6 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
                 xmlFreeDtd(dtd);
                 return;
 	    }
-	    cvp->userData = NULL;
 	    cvp->error    = xmlGenericError;
 	    cvp->warning  = xmlGenericError;
 
@@ -2817,7 +2816,6 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 	if ((timing) && (!repeat)) {
 	    startTimer();
 	}
-	cvp->userData = NULL;
 	cvp->error    = xmlGenericError;
 	cvp->warning  = xmlGenericError;
 	if (!xmlValidateDocument(cvp, doc)) {
