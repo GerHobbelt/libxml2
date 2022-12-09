@@ -85,6 +85,7 @@
 #include "private/memory.h"
 #include "private/parser.h"
 #include "private/threads.h"
+#include "private/xpath.h"
 
 struct _xmlStartTag {
     const xmlChar *prefix;
@@ -14503,13 +14504,13 @@ xmlInitParser(void) {
 	xmlInitGlobalsInternal();
 	xmlInitMemoryInternal();
         __xmlInitializeDict();
-	xmlInitCharEncodingHandlers();
+	xmlInitEncodingInternal();
 	xmlRegisterDefaultInputCallbacks();
 #ifdef LIBXML_OUTPUT_ENABLED
 	xmlRegisterDefaultOutputCallbacks();
 #endif /* LIBXML_OUTPUT_ENABLED */
 #if defined(LIBXML_XPATH_ENABLED) || defined(LIBXML_SCHEMAS_ENABLED)
-	xmlXPathInit();
+	xmlInitXPathInternal();
 #endif
 	xmlParserInitialized = 1;
 #ifdef LIBXML_THREAD_ENABLED
