@@ -442,6 +442,8 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
 #ifndef XML_DEPRECATED
 #  if defined (IN_LIBXML) || (__GNUC__ * 100 + __GNUC_MINOR__ < 301)
 #    define XML_DEPRECATED
+#  elif defined (_MSC_VER) && (_MSC_VER >= 1400)
+#    define XML_DEPRECATED __declspec(deprecated)
 /* Available since at least GCC 3.1 */
 #  else
 #    define XML_DEPRECATED __attribute__((deprecated))
