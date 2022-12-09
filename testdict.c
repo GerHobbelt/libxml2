@@ -161,7 +161,8 @@ static int run_test2(xmlDictPtr parent) {
 	fprintf(stderr, "Out of memory while creating sub-dictionary\n");
 	exit(1);
     }
-    memset((void *)test2, 0, sizeof(test2)); /* [i_a] */
+    /* Cast to avoid buggy warning on MSVC. */
+    memset((void *) test2, 0, sizeof(test2));
 
     /*
      * Fill in NB_STRINGS_MIN, at this point the dictionary should not grow
@@ -324,7 +325,8 @@ static int run_test1(void) {
 	fprintf(stderr, "Out of memory while creating dictionary\n");
 	exit(1);
     }
-    memset((void *)test1, 0, sizeof(test1)); /* [i_a] */
+    /* Cast to avoid buggy warning on MSVC. */
+    memset((void *) test1, 0, sizeof(test1));
 
     /*
      * Fill in NB_STRINGS_MIN, at this point the dictionary should not grow
