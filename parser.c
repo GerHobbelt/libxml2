@@ -4666,7 +4666,7 @@ xmlParseCharDataComplex(xmlParserCtxtPtr ctxt) {
 	    }
 	}
     }
-    if ((CUR != 0) && (!IS_CHAR(cur))) {
+    if ((ctxt->input->cur < ctxt->input->end) && (!IS_CHAR(cur))) {
 	/* Generate the error and skip the offending character */
         xmlFatalErrMsgInt(ctxt, XML_ERR_INVALID_CHAR,
                           "PCDATA invalid Char value %d\n",
@@ -9856,22 +9856,20 @@ xmlParseCDSect(xmlParserCtxtPtr ctxt) {
     r = CUR_CHAR(rl);
     if (!IS_CHAR(r)) {
 	xmlFatalErr(ctxt, XML_ERR_CDATA_NOT_FINISHED, NULL);
-	ctxt->instate = XML_PARSER_CONTENT;
-        return;
+        goto out;
     }
     NEXTL(rl);
     s = CUR_CHAR(sl);
     if (!IS_CHAR(s)) {
 	xmlFatalErr(ctxt, XML_ERR_CDATA_NOT_FINISHED, NULL);
-	ctxt->instate = XML_PARSER_CONTENT;
-        return;
+        goto out;
     }
     NEXTL(sl);
     cur = CUR_CHAR(l);
     buf = (xmlChar *) xmlMallocAtomic(size);
     if (buf == NULL) {
 	xmlErrMemory(ctxt, NULL);
-	return;
+        goto out;
     }
     while (IS_CHAR(cur) &&
            ((r != ']') || (s != ']') || (cur != '>'))) {
@@ -9880,9 +9878,8 @@ xmlParseCDSect(xmlParserCtxtPtr ctxt) {
 
 	    tmp = (xmlChar *) xmlRealloc(buf, size * 2);
 	    if (tmp == NULL) {
-	        xmlFree(buf);
 		xmlErrMemory(ctxt, NULL);
-		return;
+                goto out;
 	    }
 	    buf = tmp;
 	    size *= 2;
@@ -9897,8 +9894,7 @@ xmlParseCDSect(xmlParserCtxtPtr ctxt) {
 	    SHRINK;
 	    GROW;
             if (ctxt->instate == XML_PARSER_EOF) {
-		xmlFree(buf);
-		return;
+                goto out;
             }
 	    count = 0;
 	}
@@ -9907,17 +9903,14 @@ xmlParseCDSect(xmlParserCtxtPtr ctxt) {
         if (len > maxLength) {
             xmlFatalErrMsg(ctxt, XML_ERR_CDATA_NOT_FINISHED,
                            "CData section too big found\n");
-            xmlFree(buf);
-            return;
+            goto out;
         }
     }
     buf[len] = 0;
-    ctxt->instate = XML_PARSER_CONTENT;
     if (cur != '>') {
 	xmlFatalErrMsgStr(ctxt, XML_ERR_CDATA_NOT_FINISHED,
 	                     "CData section not finished\n%.50s\n", buf);
-	xmlFree(buf);
-        return;
+        goto out;
     }
     NEXTL(l);
 
@@ -9930,6 +9923,10 @@ xmlParseCDSect(xmlParserCtxtPtr ctxt) {
 	else if (ctxt->sax->characters != NULL)
 	    ctxt->sax->characters(ctxt->userData, buf, len);
     }
+
+out:
+    if (ctxt->instate != XML_PARSER_EOF)
+        ctxt->instate = XML_PARSER_CONTENT;
     xmlFree(buf);
 }
 
@@ -11083,17 +11080,14 @@ xmlParseExtParsedEnt(xmlParserCtxtPtr ctxt) {
 static int
 xmlParseLookupChar(xmlParserCtxtPtr ctxt, int c) {
     const xmlChar *cur;
-    const xmlChar *end = ctxt->input->end;
 
     if (ctxt->checkIndex == 0) {
         cur = ctxt->input->cur + 1;
     } else {
         cur = ctxt->input->cur + ctxt->checkIndex;
     }
-    if (cur >= end)
-        return(0);
 
-    if (memchr(cur, c, end - cur) == NULL) {
+    if (memchr(cur, c, ctxt->input->end - cur) == NULL) {
         ctxt->checkIndex = ctxt->input->end - ctxt->input->cur;
         return(0);
     } else {
@@ -11115,18 +11109,17 @@ static const xmlChar *
 xmlParseLookupString(xmlParserCtxtPtr ctxt, size_t startDelta,
                      const char *str, size_t strLen) {
     const xmlChar *cur, *term;
-    const xmlChar *end = ctxt->input->end;
 
     if (ctxt->checkIndex == 0) {
         cur = ctxt->input->cur + startDelta;
     } else {
         cur = ctxt->input->cur + ctxt->checkIndex;
     }
-    if (cur >= end)
-        return(0);
 
     term = BAD_CAST strstr((const char *) cur, str);
     if (term == NULL) {
+        const xmlChar *end = ctxt->input->end;
+
         /* Rescan (strLen - 1) characters. */
         if ((size_t) (end - cur) < strLen)
             end = cur;
@@ -11797,7 +11790,19 @@ xmlParseTryOrFinish(xmlParserCtxtPtr ctxt, int terminate) {
 		 */
 		const xmlChar *term;
 
-		term = xmlParseLookupString(ctxt, 0, "]]>", 3);
+                if (terminate) {
+                    /*
+                     * Don't call xmlParseLookupString. If 'terminate'
+                     * is set, checkIndex is invalid.
+                     */
+                    term = BAD_CAST strstr((const char *) ctxt->input->cur,
+                                           "]]>");
+                    if (term == NULL)
+                        term = ctxt->input->end;
+                } else {
+		    term = xmlParseLookupString(ctxt, 0, "]]>", 3);
+                }
+
 		if (term == NULL) {
 		    int tmp;
 
