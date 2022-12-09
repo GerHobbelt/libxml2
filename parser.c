@@ -11083,14 +11083,17 @@ xmlParseExtParsedEnt(xmlParserCtxtPtr ctxt) {
 static int
 xmlParseLookupChar(xmlParserCtxtPtr ctxt, int c) {
     const xmlChar *cur;
+    const xmlChar *end = ctxt->input->end;
 
     if (ctxt->checkIndex == 0) {
         cur = ctxt->input->cur + 1;
     } else {
         cur = ctxt->input->cur + ctxt->checkIndex;
     }
+    if (cur >= end)
+        return(0);
 
-    if (memchr(cur, c, ctxt->input->end - cur) == NULL) {
+    if (memchr(cur, c, end - cur) == NULL) {
         ctxt->checkIndex = ctxt->input->end - ctxt->input->cur;
         return(0);
     } else {
@@ -11112,17 +11115,18 @@ static const xmlChar *
 xmlParseLookupString(xmlParserCtxtPtr ctxt, size_t startDelta,
                      const char *str, size_t strLen) {
     const xmlChar *cur, *term;
+    const xmlChar *end = ctxt->input->end;
 
     if (ctxt->checkIndex == 0) {
         cur = ctxt->input->cur + startDelta;
     } else {
         cur = ctxt->input->cur + ctxt->checkIndex;
     }
+    if (cur >= end)
+        return(0);
 
     term = BAD_CAST strstr((const char *) cur, str);
     if (term == NULL) {
-        const xmlChar *end = ctxt->input->end;
-
         /* Rescan (strLen - 1) characters. */
         if ((size_t) (end - cur) < strLen)
             end = cur;
@@ -11862,6 +11866,8 @@ xmlParseTryOrFinish(xmlParserCtxtPtr ctxt, int terminate) {
 		break;
 	    }
             case XML_PARSER_MISC:
+            case XML_PARSER_PROLOG:
+            case XML_PARSER_EPILOG:
 		SKIP_BLANKS;
 		if (ctxt->input->buf == NULL)
 		    avail = ctxt->input->length -
@@ -11884,7 +11890,6 @@ xmlParseTryOrFinish(xmlParserCtxtPtr ctxt, int terminate) {
 		    xmlParsePI(ctxt);
 		    if (ctxt->instate == XML_PARSER_EOF)
 			goto done;
-		    ctxt->instate = XML_PARSER_MISC;
 		} else if ((cur == '<') && (next == '!') &&
 		    (ctxt->input->cur[2] == '-') &&
 		    (ctxt->input->cur[3] == '-')) {
@@ -11898,8 +11903,8 @@ xmlParseTryOrFinish(xmlParserCtxtPtr ctxt, int terminate) {
 		    xmlParseComment(ctxt);
 		    if (ctxt->instate == XML_PARSER_EOF)
 			goto done;
-		    ctxt->instate = XML_PARSER_MISC;
-		} else if ((cur == '<') && (next == '!') &&
+		} else if ((ctxt->instate == XML_PARSER_MISC) &&
+                    (cur == '<') && (next == '!') &&
 		    (ctxt->input->cur[2] == 'D') &&
 		    (ctxt->input->cur[3] == 'O') &&
 		    (ctxt->input->cur[4] == 'C') &&
@@ -11942,103 +11947,10 @@ xmlParseTryOrFinish(xmlParserCtxtPtr ctxt, int terminate) {
 #endif
 		    }
 		} else if ((cur == '<') && (next == '!') &&
-		           (avail < 9)) {
+		           (avail <
+                            (ctxt->instate == XML_PARSER_MISC ? 9 : 4))) {
 		    goto done;
-		} else {
-		    ctxt->instate = XML_PARSER_START_TAG;
-#ifdef DEBUG_PUSH
-		    xmlGenericError(xmlGenericErrorContext,
-			    "PP: entering START_TAG\n");
-#endif
-		}
-		break;
-            case XML_PARSER_PROLOG:
-		SKIP_BLANKS;
-		if (ctxt->input->buf == NULL)
-		    avail = ctxt->input->length - (ctxt->input->cur - ctxt->input->base);
-		else
-		    avail = xmlBufUse(ctxt->input->buf->buffer) -
-                            (ctxt->input->cur - ctxt->input->base);
-		if (avail < 2)
-		    goto done;
-		cur = ctxt->input->cur[0];
-		next = ctxt->input->cur[1];
-	        if ((cur == '<') && (next == '?')) {
-		    if ((!terminate) &&
-                        (!xmlParseLookupString(ctxt, 2, "?>", 2)))
-			goto done;
-#ifdef DEBUG_PUSH
-		    xmlGenericError(xmlGenericErrorContext,
-			    "PP: Parsing PI\n");
-#endif
-		    xmlParsePI(ctxt);
-		    if (ctxt->instate == XML_PARSER_EOF)
-			goto done;
-		    ctxt->instate = XML_PARSER_PROLOG;
-		} else if ((cur == '<') && (next == '!') &&
-		    (ctxt->input->cur[2] == '-') && (ctxt->input->cur[3] == '-')) {
-		    if ((!terminate) &&
-		        (!xmlParseLookupString(ctxt, 4, "-->", 3)))
-			goto done;
-#ifdef DEBUG_PUSH
-		    xmlGenericError(xmlGenericErrorContext,
-			    "PP: Parsing Comment\n");
-#endif
-		    xmlParseComment(ctxt);
-		    if (ctxt->instate == XML_PARSER_EOF)
-			goto done;
-		    ctxt->instate = XML_PARSER_PROLOG;
-		} else if ((cur == '<') && (next == '!') &&
-		           (avail < 4)) {
-		    goto done;
-		} else {
-		    ctxt->instate = XML_PARSER_START_TAG;
-#ifdef DEBUG_PUSH
-		    xmlGenericError(xmlGenericErrorContext,
-			    "PP: entering START_TAG\n");
-#endif
-		}
-		break;
-            case XML_PARSER_EPILOG:
-		SKIP_BLANKS;
-		if (ctxt->input->buf == NULL)
-		    avail = ctxt->input->length - (ctxt->input->cur - ctxt->input->base);
-		else
-		    avail = xmlBufUse(ctxt->input->buf->buffer) -
-                            (ctxt->input->cur - ctxt->input->base);
-		if (avail < 2)
-		    goto done;
-		cur = ctxt->input->cur[0];
-		next = ctxt->input->cur[1];
-	        if ((cur == '<') && (next == '?')) {
-		    if ((!terminate) &&
-		        (!xmlParseLookupString(ctxt, 2, "?>", 2)))
-			goto done;
-#ifdef DEBUG_PUSH
-		    xmlGenericError(xmlGenericErrorContext,
-			    "PP: Parsing PI\n");
-#endif
-		    xmlParsePI(ctxt);
-		    if (ctxt->instate == XML_PARSER_EOF)
-			goto done;
-		    ctxt->instate = XML_PARSER_EPILOG;
-		} else if ((cur == '<') && (next == '!') &&
-		    (ctxt->input->cur[2] == '-') && (ctxt->input->cur[3] == '-')) {
-		    if ((!terminate) &&
-		        (!xmlParseLookupString(ctxt, 4, "-->", 3)))
-			goto done;
-#ifdef DEBUG_PUSH
-		    xmlGenericError(xmlGenericErrorContext,
-			    "PP: Parsing Comment\n");
-#endif
-		    xmlParseComment(ctxt);
-		    if (ctxt->instate == XML_PARSER_EOF)
-			goto done;
-		    ctxt->instate = XML_PARSER_EPILOG;
-		} else if ((cur == '<') && (next == '!') &&
-		           (avail < 4)) {
-		    goto done;
-		} else {
+		} else if (ctxt->instate == XML_PARSER_EPILOG) {
 		    xmlFatalErr(ctxt, XML_ERR_DOCUMENT_END, NULL);
 		    xmlHaltParser(ctxt);
 #ifdef DEBUG_PUSH
@@ -12048,6 +11960,12 @@ xmlParseTryOrFinish(xmlParserCtxtPtr ctxt, int terminate) {
 		    if ((ctxt->sax) && (ctxt->sax->endDocument != NULL))
 			ctxt->sax->endDocument(ctxt->userData);
 		    goto done;
+                } else {
+		    ctxt->instate = XML_PARSER_START_TAG;
+#ifdef DEBUG_PUSH
+		    xmlGenericError(xmlGenericErrorContext,
+			    "PP: entering START_TAG\n");
+#endif
 		}
 		break;
             case XML_PARSER_DTD: {
