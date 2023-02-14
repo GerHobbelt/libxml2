@@ -235,7 +235,7 @@ XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
  *
  * Whether the SGML Docbook support is configured in
  */
-#if 1
+#if 0
 #define LIBXML_DOCB_ENABLED
 #endif
 
