@@ -2953,7 +2953,7 @@ xmlParserInputBufferCreateMem(const char *mem, int size, xmlCharEncoding enc) {
 	ret->closecallback = NULL;
 	errcode = xmlBufAdd(ret->buffer, (const xmlChar *) mem, size);
 	if (errcode != 0) {
-	    xmlFree(ret);
+	    xmlFreeParserInputBuffer(ret);
 	    return(NULL);
 	}
     }
@@ -3235,7 +3235,8 @@ xmlParserInputBufferGrow(xmlParserInputBufferPtr in, int len) {
         if (res < 0)
             return(-1);
 
-        xmlBufAddLen(buf, res);
+        if (xmlBufAddLen(buf, res) < 0)
+            return(-1);
     }
 
     /*

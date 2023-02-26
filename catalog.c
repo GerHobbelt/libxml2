@@ -2990,6 +2990,8 @@ xmlACatalogAdd(xmlCatalogPtr catal, const xmlChar * type,
 	    if (catal->sgml == NULL)
 		catal->sgml = xmlHashCreate(10);
             res = xmlHashAddEntry(catal->sgml, orig, entry);
+            if (res < 0)
+                xmlFreeCatalogEntry(entry, NULL);
         }
     }
     return (res);

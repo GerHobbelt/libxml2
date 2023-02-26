@@ -525,6 +525,7 @@ XMLPUBFUN void
  */
 #define XML_SUBSTITUTE_BOTH	3
 
+XML_DEPRECATED
 XMLPUBFUN xmlChar *
 		xmlStringDecodeEntities		(xmlParserCtxtPtr ctxt,
 						 const xmlChar *str,
@@ -532,6 +533,7 @@ XMLPUBFUN xmlChar *
 						 xmlChar end,
 						 xmlChar  end2,
 						 xmlChar end3);
+XML_DEPRECATED
 XMLPUBFUN xmlChar *
 		xmlStringLenDecodeEntities	(xmlParserCtxtPtr ctxt,
 						 const xmlChar *str,
