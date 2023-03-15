@@ -16,7 +16,6 @@ extern int xml_runxmlconfig_main(int argc, const char** argv);
 extern int xml_schematron_main(int argc, const char** argv);
 extern int xml_testapi_main(int argc, const char** argv);
 extern int xml_testC14N_main(int argc, const char** argv);
-extern int xml_testchar_main(int argc, const char** argv);
 extern int xml_testdict_main(int argc, const char** argv);
 extern int xml_testhtml_main(int argc, const char** argv);
 extern int xml_testlimits_main(int argc, const char** argv);
@@ -36,6 +35,7 @@ extern int xml_test_xmlreader_main(int argc, const char** argv);
 
 extern int xml_testthreads_main(void);
 extern int xml_trionan_main(void);
+extern int xml_testchar_main(void);
 
 #ifdef __cplusplus
 }
