@@ -10,7 +10,6 @@
 int
 LLVMFuzzerInitialize(int *argc ATTRIBUTE_UNUSED,
                      char ***argv ATTRIBUTE_UNUSED) {
-    xmlFuzzMemSetup();
     xmlSetGenericErrorFunc(NULL, xmlFuzzErrorFunc);
 
     return 0;
@@ -19,29 +18,28 @@ LLVMFuzzerInitialize(int *argc ATTRIBUTE_UNUSED,
 int
 LLVMFuzzerTestOneInput(const char *data, size_t size) {
     xmlRegexpPtr regexp;
-    size_t maxAlloc;
-    const char *str1;
+    char *str[2] = { NULL, NULL };
+    size_t numStrings;
 
     if (size > 200)
         return(0);
 
-    xmlFuzzDataInit(data, size);
-    maxAlloc = xmlFuzzReadInt(4) % (size * 8 + 1);
-    str1 = xmlFuzzReadString(NULL);
+    numStrings = xmlFuzzExtractStrings(data, size, str, 2);
 
     /* CUR_SCHAR doesn't handle invalid UTF-8 and may cause infinite loops. */
-    if (xmlCheckUTF8(BAD_CAST str1) != 0) {
-        xmlFuzzMemSetLimit(maxAlloc);
-        regexp = xmlRegexpCompile(BAD_CAST str1);
+    if (xmlCheckUTF8(BAD_CAST str[0]) != 0) {
+        regexp = xmlRegexpCompile(BAD_CAST str[0]);
         /* xmlRegexpExec has pathological performance in too many cases. */
 #if 0
-        xmlRegexpExec(regexp, BAD_CAST str2);
+        if ((regexp != NULL) && (numStrings >= 2)) {
+            xmlRegexpExec(regexp, BAD_CAST str[1]);
+        }
 #endif
         xmlRegFreeRegexp(regexp);
     }
 
-    xmlFuzzMemSetLimit(0);
-    xmlFuzzDataCleanup();
+    xmlFree(str[0]);
+    xmlFree(str[1]);
     xmlResetLastError();
 
     return 0;

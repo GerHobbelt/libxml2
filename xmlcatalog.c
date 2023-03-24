@@ -509,9 +509,6 @@ int main(int argc, char **argv) {
 		    xmlACatalogDump(catal, stdout);
 		}
 		i += 2;
-
-                xmlFreeCatalog(catal);
-                xmlFreeCatalog(super);
 	    } else {
 		if ((!strcmp(argv[i], "-add")) ||
 		    (!strcmp(argv[i], "--add"))) {

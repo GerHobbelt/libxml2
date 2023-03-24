@@ -34,10 +34,6 @@
 #include <libxml/xmlregexp.h>
 #include <libxml/xmlschemastypes.h>
 
-#include "private/error.h"
-#include "private/regexp.h"
-#include "private/string.h"
-
 /*
  * The Relax-NG namespace
  */
@@ -2878,6 +2874,10 @@ xmlRelaxNGCleanupTypes(void)
  * This allows a faster execution and streamability at that level	*
  *									*
  ************************************************************************/
+
+/* from automata.c but not exported */
+void xmlAutomataSetFlags(xmlAutomataPtr am, int flags);
+
 
 static int xmlRelaxNGTryCompile(xmlRelaxNGParserCtxtPtr ctxt,
                                 xmlRelaxNGDefinePtr def);
@@ -7987,7 +7987,12 @@ xmlRelaxNGValidateCompiledCallback(xmlRegExecCtxtPtr exec ATTRIBUTE_UNUSED,
             ctxt->errNo = XML_RELAXNG_ERR_INTERNAL;
         return;
     }
-    if (define->type != XML_RELAXNG_ELEMENT) {
+    if ((ctxt == NULL) || (define == NULL)) {
+        fprintf(stderr, "callback on %s missing info\n", token);
+        if ((ctxt != NULL) && (ctxt->errNo == XML_RELAXNG_OK))
+            ctxt->errNo = XML_RELAXNG_ERR_INTERNAL;
+        return;
+    } else if (define->type != XML_RELAXNG_ELEMENT) {
         fprintf(stderr, "callback on %s define is not element\n", token);
         if (ctxt->errNo == XML_RELAXNG_OK)
             ctxt->errNo = XML_RELAXNG_ERR_INTERNAL;
@@ -8583,7 +8588,7 @@ xmlRelaxNGNormalize(xmlRelaxNGValidCtxtPtr ctxt, const xmlChar * str)
         tmp++;
     len = tmp - str;
 
-    ret = (xmlChar *) xmlMallocAtomic(len + 1);
+    ret = (xmlChar *) xmlMallocAtomic((len + 1) * sizeof(xmlChar));
     if (ret == NULL) {
         xmlRngVErrMemory(ctxt, "validating\n");
         return (NULL);

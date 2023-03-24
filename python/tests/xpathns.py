@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 #
 import libxml2
 
@@ -11,7 +11,6 @@ d = libxml2.parseDoc("<a:a xmlns:a='urn:whatevar'/>")
 res=""
 for n in d.xpathEval("//namespace::*"):
     res = res + n.serialize()
-del n
 d.freeDoc()
 
 if res != expect:
@@ -19,6 +18,7 @@ if res != expect:
     print(res)
 del res
 del d
+del n
 # Memory debug specific
 libxml2.cleanupParser()
 

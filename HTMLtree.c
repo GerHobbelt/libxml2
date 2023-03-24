@@ -25,10 +25,7 @@
 #include <libxml/globals.h>
 #include <libxml/uri.h>
 
-#include "private/buf.h"
-#include "private/error.h"
-#include "private/io.h"
-#include "private/save.h"
+#include "buf.h"
 
 /************************************************************************
  *									*
@@ -331,6 +328,11 @@ htmlIsBooleanAttr(const xmlChar *name)
 }
 
 #ifdef LIBXML_OUTPUT_ENABLED
+/*
+ * private routine exported from xmlIO.c
+ */
+xmlOutputBufferPtr
+xmlAllocOutputBufferInternal(xmlCharEncodingHandlerPtr encoder);
 /************************************************************************
  *									*
  *			Output error handlers				*
@@ -415,7 +417,7 @@ htmlBufNodeDumpFormat(xmlBufPtr buf, xmlDocPtr doc, xmlNodePtr cur,
         htmlSaveErrMemory("allocating HTML output buffer");
 	return (-1);
     }
-    memset(outbuf, 0, sizeof(xmlOutputBuffer));
+    memset(outbuf, 0, (size_t) sizeof(xmlOutputBuffer));
     outbuf->buffer = buf;
     outbuf->encoder = NULL;
     outbuf->writecallback = NULL;
@@ -620,6 +622,8 @@ htmlDocDumpMemory(xmlDocPtr cur, xmlChar**mem, int *size) {
  *									*
  ************************************************************************/
 
+void xmlNsListDumpOutput(xmlOutputBufferPtr buf, xmlNsPtr cur);
+
 /**
  * htmlDtdDumpOutput:
  * @buf:  the HTML buffer output
@@ -701,15 +705,10 @@ htmlAttrDumpOutput(xmlOutputBufferPtr buf, xmlDocPtr doc, xmlAttrPtr cur) {
 		while (IS_BLANK_CH(*tmp)) tmp++;
 
 		/*
-                 * Angle brackets are technically illegal in URIs, but they're
-                 * used in server side includes, for example. Curly brackets
-                 * are illegal as well and often used in templates.
-                 * Don't escape non-whitespace, printable ASCII chars for
-                 * improved interoperability. Only escape space, control
-                 * and non-ASCII chars.
+		 * the < and > have already been escaped at the entity level
+		 * And doing so here breaks server side includes
 		 */
-		escaped = xmlURIEscapeStr(tmp,
-                        BAD_CAST "\"#$%&+,/:;<=>?@[\\]^`{|}");
+		escaped = xmlURIEscapeStr(tmp, BAD_CAST"@/:=?;#%&,+<>");
 		if (escaped != NULL) {
 		    xmlBufWriteQuotedString(buf->buffer, escaped);
 		    xmlFree(escaped);

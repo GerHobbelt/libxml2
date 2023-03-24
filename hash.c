@@ -39,8 +39,6 @@
 #include <libxml/xmlerror.h>
 #include <libxml/globals.h>
 
-#include "private/dict.h"
-
 #define MAX_HASH_LEN 8
 
 /* #define DEBUG_GROW */
@@ -78,7 +76,6 @@ struct _xmlHashTable {
  */
 #ifdef __clang__
 ATTRIBUTE_NO_SANITIZE("unsigned-integer-overflow")
-ATTRIBUTE_NO_SANITIZE("unsigned-shift-base")
 #endif
 static unsigned long
 xmlHashComputeKey(xmlHashTablePtr table, const xmlChar *name,
@@ -112,7 +109,6 @@ xmlHashComputeKey(xmlHashTablePtr table, const xmlChar *name,
 
 #ifdef __clang__
 ATTRIBUTE_NO_SANITIZE("unsigned-integer-overflow")
-ATTRIBUTE_NO_SANITIZE("unsigned-shift-base")
 #endif
 static unsigned long
 xmlHashComputeQKey(xmlHashTablePtr table,
@@ -134,7 +130,7 @@ xmlHashComputeQKey(xmlHashTablePtr table,
 	while ((ch = *prefix++) != 0) {
 	    value = value ^ ((value << 5) + (value >> 3) + ch);
 	}
-	value = value ^ ((value << 5) + (value >> 3) + ':');
+	value = value ^ ((value << 5) + (value >> 3) + (unsigned long)':');
     }
     if (name != NULL) {
 	while ((ch = *name++) != 0) {
@@ -146,7 +142,7 @@ xmlHashComputeQKey(xmlHashTablePtr table,
 	while ((ch = *prefix2++) != 0) {
 	    value = value ^ ((value << 5) + (value >> 3) + ch);
 	}
-	value = value ^ ((value << 5) + (value >> 3) + ':');
+	value = value ^ ((value << 5) + (value >> 3) + (unsigned long)':');
     }
     if (name2 != NULL) {
 	while ((ch = *name2++) != 0) {
@@ -158,7 +154,7 @@ xmlHashComputeQKey(xmlHashTablePtr table,
 	while ((ch = *prefix3++) != 0) {
 	    value = value ^ ((value << 5) + (value >> 3) + ch);
 	}
-	value = value ^ ((value << 5) + (value >> 3) + ':');
+	value = value ^ ((value << 5) + (value >> 3) + (unsigned long)':');
     }
     if (name3 != NULL) {
 	while ((ch = *name3++) != 0) {
@@ -613,24 +609,8 @@ xmlHashAddEntry3(xmlHashTablePtr table, const xmlChar *name,
         entry->name3 = (xmlChar *) name3;
     } else {
 	entry->name = xmlStrdup(name);
-        if (entry->name == NULL) {
-            entry->name2 = NULL;
-            goto error;
-        }
-        if (name2 == NULL) {
-            entry->name2 = NULL;
-        } else {
-	    entry->name2 = xmlStrdup(name2);
-            if (entry->name2 == NULL)
-                goto error;
-        }
-        if (name3 == NULL) {
-            entry->name3 = NULL;
-        } else {
-	    entry->name3 = xmlStrdup(name3);
-            if (entry->name3 == NULL)
-                goto error;
-        }
+	entry->name2 = xmlStrdup(name2);
+	entry->name3 = xmlStrdup(name3);
     }
     entry->payload = userdata;
     entry->next = NULL;
@@ -646,13 +626,6 @@ xmlHashAddEntry3(xmlHashTablePtr table, const xmlChar *name,
 	xmlHashGrow(table, MAX_HASH_LEN * table->size);
 
     return(0);
-
-error:
-    xmlFree(entry->name2);
-    xmlFree(entry->name);
-    if (insert != NULL)
-        xmlFree(entry);
-    return(-1);
 }
 
 /**
@@ -766,24 +739,8 @@ xmlHashUpdateEntry3(xmlHashTablePtr table, const xmlChar *name,
         entry->name3 = (xmlChar *) name3;
     } else {
 	entry->name = xmlStrdup(name);
-        if (entry->name == NULL) {
-            entry->name2 = NULL;
-            goto error;
-        }
-        if (name2 == NULL) {
-            entry->name2 = NULL;
-        } else {
-	    entry->name2 = xmlStrdup(name2);
-            if (entry->name2 == NULL)
-                goto error;
-        }
-        if (name3 == NULL) {
-            entry->name3 = NULL;
-        } else {
-	    entry->name3 = xmlStrdup(name3);
-            if (entry->name3 == NULL)
-                goto error;
-        }
+	entry->name2 = xmlStrdup(name2);
+	entry->name3 = xmlStrdup(name3);
     }
     entry->payload = userdata;
     entry->next = NULL;
@@ -795,13 +752,6 @@ xmlHashUpdateEntry3(xmlHashTablePtr table, const xmlChar *name,
 	insert->next = entry;
     }
     return(0);
-
-error:
-    xmlFree(entry->name2);
-    xmlFree(entry->name);
-    if (insert != NULL)
-        xmlFree(entry);
-    return(-1);
 }
 
 /**

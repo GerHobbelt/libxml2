@@ -25,9 +25,9 @@ extern "C" {
 #endif
 
 XML_DEPRECATED
-XMLPUBFUN void xmlInitGlobals(void);
+XMLPUBFUN void XMLCALL xmlInitGlobals(void);
 XML_DEPRECATED
-XMLPUBFUN void xmlCleanupGlobals(void);
+XMLPUBFUN void XMLCALL xmlCleanupGlobals(void);
 
 /**
  * xmlParserInputBufferCreateFilenameFunc:
@@ -60,9 +60,9 @@ typedef xmlOutputBufferPtr (*xmlOutputBufferCreateFilenameFunc) (const char *URI
 								 int compression);
 
 XMLPUBFUN xmlParserInputBufferCreateFilenameFunc
-xmlParserInputBufferCreateFilenameDefault (xmlParserInputBufferCreateFilenameFunc func);
+XMLCALL xmlParserInputBufferCreateFilenameDefault (xmlParserInputBufferCreateFilenameFunc func);
 XMLPUBFUN xmlOutputBufferCreateFilenameFunc
-xmlOutputBufferCreateFilenameDefault (xmlOutputBufferCreateFilenameFunc func);
+XMLCALL xmlOutputBufferCreateFilenameDefault (xmlOutputBufferCreateFilenameFunc func);
 
 /*
  * Externally global symbols which need to be protected for backwards
@@ -175,23 +175,24 @@ struct _xmlGlobalState
 extern "C" {
 #endif
 
-XMLPUBFUN void	xmlInitializeGlobalState(xmlGlobalStatePtr gs);
+XMLPUBFUN void XMLCALL	xmlInitializeGlobalState(xmlGlobalStatePtr gs);
 
-XMLPUBFUN void xmlThrDefSetGenericErrorFunc(void *ctx, xmlGenericErrorFunc handler);
+XMLPUBFUN void XMLCALL xmlThrDefSetGenericErrorFunc(void *ctx, xmlGenericErrorFunc handler);
 
-XMLPUBFUN void xmlThrDefSetStructuredErrorFunc(void *ctx, xmlStructuredErrorFunc handler);
+XMLPUBFUN void XMLCALL xmlThrDefSetStructuredErrorFunc(void *ctx, xmlStructuredErrorFunc handler);
 
-XMLPUBFUN xmlRegisterNodeFunc xmlRegisterNodeDefault(xmlRegisterNodeFunc func);
-XMLPUBFUN xmlRegisterNodeFunc xmlThrDefRegisterNodeDefault(xmlRegisterNodeFunc func);
-XMLPUBFUN xmlDeregisterNodeFunc xmlDeregisterNodeDefault(xmlDeregisterNodeFunc func);
-XMLPUBFUN xmlDeregisterNodeFunc xmlThrDefDeregisterNodeDefault(xmlDeregisterNodeFunc func);
+XMLPUBFUN xmlRegisterNodeFunc XMLCALL xmlRegisterNodeDefault(xmlRegisterNodeFunc func);
+XMLPUBFUN xmlRegisterNodeFunc XMLCALL xmlThrDefRegisterNodeDefault(xmlRegisterNodeFunc func);
+XMLPUBFUN xmlDeregisterNodeFunc XMLCALL xmlDeregisterNodeDefault(xmlDeregisterNodeFunc func);
+XMLPUBFUN xmlDeregisterNodeFunc XMLCALL xmlThrDefDeregisterNodeDefault(xmlDeregisterNodeFunc func);
 
-XMLPUBFUN xmlOutputBufferCreateFilenameFunc
+XMLPUBFUN xmlOutputBufferCreateFilenameFunc XMLCALL
 	xmlThrDefOutputBufferCreateFilenameDefault(xmlOutputBufferCreateFilenameFunc func);
-XMLPUBFUN xmlParserInputBufferCreateFilenameFunc
+XMLPUBFUN xmlParserInputBufferCreateFilenameFunc XMLCALL
 	xmlThrDefParserInputBufferCreateFilenameDefault(
 				xmlParserInputBufferCreateFilenameFunc func);
 
+/** DOC_DISABLE */
 /*
  * In general the memory allocation entry points are not kept
  * thread specific but this can be overridden by LIBXML_THREAD_ALLOC_ENABLED
@@ -203,10 +204,8 @@ XMLPUBFUN xmlParserInputBufferCreateFilenameFunc
  */
 
 #ifdef LIBXML_THREAD_ALLOC_ENABLED
-/** DOC_DISABLE */
-
 #ifdef LIBXML_THREAD_ENABLED
-XMLPUBFUN  xmlMallocFunc * __xmlMalloc(void);
+XMLPUBFUN  xmlMallocFunc * XMLCALL __xmlMalloc(void);
 #define xmlMalloc \
 (*(__xmlMalloc()))
 #else
@@ -214,7 +213,7 @@ XMLPUBVAR xmlMallocFunc xmlMalloc;
 #endif
 
 #ifdef LIBXML_THREAD_ENABLED
-XMLPUBFUN  xmlMallocFunc * __xmlMallocAtomic(void);
+XMLPUBFUN  xmlMallocFunc * XMLCALL __xmlMallocAtomic(void);
 #define xmlMallocAtomic \
 (*(__xmlMallocAtomic()))
 #else
@@ -222,7 +221,7 @@ XMLPUBVAR xmlMallocFunc xmlMallocAtomic;
 #endif
 
 #ifdef LIBXML_THREAD_ENABLED
-XMLPUBFUN  xmlReallocFunc * __xmlRealloc(void);
+XMLPUBFUN  xmlReallocFunc * XMLCALL __xmlRealloc(void);
 #define xmlRealloc \
 (*(__xmlRealloc()))
 #else
@@ -230,7 +229,7 @@ XMLPUBVAR xmlReallocFunc xmlRealloc;
 #endif
 
 #ifdef LIBXML_THREAD_ENABLED
-XMLPUBFUN  xmlFreeFunc * __xmlFree(void);
+XMLPUBFUN  xmlFreeFunc * XMLCALL __xmlFree(void);
 #define xmlFree \
 (*(__xmlFree()))
 #else
@@ -238,14 +237,13 @@ XMLPUBVAR xmlFreeFunc xmlFree;
 #endif
 
 #ifdef LIBXML_THREAD_ENABLED
-XMLPUBFUN  xmlStrdupFunc * __xmlMemStrdup(void);
+XMLPUBFUN  xmlStrdupFunc * XMLCALL __xmlMemStrdup(void);
 #define xmlMemStrdup \
 (*(__xmlMemStrdup()))
 #else
 XMLPUBVAR xmlStrdupFunc xmlMemStrdup;
 #endif
 
-/** DOC_ENABLE */
 #else /* !LIBXML_THREAD_ALLOC_ENABLED */
 XMLPUBVAR xmlMallocFunc xmlMalloc;
 XMLPUBVAR xmlMallocFunc xmlMallocAtomic;
@@ -255,18 +253,16 @@ XMLPUBVAR xmlStrdupFunc xmlMemStrdup;
 #endif /* LIBXML_THREAD_ALLOC_ENABLED */
 
 #ifdef LIBXML_HTML_ENABLED
-XML_DEPRECATED
-XMLPUBFUN xmlSAXHandlerV1 * __htmlDefaultSAXHandler(void);
+XMLPUBFUN xmlSAXHandlerV1 * XMLCALL __htmlDefaultSAXHandler(void);
 #ifdef LIBXML_THREAD_ENABLED
 #define htmlDefaultSAXHandler \
 (*(__htmlDefaultSAXHandler()))
 #else
-XML_DEPRECATED
 XMLPUBVAR xmlSAXHandlerV1 htmlDefaultSAXHandler;
 #endif
 #endif
 
-XMLPUBFUN xmlError * __xmlLastError(void);
+XMLPUBFUN xmlError * XMLCALL __xmlLastError(void);
 #ifdef LIBXML_THREAD_ENABLED
 #define xmlLastError \
 (*(__xmlLastError()))
@@ -281,71 +277,59 @@ XMLPUBVAR xmlError xmlLastError;
  */
 
 
-XML_DEPRECATED
-XMLPUBFUN int * __oldXMLWDcompatibility(void);
+XMLPUBFUN int * XMLCALL __oldXMLWDcompatibility(void);
 #ifdef LIBXML_THREAD_ENABLED
 #define oldXMLWDcompatibility \
 (*(__oldXMLWDcompatibility()))
 #else
-XML_DEPRECATED
 XMLPUBVAR int oldXMLWDcompatibility;
 #endif
 
-XML_DEPRECATED
-XMLPUBFUN xmlBufferAllocationScheme * __xmlBufferAllocScheme(void);
+XMLPUBFUN xmlBufferAllocationScheme * XMLCALL __xmlBufferAllocScheme(void);
 #ifdef LIBXML_THREAD_ENABLED
 #define xmlBufferAllocScheme \
 (*(__xmlBufferAllocScheme()))
 #else
-XML_DEPRECATED
 XMLPUBVAR xmlBufferAllocationScheme xmlBufferAllocScheme;
 #endif
-XML_DEPRECATED
-XMLPUBFUN xmlBufferAllocationScheme
+XMLPUBFUN xmlBufferAllocationScheme XMLCALL
 	xmlThrDefBufferAllocScheme(xmlBufferAllocationScheme v);
 
-XML_DEPRECATED
-XMLPUBFUN int * __xmlDefaultBufferSize(void);
+XMLPUBFUN int * XMLCALL __xmlDefaultBufferSize(void);
 #ifdef LIBXML_THREAD_ENABLED
 #define xmlDefaultBufferSize \
 (*(__xmlDefaultBufferSize()))
 #else
-XML_DEPRECATED
 XMLPUBVAR int xmlDefaultBufferSize;
 #endif
-XML_DEPRECATED
-XMLPUBFUN int xmlThrDefDefaultBufferSize(int v);
+XMLPUBFUN int XMLCALL xmlThrDefDefaultBufferSize(int v);
 
-XML_DEPRECATED
-XMLPUBFUN xmlSAXHandlerV1 * __xmlDefaultSAXHandler(void);
+XMLPUBFUN xmlSAXHandlerV1 * XMLCALL __xmlDefaultSAXHandler(void);
 #ifdef LIBXML_THREAD_ENABLED
 #define xmlDefaultSAXHandler \
 (*(__xmlDefaultSAXHandler()))
 #else
-XML_DEPRECATED
 XMLPUBVAR xmlSAXHandlerV1 xmlDefaultSAXHandler;
 #endif
 
-XML_DEPRECATED
-XMLPUBFUN xmlSAXLocator * __xmlDefaultSAXLocator(void);
+XMLPUBFUN xmlSAXLocator * XMLCALL __xmlDefaultSAXLocator(void);
 #ifdef LIBXML_THREAD_ENABLED
 #define xmlDefaultSAXLocator \
 (*(__xmlDefaultSAXLocator()))
 #else
-XML_DEPRECATED
 XMLPUBVAR xmlSAXLocator xmlDefaultSAXLocator;
 #endif
 
-XMLPUBFUN int * __xmlDoValidityCheckingDefaultValue(void);
+XMLPUBFUN int * XMLCALL __xmlDoValidityCheckingDefaultValue(void);
 #ifdef LIBXML_THREAD_ENABLED
 #define xmlDoValidityCheckingDefaultValue \
 (*(__xmlDoValidityCheckingDefaultValue()))
 #else
 XMLPUBVAR int xmlDoValidityCheckingDefaultValue;
 #endif
-XMLPUBFUN int xmlThrDefDoValidityCheckingDefaultValue(int v);
+XMLPUBFUN int XMLCALL xmlThrDefDoValidityCheckingDefaultValue(int v);
 
-XMLPUBFUN xmlGenericErrorFunc * __xmlGenericError(void);
+XMLPUBFUN xmlGenericErrorFunc * XMLCALL __xmlGenericError(void);
 #ifdef LIBXML_THREAD_ENABLED
 #define xmlGenericError \
 (*(__xmlGenericError()))
@@ -353,7 +337,7 @@ XMLPUBFUN xmlGenericErrorFunc * __xmlGenericError(void);
 XMLPUBVAR xmlGenericErrorFunc xmlGenericError;
 #endif
 
-XMLPUBFUN xmlStructuredErrorFunc * __xmlStructuredError(void);
+XMLPUBFUN xmlStructuredErrorFunc * XMLCALL __xmlStructuredError(void);
 #ifdef LIBXML_THREAD_ENABLED
 #define xmlStructuredError \
 (*(__xmlStructuredError()))
@@ -361,7 +345,7 @@ XMLPUBFUN xmlStructuredErrorFunc * __xmlStructuredError(void);
 XMLPUBVAR xmlStructuredErrorFunc xmlStructuredError;
 #endif
 
-XMLPUBFUN void * * __xmlGenericErrorContext(void);
+XMLPUBFUN void * * XMLCALL __xmlGenericErrorContext(void);
 #ifdef LIBXML_THREAD_ENABLED
 #define xmlGenericErrorContext \
 (*(__xmlGenericErrorContext()))
@@ -369,7 +353,7 @@ XMLPUBFUN void * * __xmlGenericErrorContext(void);
 XMLPUBVAR void * xmlGenericErrorContext;
 #endif
 
-XMLPUBFUN void * * __xmlStructuredErrorContext(void);
+XMLPUBFUN void * * XMLCALL __xmlStructuredErrorContext(void);
 #ifdef LIBXML_THREAD_ENABLED
 #define xmlStructuredErrorContext \
 (*(__xmlStructuredErrorContext()))
@@ -377,73 +361,70 @@ XMLPUBFUN void * * __xmlStructuredErrorContext(void);
 XMLPUBVAR void * xmlStructuredErrorContext;
 #endif
 
-XMLPUBFUN int * __xmlGetWarningsDefaultValue(void);
+XMLPUBFUN int * XMLCALL __xmlGetWarningsDefaultValue(void);
 #ifdef LIBXML_THREAD_ENABLED
 #define xmlGetWarningsDefaultValue \
 (*(__xmlGetWarningsDefaultValue()))
 #else
 XMLPUBVAR int xmlGetWarningsDefaultValue;
 #endif
-XMLPUBFUN int xmlThrDefGetWarningsDefaultValue(int v);
+XMLPUBFUN int XMLCALL xmlThrDefGetWarningsDefaultValue(int v);
 
-XMLPUBFUN int * __xmlIndentTreeOutput(void);
+XMLPUBFUN int * XMLCALL __xmlIndentTreeOutput(void);
 #ifdef LIBXML_THREAD_ENABLED
 #define xmlIndentTreeOutput \
 (*(__xmlIndentTreeOutput()))
 #else
 XMLPUBVAR int xmlIndentTreeOutput;
 #endif
-XMLPUBFUN int xmlThrDefIndentTreeOutput(int v);
+XMLPUBFUN int XMLCALL xmlThrDefIndentTreeOutput(int v);
 
-XMLPUBFUN const char * * __xmlTreeIndentString(void);
+XMLPUBFUN const char * * XMLCALL __xmlTreeIndentString(void);
 #ifdef LIBXML_THREAD_ENABLED
 #define xmlTreeIndentString \
 (*(__xmlTreeIndentString()))
 #else
 XMLPUBVAR const char * xmlTreeIndentString;
 #endif
-XMLPUBFUN const char * xmlThrDefTreeIndentString(const char * v);
+XMLPUBFUN const char * XMLCALL xmlThrDefTreeIndentString(const char * v);
 
-XMLPUBFUN int * __xmlKeepBlanksDefaultValue(void);
+XMLPUBFUN int * XMLCALL __xmlKeepBlanksDefaultValue(void);
 #ifdef LIBXML_THREAD_ENABLED
 #define xmlKeepBlanksDefaultValue \
 (*(__xmlKeepBlanksDefaultValue()))
 #else
 XMLPUBVAR int xmlKeepBlanksDefaultValue;
 #endif
-XMLPUBFUN int xmlThrDefKeepBlanksDefaultValue(int v);
+XMLPUBFUN int XMLCALL xmlThrDefKeepBlanksDefaultValue(int v);
 
-XML_DEPRECATED
-XMLPUBFUN int * __xmlLineNumbersDefaultValue(void);
+XMLPUBFUN int * XMLCALL __xmlLineNumbersDefaultValue(void);
 #ifdef LIBXML_THREAD_ENABLED
 #define xmlLineNumbersDefaultValue \
 (*(__xmlLineNumbersDefaultValue()))
 #else
-XML_DEPRECATED
 XMLPUBVAR int xmlLineNumbersDefaultValue;
 #endif
-XML_DEPRECATED
-XMLPUBFUN int xmlThrDefLineNumbersDefaultValue(int v);
+XMLPUBFUN int XMLCALL xmlThrDefLineNumbersDefaultValue(int v);
 
-XMLPUBFUN int * __xmlLoadExtDtdDefaultValue(void);
+XMLPUBFUN int * XMLCALL __xmlLoadExtDtdDefaultValue(void);
 #ifdef LIBXML_THREAD_ENABLED
 #define xmlLoadExtDtdDefaultValue \
 (*(__xmlLoadExtDtdDefaultValue()))
 #else
 XMLPUBVAR int xmlLoadExtDtdDefaultValue;
 #endif
-XMLPUBFUN int xmlThrDefLoadExtDtdDefaultValue(int v);
+XMLPUBFUN int XMLCALL xmlThrDefLoadExtDtdDefaultValue(int v);
 
-XMLPUBFUN int * __xmlParserDebugEntities(void);
+XMLPUBFUN int * XMLCALL __xmlParserDebugEntities(void);
 #ifdef LIBXML_THREAD_ENABLED
 #define xmlParserDebugEntities \
 (*(__xmlParserDebugEntities()))
 #else
 XMLPUBVAR int xmlParserDebugEntities;
 #endif
-XMLPUBFUN int xmlThrDefParserDebugEntities(int v);
+XMLPUBFUN int XMLCALL xmlThrDefParserDebugEntities(int v);
 
-XMLPUBFUN const char * * __xmlParserVersion(void);
+XMLPUBFUN const char * * XMLCALL __xmlParserVersion(void);
 #ifdef LIBXML_THREAD_ENABLED
 #define xmlParserVersion \
 (*(__xmlParserVersion()))
@@ -451,74 +432,63 @@ XMLPUBFUN const char * * __xmlParserVersion(void);
 XMLPUBVAR const char * xmlParserVersion;
 #endif
 
-XML_DEPRECATED
-XMLPUBFUN int * __xmlPedanticParserDefaultValue(void);
+XMLPUBFUN int * XMLCALL __xmlPedanticParserDefaultValue(void);
 #ifdef LIBXML_THREAD_ENABLED
 #define xmlPedanticParserDefaultValue \
 (*(__xmlPedanticParserDefaultValue()))
 #else
-XML_DEPRECATED
 XMLPUBVAR int xmlPedanticParserDefaultValue;
 #endif
-XML_DEPRECATED
-XMLPUBFUN int xmlThrDefPedanticParserDefaultValue(int v);
+XMLPUBFUN int XMLCALL xmlThrDefPedanticParserDefaultValue(int v);
 
-XMLPUBFUN int * __xmlSaveNoEmptyTags(void);
+XMLPUBFUN int * XMLCALL __xmlSaveNoEmptyTags(void);
 #ifdef LIBXML_THREAD_ENABLED
 #define xmlSaveNoEmptyTags \
 (*(__xmlSaveNoEmptyTags()))
 #else
 XMLPUBVAR int xmlSaveNoEmptyTags;
 #endif
-XMLPUBFUN int xmlThrDefSaveNoEmptyTags(int v);
+XMLPUBFUN int XMLCALL xmlThrDefSaveNoEmptyTags(int v);
 
-XMLPUBFUN int * __xmlSubstituteEntitiesDefaultValue(void);
+XMLPUBFUN int * XMLCALL __xmlSubstituteEntitiesDefaultValue(void);
 #ifdef LIBXML_THREAD_ENABLED
 #define xmlSubstituteEntitiesDefaultValue \
 (*(__xmlSubstituteEntitiesDefaultValue()))
 #else
 XMLPUBVAR int xmlSubstituteEntitiesDefaultValue;
 #endif
-XMLPUBFUN int xmlThrDefSubstituteEntitiesDefaultValue(int v);
+XMLPUBFUN int XMLCALL xmlThrDefSubstituteEntitiesDefaultValue(int v);
 
-XML_DEPRECATED
-XMLPUBFUN xmlRegisterNodeFunc * __xmlRegisterNodeDefaultValue(void);
+XMLPUBFUN xmlRegisterNodeFunc * XMLCALL __xmlRegisterNodeDefaultValue(void);
 #ifdef LIBXML_THREAD_ENABLED
 #define xmlRegisterNodeDefaultValue \
 (*(__xmlRegisterNodeDefaultValue()))
 #else
-XML_DEPRECATED
 XMLPUBVAR xmlRegisterNodeFunc xmlRegisterNodeDefaultValue;
 #endif
 
-XML_DEPRECATED
-XMLPUBFUN xmlDeregisterNodeFunc * __xmlDeregisterNodeDefaultValue(void);
+XMLPUBFUN xmlDeregisterNodeFunc * XMLCALL __xmlDeregisterNodeDefaultValue(void);
 #ifdef LIBXML_THREAD_ENABLED
 #define xmlDeregisterNodeDefaultValue \
 (*(__xmlDeregisterNodeDefaultValue()))
 #else
-XML_DEPRECATED
 XMLPUBVAR xmlDeregisterNodeFunc xmlDeregisterNodeDefaultValue;
 #endif
 
-XML_DEPRECATED
-XMLPUBFUN xmlParserInputBufferCreateFilenameFunc * \
+XMLPUBFUN xmlParserInputBufferCreateFilenameFunc * XMLCALL \
 				__xmlParserInputBufferCreateFilenameValue(void);
 #ifdef LIBXML_THREAD_ENABLED
 #define xmlParserInputBufferCreateFilenameValue \
 (*(__xmlParserInputBufferCreateFilenameValue()))
 #else
-XML_DEPRECATED
 XMLPUBVAR xmlParserInputBufferCreateFilenameFunc xmlParserInputBufferCreateFilenameValue;
 #endif
 
-XML_DEPRECATED
-XMLPUBFUN xmlOutputBufferCreateFilenameFunc * __xmlOutputBufferCreateFilenameValue(void);
+XMLPUBFUN xmlOutputBufferCreateFilenameFunc * XMLCALL __xmlOutputBufferCreateFilenameValue(void);
 #ifdef LIBXML_THREAD_ENABLED
 #define xmlOutputBufferCreateFilenameValue \
 (*(__xmlOutputBufferCreateFilenameValue()))
 #else
-XML_DEPRECATED
 XMLPUBVAR xmlOutputBufferCreateFilenameFunc xmlOutputBufferCreateFilenameValue;
 #endif
 

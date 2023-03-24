@@ -52,8 +52,6 @@
 #endif
 #endif
 
-#include "private/error.h"
-
 #define TODO								\
     xmlGenericError(xmlGenericErrorContext,				\
 	    "Unimplemented block at %s:%d\n",				\
@@ -268,7 +266,7 @@ xmlXPtrNewPoint(xmlNodePtr node, int indx) {
         xmlXPtrErrMemory("allocating point");
 	return(NULL);
     }
-    memset(ret, 0 , sizeof(xmlXPathObject));
+    memset(ret, 0 , (size_t) sizeof(xmlXPathObject));
     ret->type = XPATH_POINT;
     ret->user = (void *) node;
     ret->index = indx;
@@ -588,7 +586,7 @@ xmlXPtrLocationSetCreate(xmlXPathObjectPtr val) {
         xmlXPtrErrMemory("allocating locationset");
 	return(NULL);
     }
-    memset(ret, 0 , sizeof(xmlLocationSet));
+    memset(ret, 0 , (size_t) sizeof(xmlLocationSet));
     if (val != NULL) {
         ret->locTab = (xmlXPathObjectPtr *) xmlMalloc(XML_RANGESET_DEFAULT *
 					     sizeof(xmlXPathObjectPtr));
@@ -598,7 +596,7 @@ xmlXPtrLocationSetCreate(xmlXPathObjectPtr val) {
 	    return(NULL);
 	}
 	memset(ret->locTab, 0 ,
-	       XML_RANGESET_DEFAULT * sizeof(xmlXPathObjectPtr));
+	       XML_RANGESET_DEFAULT * (size_t) sizeof(xmlXPathObjectPtr));
         ret->locMax = XML_RANGESET_DEFAULT;
 	ret->locTab[ret->locNr++] = val;
     }
@@ -640,7 +638,7 @@ xmlXPtrLocationSetAdd(xmlLocationSetPtr cur, xmlXPathObjectPtr val) {
 	    return;
 	}
 	memset(cur->locTab, 0 ,
-	       XML_RANGESET_DEFAULT * sizeof(xmlXPathObjectPtr));
+	       XML_RANGESET_DEFAULT * (size_t) sizeof(xmlXPathObjectPtr));
         cur->locMax = XML_RANGESET_DEFAULT;
     } else if (cur->locNr == cur->locMax) {
         xmlXPathObjectPtr *temp;
@@ -773,7 +771,7 @@ xmlXPtrNewLocationSetNodes(xmlNodePtr start, xmlNodePtr end) {
         xmlXPtrErrMemory("allocating locationset");
 	return(NULL);
     }
-    memset(ret, 0 , sizeof(xmlXPathObject));
+    memset(ret, 0 , (size_t) sizeof(xmlXPathObject));
     ret->type = XPATH_LOCATIONSET;
     if (end == NULL)
 	ret->user = xmlXPtrLocationSetCreate(xmlXPtrNewCollapsedRange(start));
@@ -800,7 +798,7 @@ xmlXPtrNewLocationSetNodeSet(xmlNodeSetPtr set) {
         xmlXPtrErrMemory("allocating locationset");
 	return(NULL);
     }
-    memset(ret, 0, sizeof(xmlXPathObject));
+    memset(ret, 0 , (size_t) sizeof(xmlXPathObject));
     ret->type = XPATH_LOCATIONSET;
     if (set != NULL) {
 	int i;
@@ -836,7 +834,7 @@ xmlXPtrWrapLocationSet(xmlLocationSetPtr val) {
         xmlXPtrErrMemory("allocating locationset");
 	return(NULL);
     }
-    memset(ret, 0, sizeof(xmlXPathObject));
+    memset(ret, 0 , (size_t) sizeof(xmlXPathObject));
     ret->type = XPATH_LOCATIONSET;
     ret->user = (void *) val;
     return(ret);
@@ -969,7 +967,7 @@ xmlXPtrEvalXPtrPart(xmlXPathParserContextPtr ctxt, xmlChar *name) {
 
     len = xmlStrlen(ctxt->cur);
     len++;
-    buffer = (xmlChar *) xmlMallocAtomic(len);
+    buffer = (xmlChar *) xmlMallocAtomic(len * sizeof (xmlChar));
     if (buffer == NULL) {
         xmlXPtrErrMemory("allocating buffer");
         xmlFree(name);

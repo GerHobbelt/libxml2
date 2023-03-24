@@ -19,14 +19,56 @@
 
 #include <libxml/HTMLtree.h>
 
-#include "private/buf.h"
-#include "private/enc.h"
-#include "private/error.h"
-#include "private/save.h"
+#include "buf.h"
+#include "enc.h"
+#include "save.h"
 
-#ifdef LIBXML_OUTPUT_ENABLED
+/************************************************************************
+ *									*
+ *			XHTML detection					*
+ *									*
+ ************************************************************************/
+#define XHTML_STRICT_PUBLIC_ID BAD_CAST \
+   "-//W3C//DTD XHTML 1.0 Strict//EN"
+#define XHTML_STRICT_SYSTEM_ID BAD_CAST \
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"
+#define XHTML_FRAME_PUBLIC_ID BAD_CAST \
+   "-//W3C//DTD XHTML 1.0 Frameset//EN"
+#define XHTML_FRAME_SYSTEM_ID BAD_CAST \
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd"
+#define XHTML_TRANS_PUBLIC_ID BAD_CAST \
+   "-//W3C//DTD XHTML 1.0 Transitional//EN"
+#define XHTML_TRANS_SYSTEM_ID BAD_CAST \
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"
 
 #define XHTML_NS_NAME BAD_CAST "http://www.w3.org/1999/xhtml"
+/**
+ * xmlIsXHTML:
+ * @systemID:  the system identifier
+ * @publicID:  the public identifier
+ *
+ * Try to find if the document correspond to an XHTML DTD
+ *
+ * Returns 1 if true, 0 if not and -1 in case of error
+ */
+int
+xmlIsXHTML(const xmlChar *systemID, const xmlChar *publicID) {
+    if ((systemID == NULL) && (publicID == NULL))
+	return(-1);
+    if (publicID != NULL) {
+	if (xmlStrEqual(publicID, XHTML_STRICT_PUBLIC_ID)) return(1);
+	if (xmlStrEqual(publicID, XHTML_FRAME_PUBLIC_ID)) return(1);
+	if (xmlStrEqual(publicID, XHTML_TRANS_PUBLIC_ID)) return(1);
+    }
+    if (systemID != NULL) {
+	if (xmlStrEqual(systemID, XHTML_STRICT_SYSTEM_ID)) return(1);
+	if (xmlStrEqual(systemID, XHTML_FRAME_SYSTEM_ID)) return(1);
+	if (xmlStrEqual(systemID, XHTML_TRANS_SYSTEM_ID)) return(1);
+    }
+    return(0);
+}
+
+#ifdef LIBXML_OUTPUT_ENABLED
 
 #define TODO								\
     xmlGenericError(xmlGenericErrorContext,				\
@@ -421,7 +463,7 @@ xmlAttrSerializeContent(xmlOutputBufferPtr buf, xmlAttrPtr attr)
  *
  * This will dump the content of the notation table as an XML DTD definition
  */
-static void
+void
 xmlBufDumpNotationTable(xmlBufPtr buf, xmlNotationTablePtr table) {
     xmlBufferPtr buffer;
 
@@ -445,7 +487,7 @@ xmlBufDumpNotationTable(xmlBufPtr buf, xmlNotationTablePtr table) {
  * This will dump the content of the element declaration as an XML
  * DTD definition
  */
-static void
+void
 xmlBufDumpElementDecl(xmlBufPtr buf, xmlElementPtr elem) {
     xmlBufferPtr buffer;
 
@@ -469,7 +511,7 @@ xmlBufDumpElementDecl(xmlBufPtr buf, xmlElementPtr elem) {
  * This will dump the content of the attribute declaration as an XML
  * DTD definition
  */
-static void
+void
 xmlBufDumpAttributeDecl(xmlBufPtr buf, xmlAttributePtr attr) {
     xmlBufferPtr buffer;
 
@@ -492,7 +534,7 @@ xmlBufDumpAttributeDecl(xmlBufPtr buf, xmlAttributePtr attr) {
  *
  * This will dump the content of the entity table as an XML DTD definition
  */
-static void
+void
 xmlBufDumpEntityDecl(xmlBufPtr buf, xmlEntityPtr ent) {
     xmlBufferPtr buffer;
 
@@ -553,6 +595,7 @@ static void
 xhtmlNodeDumpOutput(xmlSaveCtxtPtr ctxt, xmlNodePtr cur);
 #endif
 static void xmlNodeDumpOutputInternal(xmlSaveCtxtPtr ctxt, xmlNodePtr cur);
+void xmlNsListDumpOutput(xmlOutputBufferPtr buf, xmlNsPtr cur);
 static int xmlDocContentDumpOutput(xmlSaveCtxtPtr ctxt, xmlDocPtr cur);
 
 /**
@@ -2135,7 +2178,7 @@ xmlNodeDump(xmlBufferPtr buf, xmlDocPtr doc, xmlNodePtr cur, int level,
     xmlBufBackToBuffer(buffer);
     if (ret > INT_MAX)
         return(-1);
-    return(ret);
+    return((int) ret);
 }
 
 /**
@@ -2363,7 +2406,6 @@ xmlDocDumpFormatMemoryEnc(xmlDocPtr out_doc, xmlChar **doc_txt_ptr,
 
     if ((out_buff = xmlAllocOutputBuffer(conv_hdlr)) == NULL ) {
         xmlSaveErrMemory("creating buffer");
-        xmlCharEncCloseFunc(conv_hdlr);
         return;
     }
 

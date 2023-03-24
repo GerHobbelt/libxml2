@@ -9,8 +9,13 @@
 #include "libxml.h"
 #include <stdio.h>
 
+#if !defined(_WIN32)
+#include <unistd.h>
+#endif
 #include <string.h>
+#include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 
 #include <libxml/parser.h>
 #include <libxml/parserInternals.h>
@@ -1049,19 +1054,13 @@ main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
     old_tests = nb_tests;
     old_leaks = nb_leaks;
     xsdTest();
-    printf("Ran %d tests, %d errors, %d leaks\n",
-           nb_tests - old_tests,
-           nb_errors - old_errors,
-           nb_leaks - old_leaks);
-    if (nb_errors - old_errors == 10) {
-        printf("10 errors were expected\n");
-        nb_errors = old_errors;
-    } else {
-        printf("10 errors were expected, got %d errors\n",
-               nb_errors - old_errors);
-        nb_errors = old_errors + 1;
-    }
-
+    if ((nb_errors == old_errors) && (nb_leaks == old_leaks))
+	printf("Ran %d tests, no errors\n", nb_tests - old_tests);
+    else
+	printf("Ran %d tests, %d errors, %d leaks\n",
+	       nb_tests - old_tests,
+	       nb_errors - old_errors,
+	       nb_leaks - old_leaks);
     old_errors = nb_errors;
     old_tests = nb_tests;
     old_leaks = nb_leaks;
@@ -1073,7 +1072,6 @@ main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
 	       nb_tests - old_tests,
 	       nb_errors - old_errors,
 	       nb_leaks - old_leaks);
-
     old_errors = nb_errors;
     old_tests = nb_tests;
     old_leaks = nb_leaks;
@@ -1085,7 +1083,6 @@ main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
 	       nb_tests - old_tests,
 	       nb_errors - old_errors,
 	       nb_leaks - old_leaks);
-
     old_errors = nb_errors;
     old_tests = nb_tests;
     old_leaks = nb_leaks;
@@ -1103,7 +1100,6 @@ main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
 	       nb_errors - old_errors,
 	       nb_internals,
 	       nb_leaks - old_leaks);
-
     old_errors = nb_errors;
     old_tests = nb_tests;
     old_leaks = nb_leaks;
@@ -1111,20 +1107,16 @@ main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
     nb_schematas = 0;
     xstcMetadata("xstc/Tests/Metadata/SunXMLSchema1-0-20020116.testSet",
 		 "xstc/Tests/");
-    if ((nb_errors == old_errors) && (nb_leaks == old_leaks)) {
+    if ((nb_errors == old_errors) && (nb_leaks == old_leaks))
 	printf("Ran %d tests (%d schemata), no errors\n",
 	       nb_tests - old_tests, nb_schematas);
-    } else {
+    else
 	printf("Ran %d tests (%d schemata), %d errors (%d internals), %d leaks\n",
 	       nb_tests - old_tests,
 	       nb_schematas,
 	       nb_errors - old_errors,
 	       nb_internals,
 	       nb_leaks - old_leaks);
-        printf("Some errors were expected.\n");
-        nb_errors = old_errors;
-    }
-
     old_errors = nb_errors;
     old_tests = nb_tests;
     old_leaks = nb_leaks;
@@ -1132,19 +1124,16 @@ main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
     nb_schematas = 0;
     xstcMetadata("xstc/Tests/Metadata/MSXMLSchema1-0-20020116.testSet",
 		 "xstc/Tests/");
-    if ((nb_errors == old_errors) && (nb_leaks == old_leaks)) {
+    if ((nb_errors == old_errors) && (nb_leaks == old_leaks))
 	printf("Ran %d tests (%d schemata), no errors\n",
 	       nb_tests - old_tests, nb_schematas);
-    } else {
+    else
 	printf("Ran %d tests (%d schemata), %d errors (%d internals), %d leaks\n",
 	       nb_tests - old_tests,
 	       nb_schematas,
 	       nb_errors - old_errors,
 	       nb_internals,
 	       nb_leaks - old_leaks);
-        printf("Some errors were expected.\n");
-        nb_errors = old_errors;
-    }
 
     if ((nb_errors == 0) && (nb_leaks == 0)) {
         ret = 0;

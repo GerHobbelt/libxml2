@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 #
 # this tests the entities substitutions with the XmlTextReader interface
 #
