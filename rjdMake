@@ -1,5 +1,7 @@
 #!/bin/bash --
 
+set -o pipefail
+
 C_LIB=clib2
 # For whatever reason, even when passing "static" to gcc during
 # linking and the fact that our ADTOOLS compiler is meant to search
@@ -26,7 +28,7 @@ then
 	echo 1>&2 "WARNING: Not sure if the value of \$CPLUSPLUS_LIB=${CPLUSPLUS_LIB} is actually correct for NEWLIB"
     elif [[ "${1}" != "clib=clib2" ]]
     then
-	echo "Could not understand argumet ${1}. Only clib=<newlib|clib2[default]> is understood" 1>&2
+	echo "Could not understand argument ${1}. Only clib=<newlib|clib2[default]> is understood" 1>&2
 	exit 1
     fi
 fi
@@ -54,7 +56,7 @@ function create_amiga_SDK_package
 	mkdir -p "${sdk_dir}"
 	find "${INSTALL_PREFIX}" -type d -iname "$(basename ${sdk_dir})" -exec cp -r {}/. "${sdk_dir}" \;
     done
-    lha a libxml2.lha local/
+    lha a libxml2_2.10.3.lha local/
 
 }
 
@@ -81,12 +83,12 @@ function create_amiga_SDK_package
 # is, otherwise, pkg-config will go hunting around the build machine's
 # pkgconfig directory which will cause all sorts of problems!
 
-make -j$(nproc) || { echo 1>&2 "ERROR: Failed to build LIBXML2" ; exit 1; }
+make -j$(nproc) 2>&1 | tee buildAmiga.log || { echo 1>&2 "ERROR: Failed to build LIBXML2" ; exit 1; }
 
 make install
 
 create_amiga_SDK_package
 
-echo "FINISHED. See libxml2.lha"
+echo "FINISHED. See libxml2_2.10.3_.lha"
 
 exit 0
