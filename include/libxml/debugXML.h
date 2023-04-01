@@ -100,7 +100,7 @@ XMLPUBFUN const char *
  *
  * Returns a string which will be freed by the Shell.
  */
-typedef char * (* xmlShellReadlineFunc)(char *prompt);
+typedef char * (* xmlShellReadlineFunc)(const char *prompt);
 
 /**
  * xmlShellCtxt:
