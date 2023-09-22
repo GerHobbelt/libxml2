@@ -84,6 +84,10 @@
 #include <libxml/catalog.h>
 #endif
 
+#ifndef SYSCONFDIR
+  #define SYSCONFDIR "/etc"
+#endif
+
 /*
  * pseudo flag for the unification of HTML and XML tests
  */

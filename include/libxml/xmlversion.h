@@ -449,15 +449,21 @@ XMLPUBFUN void xmlCheckVersion(int version);
 #endif
 
 #if defined(__clang__) || (__GNUC__ * 100 + __GNUC_MINOR__ >= 406)
-#define XML_IGNORE_FPTR_CAST_WARNINGS \
-    _Pragma("GCC diagnostic push") \
-    _Pragma("GCC diagnostic ignored \"-Wpedantic\"") \
-    _Pragma("GCC diagnostic ignored \"-Wcast-function-type\"")
-#define XML_POP_WARNINGS \
+  #if defined(__clang__) || (__GNUC__ * 100 + __GNUC_MINOR__ >= 800)
+    #define XML_IGNORE_FPTR_CAST_WARNINGS \
+      _Pragma("GCC diagnostic push") \
+      _Pragma("GCC diagnostic ignored \"-Wpedantic\"") \
+      _Pragma("GCC diagnostic ignored \"-Wcast-function-type\"")
+  #else
+    #define XML_IGNORE_FPTR_CAST_WARNINGS \
+      _Pragma("GCC diagnostic push") \
+      _Pragma("GCC diagnostic ignored \"-Wpedantic\"")
+  #endif
+  #define XML_POP_WARNINGS \
     _Pragma("GCC diagnostic pop")
 #else
-#define XML_IGNORE_FPTR_CAST_WARNINGS
-#define XML_POP_WARNINGS
+  #define XML_IGNORE_FPTR_CAST_WARNINGS
+  #define XML_POP_WARNINGS
 #endif
 
 /** DOC_ENABLE */
@@ -517,6 +523,19 @@ XMLPUBFUN void xmlCheckVersion(int version);
 #  endif
 #endif
 #endif /* __GNUC__ */
+
+/** DOC_DISABLE */
+#define XML_EMPTY
+
+#ifdef LIBXML_THREAD_ENABLED
+  #define XML_DECLARE_GLOBAL(name, type, attrs) \
+    attrs XMLPUBFUN type *__##name(void);
+  #define XML_GLOBAL_MACRO(name) (*__##name())
+#else
+  #define XML_DECLARE_GLOBAL(name, type, attrs) \
+    attrs XMLPUBVAR type name;
+#endif
+/** DOC_ENABLE */
 
 #ifdef __cplusplus
 }
