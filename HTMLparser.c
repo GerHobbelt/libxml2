@@ -295,7 +295,7 @@ htmlNodeInfoPop(htmlParserCtxtPtr ctxt)
 
 #define SHRINK if ((ctxt->input->cur - ctxt->input->base > 2 * INPUT_CHUNK) && \
 		   (ctxt->input->end - ctxt->input->cur < 2 * INPUT_CHUNK)) \
-	xmlParserInputShrink(ctxt->input)
+	xmlParserShrink(ctxt)
 
 #define GROW if ((ctxt->progressive == 0) &&				\
 		 (ctxt->input->end - ctxt->input->cur < INPUT_CHUNK))	\
@@ -2859,7 +2859,7 @@ htmlParseHTMLAttribute(htmlParserCtxtPtr ctxt, const xmlChar stop) {
 	    for ( ; bits >= 0; bits-= 6) {
 		*out++  = ((c >> bits) & 0x3F) | 0x80;
 	    }
-	    NEXT;
+	    NEXTL(l);
 	}
         if (out - buffer > maxLength) {
             htmlParseErr(ctxt, XML_ERR_ATTRIBUTE_NOT_FINISHED,

@@ -259,6 +259,41 @@ void check_buffer(xmlParserInputPtr in) {
 
 
 /**
+ * xmlHaltParser:
+ * @ctxt:  an XML parser context
+ *
+ * Blocks further parser processing don't override error
+ * for internal use
+ */
+void
+xmlHaltParser(xmlParserCtxtPtr ctxt) {
+    if (ctxt == NULL)
+        return;
+    ctxt->instate = XML_PARSER_EOF;
+    ctxt->disableSAX = 1;
+    while (ctxt->inputNr > 1)
+        xmlFreeInputStream(inputPop(ctxt));
+    if (ctxt->input != NULL) {
+        /*
+	 * in case there was a specific allocation deallocate before
+	 * overriding base
+	 */
+        if (ctxt->input->free != NULL) {
+	    ctxt->input->free((xmlChar *) ctxt->input->base);
+	    ctxt->input->free = NULL;
+	}
+        if (ctxt->input->buf != NULL) {
+            xmlFreeParserInputBuffer(ctxt->input->buf);
+            ctxt->input->buf = NULL;
+        }
+	ctxt->input->cur = BAD_CAST"";
+        ctxt->input->length = 0;
+	ctxt->input->base = ctxt->input->cur;
+        ctxt->input->end = ctxt->input->cur;
+    }
+}
+
+/**
  * xmlParserInputRead:
  * @in:  an XML parser input
  * @len:  an indicative size for the lookahead
@@ -293,8 +328,8 @@ xmlParserGrow(xmlParserCtxtPtr ctxt) {
     if (((curEnd > XML_MAX_LOOKUP_LIMIT) ||
          (curBase > XML_MAX_LOOKUP_LIMIT)) &&
         ((ctxt->options & XML_PARSE_HUGE) == 0)) {
+        xmlHaltParser(ctxt);
         xmlErrInternal(ctxt, "Huge input lookup", NULL);
-        ctxt->instate = XML_PARSER_EOF;
 	return(-1);
     }
 
@@ -305,9 +340,7 @@ xmlParserGrow(xmlParserCtxtPtr ctxt) {
 
     in->base = xmlBufContent(buf->buffer);
     if (in->base == NULL) {
-        in->base = BAD_CAST "";
-        in->cur = in->base;
-        in->end = in->base;
+        xmlHaltParser(ctxt);
         xmlErrMemory(ctxt, NULL);
         return(-1);
     }
@@ -316,8 +349,8 @@ xmlParserGrow(xmlParserCtxtPtr ctxt) {
 
     /* TODO: Get error code from xmlParserInputBufferGrow */
     if (ret < 0) {
+        xmlHaltParser(ctxt);
         xmlErrInternal(ctxt, "Growing input buffer", NULL);
-        ctxt->instate = XML_PARSER_EOF;
     }
 
     return(ret);
@@ -381,8 +414,65 @@ xmlParserInputGrow(xmlParserInputPtr in, int len) {
 }
 
 /**
+ * xmlParserShrink:
+ * @ctxt:  an XML parser context
+ */
+int
+xmlParserShrink(xmlParserCtxtPtr ctxt) {
+    xmlParserInputPtr in = ctxt->input;
+    xmlParserInputBufferPtr buf = in->buf;
+    size_t used;
+    int ret = 0;
+
+    /* Don't shrink memory buffers. */
+    if ((buf == NULL) ||
+        ((buf->encoder == NULL) && (buf->readcallback == NULL)))
+        return(0);
+
+    used = in->cur - in->base;
+    /*
+     * Do not shrink on large buffers whose only a tiny fraction
+     * was consumed
+     */
+    if (used > INPUT_CHUNK) {
+	size_t res = xmlBufShrink(buf->buffer, used - LINE_LEN);
+
+	if (res > 0) {
+            used -= res;
+            if ((res > ULONG_MAX) ||
+                (in->consumed > ULONG_MAX - (unsigned long)res))
+                in->consumed = ULONG_MAX;
+            else
+                in->consumed += res;
+	}
+    }
+
+    if (xmlBufUse(buf->buffer) < INPUT_CHUNK)
+        ret = xmlParserInputBufferGrow(buf, INPUT_CHUNK);
+
+    in->base = xmlBufContent(buf->buffer);
+    if (in->base == NULL) {
+        xmlHaltParser(ctxt);
+        xmlErrMemory(ctxt, NULL);
+        return(-1);
+    }
+    in->cur = in->base + used;
+    in->end = xmlBufEnd(buf->buffer);
+
+    /* TODO: Get error code from xmlParserInputBufferGrow */
+    if (ret < 0) {
+        xmlHaltParser(ctxt);
+        xmlErrInternal(ctxt, "Growing input buffer", NULL);
+    }
+
+    return(ret);
+}
+
+/**
  * xmlParserInputShrink:
  * @in:  an XML parser input
+ *
+ * DEPRECATED: Don't use.
  *
  * This function removes used input for the parser.
  */

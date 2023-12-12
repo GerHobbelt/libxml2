@@ -100,8 +100,6 @@ xmlCreateEntityParserCtxtInternal(xmlSAXHandlerPtr sax, void *userData,
         const xmlChar *URL, const xmlChar *ID, const xmlChar *base,
         xmlParserCtxtPtr pctx);
 
-static void xmlHaltParser(xmlParserCtxtPtr ctxt);
-
 static int
 xmlParseElementStart(xmlParserCtxtPtr ctxt);
 
@@ -2065,16 +2063,7 @@ static int spacePop(xmlParserCtxtPtr ctxt) {
 #define SHRINK if ((ctxt->progressive == 0) &&				\
 		   (ctxt->input->cur - ctxt->input->base > 2 * INPUT_CHUNK) && \
 		   (ctxt->input->end - ctxt->input->cur < 2 * INPUT_CHUNK)) \
-	xmlSHRINK (ctxt);
-
-static void xmlSHRINK (xmlParserCtxtPtr ctxt) {
-    /* Don't shrink memory buffers. */
-    if ((ctxt->input->buf) &&
-        ((ctxt->input->buf->encoder) || (ctxt->input->buf->readcallback)))
-        xmlParserInputShrink(ctxt->input);
-    if (*ctxt->input->cur == 0)
-        xmlParserGrow(ctxt);
-}
+	xmlParserShrink(ctxt);
 
 #define GROW if ((ctxt->progressive == 0) &&				\
 		 (ctxt->input->end - ctxt->input->cur < INPUT_CHUNK))	\
@@ -11484,7 +11473,7 @@ xmlParseTryOrFinish(xmlParserCtxtPtr ctxt, int terminate) {
 
     if ((ctxt->input != NULL) &&
         (ctxt->input->cur - ctxt->input->base > 4096)) {
-        xmlParserInputShrink(ctxt->input);
+        xmlParserShrink(ctxt);
     }
 
     while (ctxt->instate != XML_PARSER_EOF) {
@@ -12409,41 +12398,6 @@ xmlCreatePushParserCtxt(xmlSAXHandlerPtr sax, void *user_data,
     return(ctxt);
 }
 #endif /* LIBXML_PUSH_ENABLED */
-
-/**
- * xmlHaltParser:
- * @ctxt:  an XML parser context
- *
- * Blocks further parser processing don't override error
- * for internal use
- */
-static void
-xmlHaltParser(xmlParserCtxtPtr ctxt) {
-    if (ctxt == NULL)
-        return;
-    ctxt->instate = XML_PARSER_EOF;
-    ctxt->disableSAX = 1;
-    while (ctxt->inputNr > 1)
-        xmlFreeInputStream(inputPop(ctxt));
-    if (ctxt->input != NULL) {
-        /*
-	 * in case there was a specific allocation deallocate before
-	 * overriding base
-	 */
-        if (ctxt->input->free != NULL) {
-	    ctxt->input->free((xmlChar *) ctxt->input->base);
-	    ctxt->input->free = NULL;
-	}
-        if (ctxt->input->buf != NULL) {
-            xmlFreeParserInputBuffer(ctxt->input->buf);
-            ctxt->input->buf = NULL;
-        }
-	ctxt->input->cur = BAD_CAST"";
-        ctxt->input->length = 0;
-	ctxt->input->base = ctxt->input->cur;
-        ctxt->input->end = ctxt->input->cur;
-    }
-}
 
 /**
  * xmlStopParser:

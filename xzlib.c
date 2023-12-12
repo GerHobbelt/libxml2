@@ -136,6 +136,7 @@ static xzFile
 xz_open(const char *path, int fd, const char *mode ATTRIBUTE_UNUSED)
 {
     xz_statep state;
+    off_t offset;
 
     /* allocate xzFile structure to return */
     state = xmlMalloc(sizeof(xz_state));
@@ -170,9 +171,11 @@ xz_open(const char *path, int fd, const char *mode ATTRIBUTE_UNUSED)
     }
 
     /* save the current position for rewinding (only if reading) */
-    state->start = lseek(state->fd, 0, SEEK_CUR);
-    if (state->start == (uint64_t) - 1)
+    offset = lseek(state->fd, 0, SEEK_CUR);
+    if (offset == -1)
         state->start = 0;
+    else
+        state->start = offset;
 
     /* initialize stream */
     xz_reset(state);
