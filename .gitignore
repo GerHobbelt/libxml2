@@ -23,6 +23,7 @@
 /testchar
 /testdict
 /testlimits
+/testparser
 /testrecurse
 
 # Tests
