@@ -4852,6 +4852,14 @@ htmlParseDocument(htmlParserCtxtPtr ctxt) {
     xmlDetectEncoding(ctxt);
 
     /*
+     * This is wrong but matches long-standing behavior. In most cases,
+     * a document starting with an XML declaration will specify UTF-8.
+     */
+    if (((ctxt->input->flags & XML_INPUT_HAS_ENCODING) == 0) &&
+        (xmlStrncmp(ctxt->input->cur, BAD_CAST "<?xm", 4) == 0))
+        xmlSwitchEncoding(ctxt, XML_CHAR_ENCODING_UTF8);
+
+    /*
      * Wipe out everything which is before the first '<'
      */
     SKIP_BLANKS;
@@ -5113,7 +5121,8 @@ htmlNewSAXParserCtxt(const htmlSAXHandler *sax, void *userData)
  * @buffer:  a pointer to a char array
  * @size:  the size of the array
  *
- * Create a parser context for an HTML in-memory document.
+ * Create a parser context for an HTML in-memory document. The input buffer
+ * must not contain a terminating null byte.
  *
  * Returns the new parser context or NULL
  */
@@ -5408,6 +5417,16 @@ htmlParseTryOrFinish(htmlParserCtxtPtr ctxt, int terminate) {
 		 */
 	        goto done;
             case XML_PARSER_START:
+                /*
+                 * This is wrong but matches long-standing behavior. In most
+                 * cases, a document starting with an XML declaration will
+                 * specify UTF-8.
+                 */
+                if (((ctxt->input->flags & XML_INPUT_HAS_ENCODING) == 0) &&
+                    (xmlStrncmp(ctxt->input->cur, BAD_CAST "<?xm", 4) == 0)) {
+                    xmlSwitchEncoding(ctxt, XML_CHAR_ENCODING_UTF8);
+                }
+
 	        /*
 		 * Very first chars read from the document flow.
 		 */
@@ -6611,7 +6630,8 @@ htmlReadFile(const char *filename, const char *encoding, int options)
  * @encoding:  the document encoding, or NULL
  * @options:  a combination of htmlParserOption(s)
  *
- * parse an XML in-memory document and build a tree.
+ * Parse an HTML in-memory document and build a tree. The input buffer must
+ * not contain a terminating null byte.
  *
  * Returns the resulting document tree
  */
@@ -6803,7 +6823,8 @@ htmlCtxtReadFile(htmlParserCtxtPtr ctxt, const char *filename,
  * @encoding:  the document encoding, or NULL
  * @options:  a combination of htmlParserOption(s)
  *
- * parse an XML in-memory document and build a tree.
+ * Parse an HTML in-memory document and build a tree. The input buffer must
+ * not contain a terminating null byte.
  * This reuses the existing @ctxt parser context
  *
  * Returns the resulting document tree
