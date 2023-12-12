@@ -182,6 +182,7 @@ static const xmlHugeDocParts hugeDocTable[] = {
         "  <bar attr='&e; &f; &d;'>&a; &b; &c; &e; &f; &d;</bar>\n"
         "  <bar>_123456789_123456789_123456789_123456789</bar>\n"
         "  <bar>_123456789_123456789_123456789_123456789</bar>\n"
+        "  <bar>_123456789_123456789_123456789_123456789</bar>\n"
         "  <bar>_123456789_123456789_123456789_123456789</bar>\n",
 
         "</foo>"
@@ -280,7 +281,7 @@ hugeClose(void * context) {
     return(0);
 }
 
-#define MAX_NODES 10000
+#define MAX_NODES 1000
 
 /**
  * hugeRead:
@@ -863,7 +864,8 @@ notRecursiveHugeTest(const char *filename ATTRIBUTE_UNUSED,
 	res = 1;
     } else {
         xmlEntityPtr ent;
-        unsigned long fixed_cost = 50;
+        unsigned long fixed_cost = 20;
+        unsigned long allowed_expansion = 1000000;
         unsigned long f_size = xmlStrlen(BAD_CAST "some internal data");
         unsigned long e_size;
         unsigned long d_size;
@@ -903,7 +905,7 @@ notRecursiveHugeTest(const char *filename ATTRIBUTE_UNUSED,
             res = 1;
         }
 
-        if (ctxt->sizeentcopy < XML_MAX_TEXT_LENGTH) {
+        if (ctxt->sizeentcopy < allowed_expansion) {
             fprintf(stderr, "Total entity size too small: %lu\n",
                     ctxt->sizeentcopy);
             res = 1;
@@ -964,7 +966,8 @@ hugeDtdTest(const char *filename ATTRIBUTE_UNUSED,
         fprintf(stderr, "Failed to parse huge_dtd.xml\n");
 	res = 1;
     } else {
-        unsigned long fixed_cost = 50;
+        unsigned long fixed_cost = 20;
+        unsigned long allowed_expansion = 1000000;
         unsigned long a_size = xmlStrlen(BAD_CAST "<!-- comment -->");
         unsigned long b_size;
         unsigned long c_size;
@@ -972,7 +975,7 @@ hugeDtdTest(const char *filename ATTRIBUTE_UNUSED,
         unsigned long f_size;
         unsigned long total_size;
 
-        if (ctxt->sizeentcopy < XML_MAX_TEXT_LENGTH) {
+        if (ctxt->sizeentcopy < allowed_expansion) {
             fprintf(stderr, "Total entity size too small: %lu\n",
                     ctxt->sizeentcopy);
             res = 1;

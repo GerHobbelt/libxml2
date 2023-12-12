@@ -50,13 +50,22 @@ xmlFuzzErrorFunc(void *ctx ATTRIBUTE_UNUSED, const char *msg ATTRIBUTE_UNUSED,
                  ...);
 
 void
+xmlFuzzMemSetup(void);
+
+void
+xmlFuzzMemSetLimit(size_t limit);
+
+void
 xmlFuzzDataInit(const char *data, size_t size);
 
 void
 xmlFuzzDataCleanup(void);
 
-int
-xmlFuzzReadInt(void);
+void
+xmlFuzzWriteInt(FILE *out, size_t v, int size);
+
+size_t
+xmlFuzzReadInt(int size);
 
 const char *
 xmlFuzzReadRemaining(size_t *size);
@@ -78,10 +87,6 @@ xmlFuzzMainEntity(size_t *size);
 
 xmlParserInputPtr
 xmlFuzzEntityLoader(const char *URL, const char *ID, xmlParserCtxtPtr ctxt);
-
-size_t
-xmlFuzzExtractStrings(const char *data, size_t size, char **strings,
-                      size_t numStrings);
 
 char *
 xmlSlurpFile(const char *path, size_t *size);
