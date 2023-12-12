@@ -41,7 +41,10 @@
 
 #include "private/dict.h"
 
-#define MAX_HASH_LEN 8
+#define MAX_HASH_LEN 16
+#define MAX_FILL 2
+#define GROWTH_FACTOR 4
+#define MIN_HASH_SIZE 16
 
 /* #define DEBUG_GROW */
 
@@ -67,9 +70,7 @@ struct _xmlHashTable {
     int size;
     int nbElems;
     xmlDictPtr dict;
-#ifdef HASH_RANDOMIZATION
-    int random_seed;
-#endif
+    unsigned random_seed;
 };
 
 /*
@@ -83,12 +84,10 @@ ATTRIBUTE_NO_SANITIZE("unsigned-shift-base")
 static unsigned long
 xmlHashComputeKey(xmlHashTablePtr table, const xmlChar *name,
 	          const xmlChar *name2, const xmlChar *name3) {
-    unsigned long value = 0L;
+    unsigned long value;
     unsigned long ch;
 
-#ifdef HASH_RANDOMIZATION
     value = table->random_seed;
-#endif
     if (name != NULL) {
 	value += 30 * (*name);
 	while ((ch = *name++) != 0) {
@@ -119,12 +118,10 @@ xmlHashComputeQKey(xmlHashTablePtr table,
 		   const xmlChar *prefix, const xmlChar *name,
 		   const xmlChar *prefix2, const xmlChar *name2,
 		   const xmlChar *prefix3, const xmlChar *name3) {
-    unsigned long value = 0L;
+    unsigned long value;
     unsigned long ch;
 
-#ifdef HASH_RANDOMIZATION
     value = table->random_seed;
-#endif
     if (prefix != NULL)
 	value += 30 * (*prefix);
     else
@@ -182,8 +179,8 @@ xmlHashCreate(int size) {
 
     xmlInitParser();
 
-    if (size <= 0)
-        size = 256;
+    if (size <= MIN_HASH_SIZE)
+        size = MIN_HASH_SIZE;
 
     table = xmlMalloc(sizeof(xmlHashTable));
     if (table) {
@@ -194,7 +191,7 @@ xmlHashCreate(int size) {
         if (table->table) {
 	    memset(table->table, 0, size * sizeof(xmlHashEntry));
 #ifdef HASH_RANDOMIZATION
-            table->random_seed = __xmlRandom();
+            table->random_seed = xmlRandom();
 #endif
 	    return(table);
         }
@@ -245,12 +242,10 @@ xmlHashGrow(xmlHashTablePtr table, int size) {
 
     if (table == NULL)
 	return(-1);
-    if (size < 8)
-        return(-1);
-    if (size > 8 * 2048)
-	return(-1);
-
     oldsize = table->size;
+    if (size <= oldsize)
+        return(0);
+
     oldtable = table->table;
     if (oldtable == NULL)
         return(-1);
@@ -644,8 +639,13 @@ xmlHashAddEntry3(xmlHashTablePtr table, const xmlChar *name,
 
     table->nbElems++;
 
-    if (len > MAX_HASH_LEN)
-	xmlHashGrow(table, MAX_HASH_LEN * table->size);
+    if ((table->nbElems > table->size / MAX_FILL) ||
+        (len > MAX_HASH_LEN)) {
+        int newSize = table->size > INT_MAX / GROWTH_FACTOR ?
+                      INT_MAX :
+                      GROWTH_FACTOR * table->size;
+	xmlHashGrow(table, newSize);
+    }
 
     return(0);
 

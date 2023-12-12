@@ -135,6 +135,8 @@ AC_ARG_WITH(minimum,
 AC_ARG_WITH(legacy,
 [  --with-legacy           maximum ABI compatibility (off)])
 
+AC_ARG_WITH(tls,
+[  --with-tls              thread-local storage (on)])
 AC_ARG_WITH(fexceptions,
 [  --with-fexceptions      add GCC flag -fexceptions for C++ exceptions (off)])
 AC_ARG_WITH(coverage,
@@ -283,6 +285,12 @@ else
     fi
 fi
 
+XML_PRIVATE_LIBS=
+XML_PRIVATE_CFLAGS=
+XML_PC_LIBS=
+XML_PC_CFLAGS=
+XML_PC_REQUIRES=
+
 dnl
 dnl Checks for header files.
 dnl
@@ -307,7 +315,7 @@ dnl
 AC_CHECK_FUNCS(snprintf vsnprintf,, NEED_TRIO=1)
 
 dnl Checks for library functions.
-AC_CHECK_FUNCS([gettimeofday ftime stat rand_r isascii mmap munmap])
+AC_CHECK_FUNCS([gettimeofday ftime stat isascii mmap munmap])
 
 AH_VERBATIM([HAVE_MUNMAP_AFTER],[/* mmap() is no good without munmap() */
 #if defined(HAVE_MMAP) && !defined(HAVE_MUNMAP)
@@ -434,6 +442,20 @@ dnl
 XML_LIBDIR='-L${libdir}'
 XML_INCLUDEDIR='-I${includedir}/libxml2'
 XML_CFLAGS=""
+
+dnl Thread-local storage
+if test "$with_tls" != "no"; then
+    AC_COMPILE_IFELSE([
+        AC_LANG_SOURCE([_Thread_local int v;]) ], [
+        AC_DEFINE([XML_THREAD_LOCAL], [_Thread_local], [TLS specifier]) ], [
+    AC_COMPILE_IFELSE([
+        AC_LANG_SOURCE([__thread int v;]) ], [
+        AC_DEFINE([XML_THREAD_LOCAL], [__thread], [TLS specifier]) ], [
+    AC_COMPILE_IFELSE([
+        AC_LANG_SOURCE([__declspec(thread) int v;]) ], [
+        AC_DEFINE([XML_THREAD_LOCAL], [__declspec(thread)], [TLS specifier]) ], [
+    WARN_NO_TLS=1 ])])])
+fi
 
 dnl Checking whether __attribute__((destructor)) is accepted by the compiler
 AC_MSG_CHECKING([whether __attribute__((destructor)) is accepted])
@@ -828,7 +850,7 @@ dnl
 if test "${NEED_TRIO}" = "1" ; then
     echo Adding trio library for string functions
     WITH_TRIO=1
-else    
+else
     WITH_TRIO=0
 fi
 AM_CONDITIONAL(WITH_TRIO_SOURCES, test "${NEED_TRIO}" = "1")
@@ -947,7 +969,7 @@ else
     if test "x$Z_DIR" = "x"; then
         # Try pkg-config first so that static linking works.
         PKG_CHECK_MODULES([Z],[zlib],
-            [WITH_ZLIB=1],
+            [WITH_ZLIB=1; XML_PC_REQUIRES="${XML_PC_REQUIRES} zlib"],
             [:])
     fi
 
@@ -972,10 +994,15 @@ else
                 else
                     Z_LIBS="-lz"
                 fi])
+                XML_PC_CFLAGS="${XML_PC_CFLAGS} ${Z_CFLAGS}"
+                XML_PC_LIBS="${XML_PC_LIBS} ${Z_LIBS}"
             )
         CPPFLAGS=$_cppflags
         LIBS=$_libs
     fi
+
+    XML_PRIVATE_CFLAGS="${XML_PRIVATE_CFLAGS} ${Z_CFLAGS}"
+    XML_PRIVATE_LIBS="${XML_PRIVATE_LIBS} ${Z_LIBS}"
 fi
 AC_SUBST(WITH_ZLIB)
 
@@ -995,7 +1022,7 @@ else
     if test "x$LZMA_DIR" = "x"; then
         # Try pkg-config first so that static linking works.
         PKG_CHECK_MODULES([LZMA],[liblzma],
-            [WITH_LZMA=1],
+            [WITH_LZMA=1; XML_PC_REQUIRES="${XML_PC_REQUIRES} liblzma"],
             [:])
     fi
 
@@ -1018,10 +1045,15 @@ else
                 else
                     LZMA_LIBS="-llzma"
                 fi])
+                XML_PC_CFLAGS="${XML_PC_CFLAGS} ${LZMA_CFLAGS}"
+                XML_PC_LIBS="${XML_PC_LIBS} ${LZMA_LIBS}"
             )
         CPPFLAGS=$_cppflags
         LIBS=$_libs
     fi
+
+    XML_PRIVATE_CFLAGS="${XML_PRIVATE_CFLAGS} ${LZMA_CFLAGS}"
+    XML_PRIVATE_LIBS="${XML_PRIVATE_LIBS} ${LZMA_LIBS}"
 fi
 AC_SUBST(WITH_LZMA)
 AM_CONDITIONAL(WITH_LZMA_SOURCES, test "$WITH_LZMA" = "1")
@@ -1075,15 +1107,14 @@ dnl
 dnl Checks for ICU library.
 dnl
 WITH_ICU=0
-ICU_LIBS=""
 
-if test "$with_icu" != "yes" ; then
+if test "$with_icu" = "no" || test "$with_icu" = "" ; then
     echo Disabling ICU support
 else
     # Try pkg-config first so that static linking works.
     # If this succeeeds, we ignore the WITH_ICU directory.
     PKG_CHECK_MODULES([ICU], [icu-i18n], [
-        WITH_ICU=1
+        WITH_ICU=1; XML_PC_REQUIRES="${XML_PC_REQUIRES} icu-i18n"
         m4_ifdef([PKG_CHECK_VAR],
             [PKG_CHECK_VAR([ICU_DEFS], [icu-i18n], [DEFS])])
         if test "x$ICU_DEFS" != "x"; then
@@ -1097,10 +1128,12 @@ else
             WITH_ICU=1
             ICU_CFLAGS=`${ICU_CONFIG} --cflags`
             ICU_LIBS=`${ICU_CONFIG} --ldflags`
+            XML_PC_CFLAGS="${XML_PC_CFLAGS} ${ICU_CFLAGS}"
+            XML_PC_LIBS="${XML_PC_LIBS} ${ICU_LIBS}"
         else
-	    _cppflags="${CPPFLAGS}"
-	    _libs="${LIBS}"
-            if test "$with_icu" != "yes" && test "$with_icu" != "" ; then
+            _cppflags="${CPPFLAGS}"
+            _libs="${LIBS}"
+            if test "$with_icu" != "yes" ; then
                 ICU_DIR=$with_icu
                 CPPFLAGS="${CPPFLAGS} -I$ICU_DIR/include"
                 LIBS="${LIBS} -L$ICU_DIR/lib"
@@ -1114,10 +1147,15 @@ else
                         ICU_CFLAGS="-I$ICU_DIR/include"
                         ICU_LIBS="-L$ICU_DIR/lib $ICU_LIBS"
                     fi])])
+                    XML_PC_CFLAGS="${XML_PC_CFLAGS} ${ICU_CFLAGS}"
+                    XML_PC_LIBS="${XML_PC_LIBS} ${ICU_LIBS}"
             CPPFLAGS=$_cppflags
             LIBS=$_libs
         fi
     fi
+
+    XML_PRIVATE_CFLAGS="${XML_PRIVATE_CFLAGS} ${ICU_CFLAGS}"
+    XML_PRIVATE_LIBS="${XML_PRIVATE_LIBS} ${ICU_LIBS}"
 fi
 AC_SUBST(WITH_ICU)
 
@@ -1132,8 +1170,15 @@ fi
 
 XML_LIBS="-lxml2"
 XML_LIBTOOLLIBS="libxml2.la"
-XML_PRIVATE_LIBS="$Z_LIBS $LZMA_LIBS $THREAD_LIBS $ICONV_LIBS $ICU_LIBS $LIBM $NET_LIBS"
-XML_PRIVATE_CFLAGS="$Z_CFLAGS $LZMA_CFLAGS $THREAD_CFLAGS $ICONV_CFLAGS $ICU_CFLAGS"
+XML_PRIVATE_LIBS="${XML_PRIVATE_LIBS} $THREAD_LIBS $ICONV_LIBS $LIBM $NET_LIBS"
+XML_PRIVATE_CFLAGS="${XML_PRIVATE_CFLAGS} $THREAD_CFLAGS $ICONV_CFLAGS"
+
+AC_SUBST(XML_PC_LIBS)
+AC_SUBST(XML_PC_CFLAGS)
+AC_SUBST(XML_PC_REQUIRES)
+AM_SUBST_NOTMAKE(XML_PC_LIBS)
+AM_SUBST_NOTMAKE(XML_PC_CFLAGS)
+AM_SUBST_NOTMAKE(XML_PC_REQUIRES)
 
 AC_SUBST(AM_CFLAGS)
 AC_SUBST(AM_LDFLAGS)
@@ -1156,10 +1201,10 @@ AC_CONFIG_FILES([python/setup.py], [chmod +x python/setup.py])
 AC_CONFIG_FILES([xml2-config], [chmod +x xml2-config])
 AC_OUTPUT
 
-AC_COMPILE_IFELSE([AC_LANG_SOURCE([_Thread_local int v;])], [], [
+if test "$WARN_NO_TLS" != ""; then
     echo "================================================================"
-    echo "WARNING: Your C compiler doesn't support C11."
-    echo "Future versions of libxml2 will probably require a C11 compiler,"
-    echo "at least for features like multi-threading."
+    echo "WARNING: Your C compiler appears to not support thread-local"
+    echo "storage. Future versions of libxml2 will require this feature"
+    echo "for multi-threading."
     echo "================================================================"
-])
+fi
