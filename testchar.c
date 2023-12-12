@@ -5,6 +5,8 @@
  * copy: see Copyright for the status of this software.
  */
 
+#define XML_DEPRECATED
+
 #include <stdio.h>
 #include <string.h>
 #include <libxml/tree.h>
@@ -687,7 +689,7 @@ testUserEncoding(void) {
     int totalSize = startSize + textSize + endSize;
     int k = 0;
     int i;
-    int ret = 0;
+    int ret = 1;
 
     buf = xmlMalloc(2 * totalSize);
     for (i = 0; start[i] != 0; i++) {
@@ -708,15 +710,16 @@ testUserEncoding(void) {
         fprintf(stderr, "failed to parse document\n");
         goto error;
     }
-    text = doc->children->children->content;
 
+    text = doc->children->children->content;
     for (i = 0; i < textSize; i++) {
         if (text[i] != 'x') {
             fprintf(stderr, "text node has wrong content at offset %d\n", k);
-            ret = 1;
             goto error;
         }
     }
+
+    ret = 0;
 
 error:
     xmlFreeDoc(doc);
