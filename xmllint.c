@@ -3825,7 +3825,6 @@ int main(int argc, const char** argv) {
 
 error:
     xmlCleanupParser();
-    xmlMemoryDump();
 
     return(progresult);
 }

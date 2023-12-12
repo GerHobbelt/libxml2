@@ -446,6 +446,5 @@ int main(int argc, const char** argv) {
     }
     clean_strings();
     xmlCleanupParser();
-    xmlMemoryDump();
     return(ret);
 }

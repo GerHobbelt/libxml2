@@ -534,7 +534,6 @@ xsdTestCase(xmlNodePtr tst) {
 	    if ((mem != xmlMemUsed()) && (extraMemoryFromResolver == 0)) {
 	        test_log("Validation of instance line %ld leaked %d\n",
 		        xmlGetLineNo(tmp), xmlMemUsed() - mem);
-		xmlMemoryDump();
 	        nb_leaks++;
 	    }
 	}
@@ -589,7 +588,6 @@ xsdTestCase(xmlNodePtr tst) {
 	    if ((mem != xmlMemUsed()) && (extraMemoryFromResolver == 0)) {
 	        test_log("Validation of instance line %ld leaked %d\n",
 		        xmlGetLineNo(tmp), xmlMemUsed() - mem);
-		xmlMemoryDump();
 	        nb_leaks++;
 	    }
 	}
@@ -1173,7 +1171,6 @@ int main(int argc, const char** argv) {
     }
     xmlXPathFreeContext(ctxtXPath);
     xmlCleanupParser();
-    xmlMemoryDump();
 
     if (logfile != NULL)
         fclose(logfile);

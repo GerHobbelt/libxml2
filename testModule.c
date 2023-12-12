@@ -77,8 +77,6 @@ int main(int argc, const char** argv) {
 
     xmlModuleClose(module);
 
-    xmlMemoryDump();
-
     return(0);
 }
 

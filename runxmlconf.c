@@ -601,7 +601,6 @@ int main(int argc, const char** argv) {
     }
     xmlXPathFreeContext(ctxtXPath);
     xmlCleanupParser();
-    xmlMemoryDump();
 
     if (logfile != NULL)
         fclose(logfile);

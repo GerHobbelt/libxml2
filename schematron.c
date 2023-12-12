@@ -2058,7 +2058,6 @@ int main(int argc, const char** argv) {
     xmlFreeDoc(instance);
 
     xmlCleanupParser();
-    xmlMemoryDump();
 
     return (0);
 }

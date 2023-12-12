@@ -145,7 +145,6 @@ int main(void)
                        threadParams[i].filename);
     }
     xmlCleanupParser();
-    xmlMemoryDump();
     return (0);
 }
 #elif defined(_WIN32)
@@ -212,7 +211,6 @@ int main(void)
     }
 
     xmlCleanupParser();
-    xmlMemoryDump();
 
     return (0);
 }

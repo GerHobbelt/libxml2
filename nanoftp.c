@@ -2090,7 +2090,6 @@ int main(int argc, const char** argv) {
 				"Failed to get file\n");
     }
     xmlNanoFTPClose(ctxt);
-    xmlMemoryDump();
     exit(0);
 }
 #endif /* STANDALONE */

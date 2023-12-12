@@ -605,7 +605,6 @@ int main(int argc, const char** argv) {
      * Cleanup and check for memory leaks
      */
     xmlCleanupParser();
-    xmlMemoryDump();
     return(exit_value);
 }
 #else

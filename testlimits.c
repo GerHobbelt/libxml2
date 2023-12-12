@@ -1628,7 +1628,6 @@ int main(int argc, const char** argv) {
 	       nb_tests, nb_errors, nb_leaks);
     }
     xmlCleanupParser();
-    xmlMemoryDump();
 
     return(ret);
 }
