@@ -404,6 +404,10 @@ xmlSchemaInitTypes(void)
     xmlSchemaTypeAnyTypeDef = xmlSchemaInitBasicType("anyType",
                                                      XML_SCHEMAS_ANYTYPE,
 						     NULL);
+    if (xmlSchemaTypeAnyTypeDef == NULL) {
+	xmlSchemaTypeErrMemory(NULL, NULL);
+        return;
+    }
     xmlSchemaTypeAnyTypeDef->baseType = xmlSchemaTypeAnyTypeDef;
     xmlSchemaTypeAnyTypeDef->contentType = XML_SCHEMA_CONTENT_MIXED;
     /*
@@ -3036,6 +3040,8 @@ xmlSchemaValAtomicType(xmlSchemaTypePtr type, const xmlChar * value,
 			    value = norm;
 		    }
 		    tmpval = xmlStrdup(value);
+                    if (tmpval == NULL)
+                        goto error;
 		    for (cur = tmpval; *cur; ++cur) {
 			if (*cur < 32 || *cur >= 127 || *cur == ' ' ||
 			    *cur == '<' || *cur == '>' || *cur == '"' ||

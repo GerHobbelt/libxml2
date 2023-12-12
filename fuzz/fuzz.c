@@ -166,7 +166,8 @@ xmlFuzzReadString(size_t *size) {
             if (c2 == '\n') {
                 fuzzData.ptr++;
                 fuzzData.remaining--;
-                *size = fuzzData.outPtr - out;
+                if (size != NULL)
+                    *size = fuzzData.outPtr - out;
                 *fuzzData.outPtr++ = '\0';
                 return(out);
             }
@@ -180,12 +181,14 @@ xmlFuzzReadString(size_t *size) {
     }
 
     if (fuzzData.outPtr > out) {
-        *size = fuzzData.outPtr - out;
+        if (size != NULL)
+            *size = fuzzData.outPtr - out;
         *fuzzData.outPtr++ = '\0';
         return(out);
     }
 
-    *size = 0;
+    if (size != NULL)
+        *size = 0;
     return(NULL);
 }
 
@@ -201,10 +204,10 @@ xmlFuzzReadEntities(void) {
 
     while (1) {
         const char *url, *entity;
-        size_t urlSize, entitySize;
+        size_t entitySize;
         xmlFuzzEntityInfo *entityInfo;
-        
-        url = xmlFuzzReadString(&urlSize);
+
+        url = xmlFuzzReadString(NULL);
         if (url == NULL) break;
 
         entity = xmlFuzzReadString(&entitySize);
@@ -271,7 +274,7 @@ xmlFuzzEntityLoader(const char *URL, const char *ID ATTRIBUTE_UNUSED,
         return(NULL);
 
     input = xmlNewInputStream(ctxt);
-    input->filename = NULL;
+    input->filename = (char *) xmlCharStrdup(URL);
     input->buf = xmlParserInputBufferCreateMem(entity->data, entity->size,
                                                XML_CHAR_ENCODING_NONE);
     if (input->buf == NULL) {
