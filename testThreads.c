@@ -3,10 +3,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#if defined(LIBXML_THREAD_ENABLED) && defined(LIBXML_CATALOG_ENABLED)
-#include <libxml/globals.h>
-#include <libxml/threads.h>
 #include <libxml/parser.h>
+#include <libxml/threads.h>
+#include <libxml/globals.h>
+
+#if defined(LIBXML_THREAD_ENABLED) && defined(LIBXML_CATALOG_ENABLED)
+
 #include <libxml/catalog.h>
 #ifdef HAVE_PTHREAD_H
 #include <pthread.h>
@@ -59,6 +61,12 @@ thread_specific_data(void *private_data)
     const char *filename = params->filename;
     int okay = 1;
 
+    if (xmlCheckThreadLocalStorage() != 0) {
+        printf("xmlCheckThreadLocalStorage failed\n");
+        params->okay = 0;
+        return(NULL);
+    }
+
     if (!strcmp(filename, "test/threads/invalid.xml")) {
         xmlDoValidityCheckingDefaultValue = 0;
         xmlGenericErrorContext = stdout;
@@ -100,7 +108,17 @@ thread_specific_data(void *private_data)
     return(NULL);
 }
 
-#ifdef HAVE_PTHREAD_H
+#ifdef _WIN32
+static DWORD WINAPI
+win32_thread_specific_data(void *private_data)
+{
+    thread_specific_data(private_data);
+    return(0);
+}
+#endif
+
+#endif /* LIBXML_THREADS_ENABLED */
+
 
 #if defined(BUILD_MONOLITHIC)
 #define main(void)      xml_testthreads_main()
@@ -108,17 +126,31 @@ thread_specific_data(void *private_data)
 
 int main(void)
 {
-    unsigned int i, repeat;
-    int ret;
+    unsigned int repeat;
+    int status = 0;
+
+    (void) repeat;
 
     xmlInitParser();
+
+    if (xmlCheckThreadLocalStorage() != 0) {
+        printf("xmlCheckThreadLocalStorage failed for main thread\n");
+        return(1);
+    }
+
+#if defined(LIBXML_THREAD_ENABLED) && defined(LIBXML_CATALOG_ENABLED)
     for (repeat = 0;repeat < TEST_REPEAT_COUNT;repeat++) {
+        unsigned int i;
+        int ret;
+
 	xmlLoadCatalog(catalog);
 
+#ifdef HAVE_PTHREAD_H
+
 #if defined(PTW32_VERSION) /* [i_a] */
-	    memset(tid, 0, sizeof(*tid)*num_threads);
+	memset(tid, 0, sizeof(*tid)*num_threads);
 #else
-        memset(tid, 0xff, sizeof(*tid)*num_threads);
+	memset(tid, 0xff, sizeof(*tid)*num_threads);
 #endif
 
 	for (i = 0; i < num_threads; i++) {
@@ -137,39 +169,7 @@ int main(void)
 		exit(1);
 	    }
 	}
-
-	xmlCatalogCleanup();
-	for (i = 0; i < num_threads; i++)
-	    if (threadParams[i].okay == 0)
-		printf("Thread %d handling %s failed\n", i,
-                       threadParams[i].filename);
-    }
-    xmlCleanupParser();
-    return (0);
-}
 #elif defined(_WIN32)
-static DWORD WINAPI
-win32_thread_specific_data(void *private_data)
-{
-    thread_specific_data(private_data);
-    return(0);
-}
-
-
-#if defined(BUILD_MONOLITHIC)
-#define main(void)      xml_testthreads_main(void)
-#endif
-
-int main(void)
-{
-	unsigned int i, repeat;
-    BOOL ret;
-
-    xmlInitParser();
-    for (repeat = 0;repeat < TEST_REPEAT_COUNT;repeat++)
-    {
-        xmlLoadCatalog(catalog);
-
         for (i = 0; i < num_threads; i++)
         {
             tid[i] = (HANDLE) -1;
@@ -201,30 +201,24 @@ int main(void)
             }
             CloseHandle (tid[i]);
         }
+#endif /* pthreads */
 
-        xmlCatalogCleanup();
-        for (i = 0; i < num_threads; i++) {
-            if (threadParams[i].okay == 0)
-            printf("Thread %d handling %s failed\n", i,
-                   threadParams[i].filename);
+	xmlCatalogCleanup();
+
+	for (i = 0; i < num_threads; i++) {
+	    if (threadParams[i].okay == 0) {
+		printf("Thread %d handling %s failed\n", i,
+                       threadParams[i].filename);
+                status = 1;
+            }
         }
     }
+#else
+	fprintf(stderr, "libxml was not compiled with thread or catalog support\n");
+#endif /* LIBXML_THREADS_ENABLED */
 
     xmlCleanupParser();
 
-    return (0);
+    return (status);
 }
-#endif /* pthreads */
 
-#else /* !LIBXML_THREADS_ENABLED */
-
-#if defined(BUILD_MONOLITHIC)
-#define main(void)      xml_testthreads_main(void)
-#endif
-
-int main(void)
-{
-	fprintf(stderr, "libxml was not compiled with thread or catalog support\n");
-    return (0);
-}
-#endif
