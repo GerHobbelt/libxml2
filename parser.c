@@ -10455,7 +10455,12 @@ xmlParseDocument(xmlParserCtxtPtr ctxt) {
 
 	if (RAW != 0) {
 	    xmlFatalErr(ctxt, XML_ERR_DOCUMENT_END, NULL);
-	}
+        } else if ((ctxt->input->buf != NULL) &&
+                   (ctxt->input->buf->encoder != NULL) &&
+                   (!xmlBufIsEmpty(ctxt->input->buf->raw))) {
+            xmlFatalErrMsg(ctxt, XML_ERR_INVALID_CHAR,
+                           "Truncated multi-byte sequence at EOF\n");
+        }
 	ctxt->instate = XML_PARSER_EOF;
     }
 
@@ -10993,27 +10998,6 @@ xmlParseTryOrFinish(xmlParserCtxtPtr ctxt, int terminate) {
 	if ((ctxt->errNo != XML_ERR_OK) && (ctxt->disableSAX == 1))
 	    return(0);
 
-	if (ctxt->input == NULL) break;
-	if (ctxt->input->buf != NULL) {
-	    /*
-	     * If we are operating on converted input, try to flush
-	     * remaining chars to avoid them stalling in the non-converted
-	     * buffer.
-	     */
-	    if ((ctxt->input->buf->raw != NULL) &&
-		(xmlBufIsEmpty(ctxt->input->buf->raw) == 0)) {
-		size_t pos = ctxt->input->cur - ctxt->input->base;
-                int res;
-
-		res = xmlParserInputBufferPush(ctxt->input->buf, 0, "");
-                xmlBufUpdateInput(ctxt->input->buf->buffer, ctxt->input, pos);
-                if (res < 0) {
-                    xmlFatalErr(ctxt, ctxt->input->buf->error, NULL);
-                    xmlHaltParser(ctxt);
-                    return(0);
-                }
-	    }
-	}
         avail = ctxt->input->end - ctxt->input->cur;
         if (avail < 1)
 	    goto done;
@@ -11667,24 +11651,6 @@ xmlParseChunk(xmlParserCtxtPtr ctxt, const char *chunk, int size,
 #ifdef DEBUG_PUSH
 	xmlGenericError(xmlGenericErrorContext, "PP: pushed %d\n", size);
 #endif
-
-    } else if (ctxt->instate != XML_PARSER_EOF) {
-	if ((ctxt->input != NULL) && ctxt->input->buf != NULL) {
-	    xmlParserInputBufferPtr in = ctxt->input->buf;
-	    if ((in->encoder != NULL) && (in->buffer != NULL) &&
-		    (in->raw != NULL)) {
-		int nbchars;
-		size_t pos = ctxt->input->cur - ctxt->input->base;
-
-		nbchars = xmlCharEncInput(in, terminate);
-		xmlBufUpdateInput(in->buffer, ctxt->input, pos);
-		if (nbchars < 0) {
-	            xmlFatalErr(ctxt, in->error, NULL);
-                    xmlHaltParser(ctxt);
-		    return(ctxt->errNo);
-		}
-	    }
-	}
     }
 
     xmlParseTryOrFinish(ctxt, terminate);
@@ -11725,7 +11691,12 @@ xmlParseChunk(xmlParserCtxtPtr ctxt, const char *chunk, int size,
 	if ((ctxt->instate == XML_PARSER_EPILOG) &&
             (ctxt->input->cur < ctxt->input->end)) {
 	    xmlFatalErr(ctxt, XML_ERR_DOCUMENT_END, NULL);
-	}
+        } else if ((ctxt->input->buf != NULL) &&
+                   (ctxt->input->buf->encoder != NULL) &&
+                   (!xmlBufIsEmpty(ctxt->input->buf->raw))) {
+            xmlFatalErrMsg(ctxt, XML_ERR_INVALID_CHAR,
+                           "Truncated multi-byte sequence at EOF\n");
+        }
 	if (ctxt->instate != XML_PARSER_EOF) {
 	    if ((ctxt->sax) && (ctxt->sax->endDocument != NULL))
 		ctxt->sax->endDocument(ctxt->userData);
@@ -12468,7 +12439,6 @@ xmlParseBalancedChunkMemoryInternal(xmlParserCtxtPtr oldctxt,
     xmlSAXHandlerPtr oldsax = NULL;
     xmlNodePtr content = NULL;
     xmlNodePtr last = NULL;
-    int size;
     xmlParserErrors ret = XML_ERR_OK;
 #ifdef SAX2
     int i;
@@ -12487,9 +12457,7 @@ xmlParseBalancedChunkMemoryInternal(xmlParserCtxtPtr oldctxt,
     if (string == NULL)
         return(XML_ERR_INTERNAL_ERROR);
 
-    size = xmlStrlen(string);
-
-    ctxt = xmlCreateMemoryParserCtxt((char *) string, size);
+    ctxt = xmlCreateDocParserCtxt(string);
     if (ctxt == NULL) return(XML_WAR_UNDECLARED_ENTITY);
     ctxt->nbErrors = oldctxt->nbErrors;
     ctxt->nbWarnings = oldctxt->nbWarnings;
@@ -12896,7 +12864,6 @@ xmlParseBalancedChunkMemoryRecover(xmlDocPtr doc, xmlSAXHandlerPtr sax,
     xmlDocPtr newDoc;
     xmlSAXHandlerPtr oldsax = NULL;
     xmlNodePtr content, newRoot;
-    int size;
     int ret = 0;
 
     if (depth > 40) {
@@ -12909,9 +12876,7 @@ xmlParseBalancedChunkMemoryRecover(xmlDocPtr doc, xmlSAXHandlerPtr sax,
     if (string == NULL)
         return(-1);
 
-    size = xmlStrlen(string);
-
-    ctxt = xmlCreateMemoryParserCtxt((char *) string, size);
+    ctxt = xmlCreateDocParserCtxt(string);
     if (ctxt == NULL) return(-1);
     ctxt->userData = ctxt;
     if (sax != NULL) {
@@ -13721,13 +13686,37 @@ int xmlSAXUserParseMemory(xmlSAXHandlerPtr sax, void *user_data,
  * Returns the new parser context or NULL
  */
 xmlParserCtxtPtr
-xmlCreateDocParserCtxt(const xmlChar *cur) {
-    int len;
+xmlCreateDocParserCtxt(const xmlChar *str) {
+    xmlParserCtxtPtr ctxt;
+    xmlParserInputPtr input;
+    xmlParserInputBufferPtr buf;
 
-    if (cur == NULL)
+    if (str == NULL)
 	return(NULL);
-    len = xmlStrlen(cur);
-    return(xmlCreateMemoryParserCtxt((const char *)cur, len));
+
+    ctxt = xmlNewParserCtxt();
+    if (ctxt == NULL)
+	return(NULL);
+
+    buf = xmlParserInputBufferCreateString(str);
+    if (buf == NULL) {
+	xmlFreeParserCtxt(ctxt);
+	return(NULL);
+    }
+
+    input = xmlNewInputStream(ctxt);
+    if (input == NULL) {
+	xmlFreeParserInputBuffer(buf);
+	xmlFreeParserCtxt(ctxt);
+	return(NULL);
+    }
+
+    input->filename = NULL;
+    input->buf = buf;
+    xmlBufResetInput(input->buf->buffer, input);
+
+    inputPush(ctxt, input);
+    return(ctxt);
 }
 
 #ifdef LIBXML_SAX1_ENABLED
@@ -14540,13 +14529,33 @@ xmlReadIO(xmlInputReadCallback ioread, xmlInputCloseCallback ioclose,
  * Returns the resulting document tree
  */
 xmlDocPtr
-xmlCtxtReadDoc(xmlParserCtxtPtr ctxt, const xmlChar * cur,
+xmlCtxtReadDoc(xmlParserCtxtPtr ctxt, const xmlChar *str,
                const char *URL, const char *encoding, int options)
 {
-    if (cur == NULL)
+    xmlParserInputBufferPtr input;
+    xmlParserInputPtr stream;
+
+    if (ctxt == NULL)
         return (NULL);
-    return (xmlCtxtReadMemory(ctxt, (const char *) cur, xmlStrlen(cur), URL,
-                              encoding, options));
+    if (str == NULL)
+        return (NULL);
+    xmlInitParser();
+
+    xmlCtxtReset(ctxt);
+
+    input = xmlParserInputBufferCreateString(str);
+    if (input == NULL) {
+	return(NULL);
+    }
+
+    stream = xmlNewIOInputStream(ctxt, input, XML_CHAR_ENCODING_NONE);
+    if (stream == NULL) {
+	xmlFreeParserInputBuffer(input);
+	return(NULL);
+    }
+
+    inputPush(ctxt, stream);
+    return (xmlDoRead(ctxt, URL, encoding, options, 1));
 }
 
 /**
