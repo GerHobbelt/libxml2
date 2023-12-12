@@ -589,6 +589,7 @@ xmlInitParser(void) {
 
         xmlInitMemoryInternal(); /* Should come second */
         xmlInitGlobalsInternal();
+        xmlInitRandom();
         xmlInitDictInternal();
         xmlInitEncodingInternal();
 #if defined(LIBXML_XPATH_ENABLED) || defined(LIBXML_SCHEMAS_ENABLED)
@@ -653,6 +654,7 @@ xmlCleanupParser(void) {
 #endif
 
     xmlCleanupDictInternal();
+    xmlCleanupRandom();
     xmlCleanupGlobalsInternal();
     /*
      * Must come last. On Windows, xmlCleanupGlobalsInternal can call

@@ -3122,6 +3122,7 @@ xmlFARegExecSave(xmlRegExecCtxtPtr exec) {
 	if (exec->rollbacks == NULL) {
 	    xmlRegexpErrMemory(NULL, "saving regexp");
 	    exec->maxRollbacks = 0;
+            exec->status = XML_REGEXP_OUT_OF_MEMORY;
 	    return;
 	}
 	memset(exec->rollbacks, 0,
@@ -3136,6 +3137,7 @@ xmlFARegExecSave(xmlRegExecCtxtPtr exec) {
 	if (tmp == NULL) {
 	    xmlRegexpErrMemory(NULL, "saving regexp");
 	    exec->maxRollbacks /= 2;
+            exec->status = XML_REGEXP_OUT_OF_MEMORY;
 	    return;
 	}
 	exec->rollbacks = tmp;
@@ -3163,6 +3165,8 @@ xmlFARegExecSave(xmlRegExecCtxtPtr exec) {
 
 static void
 xmlFARegExecRollBack(xmlRegExecCtxtPtr exec) {
+    if (exec->status != XML_REGEXP_OK)
+        return;
     if (exec->nbRollbacks <= 0) {
 	exec->status = XML_REGEXP_NOT_FOUND;
 	return;
@@ -3214,7 +3218,7 @@ xmlFARegExec(xmlRegexpPtr comp, const xmlChar *content) {
 	exec->counts = (int *) xmlMalloc(comp->nbCounters * sizeof(int));
 	if (exec->counts == NULL) {
 	    xmlRegexpErrMemory(NULL, "running regexp");
-	    return(-1);
+	    return(XML_REGEXP_OUT_OF_MEMORY);
 	}
         memset(exec->counts, 0, comp->nbCounters * sizeof(int));
     } else
@@ -3313,6 +3317,8 @@ xmlFARegExec(xmlRegexpPtr comp, const xmlChar *content) {
                     /* Save before incrementing */
 		    if (exec->state->nbTrans > exec->transno + 1) {
 			xmlFARegExecSave(exec);
+                        if (exec->status != XML_REGEXP_OK)
+                            goto error;
 		    }
 		    if (trans->counter >= 0) {
 			exec->counts[trans->counter]++;
@@ -3343,6 +3349,8 @@ xmlFARegExec(xmlRegexpPtr comp, const xmlChar *content) {
 			    exec->transno = -1; /* trick */
 			    exec->state = to;
 			    xmlFARegExecSave(exec);
+                            if (exec->status != XML_REGEXP_OK)
+                                goto error;
 			    exec->transno = transno;
 			    exec->state = state;
 			}
@@ -3396,6 +3404,8 @@ xmlFARegExec(xmlRegexpPtr comp, const xmlChar *content) {
 		    ((trans->count >= 0) && (deter == 0) &&
 		     (exec->state->nbTrans > exec->transno + 1))) {
 		    xmlFARegExecSave(exec);
+                    if (exec->status != XML_REGEXP_OK)
+                        goto error;
 		}
 		if (trans->counter >= 0) {
 		    xmlRegCounterPtr counter;
