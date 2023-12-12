@@ -885,6 +885,7 @@ typedef struct {
     xmlHashedString value;
     const xmlChar *valueEnd;
     int external;
+    int expandedSize;
 } xmlDefAttr;
 
 typedef struct _xmlDefAttrs xmlDefAttrs;
@@ -1014,7 +1015,7 @@ xmlAddDefAttrs(xmlParserCtxtPtr ctxt,
                const xmlChar *value) {
     xmlDefAttrsPtr defaults;
     xmlDefAttr *attr;
-    int len;
+    int len, expandedSize;
     xmlHashedString name;
     xmlHashedString prefix;
     xmlHashedString hvalue;
@@ -1094,10 +1095,15 @@ xmlAddDefAttrs(xmlParserCtxtPtr ctxt,
         goto mem_error;
 
     /* intern the string and precompute the end */
-    len = xmlStrlen(value);
+    len = strlen((const char *) value);
     hvalue = xmlDictLookupHashed(ctxt->dict, value, len);
     if (hvalue.name == NULL)
         goto mem_error;
+
+    expandedSize = strlen((const char *) name.name);
+    if (prefix.name != NULL)
+        expandedSize += strlen((const char *) prefix.name);
+    expandedSize += len;
 
     attr = &defaults->attrs[defaults->nbAttrs++];
     attr->name = name;
@@ -1105,6 +1111,7 @@ xmlAddDefAttrs(xmlParserCtxtPtr ctxt,
     attr->value = hvalue;
     attr->valueEnd = hvalue.name + len;
     attr->external = ctxt->external;
+    attr->expandedSize = expandedSize;
 
     return;
 
@@ -2254,13 +2261,11 @@ static int spacePop(xmlParserCtxtPtr ctxt) {
         xmlParserGrow(ctxt);						\
   } while (0)
 
-#define SHRINK if ((ctxt->progressive == 0) &&				\
-		   (ctxt->input->cur - ctxt->input->base > 2 * INPUT_CHUNK) && \
+#define SHRINK if ((ctxt->input->cur - ctxt->input->base > 2 * INPUT_CHUNK) && \
 		   (ctxt->input->end - ctxt->input->cur < 2 * INPUT_CHUNK)) \
 	xmlParserShrink(ctxt);
 
-#define GROW if ((ctxt->progressive == 0) &&				\
-		 (ctxt->input->end - ctxt->input->cur < INPUT_CHUNK))	\
+#define GROW if (ctxt->input->end - ctxt->input->cur < INPUT_CHUNK)	\
 	xmlParserGrow(ctxt);
 
 #define SKIP_BLANKS xmlSkipBlankChars(ctxt)
@@ -5079,37 +5084,33 @@ get_more:
 	 * save current set of data
 	 */
 	if (nbchar > 0) {
-	    if ((ctxt->sax != NULL) &&
-                (ctxt->disableSAX == 0) &&
-		(ctxt->sax->comment != NULL)) {
-		if (buf == NULL) {
-		    if ((*in == '-') && (in[1] == '-'))
-		        size = nbchar + 1;
-		    else
-		        size = XML_PARSER_BUFFER_SIZE + nbchar;
-		    buf = (xmlChar *) xmlMallocAtomic(size);
-		    if (buf == NULL) {
-		        xmlErrMemory(ctxt, NULL);
-			ctxt->instate = state;
-			return;
-		    }
-		    len = 0;
-		} else if (len + nbchar + 1 >= size) {
-		    xmlChar *new_buf;
-		    size  += len + nbchar + XML_PARSER_BUFFER_SIZE;
-		    new_buf = (xmlChar *) xmlRealloc(buf, size);
-		    if (new_buf == NULL) {
-		        xmlFree (buf);
-			xmlErrMemory(ctxt, NULL);
-			ctxt->instate = state;
-			return;
-		    }
-		    buf = new_buf;
-		}
-		memcpy(&buf[len], ctxt->input->cur, nbchar);
-		len += nbchar;
-		buf[len] = 0;
-	    }
+            if (buf == NULL) {
+                if ((*in == '-') && (in[1] == '-'))
+                    size = nbchar + 1;
+                else
+                    size = XML_PARSER_BUFFER_SIZE + nbchar;
+                buf = (xmlChar *) xmlMallocAtomic(size);
+                if (buf == NULL) {
+                    xmlErrMemory(ctxt, NULL);
+                    ctxt->instate = state;
+                    return;
+                }
+                len = 0;
+            } else if (len + nbchar + 1 >= size) {
+                xmlChar *new_buf;
+                size  += len + nbchar + XML_PARSER_BUFFER_SIZE;
+                new_buf = (xmlChar *) xmlRealloc(buf, size);
+                if (new_buf == NULL) {
+                    xmlFree (buf);
+                    xmlErrMemory(ctxt, NULL);
+                    ctxt->instate = state;
+                    return;
+                }
+                buf = new_buf;
+            }
+            memcpy(&buf[len], ctxt->input->cur, nbchar);
+            len += nbchar;
+            buf[len] = 0;
 	}
         if (len > maxLength) {
             xmlFatalErrMsgStr(ctxt, XML_ERR_COMMENT_NOT_FINISHED,
@@ -8192,8 +8193,11 @@ xmlParsePEReference(xmlParserCtxtPtr ctxt)
 static int
 xmlLoadEntityContent(xmlParserCtxtPtr ctxt, xmlEntityPtr entity) {
     xmlParserInputPtr oldinput, input = NULL;
+    xmlParserInputPtr *oldinputTab;
+    const xmlChar *oldencoding;
     xmlChar *content = NULL;
     size_t length, i;
+    int oldinputNr, oldinputMax, oldprogressive;
     int ret = -1;
     int res;
 
@@ -8218,10 +8222,28 @@ xmlLoadEntityContent(xmlParserCtxtPtr ctxt, xmlEntityPtr entity) {
         return(-1);
     }
 
+    oldinput = ctxt->input;
+    oldinputNr = ctxt->inputNr;
+    oldinputMax = ctxt->inputMax;
+    oldinputTab = ctxt->inputTab;
+    oldencoding = ctxt->encoding;
+    oldprogressive = ctxt->progressive;
+
+    ctxt->input = NULL;
+    ctxt->inputNr = 0;
+    ctxt->inputMax = 1;
+    ctxt->encoding = NULL;
+    ctxt->progressive = 0;
+    ctxt->inputTab = xmlMalloc(sizeof(xmlParserInputPtr));
+    if (ctxt->inputTab == NULL) {
+        xmlErrMemory(ctxt, NULL);
+        xmlFreeInputStream(input);
+        goto error;
+    }
+
     xmlBufResetInput(input->buf->buffer, input);
 
-    oldinput = ctxt->input;
-    ctxt->input = input;
+    inputPush(ctxt, input);
 
     xmlDetectEncoding(ctxt);
 
@@ -8240,12 +8262,17 @@ xmlLoadEntityContent(xmlParserCtxtPtr ctxt, xmlEntityPtr entity) {
         }
     }
 
-    ctxt->input = oldinput;
+    if (ctxt->instate == XML_PARSER_EOF)
+        goto error;
 
-    xmlBufShrink(input->buf->buffer, input->cur - input->base);
+    length = input->cur - input->base;
+    xmlBufShrink(input->buf->buffer, length);
+    xmlSaturatedAdd(&ctxt->sizeentities, length);
 
-    while ((res = xmlParserInputBufferGrow(input->buf, 16384)) > 0)
+    while ((res = xmlParserInputBufferGrow(input->buf, 4096)) > 0)
         ;
+
+    xmlBufResetInput(input->buf->buffer, input);
 
     if (res < 0) {
         xmlFatalErr(ctxt, input->buf->error, NULL);
@@ -8280,8 +8307,19 @@ xmlLoadEntityContent(xmlParserCtxtPtr ctxt, xmlEntityPtr entity) {
     ret = 0;
 
 error:
+    while (ctxt->inputNr > 0)
+        xmlFreeInputStream(inputPop(ctxt));
+    xmlFree(ctxt->inputTab);
+    xmlFree((xmlChar *) ctxt->encoding);
+
+    ctxt->input = oldinput;
+    ctxt->inputNr = oldinputNr;
+    ctxt->inputMax = oldinputMax;
+    ctxt->inputTab = oldinputTab;
+    ctxt->encoding = oldencoding;
+    ctxt->progressive = oldprogressive;
+
     xmlFree(content);
-    xmlFreeInputStream(input);
 
     return(ret);
 }
@@ -9801,9 +9839,13 @@ next_attr:
 		aprefix = attr->prefix.name;
 
 		if ((attname == ctxt->str_xmlns) && (aprefix == NULL)) {
+                    xmlParserEntityCheck(ctxt, attr->expandedSize);
+
                     if (xmlParserNsPush(ctxt, NULL, &attr->value, NULL, 1) > 0)
                         nbNs++;
 		} else if (aprefix == ctxt->str_xmlns) {
+                    xmlParserEntityCheck(ctxt, attr->expandedSize);
+
                     if (xmlParserNsPush(ctxt, &attr->name, &attr->value,
                                       NULL, 1) > 0)
                         nbNs++;
@@ -9950,6 +9992,8 @@ next_attr:
                              "Namespaced Attribute %s in '%s' redefined\n",
                              attname, nsuri, NULL);
                 }
+
+                xmlParserEntityCheck(ctxt, attr->expandedSize);
 
                 if ((atts == NULL) || (nbatts + 5 > maxatts)) {
                     if (xmlCtxtGrowAttrs(ctxt, nbatts + 5) < 0) {
