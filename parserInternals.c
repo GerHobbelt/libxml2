@@ -50,6 +50,12 @@
 #include "private/parser.h"
 
 /*
+ * XML_MAX_AMPLIFICATION_DEFAULT is the default maximum allowed amplification
+ * factor of serialized output after entity expansion.
+ */
+#define XML_MAX_AMPLIFICATION_DEFAULT 5
+
+/*
  * Various global defaults for parsing
  */
 
@@ -1386,6 +1392,15 @@ xmlSwitchInputEncoding(xmlParserCtxtPtr ctxt, xmlParserInputPtr input,
     input->flags |= XML_INPUT_HAS_ENCODING;
     input->flags &= ~XML_INPUT_8_BIT;
 
+    /*
+     * UTF-8 requires no encoding handler.
+     */
+    if ((handler != NULL) &&
+        (xmlStrcasecmp(BAD_CAST handler->name, BAD_CAST "UTF-8") == 0)) {
+        xmlCharEncCloseFunc(handler);
+        handler = NULL;
+    }
+
     if (in->encoder == handler)
         return (0);
 
@@ -1581,13 +1596,15 @@ xmlSetDeclaredEncoding(xmlParserCtxtPtr ctxt, xmlChar *encoding) {
         xmlCharEncodingHandlerPtr handler;
 
         handler = xmlFindCharEncodingHandler((const char *) encoding);
-        if (handler != NULL) {
-            xmlSwitchToEncoding(ctxt, handler);
-        } else {
+        if (handler == NULL) {
             __xmlErrEncoding(ctxt, XML_ERR_UNSUPPORTED_ENCODING,
                              "Unsupported encoding: %s\n",
                              encoding, NULL);
+            return;
         }
+
+        xmlSwitchToEncoding(ctxt, handler);
+        ctxt->input->flags |= XML_INPUT_USES_ENC_DECL;
     } else if (ctxt->input->flags & XML_INPUT_AUTO_ENCODING) {
         static const char *allowedUTF8[] = {
             "UTF-8", "UTF8", NULL
@@ -2099,6 +2116,7 @@ xmlInitSAXParserCtxt(xmlParserCtxtPtr ctxt, const xmlSAXHandler *sax,
     ctxt->sizeentities = 0;
     ctxt->sizeentcopy = 0;
     ctxt->input_id = 1;
+    ctxt->maxAmpl = XML_MAX_AMPLIFICATION_DEFAULT;
     xmlInitNodeInfoSeq(&ctxt->node_seq);
     return(0);
 }
