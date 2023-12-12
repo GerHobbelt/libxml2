@@ -39,7 +39,7 @@ main(int argc, char **argv) {
     
     /* Init libxml */     
     xmlInitParser();
-    LIBXML_TEST_VERSION
+    LIBXML_TEST_VERSION();
 
     /* Do the main job */
     if (example4(argv[1], BAD_CAST argv[2], BAD_CAST argv[3])) {

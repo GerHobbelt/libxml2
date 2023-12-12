@@ -61,7 +61,7 @@ main(int argc, char **argv)
      * between the version it was compiled for and the actual shared
      * library used.
      */
-    LIBXML_TEST_VERSION
+    LIBXML_TEST_VERSION();
 
     /*parse the file and get the DOM */
     doc = xmlReadFile(argv[1], NULL, 0);

@@ -84,7 +84,7 @@ int main(int argc, char **argv) {
      * between the version it was compiled for and the actual shared
      * library used.
      */
-    LIBXML_TEST_VERSION
+    LIBXML_TEST_VERSION();
 
     streamFile(argv[1]);
 

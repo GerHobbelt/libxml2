@@ -30,7 +30,7 @@ main(int argc, char **argv)
     char buff[256];
     int i, j;
 
-    LIBXML_TEST_VERSION;
+    LIBXML_TEST_VERSION();
 
     /* 
      * Creates a new document, a node and set it as a root node

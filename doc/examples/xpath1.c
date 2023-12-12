@@ -37,7 +37,7 @@ main(int argc, char **argv) {
     
     /* Init libxml */     
     xmlInitParser();
-    LIBXML_TEST_VERSION
+    LIBXML_TEST_VERSION();
 
     /* Do the main job */
     if(execute_xpath_expression(argv[1], BAD_CAST argv[2], (argc > 3) ? BAD_CAST argv[3] : NULL) < 0) {
