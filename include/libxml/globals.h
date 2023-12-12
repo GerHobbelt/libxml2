@@ -21,104 +21,60 @@
 extern "C" {
 #endif
 
-XML_DEPRECATED
-XMLPUBFUN void xmlInitGlobals(void);
-XML_DEPRECATED
-XMLPUBFUN void xmlCleanupGlobals(void);
-
-/**
- * xmlParserInputBufferCreateFilenameFunc:
- * @URI: the URI to read from
- * @enc: the requested source encoding
- *
- * Signature for the function doing the lookup for a suitable input method
- * corresponding to an URI.
- *
- * Returns the new xmlParserInputBufferPtr in case of success or NULL if no
- *         method was found.
- */
-typedef xmlParserInputBufferPtr (*xmlParserInputBufferCreateFilenameFunc) (const char *URI,
-									   xmlCharEncoding enc);
-
-
-/**
- * xmlOutputBufferCreateFilenameFunc:
- * @URI: the URI to write to
- * @enc: the requested target encoding
- *
- * Signature for the function doing the lookup for a suitable output method
- * corresponding to an URI.
- *
- * Returns the new xmlOutputBufferPtr in case of success or NULL if no
- *         method was found.
- */
-typedef xmlOutputBufferPtr (*xmlOutputBufferCreateFilenameFunc) (const char *URI,
-								 xmlCharEncodingHandlerPtr encoder,
-								 int compression);
-
-XMLPUBFUN xmlParserInputBufferCreateFilenameFunc
-xmlParserInputBufferCreateFilenameDefault (xmlParserInputBufferCreateFilenameFunc func);
-XMLPUBFUN xmlOutputBufferCreateFilenameFunc
-xmlOutputBufferCreateFilenameDefault (xmlOutputBufferCreateFilenameFunc func);
-
-/**
- * xmlRegisterNodeFunc:
- * @node: the current node
- *
- * Signature for the registration callback of a created node
- */
-typedef void (*xmlRegisterNodeFunc) (xmlNodePtr node);
-/**
- * xmlDeregisterNodeFunc:
- * @node: the current node
- *
- * Signature for the deregistration callback of a discarded node
- */
-typedef void (*xmlDeregisterNodeFunc) (xmlNodePtr node);
-
 typedef struct _xmlGlobalState xmlGlobalState;
 typedef xmlGlobalState *xmlGlobalStatePtr;
 
-XMLPUBFUN int xmlCheckThreadLocalStorage(void);
-XML_DEPRECATED
-XMLPUBFUN void	xmlInitializeGlobalState(xmlGlobalStatePtr gs);
-XML_DEPRECATED
-XMLPUBFUN xmlGlobalStatePtr
-			xmlGetGlobalState(void);
+XMLPUBFUN int
+xmlCheckThreadLocalStorage(void);
 
-XMLPUBFUN void xmlThrDefSetGenericErrorFunc(void *ctx, xmlGenericErrorFunc handler);
+XML_DEPRECATED XMLPUBFUN void
+xmlInitGlobals(void);
+XML_DEPRECATED XMLPUBFUN void
+xmlCleanupGlobals(void);
+XML_DEPRECATED XMLPUBFUN void
+xmlInitializeGlobalState(xmlGlobalStatePtr gs);
+XML_DEPRECATED XMLPUBFUN
+xmlGlobalStatePtr xmlGetGlobalState(void);
 
-XMLPUBFUN void xmlThrDefSetStructuredErrorFunc(void *ctx, xmlStructuredErrorFunc handler);
-
-XML_DEPRECATED
-XMLPUBFUN xmlBufferAllocationScheme
-	xmlThrDefBufferAllocScheme(xmlBufferAllocationScheme v);
-XML_DEPRECATED
-XMLPUBFUN int xmlThrDefDefaultBufferSize(int v);
-XMLPUBFUN int xmlThrDefDoValidityCheckingDefaultValue(int v);
-XMLPUBFUN int xmlThrDefGetWarningsDefaultValue(int v);
-XMLPUBFUN int xmlThrDefIndentTreeOutput(int v);
-XMLPUBFUN const char * xmlThrDefTreeIndentString(const char * v);
-XMLPUBFUN int xmlThrDefKeepBlanksDefaultValue(int v);
-XML_DEPRECATED
-XMLPUBFUN int xmlThrDefLineNumbersDefaultValue(int v);
-XMLPUBFUN int xmlThrDefLoadExtDtdDefaultValue(int v);
-XMLPUBFUN int xmlThrDefParserDebugEntities(int v);
-XML_DEPRECATED
-XMLPUBFUN int xmlThrDefPedanticParserDefaultValue(int v);
-XMLPUBFUN int xmlThrDefSaveNoEmptyTags(int v);
-XMLPUBFUN int xmlThrDefSubstituteEntitiesDefaultValue(int v);
-
-XMLPUBFUN xmlRegisterNodeFunc xmlRegisterNodeDefault(xmlRegisterNodeFunc func);
-XMLPUBFUN xmlRegisterNodeFunc xmlThrDefRegisterNodeDefault(xmlRegisterNodeFunc func);
-XMLPUBFUN xmlDeregisterNodeFunc xmlDeregisterNodeDefault(xmlDeregisterNodeFunc func);
-XMLPUBFUN xmlDeregisterNodeFunc xmlThrDefDeregisterNodeDefault(xmlDeregisterNodeFunc func);
-
+XMLPUBFUN void
+xmlThrDefSetGenericErrorFunc(void *ctx, xmlGenericErrorFunc handler);
+XMLPUBFUN void
+xmlThrDefSetStructuredErrorFunc(void *ctx, xmlStructuredErrorFunc handler);
+XML_DEPRECATED XMLPUBFUN xmlBufferAllocationScheme
+xmlThrDefBufferAllocScheme(xmlBufferAllocationScheme v);
+XML_DEPRECATED XMLPUBFUN int
+xmlThrDefDefaultBufferSize(int v);
+XMLPUBFUN int
+xmlThrDefDoValidityCheckingDefaultValue(int v);
+XMLPUBFUN int
+xmlThrDefGetWarningsDefaultValue(int v);
+XMLPUBFUN int
+xmlThrDefIndentTreeOutput(int v);
+XMLPUBFUN const char *
+xmlThrDefTreeIndentString(const char * v);
+XMLPUBFUN int
+xmlThrDefKeepBlanksDefaultValue(int v);
+XML_DEPRECATED XMLPUBFUN int
+xmlThrDefLineNumbersDefaultValue(int v);
+XMLPUBFUN int
+xmlThrDefLoadExtDtdDefaultValue(int v);
+XMLPUBFUN int
+xmlThrDefParserDebugEntities(int v);
+XML_DEPRECATED XMLPUBFUN int
+xmlThrDefPedanticParserDefaultValue(int v);
+XMLPUBFUN int
+xmlThrDefSaveNoEmptyTags(int v);
+XMLPUBFUN int
+xmlThrDefSubstituteEntitiesDefaultValue(int v);
+XMLPUBFUN xmlRegisterNodeFunc
+xmlThrDefRegisterNodeDefault(xmlRegisterNodeFunc func);
+XMLPUBFUN xmlDeregisterNodeFunc
+xmlThrDefDeregisterNodeDefault(xmlDeregisterNodeFunc func);
 XMLPUBFUN xmlOutputBufferCreateFilenameFunc
-	xmlThrDefOutputBufferCreateFilenameDefault(xmlOutputBufferCreateFilenameFunc func);
+xmlThrDefOutputBufferCreateFilenameDefault(xmlOutputBufferCreateFilenameFunc func);
 XMLPUBFUN xmlParserInputBufferCreateFilenameFunc
-	xmlThrDefParserInputBufferCreateFilenameDefault(
-				xmlParserInputBufferCreateFilenameFunc func);
+xmlThrDefParserInputBufferCreateFilenameDefault(
+        xmlParserInputBufferCreateFilenameFunc func);
 
 /** DOC_DISABLE */
 #if defined(LIBXML_THREAD_ENABLED) && defined(_WIN32) && \

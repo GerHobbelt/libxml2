@@ -26,6 +26,29 @@
 #include "private/tree.h"
 
 /*
+ * Thread-local storage emulation.
+ *
+ * This works by replacing a global variable
+ *
+ *     extern xmlError xmlLastError;
+ *
+ * with a macro that calls a function returning a pointer to the global in
+ * thread-local storage:
+ *
+ *     xmlError *__xmlLastError(void);
+ *     #define xmlError (*__xmlLastError());
+ *
+ * The code can operate in a multitude of ways depending on the environment.
+ * First we support POSIX and Windows threads. Then we support both thread-local
+ * storage provided by the compiler and older methods like thread-specific data
+ * (pthreads) or TlsAlloc (Windows).
+ *
+ * To clean up thread-local storage, we use thread-specific data on POSIX.
+ * On Windows, we either use DllMain when compiling a DLL or a registered wait
+ * function for static builds.
+ */
+
+/*
  * Helpful Macro
  */
 #ifdef LIBXML_THREAD_ENABLED
@@ -79,6 +102,11 @@ static int libxml_is_threaded = -1;
 
 #endif
 
+/*
+ * On POSIX, we need thread-specific data even with thread-local storage
+ * to destroy indirect references from global state (xmlLastError) at
+ * thread exit.
+ */
 static pthread_key_t globalkey;
 static pthread_t mainthread;
 
@@ -623,19 +651,21 @@ xmlIsMainThread(void) {
 }
 
 #ifdef LIBXML_THREAD_ENABLED
-/**
- * xmlFreeGlobalState:
- * @state:  a thread global state
- *
- * xmlFreeGlobalState() is called when a thread terminates with a non-NULL
- * global state. It is is used here to reclaim memory resources.
- */
 static void
 xmlFreeGlobalState(void *state)
 {
     xmlGlobalState *gs = (xmlGlobalState *) state;
 
-    /* free any memory allocated in the thread's xmlLastError */
+    /*
+     * Free any memory allocated in the thread's xmlLastError. If it
+     * weren't for this indirect allocation, we wouldn't need
+     * a destructor with thread-local storage at all!
+     *
+     * It would be nice if we could make xmlLastError a special error
+     * type which uses statically allocated, fixed-size buffers.
+     * But the xmlError struct is fully public and widely used,
+     * so changes are dangerous.
+     */
     xmlResetError(&(gs->gs_xmlLastError));
 #ifndef XML_THREAD_LOCAL
     free(state);
@@ -799,13 +829,17 @@ xmlGetThreadLocalStorage(void) {
  *
  * Check whether thread-local storage could be allocated.
  *
- * In multithreaded environments, this function should be called once
- * in each thread before calling other library functions to make sure
- * that thread-local storage was allocated properly.
+ * In cross-platform code running in multithreaded environments, this
+ * function should be called once in each thread before calling other
+ * library functions to make sure that thread-local storage was
+ * allocated properly.
  *
  * Returns 0 on success or -1 if a memory allocation failed. A failed
  * allocation signals a typically fatal and irrecoverable out-of-memory
  * situation. Don't call any library functions in this case.
+ *
+ * This function never fails if the library is compiled with support
+ * for thread-local storage.
  *
  * This function never fails for the "main" thread which is the first
  * thread calling xmlInitParser.
@@ -1011,24 +1045,6 @@ int xmlThrDefSubstituteEntitiesDefaultValue(int v) {
     return ret;
 }
 
-/**
- * xmlRegisterNodeDefault:
- * @func: function pointer to the new RegisterNodeFunc
- *
- * Registers a callback for node creation
- *
- * Returns the old value of the registration function
- */
-xmlRegisterNodeFunc
-xmlRegisterNodeDefault(xmlRegisterNodeFunc func)
-{
-    xmlRegisterNodeFunc old = xmlRegisterNodeDefaultValue;
-
-    __xmlRegisterCallbacks = 1;
-    xmlRegisterNodeDefaultValue = func;
-    return(old);
-}
-
 xmlRegisterNodeFunc
 xmlThrDefRegisterNodeDefault(xmlRegisterNodeFunc func)
 {
@@ -1041,24 +1057,6 @@ xmlThrDefRegisterNodeDefault(xmlRegisterNodeFunc func)
     xmlRegisterNodeDefaultValueThrDef = func;
     xmlMutexUnlock(&xmlThrDefMutex);
 
-    return(old);
-}
-
-/**
- * xmlDeregisterNodeDefault:
- * @func: function pointer to the new DeregisterNodeFunc
- *
- * Registers a callback for node destruction
- *
- * Returns the previous value of the deregistration function
- */
-xmlDeregisterNodeFunc
-xmlDeregisterNodeDefault(xmlDeregisterNodeFunc func)
-{
-    xmlDeregisterNodeFunc old = xmlDeregisterNodeDefaultValue;
-
-    __xmlRegisterCallbacks = 1;
-    xmlDeregisterNodeDefaultValue = func;
     return(old);
 }
 
