@@ -7,6 +7,14 @@
 
 /**** dictionary tests ****/
 
+#ifdef __clang__
+  #define ATTRIBUTE_NO_SANITIZE_INTEGER \
+    __attribute__ ((no_sanitize("unsigned-integer-overflow"))) \
+    __attribute__ ((no_sanitize("unsigned-shift-base")))
+#else
+  #define ATTRIBUTE_NO_SANITIZE_INTEGER
+#endif
+
 /* #define WITH_PRINT */
 
 static const char *seeds1[] = {
@@ -444,10 +452,7 @@ rng_state[2] = { 123, 456 };
 
 #define HASH_ROL(x,n) ((x) << (n) | ((x) & 0xFFFFFFFF) >> (32 - (n)))
 
-#ifdef __clang__
-__attribute__ ((no_sanitize("unsigned-integer-overflow")))
-__attribute__ ((no_sanitize("unsigned-shift-base")))
-#endif
+ATTRIBUTE_NO_SANITIZE_INTEGER
 static unsigned
 my_rand(unsigned max) {
     unsigned s0 = rng_state[0];
