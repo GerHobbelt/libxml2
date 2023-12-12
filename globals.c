@@ -64,13 +64,6 @@
 #define IS_MAIN_THREAD 1
 #endif
 
-static int parserInitialized;
-
-/*
- * Mutex to protect "ForNewThreads" variables
- */
-static xmlMutex xmlThrDefMutex;
-
 #define XML_DECLARE_MEMBER(name, type, attrs) \
   type gs_##name;
 
@@ -94,9 +87,25 @@ XML_GLOBALS_TREE
 #undef XML_OP
 };
 
+static int parserInitialized;
+
+/*
+ * Mutex to protect "ForNewThreads" variables
+ */
+static xmlMutex xmlThrDefMutex;
+
 #ifdef LIBXML_THREAD_ENABLED
 
-#ifdef XML_THREAD_LOCAL
+/*
+ * On Darwin, thread-local storage destructors seem to be run before
+ * pthread thread-specific data destructors. This causes ASan to
+ * report a use-after-free.
+ */
+#if defined(XML_THREAD_LOCAL) && !defined(__APPLE__)
+#define USE_TLS
+#endif
+
+#ifdef USE_TLS
 static XML_THREAD_LOCAL xmlGlobalState globalState;
 #endif
 
@@ -125,7 +134,7 @@ static pthread_t mainthread;
 
 #elif defined HAVE_WIN32_THREADS
 
-#ifndef XML_THREAD_LOCAL
+#ifndef USE_TLS
 static DWORD globalkey = TLS_OUT_OF_INDEXES;
 #endif
 static DWORD mainthread;
@@ -558,7 +567,7 @@ void xmlInitGlobalsInternal(void) {
     pthread_key_create(&globalkey, xmlFreeGlobalState);
     mainthread = pthread_self();
 #elif defined(HAVE_WIN32_THREADS)
-#ifndef XML_THREAD_LOCAL
+#ifndef USE_TLS
     globalkey = TlsAlloc();
 #endif
     mainthread = GetCurrentThreadId();
@@ -593,7 +602,7 @@ void xmlCleanupGlobalsInternal(void) {
 #endif /* XML_PTHREAD_WEAK */
     pthread_key_delete(globalkey);
 #elif defined(HAVE_WIN32_THREADS)
-#ifndef XML_THREAD_LOCAL
+#ifndef USE_TLS
     if (globalkey != TLS_OUT_OF_INDEXES) {
         TlsFree(globalkey);
         globalkey = TLS_OUT_OF_INDEXES;
@@ -678,7 +687,7 @@ xmlFreeGlobalState(void *state)
      * so changes are dangerous.
      */
     xmlResetError(&(gs->gs_xmlLastError));
-#ifndef XML_THREAD_LOCAL
+#ifndef USE_TLS
     free(state);
 #endif
 }
@@ -776,7 +785,7 @@ xmlInitGlobalState(xmlGlobalStatePtr gs) {
 #ifdef HAVE_POSIX_THREADS
     pthread_setspecific(globalkey, gs);
 #elif defined HAVE_WIN32_THREADS
-#ifndef XML_THREAD_LOCAL
+#ifndef USE_TLS
     TlsSetValue(globalkey, gs);
 #endif
 #if defined(LIBXML_STATIC) && !defined(LIBXML_STATIC_FOR_DLL)
@@ -787,7 +796,7 @@ xmlInitGlobalState(xmlGlobalStatePtr gs) {
     gs->initialized = 1;
 }
 
-#ifndef XML_THREAD_LOCAL
+#ifndef USE_TLS
 /**
  * xmlNewGlobalState:
  *
@@ -829,7 +838,7 @@ xmlGetThreadLocalStorage(int allowFailure) {
 
     (void) allowFailure;
 
-#ifdef XML_THREAD_LOCAL
+#ifdef USE_TLS
     gs = &globalState;
     if (gs->initialized == 0)
         xmlInitGlobalState(gs);
@@ -901,7 +910,7 @@ __xmlParserVersion(void) {
  */
 int
 xmlCheckThreadLocalStorage(void) {
-#if defined(LIBXML_THREAD_ENABLED) && !defined(XML_THREAD_LOCAL)
+#if defined(LIBXML_THREAD_ENABLED) && !defined(USE_TLS)
     if ((!xmlIsMainThreadInternal()) && (xmlGetThreadLocalStorage(1) == NULL))
         return(-1);
 #endif
@@ -943,7 +952,7 @@ DllMain(ATTRIBUTE_UNUSED HINSTANCE hinstDLL, DWORD fdwReason,
 {
     switch (fdwReason) {
         case DLL_THREAD_DETACH:
-#ifdef XML_THREAD_LOCAL
+#ifdef USE_TLS
             xmlFreeGlobalState(&globalState);
 #else
             if (globalkey != TLS_OUT_OF_INDEXES) {
