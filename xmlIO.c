@@ -73,14 +73,8 @@
 #include "private/parser.h"
 
 /* #define VERBOSE_FAILURE */
-/* #define DEBUG_EXTERNAL_ENTITIES */
-/* #define DEBUG_INPUT */
 
-#ifdef DEBUG_INPUT
-#define MINLEN 40
-#else
 #define MINLEN 4000
-#endif
 
 /*
  * Input I/O callback sets
@@ -1466,23 +1460,11 @@ append_reverse_ulong( xmlZMemBuff * buff, unsigned long data ) {
 static void
 xmlFreeZMemBuff( xmlZMemBuffPtr buff ) {
 
-#ifdef DEBUG_HTTP
-    int z_err;
-#endif
-
     if ( buff == NULL )
 	return;
 
     xmlFree( buff->zbuff );
-#ifdef DEBUG_HTTP
-    z_err = zng_deflateEnd( &buff->zctrl );
-    if ( z_err != Z_OK )
-	xmlGenericError( xmlGenericErrorContext,
-			"xmlFreeZMemBuff:  Error releasing zlib context:  %d\n",
-			z_err );
-#else
 	zng_deflateEnd( &buff->zctrl );
-#endif
 
     xmlFree( buff );
     return;
@@ -1579,15 +1561,6 @@ xmlZMemBuffExtend( xmlZMemBuffPtr buff, size_t ext_amt ) {
 
     cur_used = buff->zctrl.next_out - buff->zbuff;
     new_size = buff->size + ext_amt;
-
-#ifdef DEBUG_HTTP
-    if ( cur_used > new_size )
-	xmlGenericError( xmlGenericErrorContext,
-			"xmlZMemBuffExtend:  %s\n%s %d bytes.\n",
-			"Buffer overwrite detected during compressed memory",
-			"buffer extension.  Overflowed by",
-			(cur_used - new_size ) );
-#endif
 
     tmp_ptr = xmlRealloc( buff->zbuff, new_size );
     if ( tmp_ptr != NULL ) {
@@ -2009,57 +1982,6 @@ xmlIOHTTPCloseWrite( void * context, const char * http_mthd ) {
 					content_lgth );
 
 	if ( http_ctxt != NULL ) {
-#ifdef DEBUG_HTTP
-	    /*  If testing/debugging - dump reply with request content  */
-
-	    FILE *	tst_file = NULL;
-	    char	buffer[ 4096 ];
-	    char *	dump_name = NULL;
-	    int		avail;
-
-	    xmlGenericError( xmlGenericErrorContext,
-			"xmlNanoHTTPCloseWrite:  HTTP %s to\n%s returned %d.\n",
-			http_mthd, ctxt->uri,
-			xmlNanoHTTPReturnCode( http_ctxt ) );
-
-	    /*
-	    **  Since either content or reply may be gzipped,
-	    **  dump them to separate files instead of the
-	    **  standard error context.
-	    */
-
-	    dump_name = tempnam( NULL, "lxml" );
-	    if ( dump_name != NULL ) {
-		(void)snprintf( buffer, sizeof(buffer), "%s.content", dump_name );
-
-		tst_file = fopen( buffer, "wb" );
-		if ( tst_file != NULL ) {
-		    xmlGenericError( xmlGenericErrorContext,
-			"Transmitted content saved in file:  %s\n", buffer );
-
-		    fwrite( http_content, 1, content_lgth, tst_file );
-		    fclose( tst_file );
-		}
-
-		(void)snprintf( buffer, sizeof(buffer), "%s.reply", dump_name );
-		tst_file = fopen( buffer, "wb" );
-		if ( tst_file != NULL ) {
-		    xmlGenericError( xmlGenericErrorContext,
-			"Reply content saved in file:  %s\n", buffer );
-
-
-		    while ( (avail = xmlNanoHTTPRead( http_ctxt,
-					buffer, sizeof( buffer ) )) > 0 ) {
-
-			fwrite( buffer, 1, avail, tst_file );
-		    }
-
-		    fclose( tst_file );
-		}
-
-		free( dump_name );
-	    }
-#endif  /*  DEBUG_HTTP  */
 
 	    http_rtn = xmlNanoHTTPReturnCode( http_ctxt );
 	    if ( ( http_rtn >= 200 ) && ( http_rtn < 300 ) )
@@ -3246,11 +3168,6 @@ xmlParserInputBufferPush(xmlParserInputBufferPtr in,
 	    return(-1);
         }
     }
-#ifdef DEBUG_INPUT
-    xmlGenericError(xmlGenericErrorContext,
-	    "I/O: pushed %d chars, buffer %d/%d\n",
-            nbchars, xmlBufUse(in->buffer), xmlBufLength(in->buffer));
-#endif
     return(nbchars);
 }
 
@@ -3340,11 +3257,6 @@ xmlParserInputBufferGrow(xmlParserInputBufferPtr in, int len) {
 	if (res < 0)
 	    return(-1);
     }
-#ifdef DEBUG_INPUT
-    xmlGenericError(xmlGenericErrorContext,
-	    "I/O: read %d chars, buffer %d\n",
-            nbchars, xmlBufUse(in->buffer));
-#endif
     return(res);
 }
 
@@ -3470,10 +3382,6 @@ xmlOutputBufferWrite(xmlOutputBufferPtr out, int len, const char *buf) {
     } while (len > 0);
 
 done:
-#ifdef DEBUG_INPUT
-    xmlGenericError(xmlGenericErrorContext,
-	    "I/O: wrote %d chars\n", written);
-#endif
     return(written);
 }
 
@@ -3670,10 +3578,6 @@ xmlOutputBufferWriteEscape(xmlOutputBufferPtr out, const xmlChar *str,
     } while ((len > 0) && (oldwritten != written));
 
 done:
-#ifdef DEBUG_INPUT
-    xmlGenericError(xmlGenericErrorContext,
-	    "I/O: wrote %d chars\n", written);
-#endif
     return(written);
 }
 
@@ -3761,10 +3665,6 @@ xmlOutputBufferFlush(xmlOutputBufferPtr out) {
     else
         out->written += ret;
 
-#ifdef DEBUG_INPUT
-    xmlGenericError(xmlGenericErrorContext,
-	    "I/O: flushed %d chars\n", ret);
-#endif
     return(ret);
 }
 #endif /* LIBXML_OUTPUT_ENABLED */
@@ -4015,10 +3915,6 @@ xmlDefaultExternalEntityLoader(const char *URL, const char *ID,
     xmlParserInputPtr ret = NULL;
     xmlChar *resource = NULL;
 
-#ifdef DEBUG_EXTERNAL_ENTITIES
-    xmlGenericError(xmlGenericErrorContext,
-                    "xmlDefaultExternalEntityLoader(%s, xxx)\n", URL);
-#endif
     if ((ctxt != NULL) && (ctxt->options & XML_PARSE_NONET)) {
         int options = ctxt->options;
 

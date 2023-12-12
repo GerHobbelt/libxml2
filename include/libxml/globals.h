@@ -121,60 +121,56 @@ typedef struct _xmlGlobalState xmlGlobalState;
 typedef xmlGlobalState *xmlGlobalStatePtr;
 struct _xmlGlobalState
 {
-	const char *xmlParserVersion;
+	const char *gsParserVersion;
 
-	xmlSAXLocator xmlDefaultSAXLocator;
-	xmlSAXHandlerV1 xmlDefaultSAXHandler;
-	xmlSAXHandlerV1 htmlDefaultSAXHandler;
+	xmlSAXLocator gsDefaultSAXLocator;
+	xmlSAXHandlerV1 gsDefaultSAXHandler;
+	xmlSAXHandlerV1 gsHtmlDefaultSAXHandler;
 
-	xmlFreeFunc xmlFree;
-	xmlMallocFunc xmlMalloc;
-	xmlStrdupFunc xmlMemStrdup;
-	xmlReallocFunc xmlRealloc;
+	xmlFreeFunc gsFree;
+	xmlMallocFunc gsMalloc;
+	xmlStrdupFunc gsMemStrdup;
+	xmlReallocFunc gsRealloc;
 
-	xmlGenericErrorFunc xmlGenericError;
-	xmlStructuredErrorFunc xmlStructuredError;
-	void *xmlGenericErrorContext;
+	xmlGenericErrorFunc gsGenericError;
+	xmlStructuredErrorFunc gsStructuredError;
+	void *gsGenericErrorContext;
 
-	int oldXMLWDcompatibility;
+	int gsOldXMLWDcompatibility;
 
-	xmlBufferAllocationScheme xmlBufferAllocScheme;
-	int xmlDefaultBufferSize;
+	xmlBufferAllocationScheme gsBufferAllocScheme;
+	int gsDefaultBufferSize;
 
-	int xmlSubstituteEntitiesDefaultValue;
-	int xmlDoValidityCheckingDefaultValue;
-	int xmlGetWarningsDefaultValue;
-	int xmlKeepBlanksDefaultValue;
-	int xmlLineNumbersDefaultValue;
-	int xmlLoadExtDtdDefaultValue;
-	int xmlParserDebugEntities;
-	int xmlPedanticParserDefaultValue;
+	int gsSubstituteEntitiesDefaultValue;
+	int gsDoValidityCheckingDefaultValue;
+	int gsGetWarningsDefaultValue;
+	int gsKeepBlanksDefaultValue;
+	int gsLineNumbersDefaultValue;
+	int gsLoadExtDtdDefaultValue;
+	int gsParserDebugEntities;
+	int gsPedanticParserDefaultValue;
 
-	int xmlSaveNoEmptyTags;
-	int xmlIndentTreeOutput;
-	const char *xmlTreeIndentString;
+	int gsSaveNoEmptyTags;
+	int gsIndentTreeOutput;
+	const char *gsTreeIndentString;
 
-	xmlRegisterNodeFunc xmlRegisterNodeDefaultValue;
-	xmlDeregisterNodeFunc xmlDeregisterNodeDefaultValue;
+	xmlRegisterNodeFunc gsRegisterNodeDefaultValue;
+	xmlDeregisterNodeFunc gsDeregisterNodeDefaultValue;
 
-	xmlMallocFunc xmlMallocAtomic;
-	xmlError xmlLastError;
+	xmlMallocFunc gsMallocAtomic;
+	xmlError gsLastError;
 
-	xmlParserInputBufferCreateFilenameFunc xmlParserInputBufferCreateFilenameValue;
-	xmlOutputBufferCreateFilenameFunc xmlOutputBufferCreateFilenameValue;
+	xmlParserInputBufferCreateFilenameFunc gsParserInputBufferCreateFilenameValue;
+	xmlOutputBufferCreateFilenameFunc gsOutputBufferCreateFilenameValue;
 
-	void *xmlStructuredErrorContext;
+	void *gsStructuredErrorContext;
 };
 
-#ifdef __cplusplus
-}
-#endif
-#include <libxml/threads.h>
-#ifdef __cplusplus
-extern "C" {
-#endif
-
+XML_DEPRECATED
 XMLPUBFUN void	xmlInitializeGlobalState(xmlGlobalStatePtr gs);
+XML_DEPRECATED
+XMLPUBFUN xmlGlobalStatePtr
+			xmlGetGlobalState(void);
 
 XMLPUBFUN void xmlThrDefSetGenericErrorFunc(void *ctx, xmlGenericErrorFunc handler);
 
@@ -520,6 +516,15 @@ XMLPUBFUN xmlOutputBufferCreateFilenameFunc * __xmlOutputBufferCreateFilenameVal
 XML_DEPRECATED
 XMLPUBVAR xmlOutputBufferCreateFilenameFunc xmlOutputBufferCreateFilenameValue;
 #endif
+
+/** DOC_DISABLE */
+#if defined(LIBXML_THREAD_ENABLED) && defined(_WIN32) && \
+    !defined(HAVE_COMPILER_TLS) && defined(LIBXML_STATIC_FOR_DLL)
+int
+xmlDllMain(void *hinstDLL, unsigned long fdwReason,
+           void *lpvReserved);
+#endif
+/** DOC_ENABLE */
 
 #ifdef __cplusplus
 }
