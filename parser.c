@@ -1685,6 +1685,10 @@ xmlParserNsPush(xmlParserCtxtPtr ctxt, const xmlHashedString *prefix,
                 xmlErrAttributeDup(ctxt, NULL, BAD_CAST "xmlns");
                 return(0);
             }
+
+            if ((ctxt->options & XML_PARSE_NSCLEAN) &&
+                (uri->name == ctxt->nsTab[oldIndex * 2 + 1]))
+                return(0);
         }
 
         ctxt->nsdb->defaultNsIndex = ctxt->nsNr;
@@ -1708,6 +1712,10 @@ xmlParserNsPush(xmlParserCtxtPtr ctxt, const xmlHashedString *prefix,
             xmlErrAttributeDup(ctxt, BAD_CAST "xmlns", prefix->name);
             return(0);
         }
+
+        if ((ctxt->options & XML_PARSE_NSCLEAN) &&
+            (uri->name == ctxt->nsTab[bucket->index * 2 + 1]))
+            return(0);
 
         bucket->index = ctxt->nsNr;
         goto populate_entry;
@@ -4569,6 +4577,7 @@ get_more_space:
                 ctxt->input->cur = in;
 
                 if ((ctxt->sax != NULL) &&
+                    (ctxt->disableSAX == 0) &&
                     (ctxt->sax->ignorableWhitespace !=
                      ctxt->sax->characters)) {
                     if (areBlanks(ctxt, tmp, nbchar, 1)) {
@@ -4583,6 +4592,7 @@ get_more_space:
                             *ctxt->space = -2;
                     }
                 } else if ((ctxt->sax != NULL) &&
+                           (ctxt->disableSAX == 0) &&
                            (ctxt->sax->characters != NULL)) {
                     ctxt->sax->characters(ctxt->userData,
                                           tmp, nbchar);
@@ -4619,6 +4629,7 @@ get_more:
         nbchar = in - ctxt->input->cur;
         if (nbchar > 0) {
             if ((ctxt->sax != NULL) &&
+                (ctxt->disableSAX == 0) &&
                 (ctxt->sax->ignorableWhitespace !=
                  ctxt->sax->characters) &&
                 (IS_BLANK_CH(*ctxt->input->cur))) {
@@ -4638,7 +4649,8 @@ get_more:
                 }
                 line = ctxt->input->line;
                 col = ctxt->input->col;
-            } else if (ctxt->sax != NULL) {
+            } else if ((ctxt->sax != NULL) &&
+                       (ctxt->disableSAX == 0)) {
                 if (ctxt->sax->characters != NULL)
                     ctxt->sax->characters(ctxt->userData,
                                           ctxt->input->cur, nbchar);
@@ -5068,6 +5080,7 @@ get_more:
 	 */
 	if (nbchar > 0) {
 	    if ((ctxt->sax != NULL) &&
+                (ctxt->disableSAX == 0) &&
 		(ctxt->sax->comment != NULL)) {
 		if (buf == NULL) {
 		    if ((*in == '-') && (in[1] == '-'))
@@ -7739,6 +7752,7 @@ xmlParseEntityRef(xmlParserCtxtPtr ctxt) {
 		     "Entity '%s' not defined\n", name);
 	    if ((ctxt->inSubset == 0) &&
 		(ctxt->sax != NULL) &&
+                (ctxt->disableSAX == 0) &&
 		(ctxt->sax->reference != NULL)) {
 		ctxt->sax->reference(ctxt->userData, name);
 	    }
@@ -8177,7 +8191,7 @@ xmlParsePEReference(xmlParserCtxtPtr ctxt)
  */
 static int
 xmlLoadEntityContent(xmlParserCtxtPtr ctxt, xmlEntityPtr entity) {
-    xmlParserInputPtr input = NULL;
+    xmlParserInputPtr oldinput, input = NULL;
     xmlChar *content = NULL;
     size_t length, i;
     int ret = -1;
@@ -8203,6 +8217,32 @@ xmlLoadEntityContent(xmlParserCtxtPtr ctxt, xmlEntityPtr entity) {
 	            "xmlLoadEntityContent input error");
         return(-1);
     }
+
+    xmlBufResetInput(input->buf->buffer, input);
+
+    oldinput = ctxt->input;
+    ctxt->input = input;
+
+    xmlDetectEncoding(ctxt);
+
+    /*
+     * Parse a possible text declaration first
+     */
+    if ((CMP5(CUR_PTR, '<', '?', 'x', 'm', 'l')) && (IS_BLANK_CH(NXT(5)))) {
+	xmlParseTextDecl(ctxt);
+        /*
+         * An XML-1.0 document can't reference an entity not XML-1.0
+         */
+        if ((xmlStrEqual(ctxt->version, BAD_CAST "1.0")) &&
+            (!xmlStrEqual(ctxt->input->version, BAD_CAST "1.0"))) {
+            xmlFatalErrMsg(ctxt, XML_ERR_VERSION_MISMATCH,
+                           "Version mismatch between document and entity\n");
+        }
+    }
+
+    ctxt->input = oldinput;
+
+    xmlBufShrink(input->buf->buffer, input->cur - input->base);
 
     while ((res = xmlParserInputBufferGrow(input->buf, 16384)) > 0)
         ;
