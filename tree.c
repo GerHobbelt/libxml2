@@ -4435,6 +4435,8 @@ xmlStaticCopyNodeList(xmlNodePtr node, xmlDocPtr doc, xmlNodePtr parent) {
         doc->intSubset = newSubset;
     return(ret);
 error:
+    if (linkedSubset != 0)
+        xmlUnlinkNode((xmlNodePtr) doc->intSubset);
     xmlFreeNodeList(ret);
     if (linkedSubset != 0) {
         doc->intSubset->next = NULL;
