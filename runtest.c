@@ -11,14 +11,14 @@
  * daniel@veillard.com
  */
 
-#include "libxml.h"
+#include "config.h"
 #include <stdio.h>
-
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #elif defined (_WIN32)
 #include <io.h>
 #endif
+#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -69,7 +69,6 @@
 #include <libxml/threads.h>
 #include <libxml/parser.h>
 #include <libxml/catalog.h>
-#include <string.h>
 #endif
 
 #include <libxml/monolithic_examples.h>
@@ -2505,6 +2504,7 @@ errParseTest(const char *filename, const char *result, const char *err,
     return(0);
 }
 
+#if defined(LIBXML_VALID_ENABLED) || defined(LIBXML_HTML_ENABLED)
 /**
  * fdParseTest:
  * @filename: the file to parse
@@ -2569,7 +2569,7 @@ fdParseTest(const char *filename, const char *result, const char *err,
 
     return(0);
 }
-
+#endif
 
 
 #ifdef LIBXML_READER_ENABLED

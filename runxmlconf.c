@@ -6,10 +6,16 @@
  * daniel@veillard.com
  */
 
-#include "libxml.h"
 #include <stdio.h>
+#include <libxml/xmlversion.h>
 
-#ifdef LIBXML_XPATH_ENABLED
+#include <libxml/monolithic_examples.h>
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_runxmlconfig_main(cnt, arr)
+#endif
+
+#if defined(LIBXML_XPATH_ENABLED) && defined(LIBXML_VALID_ENABLED)
 
 #include <string.h>
 #include <sys/stat.h>
@@ -22,8 +28,6 @@
 
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
-
-#include <libxml/monolithic_examples.h>
 
 #define LOGFILE "runxmlconf.log"
 static FILE *logfile = NULL;
@@ -553,10 +557,6 @@ xmlconfTest(void) {
  *									*
  ************************************************************************/
 
-#if defined(BUILD_MONOLITHIC)
-#define main(cnt, arr)      xml_runxmlconfig_main(cnt, arr)
-#endif
-
 int main(int argc, const char** argv) {
     int ret = 0;
     int old_errors, old_tests, old_leaks;
@@ -607,12 +607,9 @@ int main(int argc, const char** argv) {
 }
 
 #else /* ! LIBXML_XPATH_ENABLED */
-#include <stdio.h>
-#if defined(BUILD_MONOLITHIC)
-#define main(cnt, arr)      xml_runxmlconfig_main(cnt, arr)
-#endif
 
 int main(int argc ATTRIBUTE_UNUSED, const char** argv) {
-    fprintf(stderr, "%s need XPath support\n", argv[0]);
+    fprintf(stderr, "%s need XPath and validation support\n", argv[0]);
+    return(0);
 }
 #endif

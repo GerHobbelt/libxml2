@@ -6,20 +6,24 @@
  * joelwreed@comcast.net
  */
 
-#include "libxml.h"
-#ifdef LIBXML_MODULES_ENABLED
+#include <stdio.h>
 #include <libxml/xmlversion.h>
 
+#include <libxml/monolithic_examples.h>
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_testmodule_main(cnt, arr)
+#endif
+
+#ifdef LIBXML_MODULES_ENABLED
+
 #include <limits.h>
-#include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
 
 #include <libxml/xmlmemory.h>
 #include <libxml/debugXML.h>
 #include <libxml/xmlmodule.h>
-
-#include <libxml/monolithic_examples.h>
 
 #ifdef _WIN32
 #define MODULE_PATH "."
@@ -41,11 +45,6 @@
 #endif
 
 typedef int (*hello_world_t)(void);
-
-
-#if defined(BUILD_MONOLITHIC)
-#define main(cnt, arr)      xml_testmodule_main(cnt, arr)
-#endif
 
 int main(int argc, const char** argv) {
     xmlChar filename[PATH_MAX];
@@ -81,11 +80,6 @@ int main(int argc, const char** argv) {
 }
 
 #else
-#include <stdio.h>
-
-#if defined(BUILD_MONOLITHIC)
-#define main(cnt, arr)      xml_testmodule_main(cnt, arr)
-#endif
 
 int main(int argc, const char** argv) {
     printf("%s : Module support not compiled in\n", argv[0]);

@@ -37,7 +37,6 @@
 #include <libxml/parser.h>
 #include <libxml/uri.h>
 #include <libxml/entities.h>
-#include <libxml/valid.h>
 #include <libxml/xmlerror.h>
 #include <libxml/parserInternals.h>
 #ifdef LIBXML_HTML_ENABLED

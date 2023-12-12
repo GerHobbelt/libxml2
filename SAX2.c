@@ -23,7 +23,6 @@
 #include <libxml/xmlerror.h>
 #include <libxml/debugXML.h>
 #include <libxml/xmlIO.h>
-#include <libxml/SAX.h>
 #include <libxml/uri.h>
 #include <libxml/valid.h>
 #include <libxml/HTMLtree.h>
@@ -1716,10 +1715,8 @@ void
 xmlSAX2EndElement(void *ctx, const xmlChar *name ATTRIBUTE_UNUSED)
 {
     xmlParserCtxtPtr ctxt = (xmlParserCtxtPtr) ctx;
-    xmlNodePtr cur;
 
     if (ctx == NULL) return;
-    cur = ctxt->node;
 
     ctxt->nodemem = -1;
 
@@ -1727,7 +1724,7 @@ xmlSAX2EndElement(void *ctx, const xmlChar *name ATTRIBUTE_UNUSED)
     if (ctxt->validate && ctxt->wellFormed &&
         ctxt->myDoc && ctxt->myDoc->intSubset)
         ctxt->valid &= xmlValidateOneElement(&ctxt->vctxt, ctxt->myDoc,
-					     cur);
+					     ctxt->node);
 #endif /* LIBXML_VALID_ENABLED */
 
 
