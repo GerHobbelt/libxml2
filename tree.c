@@ -7060,7 +7060,7 @@ xmlBufferDetach(const xmlBufferPtr buf) {
  * @mem: the memory area
  * @size:  the size in byte
  *
- * Create an XML buffer initialized with bytes.
+ * Returns an XML buffer initialized with bytes.
  */
 xmlBufferPtr
 xmlBufferCreateStatic(void *mem, size_t size) {

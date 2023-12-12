@@ -616,7 +616,9 @@ xmlInitializeGlobalState(xmlGlobalStatePtr gs ATTRIBUTE_UNUSED)
 /**
  * xmlGetGlobalState:
  *
- * DEPRECATED: Always returns NULL.
+ * DEPRECATED
+ *
+ * Returns NULL.
  */
 xmlGlobalStatePtr
 xmlGetGlobalState(void)
@@ -743,14 +745,16 @@ xmlInitGlobalState(xmlGlobalStatePtr gs) {
     gs->gs_xmlMemStrdup = (xmlStrdupFunc) xmlMemoryStrdup;
 #endif
     gs->gs_xmlGetWarningsDefaultValue = xmlGetWarningsDefaultValueThrDef;
+#ifdef LIBXML_OUTPUT_ENABLED
     gs->gs_xmlIndentTreeOutput = xmlIndentTreeOutputThrDef;
     gs->gs_xmlTreeIndentString = xmlTreeIndentStringThrDef;
+    gs->gs_xmlSaveNoEmptyTags = xmlSaveNoEmptyTagsThrDef;
+#endif
     gs->gs_xmlKeepBlanksDefaultValue = xmlKeepBlanksDefaultValueThrDef;
     gs->gs_xmlLineNumbersDefaultValue = xmlLineNumbersDefaultValueThrDef;
     gs->gs_xmlLoadExtDtdDefaultValue = xmlLoadExtDtdDefaultValueThrDef;
     gs->gs_xmlParserDebugEntities = xmlParserDebugEntitiesThrDef;
     gs->gs_xmlPedanticParserDefaultValue = xmlPedanticParserDefaultValueThrDef;
-    gs->gs_xmlSaveNoEmptyTags = xmlSaveNoEmptyTagsThrDef;
     gs->gs_xmlSubstituteEntitiesDefaultValue =
         xmlSubstituteEntitiesDefaultValueThrDef;
 
