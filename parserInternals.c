@@ -549,6 +549,8 @@ xmlParserGrow(xmlParserCtxtPtr ctxt) {
     /* Don't grow memory buffers. */
     if ((buf->encoder == NULL) && (buf->readcallback == NULL))
         return(0);
+    if (buf->error != 0)
+        return(-1);
 
     if (((curEnd > XML_MAX_LOOKUP_LIMIT) ||
          (curBase > XML_MAX_LOOKUP_LIMIT)) &&
@@ -566,7 +568,9 @@ xmlParserGrow(xmlParserCtxtPtr ctxt) {
 
     if (ret < 0) {
         xmlFatalErr(ctxt, buf->error, NULL);
-        xmlHaltParser(ctxt);
+        /* Buffer contents may be lost in case of memory errors. */
+        if (buf->error == XML_ERR_NO_MEMORY)
+            xmlHaltParser(ctxt);
     }
 
     return(ret);
@@ -755,9 +759,9 @@ xmlNextChar(xmlParserCtxtPtr ctxt)
     }
 
     if (ctxt->input->end - ctxt->input->cur < INPUT_CHUNK) {
-        if (xmlParserGrow(ctxt) < 0)
-            return;
-        if (ctxt->input->cur >= ctxt->input->end)
+        xmlParserGrow(ctxt);
+        if ((ctxt->instate == XML_PARSER_EOF) ||
+            (ctxt->input->cur >= ctxt->input->end))
             return;
     }
 
@@ -903,9 +907,11 @@ xmlCurrentChar(xmlParserCtxtPtr ctxt, int *len) {
     if (ctxt->instate == XML_PARSER_EOF)
 	return(0);
 
-    if ((ctxt->input->end - ctxt->input->cur < INPUT_CHUNK) &&
-        (xmlParserGrow(ctxt) < 0))
-        return(0);
+    if (ctxt->input->end - ctxt->input->cur < INPUT_CHUNK) {
+        xmlParserGrow(ctxt);
+        if (ctxt->instate == XML_PARSER_EOF)
+            return(0);
+    }
 
     if ((*ctxt->input->cur >= 0x20) && (*ctxt->input->cur <= 0x7F)) {
 	    *len = 1;
