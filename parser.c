@@ -51,10 +51,9 @@
 #include <stddef.h>
 #include <ctype.h>
 #include <stdlib.h>
-#include <libxml/xmlmemory.h>
-#include <libxml/globals.h>
-#include <libxml/tree.h>
 #include <libxml/parser.h>
+#include <libxml/xmlmemory.h>
+#include <libxml/tree.h>
 #include <libxml/parserInternals.h>
 #include <libxml/valid.h>
 #include <libxml/entities.h>
@@ -62,6 +61,7 @@
 #include <libxml/encoding.h>
 #include <libxml/xmlIO.h>
 #include <libxml/uri.h>
+#include <libxml/SAX2.h>
 #ifdef LIBXML_CATALOG_ENABLED
 #include <libxml/catalog.h>
 #endif

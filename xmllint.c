@@ -3207,7 +3207,6 @@ int main(int argc, const char** argv) {
     int i, acount;
     int files = 0;
     int version = 0;
-    const char* indent;
 
     if (argc <= 1) {
 	usage(stderr, argv[0]);
@@ -3597,11 +3596,14 @@ int main(int argc, const char** argv) {
 	xmlDeregisterNodeDefault(deregisterNode);
     }
 
-    indent = getenv("XMLLINT_INDENT");
-    if(indent != NULL) {
-	xmlTreeIndentString = indent;
+#ifdef LIBXML_OUTPUT_ENABLED
+    {
+        const char *indent = getenv("XMLLINT_INDENT");
+        if (indent != NULL) {
+            xmlTreeIndentString = indent;
+        }
     }
-
+#endif
 
     defaultEntityLoader = xmlGetExternalEntityLoader();
     xmlSetExternalEntityLoader(xmllintExternalEntityLoader);

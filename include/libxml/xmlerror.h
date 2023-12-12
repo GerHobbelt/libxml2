@@ -7,10 +7,10 @@
  * Author: Daniel Veillard
  */
 
-#include <libxml/parser.h>
-
 #ifndef __XML_ERROR_H__
 #define __XML_ERROR_H__
+
+#include <libxml/xmlversion.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -858,6 +858,25 @@ typedef void (*xmlGenericErrorFunc) (void *ctx,
  */
 typedef void (*xmlStructuredErrorFunc) (void *userData, xmlErrorPtr error);
 
+#define XML_GLOBALS_ERROR \
+  XML_OP(xmlLastError, xmlError, XML_DEPRECATED) \
+  XML_OP(xmlGenericError, xmlGenericErrorFunc, XML_EMPTY) \
+  XML_OP(xmlGenericErrorContext, void *, XML_EMPTY) \
+  XML_OP(xmlStructuredError, xmlStructuredErrorFunc, XML_EMPTY) \
+  XML_OP(xmlStructuredErrorContext, void *, XML_EMPTY)
+
+#define XML_OP XML_DECLARE_GLOBAL
+XML_GLOBALS_ERROR
+#undef XML_OP
+
+#if defined(LIBXML_THREAD_ENABLED) && !defined(XML_GLOBALS_NO_REDEFINITION)
+  #define xmlLastError XML_GLOBAL_MACRO(xmlLastError)
+  #define xmlGenericError XML_GLOBAL_MACRO(xmlGenericError)
+  #define xmlGenericErrorContext XML_GLOBAL_MACRO(xmlGenericErrorContext)
+  #define xmlStructuredError XML_GLOBAL_MACRO(xmlStructuredError)
+  #define xmlStructuredErrorContext XML_GLOBAL_MACRO(xmlStructuredErrorContext)
+#endif
+
 /*
  * Use the following function to reset the two global variables
  * xmlGenericError and xmlGenericErrorContext.
@@ -892,10 +911,11 @@ XMLPUBFUN void
     xmlParserValidityWarning	(void *ctx,
 				 const char *msg,
 				 ...) LIBXML_ATTR_FORMAT(2,3);
+struct _xmlParserInput;
 XMLPUBFUN void
-    xmlParserPrintFileInfo	(xmlParserInputPtr input);
+    xmlParserPrintFileInfo	(struct _xmlParserInput *input);
 XMLPUBFUN void
-    xmlParserPrintFileContext	(xmlParserInputPtr input);
+    xmlParserPrintFileContext	(struct _xmlParserInput *input);
 
 /*
  * Extended error information routines

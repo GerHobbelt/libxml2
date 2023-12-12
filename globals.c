@@ -17,9 +17,15 @@
 
 #define XML_GLOBALS_NO_REDEFINITION
 #include <libxml/globals.h>
+#include <libxml/xmlerror.h>
 #include <libxml/xmlmemory.h>
+#include <libxml/xmlIO.h>
+#include <libxml/HTMLparser.h>
+#include <libxml/parser.h>
 #include <libxml/threads.h>
+#include <libxml/tree.h>
 #include <libxml/SAX.h>
+#include <libxml/SAX2.h>
 
 #include "private/error.h"
 #include "private/globals.h"
@@ -78,7 +84,13 @@ struct _xmlGlobalState {
 #endif
 
 #define XML_OP XML_DECLARE_MEMBER
-XML_GLOBALS
+XML_GLOBALS_ALLOC
+XML_GLOBALS_ERROR
+XML_GLOBALS_HTML
+XML_GLOBALS_IO
+XML_GLOBALS_PARSER
+XML_GLOBALS_SAVE
+XML_GLOBALS_TREE
 #undef XML_OP
 };
 
@@ -379,6 +391,7 @@ void *xmlStructuredErrorContext = NULL;
 static void *xmlStructuredErrorContextThrDef = NULL;
 xmlError xmlLastError;
 
+#ifdef LIBXML_OUTPUT_ENABLED
 /*
  * output defaults
  */
@@ -409,6 +422,7 @@ static const char *xmlTreeIndentStringThrDef = "  ";
  */
 int xmlSaveNoEmptyTags = 0;
 static int xmlSaveNoEmptyTagsThrDef = 0;
+#endif /* LIBXML_OUTPUT_ENABLED */
 
 #ifdef LIBXML_SAX1_ENABLED
 /**
@@ -970,6 +984,7 @@ int xmlThrDefGetWarningsDefaultValue(int v) {
     return ret;
 }
 
+#ifdef LIBXML_OUTPUT_ENABLED
 int xmlThrDefIndentTreeOutput(int v) {
     int ret;
     xmlMutexLock(&xmlThrDefMutex);
@@ -987,6 +1002,16 @@ const char * xmlThrDefTreeIndentString(const char * v) {
     xmlMutexUnlock(&xmlThrDefMutex);
     return ret;
 }
+
+int xmlThrDefSaveNoEmptyTags(int v) {
+    int ret;
+    xmlMutexLock(&xmlThrDefMutex);
+    ret = xmlSaveNoEmptyTagsThrDef;
+    xmlSaveNoEmptyTagsThrDef = v;
+    xmlMutexUnlock(&xmlThrDefMutex);
+    return ret;
+}
+#endif
 
 int xmlThrDefKeepBlanksDefaultValue(int v) {
     int ret;
@@ -1029,15 +1054,6 @@ int xmlThrDefPedanticParserDefaultValue(int v) {
     xmlMutexLock(&xmlThrDefMutex);
     ret = xmlPedanticParserDefaultValueThrDef;
     xmlPedanticParserDefaultValueThrDef = v;
-    xmlMutexUnlock(&xmlThrDefMutex);
-    return ret;
-}
-
-int xmlThrDefSaveNoEmptyTags(int v) {
-    int ret;
-    xmlMutexLock(&xmlThrDefMutex);
-    ret = xmlSaveNoEmptyTagsThrDef;
-    xmlSaveNoEmptyTagsThrDef = v;
     xmlMutexUnlock(&xmlThrDefMutex);
     return ret;
 }
@@ -1128,7 +1144,13 @@ xmlThrDefOutputBufferCreateFilenameDefault(xmlOutputBufferCreateFilenameFunc fun
     }
 
   #define XML_OP XML_DEFINE_GLOBAL_WRAPPER
-  XML_GLOBALS
+  XML_GLOBALS_ALLOC
+  XML_GLOBALS_ERROR
+  XML_GLOBALS_HTML
+  XML_GLOBALS_IO
+  XML_GLOBALS_PARSER
+  XML_GLOBALS_SAVE
+  XML_GLOBALS_TREE
   #undef XML_OP
 
   /* For backward compatibility */
