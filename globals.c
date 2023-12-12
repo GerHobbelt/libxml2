@@ -20,7 +20,6 @@
 #include <libxml/xmlerror.h>
 #include <libxml/xmlmemory.h>
 #include <libxml/xmlIO.h>
-#include <libxml/HTMLparser.h>
 #include <libxml/parser.h>
 #include <libxml/threads.h>
 #include <libxml/tree.h>
@@ -79,10 +78,8 @@ struct _xmlGlobalState {
 #define XML_OP XML_DECLARE_MEMBER
 XML_GLOBALS_ALLOC
 XML_GLOBALS_ERROR
-XML_GLOBALS_HTML
 XML_GLOBALS_IO
 XML_GLOBALS_PARSER
-XML_GLOBALS_SAVE
 XML_GLOBALS_TREE
 #undef XML_OP
 };
@@ -259,7 +256,7 @@ static int xmlDefaultBufferSizeThrDef = BASE_BUFFER_SIZE;
  *
  * Global setting, DEPRECATED.
  */
-int oldXMLWDcompatibility = 0; /* DEPRECATED */
+const int oldXMLWDcompatibility = 0; /* DEPRECATED */
 /**
  * xmlParserDebugEntities:
  *
@@ -455,7 +452,7 @@ static int xmlSaveNoEmptyTagsThrDef = 0;
  *
  * Default SAX version1 handler for XML, builds the DOM tree
  */
-xmlSAXHandlerV1 xmlDefaultSAXHandler = {
+const xmlSAXHandlerV1 xmlDefaultSAXHandler = {
     xmlSAX2InternalSubset,
     xmlSAX2IsStandalone,
     xmlSAX2HasInternalSubset,
@@ -495,7 +492,7 @@ xmlSAXHandlerV1 xmlDefaultSAXHandler = {
  * The default SAX Locator
  * { getPublicId, getSystemId, getLineNumber, getColumnNumber}
  */
-xmlSAXLocator xmlDefaultSAXLocator = {
+const xmlSAXLocator xmlDefaultSAXLocator = {
     xmlSAX2GetPublicId,
     xmlSAX2GetSystemId,
     xmlSAX2GetLineNumber,
@@ -511,7 +508,7 @@ xmlSAXLocator xmlDefaultSAXLocator = {
  *
  * Default old SAX v1 handler for HTML, builds the DOM tree
  */
-xmlSAXHandlerV1 htmlDefaultSAXHandler = {
+const xmlSAXHandlerV1 htmlDefaultSAXHandler = {
     xmlSAX2InternalSubset,
     NULL,
     NULL,
@@ -751,20 +748,8 @@ static void
 xmlInitGlobalState(xmlGlobalStatePtr gs) {
     xmlMutexLock(&xmlThrDefMutex);
 
-#if defined(LIBXML_HTML_ENABLED) && defined(LIBXML_LEGACY_ENABLED) && defined(LIBXML_SAX1_ENABLED)
-    inithtmlDefaultSAXHandler(&gs->gs_htmlDefaultSAXHandler);
-#endif
-
-    gs->gs_oldXMLWDcompatibility = 0;
     gs->gs_xmlBufferAllocScheme = xmlBufferAllocSchemeThrDef;
     gs->gs_xmlDefaultBufferSize = xmlDefaultBufferSizeThrDef;
-#if defined(LIBXML_SAX1_ENABLED) && defined(LIBXML_LEGACY_ENABLED)
-    initxmlDefaultSAXHandler(&gs->gs_xmlDefaultSAXHandler, 1);
-#endif /* LIBXML_SAX1_ENABLED */
-    gs->gs_xmlDefaultSAXLocator.getPublicId = xmlSAX2GetPublicId;
-    gs->gs_xmlDefaultSAXLocator.getSystemId = xmlSAX2GetSystemId;
-    gs->gs_xmlDefaultSAXLocator.getLineNumber = xmlSAX2GetLineNumber;
-    gs->gs_xmlDefaultSAXLocator.getColumnNumber = xmlSAX2GetColumnNumber;
     gs->gs_xmlDoValidityCheckingDefaultValue =
          xmlDoValidityCheckingDefaultValueThrDef;
 #ifdef LIBXML_THREAD_ALLOC_ENABLED
@@ -899,10 +884,8 @@ xmlGetThreadLocalStorage(int allowFailure) {
 #define XML_OP XML_DEFINE_GLOBAL_WRAPPER
 XML_GLOBALS_ALLOC
 XML_GLOBALS_ERROR
-XML_GLOBALS_HTML
 XML_GLOBALS_IO
 XML_GLOBALS_PARSER
-XML_GLOBALS_SAVE
 XML_GLOBALS_TREE
 #undef XML_OP
 
@@ -912,6 +895,30 @@ const char *const *
 __xmlParserVersion(void) {
     return &xmlParserVersion;
 }
+
+const int *
+__oldXMLWDcompatibility(void) {
+    return &oldXMLWDcompatibility;
+}
+
+const xmlSAXLocator *
+__xmlDefaultSAXLocator(void) {
+    return &xmlDefaultSAXLocator;
+}
+
+#ifdef LIBXML_SAX1_ENABLED
+const xmlSAXHandlerV1 *
+__xmlDefaultSAXHandler(void) {
+    return &xmlDefaultSAXHandler;
+}
+
+#ifdef LIBXML_HTML_ENABLED
+const xmlSAXHandlerV1 *
+__htmlDefaultSAXHandler(void) {
+    return &htmlDefaultSAXHandler;
+}
+#endif /* LIBXML_HTML_ENABLED */
+#endif /* LIBXML_SAX1_ENABLED */
 
 #endif /* LIBXML_THREAD_ENABLED */
 

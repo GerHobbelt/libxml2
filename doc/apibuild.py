@@ -63,10 +63,8 @@ ignored_words = {
   "XML_DEPRECATED": (0, "macro keyword"),
   "XML_GLOBALS_ALLOC": (0, "macro keyword"),
   "XML_GLOBALS_ERROR": (0, "macro keyword"),
-  "XML_GLOBALS_HTML": (0, "macro keyword"),
   "XML_GLOBALS_IO": (0, "macro keyword"),
   "XML_GLOBALS_PARSER": (0, "macro keyword"),
-  "XML_GLOBALS_SAVE": (0, "macro keyword"),
   "XML_GLOBALS_TREE": (0, "macro keyword"),
   "XML_THREAD_LOCAL": (0, "macro keyword"),
 }
