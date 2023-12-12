@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ([2.63])
 
 m4_define([MAJOR_VERSION], 2)
-m4_define([MINOR_VERSION], 11)
+m4_define([MINOR_VERSION], 12)
 m4_define([MICRO_VERSION], 0)
 
 AC_INIT([libxml2],[MAJOR_VERSION.MINOR_VERSION.MICRO_VERSION])
@@ -465,6 +465,10 @@ else
 fi
 AC_SUBST(VERSION_SCRIPT_FLAGS)
 AM_CONDITIONAL([USE_VERSION_SCRIPT], [test -n "$VERSION_SCRIPT_FLAGS"])
+
+dnl lld 16 defaults to --no-undefined-version but the version script
+dnl can contain symbols disabled by configuration options.
+AX_APPEND_LINK_FLAGS([-Wl,--undefined-version], [AM_LDFLAGS])
 
 dnl
 dnl Workaround for native compilers
