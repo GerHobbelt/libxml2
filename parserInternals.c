@@ -1003,11 +1003,12 @@ xmlDetectEBCDIC(xmlParserInputPtr input) {
     handler = xmlGetCharEncodingHandler(XML_CHAR_ENCODING_EBCDIC);
     if (handler == NULL)
         return(NULL);
-    outlen = sizeof(out);
+    outlen = sizeof(out) - 1;
     inlen = input->end - input->cur;
     res = xmlEncInputChunk(handler, out, &outlen, input->cur, &inlen, 0);
     if (res < 0)
         return(handler);
+    out[outlen] = 0;
 
     for (i = 0; i < outlen; i++) {
         if (out[i] == '>')
@@ -1233,9 +1234,11 @@ xmlSwitchInputEncoding(xmlParserCtxtPtr ctxt, xmlParserInputPtr input,
         nbchars = xmlCharEncInput(in, 0);
         xmlBufResetInput(in->buffer, input);
         if (nbchars < 0) {
+            /* TODO: This could be an out of memory or an encoding error. */
             xmlErrInternal(ctxt,
                            "switching encoding: encoder error\n",
                            NULL);
+            xmlHaltParser(ctxt);
             return (-1);
         }
         consumed = use - xmlBufUse(in->raw);
