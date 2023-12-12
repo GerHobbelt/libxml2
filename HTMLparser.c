@@ -445,7 +445,6 @@ htmlCurrentChar(xmlParserCtxtPtr ctxt, int *len) {
             xmlSwitchEncoding(ctxt, XML_CHAR_ENCODING_8859_1);
         } else {
             handler = xmlFindCharEncodingHandler((const char *) guess);
-            xmlFree(guess);
             if (handler != NULL) {
                 /*
                  * Don't use UTF-8 encoder which isn't required and
@@ -457,6 +456,7 @@ htmlCurrentChar(xmlParserCtxtPtr ctxt, int *len) {
                 htmlParseErr(ctxt, XML_ERR_INVALID_ENCODING,
                              "Unsupported encoding %s", guess, NULL);
             }
+            xmlFree(guess);
         }
         ctxt->input->flags |= XML_INPUT_HAS_ENCODING;
     }
@@ -6292,8 +6292,6 @@ htmlCreateFileParserCtxt(const char *filename, const char *encoding)
     htmlParserCtxtPtr ctxt;
     htmlParserInputPtr inputStream;
     char *canonicFilename;
-    /* htmlCharEncoding enc; */
-    xmlChar *content, *content_line = (xmlChar *) "charset=";
 
     if (filename == NULL)
         return(NULL);
@@ -6319,17 +6317,12 @@ htmlCreateFileParserCtxt(const char *filename, const char *encoding)
 
     /* set encoding */
     if (encoding) {
-        size_t l = strlen(encoding);
+        xmlCharEncodingHandlerPtr hdlr;
 
-	if (l < 1000) {
-	    content = xmlMallocAtomic (xmlStrlen(content_line) + l + 1);
-	    if (content) {
-		strcpy ((char *)content, (char *)content_line);
-		strcat ((char *)content, (char *)encoding);
-		htmlCheckEncoding (ctxt, content);
-		xmlFree (content);
-	    }
-	}
+        hdlr = xmlFindCharEncodingHandler(encoding);
+        if (hdlr != NULL) {
+            xmlSwitchToEncoding(ctxt, hdlr);
+        }
     }
 
     return(ctxt);
