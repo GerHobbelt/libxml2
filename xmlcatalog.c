@@ -24,7 +24,6 @@
 #include <libxml/uri.h>
 #include <libxml/catalog.h>
 #include <libxml/parser.h>
-#include <libxml/globals.h>
 
 #include <libxml/monolithic_examples.h>
 

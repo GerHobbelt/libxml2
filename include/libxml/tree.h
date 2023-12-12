@@ -16,6 +16,8 @@
 #include <limits.h>
 #include <libxml/xmlversion.h>
 #include <libxml/xmlstring.h>
+#include <libxml/xmlmemory.h>
+#include <libxml/xmlregexp.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -328,14 +330,6 @@ typedef enum {
     XML_ELEMENT_TYPE_MIXED,
     XML_ELEMENT_TYPE_ELEMENT
 } xmlElementTypeVal;
-
-#ifdef __cplusplus
-}
-#endif
-#include <libxml/xmlregexp.h>
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /**
  * xmlElement:
@@ -1337,12 +1331,18 @@ XMLPUBFUN xmlRegisterNodeFunc
 	    xmlRegisterNodeDefault	(xmlRegisterNodeFunc func);
 XMLPUBFUN xmlDeregisterNodeFunc
 	    xmlDeregisterNodeDefault	(xmlDeregisterNodeFunc func);
+XMLPUBFUN xmlRegisterNodeFunc
+            xmlThrDefRegisterNodeDefault(xmlRegisterNodeFunc func);
+XMLPUBFUN xmlDeregisterNodeFunc
+            xmlThrDefDeregisterNodeDefault(xmlDeregisterNodeFunc func);
+
+XML_DEPRECATED XMLPUBFUN xmlBufferAllocationScheme
+            xmlThrDefBufferAllocScheme  (xmlBufferAllocationScheme v);
+XML_DEPRECATED XMLPUBFUN int
+            xmlThrDefDefaultBufferSize  (int v);
 
 #ifdef __cplusplus
 }
-#endif
-#ifndef __XML_PARSER_H__
-#include <libxml/xmlmemory.h>
 #endif
 
 #endif /* __XML_TREE_H__ */
