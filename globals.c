@@ -11,6 +11,7 @@
 #define IN_LIBXML
 #include "libxml.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -786,13 +787,24 @@ xmlInitGlobalState(xmlGlobalStatePtr gs) {
  * Returns the newly allocated xmlGlobalStatePtr or NULL in case of error
  */
 static xmlGlobalStatePtr
-xmlNewGlobalState(void)
+xmlNewGlobalState(int allowFailure)
 {
     xmlGlobalState *gs;
 
     gs = malloc(sizeof(xmlGlobalState));
-    if (gs == NULL)
-        return (NULL);
+    if (gs == NULL) {
+        if (allowFailure)
+            return(NULL);
+
+        /*
+         * If an application didn't call xmlCheckThreadLocalStorage to make
+         * sure that global state could be allocated, it's too late to
+         * handle the error.
+         */
+        fprintf(stderr, "libxml2: Failed to allocate globals for thread\n"
+                        "libxml2: See xmlCheckThreadLocalStorage\n");
+        abort();
+    }
 
     memset(gs, 0, sizeof(xmlGlobalState));
     xmlInitGlobalState(gs);
@@ -801,8 +813,10 @@ xmlNewGlobalState(void)
 #endif
 
 static xmlGlobalStatePtr
-xmlGetThreadLocalStorage(void) {
+xmlGetThreadLocalStorage(int allowFailure) {
     xmlGlobalState *gs;
+
+    (void) allowFailure;
 
 #ifdef XML_THREAD_LOCAL
     gs = &globalState;
@@ -811,11 +825,11 @@ xmlGetThreadLocalStorage(void) {
 #elif defined(HAVE_POSIX_THREADS)
     gs = (xmlGlobalState *) pthread_getspecific(globalkey);
     if (gs == NULL)
-        gs = xmlNewGlobalState();
+        gs = xmlNewGlobalState(allowFailure);
 #elif defined(HAVE_WIN32_THREADS)
     gs = (xmlGlobalState *) TlsGetValue(globalkey);
     if (gs == NULL)
-        gs = xmlNewGlobalState();
+        gs = xmlNewGlobalState(allowFailure);
 #else
     gs = NULL;
 #endif
@@ -849,7 +863,7 @@ xmlGetThreadLocalStorage(void) {
 int
 xmlCheckThreadLocalStorage(void) {
 #if defined(LIBXML_THREAD_ENABLED) && !defined(XML_THREAD_LOCAL_STORAGE)
-    if ((!xmlIsMainThreadInternal()) && (xmlGetThreadLocalStorage() == NULL))
+    if ((!xmlIsMainThreadInternal()) && (xmlGetThreadLocalStorage(1) == NULL))
         return(-1);
 #endif
     return(0);
@@ -1118,7 +1132,7 @@ xmlThrDefOutputBufferCreateFilenameDefault(xmlOutputBufferCreateFilenameFunc fun
       if (IS_MAIN_THREAD) \
         return (&name); \
       else \
-        return (&xmlGetThreadLocalStorage()->gs_##name); \
+        return (&xmlGetThreadLocalStorage(0)->gs_##name); \
     }
 
   #define XML_OP XML_DEFINE_GLOBAL_WRAPPER
