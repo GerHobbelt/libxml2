@@ -818,7 +818,7 @@ struct _xmlSAXHandlerV1 {
     errorSAXFunc error;
     fatalErrorSAXFunc fatalError; /* unused error() get all the errors */
     getParameterEntitySAXFunc getParameterEntity;
-    cdataBlockSAXFunc cdataBlock;
+    /* mutable */ cdataBlockSAXFunc cdataBlock;
     externalSubsetSAXFunc externalSubset;
     unsigned int initialized;
 };
@@ -849,7 +849,7 @@ XML_DEPRECATED
 XMLPUBVAR const xmlSAXLocator xmlDefaultSAXLocator;
 #ifdef LIBXML_SAX1_ENABLED
 XML_DEPRECATED
-XMLPUBVAR const xmlSAXHandlerV1 xmlDefaultSAXHandler;
+XMLPUBVAR /* const */ xmlSAXHandlerV1 xmlDefaultSAXHandler;
 #endif
 
 #ifdef LIBXML_THREAD_ENABLED
@@ -861,7 +861,7 @@ XML_DEPRECATED
 XMLPUBFUN const xmlSAXLocator *__xmlDefaultSAXLocator(void);
 #ifdef LIBXML_SAX1_ENABLED
 XML_DEPRECATED
-XMLPUBFUN const xmlSAXHandlerV1 *__xmlDefaultSAXHandler(void);
+XMLPUBFUN /* const */ xmlSAXHandlerV1 *__xmlDefaultSAXHandler(void);
 #endif
 #endif
 

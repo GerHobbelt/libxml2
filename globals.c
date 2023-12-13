@@ -452,7 +452,7 @@ static int xmlSaveNoEmptyTagsThrDef = 0;
  *
  * Default SAX version1 handler for XML, builds the DOM tree
  */
-const xmlSAXHandlerV1 xmlDefaultSAXHandler = {
+/* const */ xmlSAXHandlerV1 xmlDefaultSAXHandler = {
     xmlSAX2InternalSubset,
     xmlSAX2IsStandalone,
     xmlSAX2HasInternalSubset,
@@ -907,7 +907,7 @@ __xmlDefaultSAXLocator(void) {
 }
 
 #ifdef LIBXML_SAX1_ENABLED
-const xmlSAXHandlerV1 *
+/* const */ xmlSAXHandlerV1 *
 __xmlDefaultSAXHandler(void) {
     return &xmlDefaultSAXHandler;
 }

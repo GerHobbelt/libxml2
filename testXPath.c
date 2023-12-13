@@ -168,7 +168,7 @@ int main(int argc, const char** argv) {
 #ifdef LIBXML_SAX1_ENABLED
     if (nocdata != 0) {
 	xmlDefaultSAXHandlerInit();
-	xmlDefaultSAXHandler.cdataBlock = NULL;
+	xmlDefaultSAXHandler.cdataBlock = 0;		// attempts to modify a CONST object and since we do not have the 'mutable' keyword in C... @#$%^&*! we had to strip off the 'const' from the l-value definition.
     }
 #endif
     if (document == NULL) {
