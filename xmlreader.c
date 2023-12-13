@@ -18,6 +18,7 @@
 #include "libxml.h"
 
 #ifdef LIBXML_READER_ENABLED
+
 #include <string.h> /* for memset() only ! */
 #include <stdarg.h>
 #include <ctype.h>
@@ -72,10 +73,10 @@
  *
  * macro to flag unimplemented blocks
  */
-#define TODO								\
+#define TODO()											\
     xmlGenericError(xmlGenericErrorContext,				\
 	    "Unimplemented block at %s:%d\n",				\
-            __FILE__, __LINE__);
+            __FILE__, __LINE__)
 
 #define CHUNK_SIZE 512
 /************************************************************************
@@ -1722,7 +1723,7 @@ xmlTextReaderReadString(xmlTextReaderPtr reader)
 	}
 	break;
     case XML_ATTRIBUTE_NODE:
-	TODO
+	TODO();
 	break;
     default:
        break;
@@ -1757,7 +1758,7 @@ xmlTextReaderReadBase64(xmlTextReaderPtr reader,
 
     if ((reader->node == NULL) || (reader->node->type == XML_ELEMENT_NODE))
 	return(0);
-    TODO
+    TODO();
     return(0);
 }
 
@@ -1787,7 +1788,7 @@ xmlTextReaderReadBinHex(xmlTextReaderPtr reader,
 
     if ((reader->node == NULL) || (reader->node->type == XML_ELEMENT_NODE))
 	return(0);
-    TODO
+    TODO();
     return(0);
 }
 #endif
@@ -1947,7 +1948,7 @@ xmlTextReaderNextSibling(xmlTextReaderPtr reader) {
     if (reader == NULL)
         return(-1);
     if (reader->doc == NULL) {
-        /* TODO */
+        /* TODO(); */
 	return(-1);
     }
 
@@ -2441,7 +2442,7 @@ xmlTextReaderGetRemainder(xmlTextReaderPtr reader) {
 	 *   - by the layer which allocated it.
 	 *   - by the layer to which would have been returned to.
 	 */
-	TODO
+	TODO();
 	return(NULL);
     }
     return(ret);
@@ -5663,7 +5664,6 @@ xmlReaderNewIO(xmlTextReaderPtr reader, xmlInputReadCallback ioread,
  *			Utilities					*
  *									*
  ************************************************************************/
-#ifdef NOT_USED_YET
 
 /**
  * xmlBase64Decode:
@@ -5800,7 +5800,7 @@ xmlBase64Decode(const unsigned char *in, unsigned long *inlen,
 
 int main(int argc, const char** argv)
 {
-    char *input = "  VW4 gcGV0        \n      aXQgdGVzdCAuCg== ";
+    const char *input = "  VW4 gcGV0        \n      aXQgdGVzdCAuCg== ";
 
     char output[100];
 
@@ -5823,8 +5823,7 @@ int main(int argc, const char** argv)
 
     output[outlen] = 0;
     printf("ret: %d, inlen: %ld , outlen: %ld, output: '%s'\n", ret, inlen,
-           outlen, output)indent: Standard input:179: Error:Unmatched #endif
-;
+           outlen, output);
 
     /*
      * output chunking
@@ -5869,6 +5868,5 @@ int main(int argc, const char** argv)
 
 }
 #endif
-#endif /* NOT_USED_YET */
 
 #endif /* LIBXML_READER_ENABLED */
