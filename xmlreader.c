@@ -5819,7 +5819,7 @@ int main(int argc, const char** argv)
     /*
      * Direct
      */
-    ret = xmlBase64Decode(input, &inlen, output, &outlen);
+    ret = xmlBase64Decode((const unsigned char *)input, &inlen, (unsigned char *)output, &outlen);
 
     output[outlen] = 0;
     printf("ret: %d, inlen: %ld , outlen: %ld, output: '%s'\n", ret, inlen,
@@ -5835,7 +5835,7 @@ int main(int argc, const char** argv)
         tmp2 = inlen - cons;
 
         printf("%ld %ld\n", cons, prod);
-        ret = xmlBase64Decode(&input[cons], &tmp2, &output2[prod], &tmp);
+        ret = xmlBase64Decode((const unsigned char *)&input[cons], &tmp2, (unsigned char *)&output2[prod], &tmp);
         cons += tmp2;
         prod += tmp;
         printf("%ld %ld\n", cons, prod);
@@ -5856,7 +5856,7 @@ int main(int argc, const char** argv)
             tmp2 = 5;
 
         printf("%ld %ld\n", cons, prod);
-        ret = xmlBase64Decode(&input[cons], &tmp2, &output3[prod], &tmp);
+        ret = xmlBase64Decode((const unsigned char *)&input[cons], &tmp2, (unsigned char *)&output3[prod], &tmp);
         cons += tmp2;
         prod += tmp;
         printf("%ld %ld\n", cons, prod);
