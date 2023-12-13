@@ -10,7 +10,8 @@
 #include <libxml/catalog.h>
 #ifdef HAVE_PTHREAD_H
 #include <pthread.h>
-#elif defined(_WIN32)
+#endif
+#if defined(_WIN32)
 #include <windows.h>
 #endif
 #include <string.h>
