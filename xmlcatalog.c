@@ -27,6 +27,10 @@
 
 #include <libxml/monolithic_examples.h>
 
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_xmlcatalog_main(cnt, arr)
+#endif
+
 #if defined(LIBXML_CATALOG_ENABLED) && defined(LIBXML_OUTPUT_ENABLED)
 static int shell = 0;
 static int sgml = 0;
@@ -310,10 +314,6 @@ Usage : %s [options] catalogfile entities...\n\
 \t--no-super-update: do not update the SGML super catalog\n\
 \t-v --verbose : provide debug information\n");
 }
-
-#if defined(BUILD_MONOLITHIC)
-#define main(cnt, arr)      xml_xmlcatalog_main(cnt, arr)
-#endif
 
 int main(int argc, const char** argv) {
     int i;
@@ -607,10 +607,6 @@ int main(int argc, const char** argv) {
     return(exit_value);
 }
 #else
-
-#if defined(BUILD_MONOLITHIC)
-#define main(cnt, arr)      xml_xmlcatalog_main(cnt, arr)
-#endif
 
 int main(int argc, const char** argv) {
     fprintf(stderr, "libxml was not compiled with catalog and output support\n");
