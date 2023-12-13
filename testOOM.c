@@ -214,7 +214,7 @@ struct file_params {
 };
 
 static void
-error_func (void *data ATTRIBUTE_UNUSED, xmlErrorPtr err)
+error_func (void *data ATTRIBUTE_UNUSED, const xmlError *err)
 {
 
     errcount++;
