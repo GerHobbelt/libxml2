@@ -58,10 +58,10 @@
 #endif
 #endif
 
-#define TODO								\
+#define TODO()								            \
     xmlGenericError(xmlGenericErrorContext,				\
 	    "Unimplemented block at %s:%d\n",				\
-            __FILE__, __LINE__);
+            __FILE__, __LINE__)
 
 /**
  * WITH_TIM_SORT:
@@ -2061,7 +2061,7 @@ xmlXPathCastToNumberInternal(xmlXPathParserContextPtr ctxt,
     case XPATH_RANGE:
     case XPATH_LOCATIONSET:
 #endif /* LIBXML_XPTR_LOCS_ENABLED */
-	TODO;
+	TODO();
 	ret = xmlXPathNAN;
 	break;
     }
@@ -4882,7 +4882,7 @@ xmlXPathCastToString(xmlXPathObjectPtr val) {
 	case XPATH_RANGE:
 	case XPATH_LOCATIONSET:
 #endif /* LIBXML_XPTR_LOCS_ENABLED */
-	    TODO
+	    TODO();
 	    ret = xmlStrdup((const xmlChar *) "");
 	    break;
     }
@@ -4926,7 +4926,7 @@ xmlXPathConvertString(xmlXPathObjectPtr val) {
     case XPATH_RANGE:
     case XPATH_LOCATIONSET:
 #endif /* LIBXML_XPTR_LOCS_ENABLED */
-	TODO;
+	TODO();
 	break;
     }
     xmlXPathFreeObject(val);
@@ -5140,7 +5140,7 @@ xmlXPathCastToBoolean (xmlXPathObjectPtr val) {
     case XPATH_RANGE:
     case XPATH_LOCATIONSET:
 #endif /* LIBXML_XPTR_LOCS_ENABLED */
-	TODO;
+	TODO();
 	ret = 0;
 	break;
     }
@@ -6074,7 +6074,7 @@ xmlXPathEqualValuesCommon(xmlXPathParserContextPtr ctxt,
 		case XPATH_RANGE:
 		case XPATH_LOCATIONSET:
 #endif /* LIBXML_XPTR_LOCS_ENABLED */
-		    TODO
+		    TODO();
 		    break;
 		case XPATH_NODESET:
 		case XPATH_XSLT_TREE:
@@ -6131,7 +6131,7 @@ xmlXPathEqualValuesCommon(xmlXPathParserContextPtr ctxt,
 		case XPATH_RANGE:
 		case XPATH_LOCATIONSET:
 #endif /* LIBXML_XPTR_LOCS_ENABLED */
-		    TODO
+		    TODO();
 		    break;
 		case XPATH_NODESET:
 		case XPATH_XSLT_TREE:
@@ -6192,7 +6192,7 @@ xmlXPathEqualValuesCommon(xmlXPathParserContextPtr ctxt,
 		case XPATH_RANGE:
 		case XPATH_LOCATIONSET:
 #endif /* LIBXML_XPTR_LOCS_ENABLED */
-		    TODO
+		    TODO();
 		    break;
 		case XPATH_NODESET:
 		case XPATH_XSLT_TREE:
@@ -6205,7 +6205,7 @@ xmlXPathEqualValuesCommon(xmlXPathParserContextPtr ctxt,
 	case XPATH_RANGE:
 	case XPATH_LOCATIONSET:
 #endif /* LIBXML_XPTR_LOCS_ENABLED */
-	    TODO
+	    TODO();
 	    break;
 	case XPATH_NODESET:
 	case XPATH_XSLT_TREE:
@@ -6285,7 +6285,7 @@ xmlXPathEqualValues(xmlXPathParserContextPtr ctxt) {
 	    case XPATH_RANGE:
 	    case XPATH_LOCATIONSET:
 #endif /* LIBXML_XPTR_LOCS_ENABLED */
-		TODO
+		TODO();
 		break;
 	}
 	xmlXPathReleaseObject(ctxt->context, arg1);
@@ -6365,7 +6365,7 @@ xmlXPathNotEqualValues(xmlXPathParserContextPtr ctxt) {
 	    case XPATH_RANGE:
 	    case XPATH_LOCATIONSET:
 #endif /* LIBXML_XPTR_LOCS_ENABLED */
-		TODO
+		TODO();
 		break;
 	}
 	xmlXPathReleaseObject(ctxt->context, arg1);
@@ -8557,7 +8557,7 @@ void
 xmlXPathLangFunction(xmlXPathParserContextPtr ctxt, int nargs) {
     xmlXPathObjectPtr val;
     xmlNodePtr cur;
-    xmlChar *theLang;
+    xmlChar *theLang = NULL;
     const xmlChar *lang;
     int ret = 0;
     int i;
@@ -11256,7 +11256,7 @@ xmlXPathNodeCollectAndTest(xmlXPathParserContextPtr ctxt,
                     }
                     break;
                 case NODE_TEST_NS:{
-                        TODO;
+                        TODO();
                         break;
                     }
                 case NODE_TEST_NAME:

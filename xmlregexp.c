@@ -2797,7 +2797,7 @@ xmlRegCheckCharacterRange(xmlRegAtomType type, int codepoint, int neg,
 		   IS_COMBINING(codepoint) || IS_EXTENDER(codepoint));
 	    break;
 #ifdef LIBXML_UNICODE_ENABLED
-		case XML_REGEXP_NOTDECIMAL:
+        case XML_REGEXP_NOTDECIMAL:
 	    neg = !neg;
             /* Falls through. */
         case XML_REGEXP_DECIMAL:
@@ -2923,9 +2923,9 @@ xmlRegCheckCharacterRange(xmlRegAtomType type, int codepoint, int neg,
 	    /* Seems it doesn't exist anymore in recent Unicode releases */
 	    ret = 0;
 	    break;
-		case XML_REGEXP_BLOCK_NAME:
-		ret = xmlUCSIsBlock(codepoint, (const char*)blockName);
-		break;
+        case XML_REGEXP_BLOCK_NAME:
+	    ret = xmlUCSIsBlock(codepoint, (const char *) blockName);
+	    break;
 #else
 		case XML_REGEXP_NOTDECIMAL:
 			neg = !neg;

@@ -9695,7 +9695,7 @@ next_attr:
         memset(ctxt->attrHash, -1, attrHashSize * sizeof(ctxt->attrHash[0]));
 
         for (i = 0, j = 0; j < nratts; i += 5, j++) {
-            const xmlChar *nsuri;
+            const xmlChar *nsuri = NULL;
             unsigned hashValue, nameHashValue, uriHashValue;
             int res;
 

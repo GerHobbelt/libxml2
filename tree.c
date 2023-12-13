@@ -7765,10 +7765,10 @@ xmlBufferAddHead(xmlBufferPtr buf, const xmlChar *str, int len) {
 	     * We can add it in the space previously shrunk
 	     */
 	    buf->content -= len;
-            memmove(&buf->content[0], str, len);
+        memmove(&buf->content[0], str, len);
 	    buf->use += len;
 	    buf->size += len;
-	    buf->content[buf->use] = 0;
+        buf->content[buf->use] = 0;
 	    return(0);
 	}
     }
