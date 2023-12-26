@@ -34,7 +34,6 @@ extern int xml_xmllint_main(int argc, const char** argv);
 extern int xml_test_xmlreader_main(int argc, const char** argv);
 
 extern int xml_testthreads_main(void);
-extern int xml_trionan_main(void);
 extern int xml_testchar_main(void);
 
 #ifdef __cplusplus
