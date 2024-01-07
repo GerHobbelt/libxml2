@@ -156,19 +156,13 @@
     <ClCompile Include="..\..\SAX2.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\xzlib.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\win32\config.h">
       <Filter>Header Files\win32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\trio.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\triodef.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\trionan.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\libxml.h">
       <Filter>Header Files</Filter>
