@@ -61,10 +61,6 @@
 
 #define MINLEN 4000
 
-#ifndef STDIN_FILENO
-  #define STDIN_FILENO 0
-#endif
-
 #ifndef S_ISDIR
 #  ifdef _S_ISDIR
 #    define S_ISDIR(x) _S_ISDIR(x)
@@ -93,10 +89,8 @@ xmlIODefaultMatch(const char *filename);
 
 #define MAX_INPUT_CALLBACK 10
 
-static xmlInputCallback xmlInputCallbackTable[MAX_INPUT_CALLBACK] = {
-    { xmlIODefaultMatch, NULL, NULL, NULL }
-};
-static int xmlInputCallbackNr = 1;
+static xmlInputCallback xmlInputCallbackTable[MAX_INPUT_CALLBACK];
+static int xmlInputCallbackNr;
 
 #ifdef LIBXML_OUTPUT_ENABLED
 /*
@@ -111,49 +105,15 @@ typedef struct _xmlOutputCallback {
 
 #define MAX_OUTPUT_CALLBACK 10
 
-static xmlOutputCallback xmlOutputCallbackTable[MAX_OUTPUT_CALLBACK] = {
-    { xmlIODefaultMatch, NULL, NULL, NULL },
-};
-static int xmlOutputCallbackNr = 1;
+static xmlOutputCallback xmlOutputCallbackTable[MAX_OUTPUT_CALLBACK];
+static int xmlOutputCallbackNr;
 #endif /* LIBXML_OUTPUT_ENABLED */
 
 /************************************************************************
  *									*
- *		Tree memory error handler				*
+ *			Error handling					*
  *									*
  ************************************************************************/
-
-#if defined(_WIN32)
-/**
- * __xmlIOWin32UTF8ToWChar:
- * @u8String:  uft-8 string
- *
- * Convert a string from utf-8 to wchar (WINDOWS ONLY!)
- */
-static wchar_t *
-__xmlIOWin32UTF8ToWChar(const char *u8String)
-{
-    wchar_t *wString = NULL;
-
-    if (u8String) {
-        int wLen =
-            MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, u8String,
-                                -1, NULL, 0);
-        if (wLen) {
-            wString = xmlMalloc(wLen * sizeof(wchar_t));
-            if (wString) {
-                if (MultiByteToWideChar
-                    (CP_UTF8, 0, u8String, -1, wString, wLen) == 0) {
-                    xmlFree(wString);
-                    wString = NULL;
-                }
-            }
-        }
-    }
-
-    return wString;
-}
-#endif
 
 /**
  * xmlIOErrMemory:
@@ -415,94 +375,41 @@ xmlCtxtErrIO(xmlParserCtxtPtr ctxt, int code, const char *uri)
 
 /************************************************************************
  *									*
- *		Tree memory error handler				*
- *									*
- ************************************************************************/
-/**
- * xmlNormalizeWindowsPath:
- * @path: the input file path
- *
- * This function is obsolete. Please see xmlURIFromPath in uri.c for
- * a better solution.
- *
- * Returns a canonicalized version of the path
- */
-xmlChar *
-xmlNormalizeWindowsPath(const xmlChar *path)
-{
-    return xmlCanonicPath(path);
-}
-
-/**
- * xmlCleanupInputCallbacks:
- *
- * clears the entire input callback table. this includes the
- * compiled-in I/O.
- */
-void
-xmlCleanupInputCallbacks(void)
-{
-    xmlInputCallbackNr = 0;
-}
-
-/**
- * xmlPopInputCallbacks:
- *
- * Clear the top input callback from the input stack. this includes the
- * compiled-in I/O.
- *
- * Returns the number of input callback registered or -1 in case of error.
- */
-int
-xmlPopInputCallbacks(void)
-{
-    if (xmlInputCallbackNr <= 0)
-        return(-1);
-
-    xmlInputCallbackNr--;
-
-    return(xmlInputCallbackNr);
-}
-
-#ifdef LIBXML_OUTPUT_ENABLED
-/**
- * xmlCleanupOutputCallbacks:
- *
- * clears the entire output callback table. this includes the
- * compiled-in I/O callbacks.
- */
-void
-xmlCleanupOutputCallbacks(void)
-{
-    xmlOutputCallbackNr = 0;
-}
-
-/**
- * xmlPopOutputCallbacks:
- *
- * Remove the top output callbacks from the output stack. This includes the
- * compiled-in I/O.
- *
- * Returns the number of output callback registered or -1 in case of error.
- */
-int
-xmlPopOutputCallbacks(void)
-{
-    if (xmlOutputCallbackNr <= 0)
-        return(-1);
-
-    xmlOutputCallbackNr--;
-
-    return(xmlOutputCallbackNr);
-}
-
-#endif /* LIBXML_OUTPUT_ENABLED */
-
-/************************************************************************
- *									*
  *		Standard I/O for file accesses				*
  *									*
  ************************************************************************/
+
+#if defined(_WIN32)
+
+/**
+ * __xmlIOWin32UTF8ToWChar:
+ * @u8String:  uft-8 string
+ *
+ * Convert a string from utf-8 to wchar (WINDOWS ONLY!)
+ */
+static wchar_t *
+__xmlIOWin32UTF8ToWChar(const char *u8String)
+{
+    wchar_t *wString = NULL;
+
+    if (u8String) {
+        int wLen =
+            MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, u8String,
+                                -1, NULL, 0);
+        if (wLen) {
+            wString = xmlMalloc(wLen * sizeof(wchar_t));
+            if (wString) {
+                if (MultiByteToWideChar
+                    (CP_UTF8, 0, u8String, -1, wString, wLen) == 0) {
+                    xmlFree(wString);
+                    wString = NULL;
+                }
+            }
+        }
+    }
+
+    return wString;
+}
 
 #ifdef HAVE_STAT
 #if defined(_MSC_VER) && _MSC_VER >= 1500
@@ -514,7 +421,6 @@ typedef struct stat _stat_t;
 #endif
 #endif
 
-#if defined(_WIN32)
 
 /**
  *  xmlWrapOpenUtf8:
@@ -606,6 +512,21 @@ xmlWrapStatUtf8(const char *path, _stat_t *info) {
 #endif
 
 /**
+ * xmlNormalizeWindowsPath:
+ * @path: the input file path
+ *
+ * This function is obsolete. Please see xmlURIFromPath in uri.c for
+ * a better solution.
+ *
+ * Returns a canonicalized version of the path
+ */
+xmlChar *
+xmlNormalizeWindowsPath(const xmlChar *path)
+{
+    return xmlCanonicPath(path);
+}
+
+/**
  * xmlCheckFilename:
  * @path:  the path to check
  *
@@ -668,11 +589,6 @@ xmlFdOpen(const char *filename, void **out) {
     *out = (void *) 0;
     if (filename == NULL)
         return(XML_ERR_ARGUMENT);
-
-    if (!strcmp(filename, "-")) {
-        *out = (void *) (ptrdiff_t) STDIN_FILENO;
-	return(XML_ERR_OK);
-    }
 
     /*
      * TODO: This should be moved to uri.c. We also need support for
@@ -823,7 +739,6 @@ xmlFileMatch (const char *filename ATTRIBUTE_UNUSED) {
  * @out:  pointer to resulting context
  *
  * input from FILE *, supports compressed input
- * if @filename is "-" then the standard input is used
  *
  * Returns an I/O context or NULL in case of error
  */
@@ -836,11 +751,6 @@ xmlFileOpenReal(const char *filename, void **out) {
     *out = NULL;
     if (filename == NULL)
         return(XML_ERR_ARGUMENT);
-
-    if (!strcmp(filename, "-")) {
-        *out = stdin;
-	return(XML_ERR_OK);
-    }
 
     if (!xmlStrncasecmp(BAD_CAST filename, BAD_CAST "file://localhost/", 17)) {
 #if defined (_WIN32)
@@ -1120,7 +1030,7 @@ xmlBufferWrite (void * context, const char * buffer, int len) {
  */
 static int
 xmlGzfileMatch (const char *filename ATTRIBUTE_UNUSED) {
-    return(strcmp(filename, "-") != 0);
+    return(1);
 }
 
 /**
@@ -1136,16 +1046,6 @@ static void *
 xmlGzfileOpen_real (const char *filename) {
     const char *path = NULL;
     gzFile fd;
-
-    if (!strcmp(filename, "-")) {
-        int duped_fd = dup(fileno(stdin));
-        fd = zng_gzdopen(duped_fd, "rb");
-        if (fd == Z_NULL && duped_fd >= 0) {
-            close(duped_fd);  /* gzdOpen() does not close on failure */
-        }
-
-	return((void *) fd);
-    }
 
     if (!xmlStrncasecmp(BAD_CAST filename, BAD_CAST "file://localhost/", 17))
 #if defined (_WIN32)
@@ -1326,7 +1226,7 @@ xmlGzfileClose (void * context) {
  */
 static int
 xmlXzfileMatch (const char *filename ATTRIBUTE_UNUSED) {
-    return(strcmp(filename, "-") != 0);
+    return(1);
 }
 
 /**
@@ -1342,11 +1242,6 @@ static void *
 xmlXzfileOpen_real (const char *filename) {
     const char *path = NULL;
     xzFile fd;
-
-    if (!strcmp(filename, "-")) {
-        fd = __libxml2_xzdopen(dup(fileno(stdin)), "rb");
-	return((void *) fd);
-    }
 
     if (!xmlStrncasecmp(BAD_CAST filename, BAD_CAST "file://localhost/", 17)) {
 	path = &filename[16];
@@ -2126,57 +2021,11 @@ xmlIOFTPClose (void * context) {
 }
 #endif /* LIBXML_FTP_ENABLED */
 
-/**
- * xmlRegisterInputCallbacks:
- * @matchFunc:  the xmlInputMatchCallback
- * @openFunc:  the xmlInputOpenCallback
- * @readFunc:  the xmlInputReadCallback
- * @closeFunc:  the xmlInputCloseCallback
- *
- * Register a new set of I/O callback for handling parser input.
- *
- * Returns the registered handler number or -1 in case of error
- */
-int
-xmlRegisterInputCallbacks(xmlInputMatchCallback matchFunc,
-	xmlInputOpenCallback openFunc, xmlInputReadCallback readFunc,
-	xmlInputCloseCallback closeFunc) {
-    if (xmlInputCallbackNr >= MAX_INPUT_CALLBACK) {
-	return(-1);
-    }
-    xmlInputCallbackTable[xmlInputCallbackNr].matchcallback = matchFunc;
-    xmlInputCallbackTable[xmlInputCallbackNr].opencallback = openFunc;
-    xmlInputCallbackTable[xmlInputCallbackNr].readcallback = readFunc;
-    xmlInputCallbackTable[xmlInputCallbackNr].closecallback = closeFunc;
-    return(xmlInputCallbackNr++);
-}
-
-#ifdef LIBXML_OUTPUT_ENABLED
-/**
- * xmlRegisterOutputCallbacks:
- * @matchFunc:  the xmlOutputMatchCallback
- * @openFunc:  the xmlOutputOpenCallback
- * @writeFunc:  the xmlOutputWriteCallback
- * @closeFunc:  the xmlOutputCloseCallback
- *
- * Register a new set of I/O callback for handling output.
- *
- * Returns the registered handler number or -1 in case of error
- */
-int
-xmlRegisterOutputCallbacks(xmlOutputMatchCallback matchFunc,
-	xmlOutputOpenCallback openFunc, xmlOutputWriteCallback writeFunc,
-	xmlOutputCloseCallback closeFunc) {
-    if (xmlOutputCallbackNr >= MAX_OUTPUT_CALLBACK) {
-	return(-1);
-    }
-    xmlOutputCallbackTable[xmlOutputCallbackNr].matchcallback = matchFunc;
-    xmlOutputCallbackTable[xmlOutputCallbackNr].opencallback = openFunc;
-    xmlOutputCallbackTable[xmlOutputCallbackNr].writecallback = writeFunc;
-    xmlOutputCallbackTable[xmlOutputCallbackNr].closecallback = closeFunc;
-    return(xmlOutputCallbackNr++);
-}
-#endif /* LIBXML_OUTPUT_ENABLED */
+/************************************************************************
+ *									*
+ *			Input/output buffers				*
+ *									*
+ ************************************************************************/
 
 static int
 xmlIODefaultMatch(const char *filename ATTRIBUTE_UNUSED) {
@@ -2277,16 +2126,6 @@ xmlInputDefaultOpen(xmlParserInputBufferPtr buf, const char *filename) {
     return(XML_IO_ENOENT);
 }
 
-/**
- * xmlRegisterDefaultInputCallbacks:
- *
- * Registers the default compiled-in I/O handlers.
- */
-void
-xmlRegisterDefaultInputCallbacks(void) {
-    xmlRegisterInputCallbacks(xmlIODefaultMatch, NULL, NULL, NULL);
-}
-
 #ifdef LIBXML_OUTPUT_ENABLED
 /**
  * xmlOutputDefaultOpen:
@@ -2338,29 +2177,7 @@ xmlOutputDefaultOpen(xmlOutputBufferPtr buf, const char *filename,
 
     return(XML_IO_ENOENT);
 }
-
-/**
- * xmlRegisterDefaultOutputCallbacks:
- *
- * Registers the default compiled-in I/O handlers.
- */
-void
-xmlRegisterDefaultOutputCallbacks (void) {
-    xmlRegisterOutputCallbacks(xmlIODefaultMatch, NULL, NULL, NULL);
-}
-
-#ifdef LIBXML_HTTP_ENABLED
-/**
- * xmlRegisterHTTPPostCallbacks:
- *
- * DEPRECATED: Has no effect.
- */
-void
-xmlRegisterHTTPPostCallbacks(void) {
-    xmlRegisterDefaultOutputCallbacks();
-}
 #endif
-#endif /* LIBXML_OUTPUT_ENABLED */
 
 /**
  * xmlAllocParserInputBuffer:
@@ -2656,7 +2473,6 @@ __xmlParserInputBufferCreateFilename(const char *URI, xmlCharEncoding enc) {
  * @enc:  the charset encoding if known
  *
  * Create a buffered parser input for the progressive parsing of a file
- * If filename is "-" then we use stdin as the input.
  * Automatic support for ZLIB/Compress compressed document is provided
  * by default if found at compile-time.
  * Do an encoding check if enc == XML_CHAR_ENCODING_NONE
@@ -4183,4 +3999,173 @@ xmlNoNetExternalEntityLoader(const char *URL, const char *ID,
 	xmlFree(resource);
     return(input);
 }
+
+/************************************************************************
+ *									*
+ *			Input/output callbacks				*
+ *									*
+ ************************************************************************/
+
+/**
+ * xmlInitIOCallbacks:
+ *
+ * Initialize callback tables.
+ */
+void
+xmlInitIOCallbacks(void)
+{
+    xmlInputCallbackNr = 1;
+    xmlInputCallbackTable[0].matchcallback = xmlIODefaultMatch;
+
+#ifdef LIBXML_OUTPUT_ENABLED
+    xmlOutputCallbackNr = 1;
+    xmlOutputCallbackTable[0].matchcallback = xmlIODefaultMatch;
+#endif
+}
+
+/**
+ * xmlRegisterInputCallbacks:
+ * @matchFunc:  the xmlInputMatchCallback
+ * @openFunc:  the xmlInputOpenCallback
+ * @readFunc:  the xmlInputReadCallback
+ * @closeFunc:  the xmlInputCloseCallback
+ *
+ * Register a new set of I/O callback for handling parser input.
+ *
+ * Returns the registered handler number or -1 in case of error
+ */
+int
+xmlRegisterInputCallbacks(xmlInputMatchCallback matchFunc,
+	xmlInputOpenCallback openFunc, xmlInputReadCallback readFunc,
+	xmlInputCloseCallback closeFunc) {
+    if (xmlInputCallbackNr >= MAX_INPUT_CALLBACK) {
+	return(-1);
+    }
+    xmlInputCallbackTable[xmlInputCallbackNr].matchcallback = matchFunc;
+    xmlInputCallbackTable[xmlInputCallbackNr].opencallback = openFunc;
+    xmlInputCallbackTable[xmlInputCallbackNr].readcallback = readFunc;
+    xmlInputCallbackTable[xmlInputCallbackNr].closecallback = closeFunc;
+    return(xmlInputCallbackNr++);
+}
+
+/**
+ * xmlRegisterDefaultInputCallbacks:
+ *
+ * Registers the default compiled-in I/O handlers.
+ */
+void
+xmlRegisterDefaultInputCallbacks(void) {
+    xmlRegisterInputCallbacks(xmlIODefaultMatch, NULL, NULL, NULL);
+}
+
+/**
+ * xmlPopInputCallbacks:
+ *
+ * Clear the top input callback from the input stack. this includes the
+ * compiled-in I/O.
+ *
+ * Returns the number of input callback registered or -1 in case of error.
+ */
+int
+xmlPopInputCallbacks(void)
+{
+    if (xmlInputCallbackNr <= 0)
+        return(-1);
+
+    xmlInputCallbackNr--;
+
+    return(xmlInputCallbackNr);
+}
+
+/**
+ * xmlCleanupInputCallbacks:
+ *
+ * clears the entire input callback table. this includes the
+ * compiled-in I/O.
+ */
+void
+xmlCleanupInputCallbacks(void)
+{
+    xmlInputCallbackNr = 0;
+}
+
+#ifdef LIBXML_OUTPUT_ENABLED
+/**
+ * xmlRegisterOutputCallbacks:
+ * @matchFunc:  the xmlOutputMatchCallback
+ * @openFunc:  the xmlOutputOpenCallback
+ * @writeFunc:  the xmlOutputWriteCallback
+ * @closeFunc:  the xmlOutputCloseCallback
+ *
+ * Register a new set of I/O callback for handling output.
+ *
+ * Returns the registered handler number or -1 in case of error
+ */
+int
+xmlRegisterOutputCallbacks(xmlOutputMatchCallback matchFunc,
+	xmlOutputOpenCallback openFunc, xmlOutputWriteCallback writeFunc,
+	xmlOutputCloseCallback closeFunc) {
+    if (xmlOutputCallbackNr >= MAX_OUTPUT_CALLBACK) {
+	return(-1);
+    }
+    xmlOutputCallbackTable[xmlOutputCallbackNr].matchcallback = matchFunc;
+    xmlOutputCallbackTable[xmlOutputCallbackNr].opencallback = openFunc;
+    xmlOutputCallbackTable[xmlOutputCallbackNr].writecallback = writeFunc;
+    xmlOutputCallbackTable[xmlOutputCallbackNr].closecallback = closeFunc;
+    return(xmlOutputCallbackNr++);
+}
+
+/**
+ * xmlRegisterDefaultOutputCallbacks:
+ *
+ * Registers the default compiled-in I/O handlers.
+ */
+void
+xmlRegisterDefaultOutputCallbacks (void) {
+    xmlRegisterOutputCallbacks(xmlIODefaultMatch, NULL, NULL, NULL);
+}
+
+/**
+ * xmlPopOutputCallbacks:
+ *
+ * Remove the top output callbacks from the output stack. This includes the
+ * compiled-in I/O.
+ *
+ * Returns the number of output callback registered or -1 in case of error.
+ */
+int
+xmlPopOutputCallbacks(void)
+{
+    if (xmlOutputCallbackNr <= 0)
+        return(-1);
+
+    xmlOutputCallbackNr--;
+
+    return(xmlOutputCallbackNr);
+}
+
+/**
+ * xmlCleanupOutputCallbacks:
+ *
+ * clears the entire output callback table. this includes the
+ * compiled-in I/O callbacks.
+ */
+void
+xmlCleanupOutputCallbacks(void)
+{
+    xmlOutputCallbackNr = 0;
+}
+
+#ifdef LIBXML_HTTP_ENABLED
+/**
+ * xmlRegisterHTTPPostCallbacks:
+ *
+ * DEPRECATED: Has no effect.
+ */
+void
+xmlRegisterHTTPPostCallbacks(void) {
+    xmlRegisterDefaultOutputCallbacks();
+}
+#endif
+#endif /* LIBXML_OUTPUT_ENABLED */
 

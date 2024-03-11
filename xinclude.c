@@ -429,10 +429,6 @@ xmlXIncludeParseFile(xmlXIncludeCtxtPtr ctxt, const char *URL) {
 
     xmlCtxtUseOptions(pctxt, ctxt->parseFlags | XML_PARSE_DTDLOAD);
 
-    /* Don't read from stdin. */
-    if ((URL != NULL) && (strcmp(URL, "-") == 0))
-        URL = "./-";
-
     inputStream = xmlLoadExternalEntity(URL, NULL, pctxt);
     if (inputStream == NULL)
         goto error;
@@ -1663,11 +1659,6 @@ xmlXIncludeLoadTxt(xmlXIncludeCtxtPtr ctxt, const xmlChar *url,
     int res;
     const xmlChar *content;
 
-
-    /* Don't read from stdin. */
-    if (xmlStrcmp(url, BAD_CAST "-") == 0)
-        url = BAD_CAST "./-";
-
     /*
      * Check the URL and remove any fragment identifier
      */
@@ -2373,7 +2364,10 @@ xmlXIncludeGetLastError(xmlXIncludeCtxtPtr ctxt) {
  * @handler:  error handler
  * @data:  user data which will be passed to the handler
  *
- * Set the error handler.
+ * Register a callback function that will be called on errors and
+ * warnings. If handler is NULL, the error handler will be deactivated.
+ *
+ * Available since 2.13.0.
  */
 void
 xmlXIncludeSetErrorHandler(xmlXIncludeCtxtPtr ctxt,
