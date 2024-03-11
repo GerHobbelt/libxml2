@@ -1490,8 +1490,8 @@ xmlNewInputStream(xmlParserCtxtPtr ctxt) {
  *   - a file opened from the filesystem, with automatic detection
  *     of compressed files if support is compiled in.
  *
- * The returned input should be push onto the input stack with
- * xmlPushInput.
+ * The returned input can be passed to xmlCtxtParseDocument or
+ * htmlCtxtParseDocument.
  *
  * This function should not be invoked from user-defined resource
  * loaders to avoid infinite loops.
@@ -1707,6 +1707,8 @@ xmlNewInputIO(xmlParserCtxtPtr ctxt, const char *url,
     buf = xmlAllocParserInputBuffer(XML_CHAR_ENCODING_NONE);
     if (buf == NULL) {
         xmlCtxtErrMemory(ctxt);
+        if (ioClose != NULL)
+            ioClose(ioCtxt);
         return(NULL);
     }
 
@@ -2259,7 +2261,6 @@ xmlInitSAXParserCtxt(xmlParserCtxtPtr ctxt, const xmlSAXHandler *sax,
     ctxt->hasPErefs = 0;
     ctxt->html = 0;
     ctxt->instate = XML_PARSER_START;
-    ctxt->token = 0;
 
     /* Allocate the Node stack */
     if (ctxt->nodeTab == NULL) {
@@ -2296,11 +2297,23 @@ xmlInitSAXParserCtxt(xmlParserCtxtPtr ctxt, const xmlSAXHandler *sax,
     ctxt->wellFormed = 1;
     ctxt->nsWellFormed = 1;
     ctxt->valid = 1;
+
+    ctxt->options = XML_PARSE_NODICT;
+
+    /*
+     * Initialize some parser options from deprecated global variables.
+     * Note that the "modern" API taking options arguments or
+     * xmlCtxtSetOptions will ignore these defaults. They're only
+     * relevant if old API functions like xmlParseFile are used.
+     */
     ctxt->loadsubset = xmlLoadExtDtdDefaultValue;
     if (ctxt->loadsubset) {
         ctxt->options |= XML_PARSE_DTDLOAD;
     }
     ctxt->validate = xmlDoValidityCheckingDefaultValue;
+    if (ctxt->validate) {
+        ctxt->options |= XML_PARSE_DTDVALID;
+    }
     ctxt->pedantic = xmlPedanticParserDefaultValue;
     if (ctxt->pedantic) {
         ctxt->options |= XML_PARSE_PEDANTIC;
@@ -2311,23 +2324,18 @@ xmlInitSAXParserCtxt(xmlParserCtxtPtr ctxt, const xmlSAXHandler *sax,
 	ctxt->sax->ignorableWhitespace = xmlSAX2IgnorableWhitespace;
 	ctxt->options |= XML_PARSE_NOBLANKS;
     }
+    ctxt->replaceEntities = xmlSubstituteEntitiesDefaultValue;
+    if (ctxt->replaceEntities) {
+        ctxt->options |= XML_PARSE_NOENT;
+    }
+    if (xmlGetWarningsDefaultValue == 0)
+        ctxt->options |= XML_PARSE_NOWARNING;
 
     ctxt->vctxt.flags = XML_VCTXT_USE_PCTXT;
     ctxt->vctxt.userData = ctxt;
     ctxt->vctxt.error = xmlParserValidityError;
     ctxt->vctxt.warning = xmlParserValidityWarning;
-    if (ctxt->validate) {
-	if (xmlGetWarningsDefaultValue == 0)
-	    ctxt->vctxt.warning = NULL;
-	else
-	    ctxt->vctxt.warning = xmlParserValidityWarning;
-	ctxt->vctxt.nodeMax = 0;
-        ctxt->options |= XML_PARSE_DTDVALID;
-    }
-    ctxt->replaceEntities = xmlSubstituteEntitiesDefaultValue;
-    if (ctxt->replaceEntities) {
-        ctxt->options |= XML_PARSE_NOENT;
-    }
+
     ctxt->record_info = 0;
     ctxt->checkIndex = 0;
     ctxt->inSubset = 0;
