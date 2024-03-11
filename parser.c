@@ -6793,7 +6793,11 @@ xmlParseConditionalSections(xmlParserCtxtPtr ctxt) {
                 }
                 NEXT;
 
-                while ((PARSER_STOPPED(ctxt) == 0) && (RAW != 0)) {
+                while (PARSER_STOPPED(ctxt) == 0) {
+                    if (RAW == 0) {
+                        xmlFatalErr(ctxt, XML_ERR_CONDSEC_NOT_FINISHED, NULL);
+                        goto error;
+                    }
                     if ((RAW == '<') && (NXT(1) == '!') && (NXT(2) == '[')) {
                         SKIP(3);
                         ignoreDepth++;
@@ -6804,25 +6808,20 @@ xmlParseConditionalSections(xmlParserCtxtPtr ctxt) {
                         }
                     } else if ((RAW == ']') && (NXT(1) == ']') &&
                                (NXT(2) == '>')) {
+                        SKIP(3);
                         if (ignoreDepth == 0)
                             break;
-                        SKIP(3);
                         ignoreDepth--;
                     } else {
                         NEXT;
                     }
                 }
 
-		if (RAW == 0) {
-		    xmlFatalErr(ctxt, XML_ERR_CONDSEC_NOT_FINISHED, NULL);
-                    goto error;
-		}
                 if (ctxt->input->id != id) {
                     xmlFatalErrMsg(ctxt, XML_ERR_ENTITY_BOUNDARY,
                                    "All markup of the conditional section is"
                                    " not in the same entity\n");
                 }
-                SKIP(3);
             } else {
                 xmlFatalErr(ctxt, XML_ERR_CONDSEC_INVALID_KEYWORD, NULL);
                 xmlHaltParser(ctxt);
@@ -13136,13 +13135,11 @@ xmlParseInNodeContext(xmlNodePtr node, const char *data, int datalen,
 	ctxt->wellFormed = 0;
     }
 
-    if (!ctxt->wellFormed) {
-        if (ctxt->errNo == 0)
-	    ret = XML_ERR_INTERNAL_ERROR;
-	else
-	    ret = (xmlParserErrors)ctxt->errNo;
-    } else {
+    if ((ctxt->wellFormed) ||
+        ((ctxt->recovery) && (ctxt->errNo != XML_ERR_NO_MEMORY))) {
         ret = XML_ERR_OK;
+    } else {
+	ret = (xmlParserErrors) ctxt->errNo;
     }
 
     /*
@@ -14871,7 +14868,8 @@ xmlCtxtReadMemory(xmlParserCtxtPtr ctxt, const char *buffer, int size,
 
     xmlCtxtReset(ctxt);
 
-    input = xmlParserInputBufferCreateMem(buffer, size, XML_CHAR_ENCODING_NONE);
+    input = xmlParserInputBufferCreateStatic(buffer, size,
+                                             XML_CHAR_ENCODING_NONE);
     if (input == NULL) {
         xmlErrMemory(ctxt, NULL);
 	return(NULL);

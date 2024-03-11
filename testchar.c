@@ -646,13 +646,13 @@ static int testCharRangeByte4(xmlParserCtxtPtr ctxt) {
  */
 
 static int testCharRanges(void) {
-    char data[5];
+    char data[6];
     xmlParserCtxtPtr ctxt;
     xmlParserInputBufferPtr buf;
     xmlParserInputPtr input;
     int test_ret = 0;
 
-    memset(data, 0, 5);
+    memset(data, 0, sizeof(data));
 
     /*
      * Set up a parsing context using the above data buffer as
@@ -663,18 +663,18 @@ static int testCharRanges(void) {
         fprintf(stderr, "Failed to allocate parser context\n");
 	return(1);
     }
-    buf = xmlParserInputBufferCreateMem(data, sizeof(data) - 1,
-                                        XML_CHAR_ENCODING_NONE);
+    buf = xmlParserInputBufferCreateStatic(data, sizeof(data) - 1,
+                                           XML_CHAR_ENCODING_NONE);
     if (buf == NULL) {
         fprintf(stderr, "Failed to allocate input buffer\n");
-	test_ret = 1;
-	goto error;
+        test_ret = 1;
+        goto error;
     }
     input = xmlNewInputStream(ctxt);
     if (input == NULL) {
         xmlFreeParserInputBuffer(buf);
-	test_ret = 1;
-	goto error;
+        test_ret = 1;
+        goto error;
     }
     input->filename = NULL;
     input->buf = buf;
