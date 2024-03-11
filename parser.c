@@ -229,7 +229,7 @@ xmlLoadEntityContent(xmlParserCtxtPtr ctxt, xmlEntityPtr entity);
  *									*
  ************************************************************************/
 
-void
+static void
 xmlErrMemory(xmlParserCtxtPtr ctxt) {
     xmlCtxtErrMemory(ctxt);
 }
@@ -247,13 +247,13 @@ xmlErrAttributeDup(xmlParserCtxtPtr ctxt, const xmlChar * prefix,
                    const xmlChar * localname)
 {
     if (prefix == NULL)
-        xmlErrParser(ctxt, NULL, XML_FROM_PARSER, XML_ERR_ATTRIBUTE_REDEFINED,
-                     XML_ERR_FATAL, localname, NULL, NULL, 0,
-                     "Attribute %s redefined\n", localname);
+        xmlCtxtErr(ctxt, NULL, XML_FROM_PARSER, XML_ERR_ATTRIBUTE_REDEFINED,
+                   XML_ERR_FATAL, localname, NULL, NULL, 0,
+                   "Attribute %s redefined\n", localname);
     else
-        xmlErrParser(ctxt, NULL, XML_FROM_PARSER, XML_ERR_ATTRIBUTE_REDEFINED,
-                     XML_ERR_FATAL, prefix, localname, NULL, 0,
-                     "Attribute %s:%s redefined\n", prefix, localname);
+        xmlCtxtErr(ctxt, NULL, XML_FROM_PARSER, XML_ERR_ATTRIBUTE_REDEFINED,
+                   XML_ERR_FATAL, prefix, localname, NULL, 0,
+                   "Attribute %s:%s redefined\n", prefix, localname);
 }
 
 /**
@@ -268,8 +268,8 @@ static void LIBXML_ATTR_FORMAT(3,0)
 xmlFatalErrMsg(xmlParserCtxtPtr ctxt, xmlParserErrors error,
                const char *msg)
 {
-    xmlErrParser(ctxt, NULL, XML_FROM_PARSER, error, XML_ERR_FATAL,
-                 NULL, NULL, NULL, 0, "%s", msg);
+    xmlCtxtErr(ctxt, NULL, XML_FROM_PARSER, error, XML_ERR_FATAL,
+               NULL, NULL, NULL, 0, "%s", msg);
 }
 
 /**
@@ -286,8 +286,8 @@ void LIBXML_ATTR_FORMAT(3,0)
 xmlWarningMsg(xmlParserCtxtPtr ctxt, xmlParserErrors error,
               const char *msg, const xmlChar *str1, const xmlChar *str2)
 {
-    xmlErrParser(ctxt, NULL, XML_FROM_PARSER, error, XML_ERR_WARNING,
-                 str1, str2, NULL, 0, msg, str1, str2);
+    xmlCtxtErr(ctxt, NULL, XML_FROM_PARSER, error, XML_ERR_WARNING,
+               str1, str2, NULL, 0, msg, str1, str2);
 }
 
 /**
@@ -305,8 +305,8 @@ xmlValidityError(xmlParserCtxtPtr ctxt, xmlParserErrors error,
 {
     ctxt->valid = 0;
 
-    xmlErrParser(ctxt, NULL, XML_FROM_DTD, error, XML_ERR_ERROR,
-                 str1, str2, NULL, 0, msg, str1, str2);
+    xmlCtxtErr(ctxt, NULL, XML_FROM_DTD, error, XML_ERR_ERROR,
+               str1, str2, NULL, 0, msg, str1, str2);
 }
 
 /**
@@ -322,8 +322,8 @@ static void LIBXML_ATTR_FORMAT(3,0)
 xmlFatalErrMsgInt(xmlParserCtxtPtr ctxt, xmlParserErrors error,
                   const char *msg, int val)
 {
-    xmlErrParser(ctxt, NULL, XML_FROM_PARSER, error, XML_ERR_FATAL,
-                 NULL, NULL, NULL, val, msg, val);
+    xmlCtxtErr(ctxt, NULL, XML_FROM_PARSER, error, XML_ERR_FATAL,
+               NULL, NULL, NULL, val, msg, val);
 }
 
 /**
@@ -342,8 +342,8 @@ xmlFatalErrMsgStrIntStr(xmlParserCtxtPtr ctxt, xmlParserErrors error,
                   const char *msg, const xmlChar *str1, int val,
 		  const xmlChar *str2)
 {
-    xmlErrParser(ctxt, NULL, XML_FROM_PARSER, error, XML_ERR_FATAL,
-                 str1, str2, NULL, val, msg, str1, val, str2);
+    xmlCtxtErr(ctxt, NULL, XML_FROM_PARSER, error, XML_ERR_FATAL,
+               str1, str2, NULL, val, msg, str1, val, str2);
 }
 
 /**
@@ -359,8 +359,8 @@ static void LIBXML_ATTR_FORMAT(3,0)
 xmlFatalErrMsgStr(xmlParserCtxtPtr ctxt, xmlParserErrors error,
                   const char *msg, const xmlChar * val)
 {
-    xmlErrParser(ctxt, NULL, XML_FROM_PARSER, error, XML_ERR_FATAL,
-                 val, NULL, NULL, 0, msg, val);
+    xmlCtxtErr(ctxt, NULL, XML_FROM_PARSER, error, XML_ERR_FATAL,
+               val, NULL, NULL, 0, msg, val);
 }
 
 /**
@@ -376,8 +376,8 @@ static void LIBXML_ATTR_FORMAT(3,0)
 xmlErrMsgStr(xmlParserCtxtPtr ctxt, xmlParserErrors error,
                   const char *msg, const xmlChar * val)
 {
-    xmlErrParser(ctxt, NULL, XML_FROM_PARSER, error, XML_ERR_ERROR,
-                 val, NULL, NULL, 0, msg, val);
+    xmlCtxtErr(ctxt, NULL, XML_FROM_PARSER, error, XML_ERR_ERROR,
+               val, NULL, NULL, 0, msg, val);
 }
 
 /**
@@ -398,8 +398,8 @@ xmlNsErr(xmlParserCtxtPtr ctxt, xmlParserErrors error,
 {
     ctxt->nsWellFormed = 0;
 
-    xmlErrParser(ctxt, NULL, XML_FROM_NAMESPACE, error, XML_ERR_ERROR,
-                 info1, info2, info3, 0, msg, info1, info2, info3);
+    xmlCtxtErr(ctxt, NULL, XML_FROM_NAMESPACE, error, XML_ERR_ERROR,
+               info1, info2, info3, 0, msg, info1, info2, info3);
 }
 
 /**
@@ -418,8 +418,8 @@ xmlNsWarn(xmlParserCtxtPtr ctxt, xmlParserErrors error,
          const xmlChar * info1, const xmlChar * info2,
          const xmlChar * info3)
 {
-    xmlErrParser(ctxt, NULL, XML_FROM_NAMESPACE, error, XML_ERR_WARNING,
-                 info1, info2, info3, 0, msg, info1, info2, info3);
+    xmlCtxtErr(ctxt, NULL, XML_FROM_NAMESPACE, error, XML_ERR_WARNING,
+               info1, info2, info3, 0, msg, info1, info2, info3);
 }
 
 static void
@@ -8118,7 +8118,7 @@ xmlLoadEntityContent(xmlParserCtxtPtr ctxt, xmlEntityPtr entity) {
     xmlBufResetInput(input->buf->buffer, input);
 
     if (res < 0) {
-        xmlFatalErr(ctxt, input->buf->error, NULL);
+        xmlCtxtErrIO(ctxt, input->buf->error, NULL);
         goto error;
     }
 
@@ -11877,19 +11877,10 @@ xmlParseTryOrFinish(xmlParserCtxtPtr ctxt, int terminate) {
 done:
     return(ret);
 encoding_error:
-    if (ctxt->input->end - ctxt->input->cur < 4) {
-	__xmlErrEncoding(ctxt, XML_ERR_INVALID_CHAR,
-		     "Input is not proper UTF-8, indicate encoding !\n",
-		     NULL, NULL);
-    } else {
-        char buffer[150];
-
-	snprintf(buffer, 149, "Bytes: 0x%02X 0x%02X 0x%02X 0x%02X\n",
-			ctxt->input->cur[0], ctxt->input->cur[1],
-			ctxt->input->cur[2], ctxt->input->cur[3]);
-	__xmlErrEncoding(ctxt, XML_ERR_INVALID_CHAR,
-		     "Input is not proper UTF-8, indicate encoding !\n%s",
-		     BAD_CAST buffer, NULL);
+    /* Only report the first error */
+    if ((ctxt->input->flags & XML_INPUT_ENCODING_ERROR) == 0) {
+        xmlCtxtErrIO(ctxt, XML_ERR_INVALID_ENCODING, NULL);
+        ctxt->input->flags |= XML_INPUT_ENCODING_ERROR;
     }
     return(0);
 }
@@ -11934,7 +11925,7 @@ xmlParseChunk(xmlParserCtxtPtr ctxt, const char *chunk, int size,
 	res = xmlParserInputBufferPush(ctxt->input->buf, size, chunk);
         xmlBufUpdateInput(ctxt->input->buf->buffer, ctxt->input, pos);
 	if (res < 0) {
-            xmlFatalErr(ctxt, ctxt->input->buf->error, NULL);
+            xmlCtxtErrIO(ctxt, ctxt->input->buf->error, NULL);
 	    xmlHaltParser(ctxt);
 	    return(ctxt->errNo);
 	}
@@ -11961,7 +11952,7 @@ xmlParseChunk(xmlParserCtxtPtr ctxt, const char *chunk, int size,
 	res = xmlParserInputBufferPush(ctxt->input->buf, 1, "\r");
 	xmlBufUpdateInput(ctxt->input->buf->buffer, ctxt->input, pos);
         if (res < 0) {
-            xmlFatalErr(ctxt, ctxt->input->buf->error, NULL);
+            xmlCtxtErrIO(ctxt, ctxt->input->buf->error, NULL);
             xmlHaltParser(ctxt);
             return(ctxt->errNo);
         }
@@ -12085,7 +12076,7 @@ xmlCreatePushParserCtxt(xmlSAXHandlerPtr sax, void *user_data,
 	res = xmlParserInputBufferPush(ctxt->input->buf, size, chunk);
         xmlBufUpdateInput(ctxt->input->buf->buffer, ctxt->input, pos);
         if (res < 0) {
-            xmlFatalErr(ctxt, ctxt->input->buf->error, NULL);
+            xmlCtxtErrIO(ctxt, ctxt->input->buf->error, NULL);
             xmlHaltParser(ctxt);
         }
     }
@@ -14348,7 +14339,7 @@ xmlCtxtResetPush(xmlParserCtxtPtr ctxt, const char *chunk,
         res = xmlParserInputBufferPush(ctxt->input->buf, size, chunk);
         xmlBufUpdateInput(ctxt->input->buf->buffer, ctxt->input, pos);
         if (res < 0) {
-            xmlFatalErr(ctxt, ctxt->input->buf->error, NULL);
+            xmlCtxtErrIO(ctxt, ctxt->input->buf->error, NULL);
             xmlHaltParser(ctxt);
             return(1);
         }

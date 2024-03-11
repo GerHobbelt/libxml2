@@ -142,10 +142,10 @@ xmlCtxtErrMemory(xmlParserCtxtPtr ctxt)
 }
 
 void
-xmlVErrParser(xmlParserCtxtPtr ctxt, xmlNodePtr node,
-              int domain, int code, xmlErrorLevel level,
-              const xmlChar *str1, const xmlChar *str2, const xmlChar *str3,
-              int int1, const char *msg, va_list ap)
+xmlCtxtVErr(xmlParserCtxtPtr ctxt, xmlNodePtr node, xmlErrorDomain domain,
+            xmlParserErrors code, xmlErrorLevel level,
+            const xmlChar *str1, const xmlChar *str2, const xmlChar *str3,
+            int int1, const char *msg, va_list ap)
 {
     xmlStructuredErrorFunc schannel = NULL;
     xmlGenericErrorFunc channel = NULL;
@@ -159,7 +159,7 @@ xmlVErrParser(xmlParserCtxtPtr ctxt, xmlNodePtr node,
 	return;
 
     if (code == XML_ERR_NO_MEMORY) {
-        xmlErrMemory(ctxt);
+        xmlCtxtErrMemory(ctxt);
         return;
     }
 
@@ -216,7 +216,7 @@ xmlVErrParser(xmlParserCtxtPtr ctxt, xmlNodePtr node,
                          msg, ap);
 
     if (res < 0) {
-        xmlErrMemory(ctxt);
+        xmlCtxtErrMemory(ctxt);
         return;
     }
 
@@ -232,35 +232,17 @@ xmlVErrParser(xmlParserCtxtPtr ctxt, xmlNodePtr node,
 }
 
 void
-xmlErrParser(xmlParserCtxtPtr ctxt, xmlNodePtr node,
-             int domain, int code, xmlErrorLevel level,
-             const xmlChar *str1, const xmlChar *str2, const xmlChar *str3,
-             int int1, const char *msg, ...)
+xmlCtxtErr(xmlParserCtxtPtr ctxt, xmlNodePtr node, xmlErrorDomain domain,
+           xmlParserErrors code, xmlErrorLevel level,
+           const xmlChar *str1, const xmlChar *str2, const xmlChar *str3,
+           int int1, const char *msg, ...)
 {
     va_list ap;
 
     va_start(ap, msg);
-    xmlVErrParser(ctxt, node, domain, code, level,
-                  str1, str2, str3, int1, msg, ap);
+    xmlCtxtVErr(ctxt, node, domain, code, level,
+                str1, str2, str3, int1, msg, ap);
     va_end(ap);
-}
-
-/**
- * __xmlErrEncoding:
- * @ctxt:  an XML parser context
- * @xmlerr:  the error number
- * @msg:  the error message
- * @str1:  an string info
- * @str2:  an string info
- *
- * Handle an encoding error
- */
-void
-__xmlErrEncoding(xmlParserCtxtPtr ctxt, xmlParserErrors xmlerr,
-                 const char *msg, const xmlChar * str1, const xmlChar * str2)
-{
-    xmlErrParser(ctxt, NULL, XML_FROM_PARSER, xmlerr, XML_ERR_FATAL,
-                 str1, str2, NULL, 0, msg, str1, str2);
 }
 
 /**
@@ -276,8 +258,8 @@ xmlErrInternal(xmlParserCtxtPtr ctxt, const char *msg, const xmlChar * str)
 {
     if (ctxt == NULL)
         return;
-    xmlErrParser(ctxt, NULL, XML_FROM_PARSER, XML_ERR_INTERNAL_ERROR,
-                 XML_ERR_FATAL, str, NULL, NULL, 0, msg, str);
+    xmlCtxtErr(ctxt, NULL, XML_FROM_PARSER, XML_ERR_INTERNAL_ERROR,
+               XML_ERR_FATAL, str, NULL, NULL, 0, msg, str);
 }
 
 /**
@@ -293,214 +275,15 @@ xmlFatalErr(xmlParserCtxtPtr ctxt, xmlParserErrors error, const char *info)
 {
     const char *errmsg;
 
-    switch (error) {
-        case XML_ERR_INVALID_HEX_CHARREF:
-            errmsg = "CharRef: invalid hexadecimal value";
-            break;
-        case XML_ERR_INVALID_DEC_CHARREF:
-            errmsg = "CharRef: invalid decimal value";
-            break;
-        case XML_ERR_INVALID_CHARREF:
-            errmsg = "CharRef: invalid value";
-            break;
-        case XML_ERR_INTERNAL_ERROR:
-            errmsg = "internal error";
-            break;
-        case XML_ERR_PEREF_AT_EOF:
-            errmsg = "PEReference at end of document";
-            break;
-        case XML_ERR_PEREF_IN_PROLOG:
-            errmsg = "PEReference in prolog";
-            break;
-        case XML_ERR_PEREF_IN_EPILOG:
-            errmsg = "PEReference in epilog";
-            break;
-        case XML_ERR_PEREF_NO_NAME:
-            errmsg = "PEReference: no name";
-            break;
-        case XML_ERR_PEREF_SEMICOL_MISSING:
-            errmsg = "PEReference: expecting ';'";
-            break;
-        case XML_ERR_ENTITY_LOOP:
-            errmsg = "Detected an entity reference loop";
-            break;
-        case XML_ERR_ENTITY_NOT_STARTED:
-            errmsg = "EntityValue: \" or ' expected";
-            break;
-        case XML_ERR_ENTITY_PE_INTERNAL:
-            errmsg = "PEReferences forbidden in internal subset";
-            break;
-        case XML_ERR_ENTITY_NOT_FINISHED:
-            errmsg = "EntityValue: \" or ' expected";
-            break;
-        case XML_ERR_ATTRIBUTE_NOT_STARTED:
-            errmsg = "AttValue: \" or ' expected";
-            break;
-        case XML_ERR_LT_IN_ATTRIBUTE:
-            errmsg = "Unescaped '<' not allowed in attributes values";
-            break;
-        case XML_ERR_LITERAL_NOT_STARTED:
-            errmsg = "SystemLiteral \" or ' expected";
-            break;
-        case XML_ERR_LITERAL_NOT_FINISHED:
-            errmsg = "Unfinished System or Public ID \" or ' expected";
-            break;
-        case XML_ERR_MISPLACED_CDATA_END:
-            errmsg = "Sequence ']]>' not allowed in content";
-            break;
-        case XML_ERR_URI_REQUIRED:
-            errmsg = "SYSTEM or PUBLIC, the URI is missing";
-            break;
-        case XML_ERR_PUBID_REQUIRED:
-            errmsg = "PUBLIC, the Public Identifier is missing";
-            break;
-        case XML_ERR_HYPHEN_IN_COMMENT:
-            errmsg = "Comment must not contain '--' (double-hyphen)";
-            break;
-        case XML_ERR_PI_NOT_STARTED:
-            errmsg = "xmlParsePI : no target name";
-            break;
-        case XML_ERR_RESERVED_XML_NAME:
-            errmsg = "Invalid PI name";
-            break;
-        case XML_ERR_NOTATION_NOT_STARTED:
-            errmsg = "NOTATION: Name expected here";
-            break;
-        case XML_ERR_NOTATION_NOT_FINISHED:
-            errmsg = "'>' required to close NOTATION declaration";
-            break;
-        case XML_ERR_VALUE_REQUIRED:
-            errmsg = "Entity value required";
-            break;
-        case XML_ERR_URI_FRAGMENT:
-            errmsg = "Fragment not allowed";
-            break;
-        case XML_ERR_ATTLIST_NOT_STARTED:
-            errmsg = "'(' required to start ATTLIST enumeration";
-            break;
-        case XML_ERR_NMTOKEN_REQUIRED:
-            errmsg = "NmToken expected in ATTLIST enumeration";
-            break;
-        case XML_ERR_ATTLIST_NOT_FINISHED:
-            errmsg = "')' required to finish ATTLIST enumeration";
-            break;
-        case XML_ERR_MIXED_NOT_STARTED:
-            errmsg = "MixedContentDecl : '|' or ')*' expected";
-            break;
-        case XML_ERR_PCDATA_REQUIRED:
-            errmsg = "MixedContentDecl : '#PCDATA' expected";
-            break;
-        case XML_ERR_ELEMCONTENT_NOT_STARTED:
-            errmsg = "ContentDecl : Name or '(' expected";
-            break;
-        case XML_ERR_ELEMCONTENT_NOT_FINISHED:
-            errmsg = "ContentDecl : ',' '|' or ')' expected";
-            break;
-        case XML_ERR_PEREF_IN_INT_SUBSET:
-            errmsg =
-                "PEReference: forbidden within markup decl in internal subset";
-            break;
-        case XML_ERR_GT_REQUIRED:
-            errmsg = "expected '>'";
-            break;
-        case XML_ERR_CONDSEC_INVALID:
-            errmsg = "XML conditional section '[' expected";
-            break;
-        case XML_ERR_EXT_SUBSET_NOT_FINISHED:
-            errmsg = "Content error in the external subset";
-            break;
-        case XML_ERR_CONDSEC_INVALID_KEYWORD:
-            errmsg =
-                "conditional section INCLUDE or IGNORE keyword expected";
-            break;
-        case XML_ERR_CONDSEC_NOT_FINISHED:
-            errmsg = "XML conditional section not closed";
-            break;
-        case XML_ERR_XMLDECL_NOT_STARTED:
-            errmsg = "Text declaration '<?xml' required";
-            break;
-        case XML_ERR_XMLDECL_NOT_FINISHED:
-            errmsg = "parsing XML declaration: '?>' expected";
-            break;
-        case XML_ERR_EXT_ENTITY_STANDALONE:
-            errmsg = "external parsed entities cannot be standalone";
-            break;
-        case XML_ERR_ENTITYREF_SEMICOL_MISSING:
-            errmsg = "EntityRef: expecting ';'";
-            break;
-        case XML_ERR_DOCTYPE_NOT_FINISHED:
-            errmsg = "DOCTYPE improperly terminated";
-            break;
-        case XML_ERR_LTSLASH_REQUIRED:
-            errmsg = "EndTag: '</' not found";
-            break;
-        case XML_ERR_EQUAL_REQUIRED:
-            errmsg = "expected '='";
-            break;
-        case XML_ERR_STRING_NOT_CLOSED:
-            errmsg = "String not closed expecting \" or '";
-            break;
-        case XML_ERR_STRING_NOT_STARTED:
-            errmsg = "String not started expecting ' or \"";
-            break;
-        case XML_ERR_ENCODING_NAME:
-            errmsg = "Invalid XML encoding name";
-            break;
-        case XML_ERR_STANDALONE_VALUE:
-            errmsg = "standalone accepts only 'yes' or 'no'";
-            break;
-        case XML_ERR_DOCUMENT_EMPTY:
-            errmsg = "Document is empty";
-            break;
-        case XML_ERR_DOCUMENT_END:
-            errmsg = "Extra content at the end of the document";
-            break;
-        case XML_ERR_NOT_WELL_BALANCED:
-            errmsg = "chunk is not well balanced";
-            break;
-        case XML_ERR_EXTRA_CONTENT:
-            errmsg = "extra content at the end of well balanced chunk";
-            break;
-        case XML_ERR_VERSION_MISSING:
-            errmsg = "Malformed declaration expecting version";
-            break;
-        case XML_ERR_NAME_TOO_LONG:
-            errmsg = "Name too long";
-            break;
-        case XML_ERR_INVALID_ENCODING:
-            errmsg = "Invalid bytes in character encoding";
-            break;
-        case XML_IO_UNKNOWN:
-            errmsg = "I/O error";
-            break;
-        case XML_ERR_RESOURCE_LIMIT:
-            errmsg = "Resource limit exceeded";
-            break;
-        case XML_ERR_ARGUMENT:
-            errmsg = "Invalid argument";
-            break;
-        case XML_ERR_SYSTEM:
-            errmsg = "Out of system resources";
-            break;
-        case XML_ERR_REDECL_PREDEF_ENTITY:
-            errmsg = "Invalid redeclaration of predefined entity";
-            break;
-#if 0
-        case:
-            errmsg = "";
-            break;
-#endif
-        default:
-            errmsg = "Unregistered error message";
-    }
+    errmsg = xmlErrString(error);
 
     if (info == NULL) {
-        xmlErrParser(ctxt, NULL, XML_FROM_PARSER, error, XML_ERR_FATAL,
-                     NULL, NULL, NULL, 0, "%s\n", errmsg);
+        xmlCtxtErr(ctxt, NULL, XML_FROM_PARSER, error, XML_ERR_FATAL,
+                   NULL, NULL, NULL, 0, "%s\n", errmsg);
     } else {
-        xmlErrParser(ctxt, NULL, XML_FROM_PARSER, error, XML_ERR_FATAL,
-                     (const xmlChar *) info, NULL, NULL, 0,
-                     "%s: %s\n", errmsg, info);
+        xmlCtxtErr(ctxt, NULL, XML_FROM_PARSER, error, XML_ERR_FATAL,
+                   (const xmlChar *) info, NULL, NULL, 0,
+                   "%s: %s\n", errmsg, info);
     }
 }
 
@@ -517,8 +300,8 @@ static void LIBXML_ATTR_FORMAT(3,0)
 xmlErrEncodingInt(xmlParserCtxtPtr ctxt, xmlParserErrors error,
                   const char *msg, int val)
 {
-    xmlErrParser(ctxt, NULL, XML_FROM_PARSER, error, XML_ERR_FATAL,
-                 NULL, NULL, NULL, val, msg, val);
+    xmlCtxtErr(ctxt, NULL, XML_FROM_PARSER, error, XML_ERR_FATAL,
+               NULL, NULL, NULL, val, msg, val);
 }
 
 /**
@@ -616,7 +399,7 @@ xmlParserGrow(xmlParserCtxtPtr ctxt) {
     xmlBufUpdateInput(buf->buffer, in, curBase);
 
     if (ret < 0) {
-        xmlFatalErr(ctxt, buf->error, NULL);
+        xmlCtxtErrIO(ctxt, buf->error, NULL);
     }
 
     return(ret);
@@ -858,21 +641,7 @@ xmlNextChar(xmlParserCtxtPtr ctxt)
 encoding_error:
     /* Only report the first error */
     if ((ctxt->input->flags & XML_INPUT_ENCODING_ERROR) == 0) {
-        if ((ctxt == NULL) || (ctxt->input == NULL) ||
-            (ctxt->input->end - ctxt->input->cur < 4)) {
-            __xmlErrEncoding(ctxt, XML_ERR_INVALID_CHAR,
-                         "Input is not proper UTF-8, indicate encoding !\n",
-                         NULL, NULL);
-        } else {
-            char buffer[150];
-
-            snprintf(buffer, 149, "Bytes: 0x%02X 0x%02X 0x%02X 0x%02X\n",
-                            ctxt->input->cur[0], ctxt->input->cur[1],
-                            ctxt->input->cur[2], ctxt->input->cur[3]);
-            __xmlErrEncoding(ctxt, XML_ERR_INVALID_CHAR,
-                         "Input is not proper UTF-8, indicate encoding !\n%s",
-                         BAD_CAST buffer, NULL);
-        }
+        xmlCtxtErrIO(ctxt, XML_ERR_INVALID_ENCODING, NULL);
         ctxt->input->flags |= XML_INPUT_ENCODING_ERROR;
     }
     ctxt->input->cur++;
@@ -1008,20 +777,7 @@ xmlCurrentChar(xmlParserCtxtPtr ctxt, int *len) {
 encoding_error:
     /* Only report the first error */
     if ((ctxt->input->flags & XML_INPUT_ENCODING_ERROR) == 0) {
-        if (ctxt->input->end - ctxt->input->cur < 4) {
-            __xmlErrEncoding(ctxt, XML_ERR_INVALID_CHAR,
-                         "Input is not proper UTF-8, indicate encoding !\n",
-                         NULL, NULL);
-        } else {
-            char buffer[150];
-
-            snprintf(&buffer[0], 149, "Bytes: 0x%02X 0x%02X 0x%02X 0x%02X\n",
-                            ctxt->input->cur[0], ctxt->input->cur[1],
-                            ctxt->input->cur[2], ctxt->input->cur[3]);
-            __xmlErrEncoding(ctxt, XML_ERR_INVALID_CHAR,
-                         "Input is not proper UTF-8, indicate encoding !\n%s",
-                         BAD_CAST buffer, NULL);
-        }
+        xmlCtxtErrIO(ctxt, XML_ERR_INVALID_ENCODING, NULL);
         ctxt->input->flags |= XML_INPUT_ENCODING_ERROR;
     }
     *len = 1;
@@ -1249,14 +1005,9 @@ xmlSwitchEncoding(xmlParserCtxtPtr ctxt, xmlCharEncoding enc)
     }
 
     if (res != 0) {
-        if (res == XML_ERR_UNSUPPORTED_ENCODING) {
-            const char *name = xmlGetCharEncodingName(enc);
+        const char *name = xmlGetCharEncodingName(enc);
 
-            __xmlErrEncoding(ctxt, res, "encoding not supported: %s\n",
-                             BAD_CAST (name ? name : "<null>"), NULL);
-        } else {
-            xmlFatalErr(ctxt, res, NULL);
-        }
+        xmlFatalErr(ctxt, res, (name ? name : "<null>"));
         return(-1);
     }
 
@@ -1289,13 +1040,12 @@ xmlSwitchEncodingName(xmlParserCtxtPtr ctxt, const char *encoding) {
     xmlCharEncodingHandlerPtr handler;
     int res;
 
+    if (encoding == NULL)
+        return(-1);
+
     res = xmlOpenCharEncodingHandler(encoding, &handler);
     if (res != 0) {
-        if (res == XML_ERR_UNSUPPORTED_ENCODING)
-            __xmlErrEncoding(ctxt, res, "Unsupported encoding: %s\n",
-                             (const xmlChar *) encoding, NULL);
-        else
-            xmlFatalErr(ctxt, res, NULL);
+        xmlFatalErr(ctxt, res, encoding);
         return(-1);
     }
 
@@ -1367,7 +1117,7 @@ xmlSwitchInputEncoding(xmlParserCtxtPtr ctxt, xmlParserInputPtr input,
 
         buf = xmlBufCreate();
         if (buf == NULL) {
-            xmlErrMemory(ctxt);
+            xmlCtxtErrMemory(ctxt);
             return(-1);
         }
 
@@ -1385,11 +1135,9 @@ xmlSwitchInputEncoding(xmlParserCtxtPtr ctxt, xmlParserInputPtr input,
         nbchars = xmlCharEncInput(in);
         xmlBufResetInput(in->buffer, input);
         if (nbchars == XML_ENC_ERR_MEMORY) {
-            xmlErrMemory(ctxt);
+            xmlCtxtErrMemory(ctxt);
         } else if (nbchars < 0) {
-            xmlErrInternal(ctxt,
-                           "switching encoding: encoder error\n",
-                           NULL);
+            xmlCtxtErrIO(ctxt, in->error, NULL);
             xmlHaltParser(ctxt);
             return (-1);
         }
@@ -1583,7 +1331,7 @@ xmlSetDeclaredEncoding(xmlParserCtxtPtr ctxt, xmlChar *encoding) {
                 xmlFree(encoding);
                 encoding = xmlStrdup(BAD_CAST autoEnc);
                 if (encoding == NULL)
-                    xmlErrMemory(ctxt);
+                    xmlCtxtErrMemory(ctxt);
             }
         }
     }
@@ -1633,7 +1381,7 @@ xmlNewInputStream(xmlParserCtxtPtr ctxt) {
 
     input = (xmlParserInputPtr) xmlMalloc(sizeof(xmlParserInput));
     if (input == NULL) {
-        xmlErrMemory(ctxt);
+        xmlCtxtErrMemory(ctxt);
 	return(NULL);
     }
     memset(input, 0, sizeof(xmlParserInput));
@@ -1647,7 +1395,7 @@ xmlNewInputStream(xmlParserCtxtPtr ctxt) {
      */
     if (ctxt != NULL) {
         if (input->id >= INT_MAX) {
-            xmlErrMemory(ctxt);
+            xmlCtxtErrMemory(ctxt);
             return(NULL);
         }
         input->id = ctxt->input_id++;
@@ -1775,12 +1523,12 @@ xmlNewStringInputStream(xmlParserCtxtPtr ctxt, const xmlChar *buffer) {
     }
     buf = xmlParserInputBufferCreateString(buffer);
     if (buf == NULL) {
-	xmlErrMemory(ctxt);
+	xmlCtxtErrMemory(ctxt);
         return(NULL);
     }
     input = xmlNewInputStream(ctxt);
     if (input == NULL) {
-        xmlErrMemory(ctxt);
+        xmlCtxtErrMemory(ctxt);
 	xmlFreeParserInputBuffer(buf);
 	return(NULL);
     }
@@ -1812,7 +1560,7 @@ xmlNewInputFromFile(xmlParserCtxtPtr ctxt, const char *filename) {
     code = xmlParserInputBufferCreateFilenameSafe(filename,
                                                   XML_CHAR_ENCODING_NONE, &buf);
     if (buf == NULL) {
-        xmlLoaderErr(ctxt, code, filename);
+        xmlCtxtErrIO(ctxt, code, filename);
 	return(NULL);
     }
 
@@ -2004,7 +1752,7 @@ xmlInitSAXParserCtxt(xmlParserCtxtPtr ctxt, const xmlSAXHandler *sax,
     if (ctxt->nsdb == NULL) {
         ctxt->nsdb = xmlParserNsCreate();
         if (ctxt->nsdb == NULL) {
-            xmlErrMemory(ctxt);
+            xmlCtxtErrMemory(ctxt);
             return(-1);
         }
     }
@@ -2338,7 +2086,7 @@ xmlParserAddNodeInfo(xmlParserCtxtPtr ctxt,
                                                      byte_size);
 
             if (tmp_buffer == NULL) {
-		xmlErrMemory(ctxt);
+		xmlCtxtErrMemory(ctxt);
                 return;
             }
             ctxt->node_seq.buffer = tmp_buffer;

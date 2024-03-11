@@ -39,18 +39,6 @@
 #include <direct.h>
 #endif
 
-#ifndef S_ISDIR
-#  ifdef _S_ISDIR
-#    define S_ISDIR(x) _S_ISDIR(x)
-#  elif defined(S_IFDIR)
-#    ifdef S_IFMT
-#      define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
-#    elif defined(_S_IFMT)
-#      define S_ISDIR(m) (((m) & _S_IFMT) == S_IFDIR)
-#    endif
-#  endif
-#endif
-
 #include <libxml/xmlIO.h>
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
@@ -72,6 +60,22 @@
 /* #define VERBOSE_FAILURE */
 
 #define MINLEN 4000
+
+#ifndef STDIN_FILENO
+  #define STDIN_FILENO 0
+#endif
+
+#ifndef S_ISDIR
+#  ifdef _S_ISDIR
+#    define S_ISDIR(x) _S_ISDIR(x)
+#  elif defined(S_IFDIR)
+#    ifdef S_IFMT
+#      define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
+#    elif defined(_S_IFMT)
+#      define S_ISDIR(m) (((m) & _S_IFMT) == S_IFDIR)
+#    endif
+#  endif
+#endif
 
 /*
  * Input I/O callback sets
@@ -118,66 +122,6 @@ static int xmlOutputCallbackNr = 1;
  *		Tree memory error handler				*
  *									*
  ************************************************************************/
-
-static const char* const IOerr[] = {
-    "Unknown IO error",         /* UNKNOWN */
-    "Permission denied",	/* EACCES */
-    "Resource temporarily unavailable",/* EAGAIN */
-    "Bad file descriptor",	/* EBADF */
-    "Bad message",		/* EBADMSG */
-    "Resource busy",		/* EBUSY */
-    "Operation canceled",	/* ECANCELED */
-    "No child processes",	/* ECHILD */
-    "Resource deadlock avoided",/* EDEADLK */
-    "Domain error",		/* EDOM */
-    "File exists",		/* EEXIST */
-    "Bad address",		/* EFAULT */
-    "File too large",		/* EFBIG */
-    "Operation in progress",	/* EINPROGRESS */
-    "Interrupted function call",/* EINTR */
-    "Invalid argument",		/* EINVAL */
-    "Input/output error",	/* EIO */
-    "Is a directory",		/* EISDIR */
-    "Too many open files",	/* EMFILE */
-    "Too many links",		/* EMLINK */
-    "Inappropriate message buffer length",/* EMSGSIZE */
-    "Filename too long",	/* ENAMETOOLONG */
-    "Too many open files in system",/* ENFILE */
-    "No such device",		/* ENODEV */
-    "No such file or directory",/* ENOENT */
-    "Exec format error",	/* ENOEXEC */
-    "No locks available",	/* ENOLCK */
-    "Not enough space",		/* ENOMEM */
-    "No space left on device",	/* ENOSPC */
-    "Function not implemented",	/* ENOSYS */
-    "Not a directory",		/* ENOTDIR */
-    "Directory not empty",	/* ENOTEMPTY */
-    "Not supported",		/* ENOTSUP */
-    "Inappropriate I/O control operation",/* ENOTTY */
-    "No such device or address",/* ENXIO */
-    "Operation not permitted",	/* EPERM */
-    "Broken pipe",		/* EPIPE */
-    "Result too large",		/* ERANGE */
-    "Read-only file system",	/* EROFS */
-    "Invalid seek",		/* ESPIPE */
-    "No such process",		/* ESRCH */
-    "Operation timed out",	/* ETIMEDOUT */
-    "Improper link",		/* EXDEV */
-    "Attempt to load network entity", /* XML_IO_NETWORK_ATTEMPT */
-    "encoder error",		/* XML_IO_ENCODER */
-    "flush error",
-    "write error",
-    "no input",
-    "buffer full",
-    "loading error",
-    "not a socket",		/* ENOTSOCK */
-    "already connected",	/* EISCONN */
-    "connection refused",	/* ECONNREFUSED */
-    "unreachable network",	/* ENETUNREACH */
-    "address in use",		/* EADDRINUSE */
-    "already in use",		/* EALREADY */
-    "unknown address family",	/* EAFNOSUPPORT */
-};
 
 #if defined(_WIN32)
 /**
@@ -234,7 +178,6 @@ xmlIOErrMemory(void)
 int
 __xmlIOErr(int domain, int code, const char *extra)
 {
-    unsigned int idx;
     int res;
 
     if (code == 0) {
@@ -394,14 +337,11 @@ __xmlIOErr(int domain, int code, const char *extra)
 #endif
         else code = XML_IO_UNKNOWN;
     }
-    idx = 0;
-    if (code >= XML_IO_UNKNOWN) idx = code - XML_IO_UNKNOWN;
-    if (idx >= (sizeof(IOerr) / sizeof(IOerr[0]))) idx = 0;
 
     res = __xmlRaiseError(NULL, NULL, NULL, NULL, NULL,
                           domain, code, XML_ERR_ERROR, NULL, 0,
                           extra, NULL, NULL, 0, 0,
-                          IOerr[idx], extra);
+                          "%s", xmlErrString(code));
     if (res < 0) {
         xmlIOErrMemory();
         return(XML_ERR_NO_MEMORY);
@@ -424,33 +364,53 @@ xmlIOErr(int code, const char *extra)
 }
 
 /**
- * xmlLoaderErr:
- * @ctx:  parser context
- * @code:  error code
- * @filename:  file name
+ * xmlCtxtErrIO:
+ * @ctxt:  parser context
+ * @code:  xmlParserErrors code
+ * @uri:  filename or URI (optional)
  *
- * Handle a resource access error
+ * If filename is empty, use the one from context input if available.
+ *
+ * Report an IO error to the parser context.
  */
 void
-xmlLoaderErr(xmlParserCtxtPtr ctxt, int code, const char *filename)
+xmlCtxtErrIO(xmlParserCtxtPtr ctxt, int code, const char *uri)
 {
+    const char *errstr, *msg, *str1, *str2;
     xmlErrorLevel level;
-    unsigned idx = 0;
 
-    if (ctxt->validate)
-        level = XML_ERR_ERROR;
-    else
-        level = XML_ERR_WARNING;
+    if (ctxt == NULL)
+        return;
 
-    if (code >= XML_IO_UNKNOWN) {
-        idx = code - XML_IO_UNKNOWN;
-        if (idx >= (sizeof(IOerr) / sizeof(IOerr[0])))
-            idx = 0;
+    if ((code == XML_IO_ENOENT) ||
+        (code == XML_IO_NETWORK_ATTEMPT) ||
+        (code == XML_IO_UNKNOWN)) {
+        if (ctxt->validate == 0)
+            level = XML_ERR_WARNING;
+        else
+            level = XML_ERR_ERROR;
+    } else {
+        level = XML_ERR_FATAL;
     }
 
-    xmlErrParser(ctxt, NULL, XML_FROM_IO, code, level,
-                 (const xmlChar *) filename, NULL, NULL, 0,
-		 "failed to load \"%s\": %s\n", filename, IOerr[idx]);
+    errstr = xmlErrString(code);
+
+    if (uri == NULL) {
+        msg = "%s\n";
+        str1 = errstr;
+        str2 = NULL;
+    } else {
+        msg = "failed to load \"%s\": %s\n";
+        str1 = uri;
+        str2 = errstr;
+    }
+
+    /*
+     * TODO: Set filename in error
+     */
+    xmlCtxtErr(ctxt, NULL, XML_FROM_IO, code, level,
+               (const xmlChar *) uri, NULL, NULL, 0,
+               msg, str1, str2);
 }
 
 /************************************************************************
@@ -649,8 +609,7 @@ xmlWrapStatUtf8(const char *path, _stat_t *info) {
  * xmlCheckFilename:
  * @path:  the path to check
  *
- * function checks to see if @path is a valid source
- * (file, socket...) for XML.
+ * DEPRECATED: Internal function, don't use.
  *
  * if stat is not available on the target machine,
  * returns 1.  if stat fails, returns 0 (if calling
@@ -693,6 +652,100 @@ xmlCheckFilename (const char *path)
 }
 
 /**
+ * xmlFdOpen:
+ * @filename:  the URI for matching
+ * @out:  pointer to resulting context
+ *
+ * Returns an xmlParserErrors code
+ */
+static int
+xmlFdOpen(const char *filename, void **out) {
+    const char *escaped = NULL;
+    char *unescaped = NULL;
+    int fd;
+    int ret;
+
+    *out = (void *) 0;
+    if (filename == NULL)
+        return(XML_ERR_ARGUMENT);
+
+    if (!strcmp(filename, "-")) {
+        *out = (void *) (ptrdiff_t) STDIN_FILENO;
+	return(XML_ERR_OK);
+    }
+
+    /*
+     * TODO: This should be moved to uri.c. We also need support for
+     * UNC paths on Windows.
+     */
+    if (!xmlStrncasecmp(BAD_CAST filename, BAD_CAST "file://localhost/", 17)) {
+#if defined (_WIN32)
+	escaped = &filename[17];
+#else
+	escaped = &filename[16];
+#endif
+    } else if (!xmlStrncasecmp(BAD_CAST filename, BAD_CAST "file:///", 8)) {
+#if defined (_WIN32)
+	escaped = &filename[8];
+#else
+	escaped = &filename[7];
+#endif
+    } else if (!xmlStrncasecmp(BAD_CAST filename, BAD_CAST "file:/", 6)) {
+        /* lots of generators seems to lazy to read RFC 1738 */
+#if defined (_WIN32)
+	escaped = &filename[6];
+#else
+	escaped = &filename[5];
+#endif
+    }
+
+    if (escaped != NULL) {
+        unescaped = xmlURIUnescapeString(escaped, 0, NULL);
+        if (unescaped == NULL)
+            return(XML_ERR_NO_MEMORY);
+        filename = unescaped;
+    }
+
+#if defined(_WIN32)
+    {
+        wchar_t *wpath;
+
+        wpath = __xmlIOWin32UTF8ToWChar(filename);
+        if (wpath == NULL)
+            return(XML_ERR_NO_MEMORY);
+	fd = _wopen(wpath, _O_RDONLY | _O_BINARY);
+        xmlFree(wpath);
+    }
+#else
+    fd = open(filename, O_RDONLY);
+#endif /* WIN32 */
+
+    if (fd < 0) {
+        /*
+         * Windows and possibly other platforms return EINVAL
+         * for invalid filenames.
+         */
+        if ((errno == ENOENT) || (errno == EINVAL)) {
+            ret = XML_IO_ENOENT;
+        } else {
+            /*
+             * This error won't be forwarded to the parser context
+             * which will report it a second time.
+             */
+            ret = xmlIOErr(0, filename);
+        }
+    } else {
+        *out = (void *) (ptrdiff_t) fd;
+        ret = XML_ERR_OK;
+    }
+
+    if (unescaped != NULL)
+        xmlFree(unescaped);
+
+    return(ret);
+}
+
+/**
  * xmlFdRead:
  * @context:  the I/O context
  * @buffer:  where to drop data
@@ -707,7 +760,8 @@ xmlFdRead (void * context, char * buffer, int len) {
     int ret;
 
     ret = read((int) (ptrdiff_t) context, &buffer[0], len);
-    if (ret < 0) xmlIOErr(0, "read()");
+    if (ret < 0)
+        return(-xmlIOErr(0, "fread()"));
     return(ret);
 }
 
@@ -754,7 +808,7 @@ xmlFdClose (void * context) {
  * xmlFileMatch:
  * @filename:  the URI for matching
  *
- * input from FILE *
+ * DEPRECATED: Internal function, don't use.
  *
  * Returns 1 if matches, 0 otherwise
  */
@@ -869,7 +923,7 @@ xmlFileOpenSafe(const char *filename, void **out) {
  * xmlFileOpen:
  * @filename:  the URI for matching
  *
- * Open a file.
+ * DEPRECATED: Internal function, don't use.
  *
  * Returns an IO context or NULL in case or failure
  */
@@ -938,7 +992,7 @@ xmlFileOpenW (const char *filename) {
  * @buffer:  where to drop data
  * @len:  number of bytes to write
  *
- * Read @len bytes to @buffer from the I/O channel.
+ * DEPRECATED: Internal function, don't use.
  *
  * Returns the number of bytes written or < 0 in case of failure
  */
@@ -948,7 +1002,8 @@ xmlFileRead (void * context, char * buffer, int len) {
     if ((context == NULL) || (buffer == NULL))
         return(-1);
     ret = fread(&buffer[0], 1,  len, (FILE *) context);
-    if (ret < 0) xmlIOErr(0, "fread()");
+    if (ret < 0)
+        return(-xmlIOErr(0, "fread()"));
     return(ret);
 }
 
@@ -982,7 +1037,7 @@ xmlFileWrite (void * context, const char * buffer, int len) {
  * xmlFileClose:
  * @context:  the I/O context
  *
- * Close an I/O channel
+ * DEPRECATED: Internal function, don't use.
  *
  * Returns 0 or -1 in case of error
  */
@@ -1065,7 +1120,7 @@ xmlBufferWrite (void * context, const char * buffer, int len) {
  */
 static int
 xmlGzfileMatch (const char *filename ATTRIBUTE_UNUSED) {
-    return(1);
+    return(strcmp(filename, "-") != 0);
 }
 
 /**
@@ -1271,7 +1326,7 @@ xmlGzfileClose (void * context) {
  */
 static int
 xmlXzfileMatch (const char *filename ATTRIBUTE_UNUSED) {
-    return(1);
+    return(strcmp(filename, "-") != 0);
 }
 
 /**
@@ -2165,57 +2220,54 @@ xmlInputDefaultOpen(xmlParserInputBufferPtr buf, const char *filename) {
 
 #ifdef LIBXML_LZMA_ENABLED
     if (xmlXzfileMatch(filename)) {
-        buf->context = xmlXzfileOpen(filename);
+        void *context = xmlXzfileOpen(filename);
 
-        if (buf->context != NULL) {
-            buf->readcallback = xmlXzfileRead;
-            buf->closecallback = xmlXzfileClose;
-
-            if (strcmp(filename, "-") != 0)
+        if (context != NULL) {
+            if (__libxml2_xzcompressed(context) > 0) {
+                buf->context = context;
+                buf->readcallback = xmlXzfileRead;
+                buf->closecallback = xmlXzfileClose;
                 buf->compressed = __libxml2_xzcompressed(buf->context);
 
-            return(XML_ERR_OK);
+                return(XML_ERR_OK);
+            }
+
+            xmlXzfileClose(context);
         }
     }
 #endif /* LIBXML_LZMA_ENABLED */
 
 #ifdef LIBXML_ZLIB_ENABLED
     if (xmlGzfileMatch(filename)) {
-        buf->context = xmlGzfileOpen(filename);
+        void *context = xmlGzfileOpen(filename);
 
-        if (buf->context != NULL) {
-            buf->readcallback = xmlGzfileRead;
-            buf->closecallback = xmlGzfileClose;
+        if (context != NULL) {
+            char buff4[4];
 
-            if (strcmp(filename, "-") != 0) {
-#if defined(ZLIB_VERNUM) && ZLIB_VERNUM >= 0x1230
-                buf->compressed = !gzdirect(buf->context);
-#else
-                if (((z_stream *)context)->avail_in > 4) {
-                    char *cptr, buff4[4];
-                    cptr = (char *) ((z_stream *)buf->context)->next_in;
-                    if (gzread(context, buff4, 4) == 4) {
-                        if (strncmp(buff4, cptr, 4) == 0)
-                            buf->compressed = 0;
-                        else
-                            buf->compressed = 1;
-                        gzrewind(context);
-                    }
-                }
-#endif
+            if ((gzread(context, buff4, 4) > 0) &&
+                (gzdirect(context) == 0)) {
+                gzrewind(context);
+
+                buf->context = context;
+                buf->readcallback = xmlGzfileRead;
+                buf->closecallback = xmlGzfileClose;
+                buf->compressed = 1;
+
+                return(XML_ERR_OK);
             }
 
-            return(XML_ERR_OK);
+            xmlGzfileClose(context);
         }
     }
 #endif /* LIBXML_ZLIB_ENABLED */
 
     if (xmlFileMatch(filename)) {
-        ret = xmlFileOpenSafe(filename, &buf->context);
+        ret = xmlFdOpen(filename, &buf->context);
 
-        if (buf->context != NULL) {
-            buf->readcallback = xmlFileRead;
-            buf->closecallback = xmlFileClose;
+        /* Note that context can be NULL for stdin */
+        if (ret == XML_ERR_OK) {
+            buf->readcallback = xmlFdRead;
+            buf->closecallback = xmlFdClose;
             return(XML_ERR_OK);
         }
         if (ret != XML_IO_ENOENT)
@@ -3333,7 +3385,10 @@ xmlParserInputBufferGrow(xmlParserInputBufferPtr in, int len) {
 	if (res <= 0)
 	    in->readcallback = endOfInput;
         if (res < 0) {
-            in->error = XML_IO_UNKNOWN;
+            if (res == -1)
+                in->error = XML_IO_UNKNOWN;
+            else
+                in->error = -res;
             return(-1);
         }
 
@@ -3849,9 +3904,9 @@ xmlCheckHTTPInput(xmlParserCtxtPtr ctxt, xmlParserInputPtr ret) {
         if (code >= 400) {
             /* fatal error */
 	    if (ret->filename != NULL)
-                xmlLoaderErr(ctxt, XML_IO_LOAD_ERROR, ret->filename);
+                xmlCtxtErrIO(ctxt, XML_IO_LOAD_ERROR, ret->filename);
 	    else
-                xmlLoaderErr(ctxt, XML_IO_LOAD_ERROR, "<null>");
+                xmlCtxtErrIO(ctxt, XML_IO_LOAD_ERROR, "<null>");
             xmlFreeInputStream(ret);
             ret = NULL;
         } else {
@@ -4116,7 +4171,7 @@ xmlNoNetExternalEntityLoader(const char *URL, const char *ID,
     if (resource != NULL) {
         if ((!xmlStrncasecmp(BAD_CAST resource, BAD_CAST "ftp://", 6)) ||
             (!xmlStrncasecmp(BAD_CAST resource, BAD_CAST "http://", 7))) {
-            xmlLoaderErr(ctxt, XML_IO_NETWORK_ATTEMPT,
+            xmlCtxtErrIO(ctxt, XML_IO_NETWORK_ATTEMPT,
                          (const char *) resource);
 	    if (resource != (xmlChar *) URL)
 		xmlFree(resource);

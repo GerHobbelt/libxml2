@@ -77,8 +77,8 @@ static void LIBXML_ATTR_FORMAT(3,0)
 htmlParseErr(xmlParserCtxtPtr ctxt, xmlParserErrors error,
              const char *msg, const xmlChar *str1, const xmlChar *str2)
 {
-    xmlErrParser(ctxt, NULL, XML_FROM_HTML, error, XML_ERR_ERROR,
-                 str1, str2, NULL, 0, msg, str1, str2);
+    xmlCtxtErr(ctxt, NULL, XML_FROM_HTML, error, XML_ERR_ERROR,
+               str1, str2, NULL, 0, msg, str1, str2);
 }
 
 /**
@@ -94,8 +94,8 @@ static void LIBXML_ATTR_FORMAT(3,0)
 htmlParseErrInt(xmlParserCtxtPtr ctxt, xmlParserErrors error,
              const char *msg, int val)
 {
-    xmlErrParser(ctxt, NULL, XML_FROM_HTML, error, XML_ERR_ERROR,
-                 NULL, NULL, NULL, val, msg, val);
+    xmlCtxtErr(ctxt, NULL, XML_FROM_HTML, error, XML_ERR_ERROR,
+               NULL, NULL, NULL, val, msg, val);
 }
 
 /************************************************************************
@@ -490,20 +490,7 @@ htmlCurrentChar(xmlParserCtxtPtr ctxt, int *len) {
     }
 
 encoding_error:
-    {
-        char buffer[150];
-
-	if (ctxt->input->end - ctxt->input->cur >= 4) {
-	    snprintf(buffer, 149, "Bytes: 0x%02X 0x%02X 0x%02X 0x%02X\n",
-			    ctxt->input->cur[0], ctxt->input->cur[1],
-			    ctxt->input->cur[2], ctxt->input->cur[3]);
-	} else {
-	    snprintf(buffer, 149, "Bytes: 0x%02X\n", ctxt->input->cur[0]);
-	}
-	htmlParseErr(ctxt, XML_ERR_INVALID_ENCODING,
-		     "Input is not proper UTF-8, indicate encoding !\n",
-		     BAD_CAST buffer, NULL);
-    }
+    xmlCtxtErrIO(ctxt, XML_ERR_INVALID_ENCODING, NULL);
 
     if ((ctxt->input->flags & XML_INPUT_HAS_ENCODING) == 0)
         xmlSwitchEncoding(ctxt, XML_CHAR_ENCODING_8859_1);

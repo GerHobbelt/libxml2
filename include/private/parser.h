@@ -29,26 +29,20 @@
 #define PARSER_STOPPED(ctxt) ((ctxt)->disableSAX > 1)
 
 XML_HIDDEN void
-xmlErrMemory(xmlParserCtxtPtr ctxt);
+xmlCtxtVErr(xmlParserCtxtPtr ctxt, xmlNodePtr node, xmlErrorDomain domain,
+            xmlParserErrors code, xmlErrorLevel level,
+            const xmlChar *str1, const xmlChar *str2, const xmlChar *str3,
+            int int1, const char *msg, va_list ap);
 XML_HIDDEN void
-xmlVErrParser(xmlParserCtxtPtr ctxt, xmlNodePtr node,
-              int domain, int code, xmlErrorLevel level,
-              const xmlChar *str1, const xmlChar *str2, const xmlChar *str3,
-              int int1, const char *msg, va_list ap);
-XML_HIDDEN void
-xmlErrParser(xmlParserCtxtPtr ctxt, xmlNodePtr node,
-             int domain, int code, xmlErrorLevel level,
-             const xmlChar *str1, const xmlChar *str2, const xmlChar *str3,
-             int int1, const char *msg, ...);
+xmlCtxtErr(xmlParserCtxtPtr ctxt, xmlNodePtr node, xmlErrorDomain domain,
+           xmlParserErrors code, xmlErrorLevel level,
+           const xmlChar *str1, const xmlChar *str2, const xmlChar *str3,
+           int int1, const char *msg, ...);
 XML_HIDDEN void
 xmlFatalErr(xmlParserCtxtPtr ctxt, xmlParserErrors error, const char *info);
 XML_HIDDEN void LIBXML_ATTR_FORMAT(3,0)
 xmlWarningMsg(xmlParserCtxtPtr ctxt, xmlParserErrors error,
               const char *msg, const xmlChar *str1, const xmlChar *str2);
-XML_HIDDEN void
-__xmlErrEncoding(xmlParserCtxtPtr ctxt, xmlParserErrors xmlerr,
-                 const char *msg, const xmlChar *str1,
-                 const xmlChar *str2) LIBXML_ATTR_FORMAT(3,0);
 XML_HIDDEN void
 xmlHaltParser(xmlParserCtxtPtr ctxt);
 XML_HIDDEN int
