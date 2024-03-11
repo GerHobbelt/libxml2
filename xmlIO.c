@@ -1511,7 +1511,8 @@ xmlFreeParserInputBuffer(xmlParserInputBufferPtr in) {
  * flushes and close the output I/O channel
  * and free up all the associated resources
  *
- * Returns the number of byte written or -1 in case of error.
+ * Returns the number of byte written or a negative xmlParserErrors
+ * code in case of error.
  */
 int
 xmlOutputBufferClose(xmlOutputBufferPtr out)
@@ -1535,11 +1536,8 @@ xmlOutputBufferClose(xmlOutputBufferPtr out)
         }
     }
 
-    /*
-     * TODO: Report the error code
-     */
     if (out->error != XML_ERR_OK)
-        ret = -1;
+        ret = -out->error;
     else
         ret = out->written;
 
