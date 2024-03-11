@@ -562,7 +562,7 @@ xmlHTMLEncodeSend(void) {
     memset(&buffer[sizeof(buffer)-4], 0, 4);
     result = (char *) xmlEncodeEntitiesReentrant(NULL, BAD_CAST buffer);
     if (result) {
-	xmlGenericError(xmlGenericErrorContext, "%s", result);
+	fprintf(stderr, "%s", result);
 	xmlFree(result);
     }
     buffer[0] = 0;
@@ -578,7 +578,7 @@ xmlHTMLEncodeSend(void) {
 static void
 xmlHTMLPrintFileInfo(xmlParserInputPtr input) {
     int len;
-    xmlGenericError(xmlGenericErrorContext, "<p>");
+    fprintf(stderr, "<p>");
 
     len = strlen(buffer);
     if (input != NULL) {
@@ -606,7 +606,7 @@ xmlHTMLPrintFileContext(xmlParserInputPtr input) {
     int n;
 
     if (input == NULL) return;
-    xmlGenericError(xmlGenericErrorContext, "<pre>\n");
+    fprintf(stderr, "<pre>\n");
     cur = input->cur;
     base = input->base;
     while ((cur > base) && ((*cur == '\n') || (*cur == '\r'))) {
@@ -638,7 +638,7 @@ xmlHTMLPrintFileContext(xmlParserInputPtr input) {
     len = strlen(buffer);
     snprintf(&buffer[len], sizeof(buffer) - len, "^\n");
     xmlHTMLEncodeSend();
-    xmlGenericError(xmlGenericErrorContext, "</pre>");
+    fprintf(stderr, "</pre>");
 }
 
 /**
@@ -666,13 +666,13 @@ xmlHTMLError(void *ctx, const char *msg, ...)
 
     xmlHTMLPrintFileInfo(input);
 
-    xmlGenericError(xmlGenericErrorContext, "<b>error</b>: ");
+    fprintf(stderr, "<b>error</b>: ");
     va_start(args, msg);
     len = strlen(buffer);
     vsnprintf(&buffer[len],  sizeof(buffer) - len, msg, args);
     va_end(args);
     xmlHTMLEncodeSend();
-    xmlGenericError(xmlGenericErrorContext, "</p>\n");
+    fprintf(stderr, "</p>\n");
 
     xmlHTMLPrintFileContext(input);
     xmlHTMLEncodeSend();
@@ -704,13 +704,13 @@ xmlHTMLWarning(void *ctx, const char *msg, ...)
 
     xmlHTMLPrintFileInfo(input);
 
-    xmlGenericError(xmlGenericErrorContext, "<b>warning</b>: ");
+    fprintf(stderr, "<b>warning</b>: ");
     va_start(args, msg);
     len = strlen(buffer);
     vsnprintf(&buffer[len],  sizeof(buffer) - len, msg, args);
     va_end(args);
     xmlHTMLEncodeSend();
-    xmlGenericError(xmlGenericErrorContext, "</p>\n");
+    fprintf(stderr, "</p>\n");
 
     xmlHTMLPrintFileContext(input);
     xmlHTMLEncodeSend();
@@ -740,13 +740,13 @@ xmlHTMLValidityError(void *ctx, const char *msg, ...)
 
     xmlHTMLPrintFileInfo(input);
 
-    xmlGenericError(xmlGenericErrorContext, "<b>validity error</b>: ");
+    fprintf(stderr, "<b>validity error</b>: ");
     len = strlen(buffer);
     va_start(args, msg);
     vsnprintf(&buffer[len],  sizeof(buffer) - len, msg, args);
     va_end(args);
     xmlHTMLEncodeSend();
-    xmlGenericError(xmlGenericErrorContext, "</p>\n");
+    fprintf(stderr, "</p>\n");
 
     xmlHTMLPrintFileContext(input);
     xmlHTMLEncodeSend();
@@ -777,13 +777,13 @@ xmlHTMLValidityWarning(void *ctx, const char *msg, ...)
 
     xmlHTMLPrintFileInfo(input);
 
-    xmlGenericError(xmlGenericErrorContext, "<b>validity warning</b>: ");
+    fprintf(stderr, "<b>validity warning</b>: ");
     va_start(args, msg);
     len = strlen(buffer);
     vsnprintf(&buffer[len],  sizeof(buffer) - len, msg, args);
     va_end(args);
     xmlHTMLEncodeSend();
-    xmlGenericError(xmlGenericErrorContext, "</p>\n");
+    fprintf(stderr, "</p>\n");
 
     xmlHTMLPrintFileContext(input);
     xmlHTMLEncodeSend();
@@ -1683,7 +1683,6 @@ testSAX(const char *filename) {
             xmlFreeParserInputBuffer(buf);
             return;
         }
-	xmlSchemaSetValidErrors(vctxt, xmlGenericError, xmlGenericError, NULL);
 	xmlSchemaValidateSetFilename(vctxt, filename);
 
 	ret = xmlSchemaValidateStream(vctxt, buf, 0, handler,
@@ -1885,7 +1884,7 @@ static void streamFile(const char *filename) {
 	    }
 	    ret = xmlTextReaderRelaxNGValidate(reader, relaxng);
 	    if (ret < 0) {
-		xmlGenericError(xmlGenericErrorContext,
+		fprintf(stderr,
 			"Relax-NG schema %s failed to compile\n", relaxng);
 		progresult = XMLLINT_ERR_SCHEMACOMP;
 		relaxng = NULL;
@@ -1900,7 +1899,7 @@ static void streamFile(const char *filename) {
 	    }
 	    ret = xmlTextReaderSchemaValidate(reader, schema);
 	    if (ret < 0) {
-		xmlGenericError(xmlGenericErrorContext,
+		fprintf(stderr,
 			"XSD schema %s failed to compile\n", schema);
 		progresult = XMLLINT_ERR_SCHEMACOMP;
 		schema = NULL;
@@ -1944,7 +1943,7 @@ static void streamFile(const char *filename) {
 #ifdef LIBXML_VALID_ENABLED
 	if (valid) {
 	    if (xmlTextReaderIsValid(reader) != 1) {
-		xmlGenericError(xmlGenericErrorContext,
+		fprintf(stderr,
 			"Document %s does not validate\n", filename);
 		progresult = XMLLINT_ERR_VALID;
 	    }
@@ -2001,7 +2000,7 @@ static void walkDoc(xmlDocPtr doc) {
 
     root = xmlDocGetRootElement(doc);
     if (root == NULL ) {
-        xmlGenericError(xmlGenericErrorContext,
+        fprintf(stderr,
                 "Document does not have a root element");
         progresult = XMLLINT_ERR_UNCLASS;
         return;
@@ -2017,7 +2016,7 @@ static void walkDoc(xmlDocPtr doc) {
         patternc = xmlPatterncompile((const xmlChar *) pattern, doc->dict,
 	                             0, &namespaces[0]);
 	if (patternc == NULL) {
-	    xmlGenericError(xmlGenericErrorContext,
+	    fprintf(stderr,
 		    "Pattern %s failed to compile\n", pattern);
             progresult = XMLLINT_ERR_SCHEMAPAT;
 	    pattern = NULL;
@@ -2794,35 +2793,33 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 	}
 	if (dtd == NULL) {
 	    if (dtdvalid != NULL)
-		xmlGenericError(xmlGenericErrorContext,
+		fprintf(stderr,
 			"Could not parse DTD %s\n", dtdvalid);
 	    else
-		xmlGenericError(xmlGenericErrorContext,
+		fprintf(stderr,
 			"Could not parse DTD %s\n", dtdvalidfpi);
 	    progresult = XMLLINT_ERR_DTD;
 	} else {
 	    xmlValidCtxtPtr cvp;
 
 	    if ((cvp = xmlNewValidCtxt()) == NULL) {
-		xmlGenericError(xmlGenericErrorContext,
+		fprintf(stderr,
 			"Couldn't allocate validation context\n");
                 progresult = XMLLINT_ERR_MEM;
                 xmlFreeDtd(dtd);
                 return;
 	    }
-	    cvp->error    = xmlGenericError;
-	    cvp->warning  = xmlGenericError;
 
 	    if ((timing) && (!repeat)) {
 		startTimer();
 	    }
 	    if (!xmlValidateDtd(cvp, doc, dtd)) {
 		if (dtdvalid != NULL)
-		    xmlGenericError(xmlGenericErrorContext,
+		    fprintf(stderr,
 			    "Document %s does not validate against %s\n",
 			    filename, dtdvalid);
 		else
-		    xmlGenericError(xmlGenericErrorContext,
+		    fprintf(stderr,
 			    "Document %s does not validate against %s\n",
 			    filename, dtdvalidfpi);
 		progresult = XMLLINT_ERR_VALID;
@@ -2837,7 +2834,7 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 	xmlValidCtxtPtr cvp;
 
 	if ((cvp = xmlNewValidCtxt()) == NULL) {
-	    xmlGenericError(xmlGenericErrorContext,
+	    fprintf(stderr,
 		    "Couldn't allocate validation context\n");
             progresult = XMLLINT_ERR_MEM;
             xmlFreeDoc(doc);
@@ -2847,10 +2844,8 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 	if ((timing) && (!repeat)) {
 	    startTimer();
 	}
-	cvp->error    = xmlGenericError;
-	cvp->warning  = xmlGenericError;
 	if (!xmlValidateDocument(cvp, doc)) {
-	    xmlGenericError(xmlGenericErrorContext,
+	    fprintf(stderr,
 		    "Document %s does not validate\n", filename);
 	    progresult = XMLLINT_ERR_VALID;
 	}
@@ -2882,10 +2877,6 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
             xmlFreeDoc(doc);
             return;
         }
-#if 0
-	xmlSchematronSetValidErrors(ctxt, xmlGenericError, xmlGenericError,
-                NULL);
-#endif
 	ret = xmlSchematronValidateDoc(ctxt, doc);
 	if (ret == 0) {
 	    if (!quiet) {
@@ -2920,7 +2911,6 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
             xmlFreeDoc(doc);
             return;
         }
-	xmlRelaxNGSetValidErrors(ctxt, xmlGenericError, xmlGenericError, NULL);
 	ret = xmlRelaxNGValidateDoc(ctxt, doc);
 	if (ret == 0) {
 	    if (!quiet) {
@@ -2952,7 +2942,6 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
             xmlFreeDoc(doc);
             return;
         }
-	xmlSchemaSetValidErrors(ctxt, xmlGenericError, xmlGenericError, NULL);
 	ret = xmlSchemaValidateDoc(ctxt, doc);
 	if (ret == 0) {
 	    if (!quiet) {
@@ -3612,14 +3601,14 @@ int main(int argc, const char** argv) {
     if ((noblanks != 0) || (format == 1))
         options |= XML_PARSE_NOBLANKS;
     if ((htmlout) && (!nowrap)) {
-	xmlGenericError(xmlGenericErrorContext,
+	fprintf(stderr,
          "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\"\n");
-	xmlGenericError(xmlGenericErrorContext,
+	fprintf(stderr,
 		"\t\"http://www.w3.org/TR/REC-html40/loose.dtd\">\n");
-	xmlGenericError(xmlGenericErrorContext,
+	fprintf(stderr,
 	 "<html><head><title>%s output</title></head>\n",
 		argv[0]);
-	xmlGenericError(xmlGenericErrorContext,
+	fprintf(stderr,
 	 "<body bgcolor=\"#ffffff\"><h1 align=\"center\">%s output</h1>\n",
 		argv[0]);
     }
@@ -3642,13 +3631,9 @@ int main(int argc, const char** argv) {
             progresult = XMLLINT_ERR_MEM;
             goto error;
         }
-#if 0
-	xmlSchematronSetParserErrors(ctxt, xmlGenericError, xmlGenericError,
-                NULL);
-#endif
 	wxschematron = xmlSchematronParse(ctxt);
 	if (wxschematron == NULL) {
-	    xmlGenericError(xmlGenericErrorContext,
+	    fprintf(stderr,
 		    "Schematron schema %s failed to compile\n", schematron);
             progresult = XMLLINT_ERR_SCHEMACOMP;
 	    schematron = NULL;
@@ -3677,11 +3662,9 @@ int main(int argc, const char** argv) {
             progresult = XMLLINT_ERR_MEM;
             goto error;
         }
-	xmlRelaxNGSetParserErrors(ctxt, xmlGenericError, xmlGenericError,
-                NULL);
 	relaxngschemas = xmlRelaxNGParse(ctxt);
 	if (relaxngschemas == NULL) {
-	    xmlGenericError(xmlGenericErrorContext,
+	    fprintf(stderr,
 		    "Relax-NG schema %s failed to compile\n", relaxng);
             progresult = XMLLINT_ERR_SCHEMACOMP;
 	    relaxng = NULL;
@@ -3705,10 +3688,9 @@ int main(int argc, const char** argv) {
             progresult = XMLLINT_ERR_MEM;
             goto error;
         }
-	xmlSchemaSetParserErrors(ctxt, xmlGenericError, xmlGenericError, NULL);
 	wxschemas = xmlSchemaParse(ctxt);
 	if (wxschemas == NULL) {
-	    xmlGenericError(xmlGenericErrorContext,
+	    fprintf(stderr,
 		    "WXS schema %s failed to compile\n", schema);
             progresult = XMLLINT_ERR_SCHEMACOMP;
 	    schema = NULL;
@@ -3723,7 +3705,7 @@ int main(int argc, const char** argv) {
     if ((pattern != NULL) && (walker == 0)) {
         patternc = xmlPatterncompile((const xmlChar *) pattern, NULL, 0, NULL);
 	if (patternc == NULL) {
-	    xmlGenericError(xmlGenericErrorContext,
+	    fprintf(stderr,
 		    "Pattern %s failed to compile\n", pattern);
             progresult = XMLLINT_ERR_SCHEMAPAT;
 	    pattern = NULL;
@@ -3862,7 +3844,7 @@ int main(int argc, const char** argv) {
     if (generate)
 	parseAndPrintFile(NULL, NULL);
     if ((htmlout) && (!nowrap)) {
-	xmlGenericError(xmlGenericErrorContext, "</body></html>\n");
+	fprintf(stderr, "</body></html>\n");
     }
     if ((files == 0) && (!generate) && (version == 0)) {
 	usage(stderr, argv[0]);

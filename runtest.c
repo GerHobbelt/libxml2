@@ -247,6 +247,9 @@ testExternalEntityLoader(const char *URL, const char *ID,
 static char testErrors[32769];
 static int testErrorsSize = 0;
 
+#if defined(LIBXML_XINCLUDE_ENABLED) || \
+    defined(LIBXML_READER_ENABLED) || \
+    defined(LIBXML_SCHEMAS_ENABLED)
 static void
 testErrorHandler(void *ctx  ATTRIBUTE_UNUSED, const char *msg, ...) {
     va_list args;
@@ -268,6 +271,7 @@ testErrorHandler(void *ctx  ATTRIBUTE_UNUSED, const char *msg, ...) {
     }
     testErrors[testErrorsSize] = 0;
 }
+#endif
 
 static void
 channel(void *ctx  ATTRIBUTE_UNUSED, const char *msg, ...) {
@@ -557,7 +561,6 @@ initializeLibxml2(void) {
     xmlInitParser();
     xmlMemSetup(xmlMemFree, xmlMemMalloc, xmlMemRealloc, xmlMemoryStrdup);
     xmlSetExternalEntityLoader(testExternalEntityLoader);
-    xmlSetStructuredErrorFunc(NULL, testStructuredErrorHandler);
 #ifdef LIBXML_SCHEMAS_ENABLED
     xmlSchemaInitTypes();
     xmlRelaxNGInitTypes();
@@ -1801,10 +1804,6 @@ saxParseTest(const char *filename, const char *result,
 	return(-1);
     }
 
-    /* for SAX we really want the callbacks though the context handlers */
-    xmlSetStructuredErrorFunc(NULL, NULL);
-    xmlSetGenericErrorFunc(NULL, testErrorHandler);
-
 #ifdef LIBXML_HTML_ENABLED
     if (options & XML_PARSE_HTML) {
         htmlParserCtxtPtr ctxt;
@@ -1881,10 +1880,6 @@ done:
         free(temp);
     }
 
-    /* switch back to structured error handling */
-    xmlSetGenericErrorFunc(NULL, NULL);
-    xmlSetStructuredErrorFunc(NULL, testStructuredErrorHandler);
-
     return(ret);
 }
 
@@ -1913,6 +1908,8 @@ oldParseTest(const char *filename, const char *result,
     char *temp;
     int res = 0;
 
+    xmlSetStructuredErrorFunc(NULL, testStructuredErrorHandler);
+
     nb_tests++;
     /*
      * base of the test, parse with the old API
@@ -1922,8 +1919,10 @@ oldParseTest(const char *filename, const char *result,
 #else
     doc = xmlReadFile(filename, NULL, 0);
 #endif
-    if (doc == NULL)
-        return(1);
+    if (doc == NULL) {
+        res = 1;
+        goto done;
+    }
     temp = resultFilename(filename, temp_directory, ".res");
     if (temp == NULL) {
         fprintf(stderr, "out of memory\n");
@@ -1943,8 +1942,10 @@ oldParseTest(const char *filename, const char *result,
 #else
     doc = xmlReadFile(temp, NULL, 0);
 #endif
-    if (doc == NULL)
-        return(1);
+    if (doc == NULL) {
+        res = 1;
+        goto done;
+    }
     xmlSaveFile(temp, doc);
     if (compareFiles(temp, result)) {
         res = 1;
@@ -1955,6 +1956,10 @@ oldParseTest(const char *filename, const char *result,
         unlink(temp);
         free(temp);
     }
+
+done:
+    xmlSetStructuredErrorFunc(NULL, NULL);
+
     return(res);
 }
 
@@ -2000,6 +2005,7 @@ pushParseTest(const char *filename, const char *result,
     else
 #endif
     ctxt = xmlCreatePushParserCtxt(NULL, NULL, base + cur, chunkSize, filename);
+    xmlCtxtSetErrorHandler(ctxt, testStructuredErrorHandler, NULL);
     xmlCtxtUseOptions(ctxt, options);
     cur += chunkSize;
     chunkSize = 1024;
@@ -2219,6 +2225,7 @@ pushBoundaryTest(const char *filename, const char *result,
     else
 #endif
     ctxt = xmlCreatePushParserCtxt(&bndSAX, NULL, base, 1, filename);
+    xmlCtxtSetErrorHandler(ctxt, testStructuredErrorHandler, NULL);
     xmlCtxtUseOptions(ctxt, options);
     cur = 1;
     consumed = 0;
@@ -2397,7 +2404,7 @@ memParseTest(const char *filename, const char *result,
 	return(-1);
     }
 
-    doc = xmlReadMemory(base, size, filename, NULL, 0);
+    doc = xmlReadMemory(base, size, filename, NULL, XML_PARSE_NOWARNING);
     unloadMem(base);
     if (doc == NULL) {
         return(1);
@@ -2439,7 +2446,7 @@ noentParseTest(const char *filename, const char *result,
     /*
      * base of the test, parse with the old API
      */
-    doc = xmlReadFile(filename, NULL, options);
+    doc = xmlReadFile(filename, NULL, options | XML_PARSE_NOWARNING);
     if (doc == NULL)
         return(1);
     temp = resultFilename(filename, temp_directory, ".res");
@@ -2456,7 +2463,7 @@ noentParseTest(const char *filename, const char *result,
     /*
      * Parse the saved result to make sure the round trip is okay
      */
-    doc = xmlReadFile(filename, NULL, options);
+    doc = xmlReadFile(filename, NULL, options | XML_PARSE_NOWARNING);
     if (doc == NULL)
         return(1);
     xmlSaveFile(temp, doc);
@@ -2485,6 +2492,7 @@ noentParseTest(const char *filename, const char *result,
 static int
 errParseTest(const char *filename, const char *result, const char *err,
              int options) {
+    xmlParserCtxtPtr ctxt;
     xmlDocPtr doc;
     const char *base = NULL;
     int size, res = 0;
@@ -2492,21 +2500,32 @@ errParseTest(const char *filename, const char *result, const char *err,
     nb_tests++;
 #ifdef LIBXML_HTML_ENABLED
     if (options & XML_PARSE_HTML) {
-        doc = htmlReadFile(filename, NULL, options);
-    } else
-#endif
-#ifdef LIBXML_XINCLUDE_ENABLED
-    if (options & XML_PARSE_XINCLUDE) {
-	doc = xmlReadFile(filename, NULL, options);
-	if (xmlXIncludeProcessFlags(doc, options) < 0) {
-            testErrorHandler(NULL, "%s : failed to parse\n", filename);
-	    xmlFreeDoc(doc);
-            doc = NULL;
-        }
+        ctxt = htmlNewParserCtxt();
+        xmlCtxtSetErrorHandler(ctxt, testStructuredErrorHandler, NULL);
+        doc = htmlCtxtReadFile(ctxt, filename, NULL, options);
+        htmlFreeParserCtxt(ctxt);
     } else
 #endif
     {
-	doc = xmlReadFile(filename, NULL, options);
+        ctxt = xmlNewParserCtxt();
+        xmlCtxtSetErrorHandler(ctxt, testStructuredErrorHandler, NULL);
+	doc = xmlCtxtReadFile(ctxt, filename, NULL, options);
+        xmlFreeParserCtxt(ctxt);
+#ifdef LIBXML_XINCLUDE_ENABLED
+        if (options & XML_PARSE_XINCLUDE) {
+            xmlXIncludeCtxtPtr xinc = NULL;
+
+            xinc = xmlXIncludeNewContext(doc);
+            xmlXIncludeSetErrorHandler(xinc, testStructuredErrorHandler, NULL);
+            xmlXIncludeSetFlags(xinc, options);
+            if (xmlXIncludeProcessNode(xinc, (xmlNodePtr) doc) < 0) {
+                testErrorHandler(NULL, "%s : failed to parse\n", filename);
+                xmlFreeDoc(doc);
+                doc = NULL;
+            }
+            xmlXIncludeFreeContext(xinc);
+        }
+#endif
     }
     if (result) {
 	if (doc == NULL) {
@@ -2559,6 +2578,7 @@ errParseTest(const char *filename, const char *result, const char *err,
 static int
 fdParseTest(const char *filename, const char *result, const char *err,
              int options) {
+    xmlParserCtxtPtr ctxt;
     xmlDocPtr doc;
     const char *base = NULL;
     int size, res = 0, fd;
@@ -2567,11 +2587,17 @@ fdParseTest(const char *filename, const char *result, const char *err,
     fd = open(filename, RD_FLAGS);
 #ifdef LIBXML_HTML_ENABLED
     if (options & XML_PARSE_HTML) {
-        doc = htmlReadFd(fd, filename, NULL, options);
+        ctxt = htmlNewParserCtxt();
+        xmlCtxtSetErrorHandler(ctxt, testStructuredErrorHandler, NULL);
+        doc = htmlCtxtReadFd(ctxt, fd, filename, NULL, options);
+        htmlFreeParserCtxt(ctxt);
     } else
 #endif
     {
-	doc = xmlReadFd(fd, filename, NULL, options);
+        ctxt = xmlNewParserCtxt();
+        xmlCtxtSetErrorHandler(ctxt, testStructuredErrorHandler, NULL);
+	doc = xmlCtxtReadFd(ctxt, fd, filename, NULL, options);
+        xmlFreeParserCtxt(ctxt);
     }
     close(fd);
     if (result) {
@@ -2743,6 +2769,8 @@ streamParseTest(const char *filename, const char *result, const char *err,
     int ret;
 
     reader = xmlReaderForFile(filename, NULL, options);
+    xmlTextReaderSetStructuredErrorHandler(reader, testStructuredErrorHandler,
+                                           NULL);
     ret = streamProcessTest(filename, result, err, reader, NULL, options);
     xmlFreeTextReader(reader);
     return(ret);
@@ -2765,7 +2793,7 @@ walkerParseTest(const char *filename, const char *result, const char *err,
     xmlTextReaderPtr reader;
     int ret;
 
-    doc = xmlReadFile(filename, NULL, options);
+    doc = xmlReadFile(filename, NULL, options | XML_PARSE_NOWARNING);
     if (doc == NULL) {
         fprintf(stderr, "Failed to parse %s\n", filename);
 	return(-1);
@@ -2803,6 +2831,8 @@ streamMemParseTest(const char *filename, const char *result, const char *err,
 	return(-1);
     }
     reader = xmlReaderForMemory(base, size, filename, NULL, options);
+    xmlTextReaderSetStructuredErrorHandler(reader, testStructuredErrorHandler,
+                                           NULL);
     ret = streamProcessTest(filename, result, err, reader, NULL, options);
     free((char *)base);
     xmlFreeTextReader(reader);
@@ -2822,26 +2852,20 @@ static FILE *xpathOutput;
 static xmlDocPtr xpathDocument;
 
 static void
-ignoreGenericError(void *ctx ATTRIBUTE_UNUSED,
-        const char *msg ATTRIBUTE_UNUSED, ...) {
-}
-
-static void
 testXPath(const char *str, int xptr, int expr) {
     xmlXPathObjectPtr res;
     xmlXPathContextPtr ctxt;
-
-    /* Don't print generic errors to stderr. */
-    xmlSetGenericErrorFunc(NULL, ignoreGenericError);
 
     nb_tests++;
 #if defined(LIBXML_XPTR_ENABLED)
     if (xptr) {
 	ctxt = xmlXPtrNewContext(xpathDocument, NULL, NULL);
+        xmlXPathSetErrorHandler(ctxt, testStructuredErrorHandler, NULL);
 	res = xmlXPtrEval(BAD_CAST str, ctxt);
     } else {
 #endif
 	ctxt = xmlXPathNewContext(xpathDocument);
+        xmlXPathSetErrorHandler(ctxt, testStructuredErrorHandler, NULL);
 	ctxt->node = xmlDocGetRootElement(xpathDocument);
 	if (expr)
 	    res = xmlXPathEvalExpression(BAD_CAST str, ctxt);
@@ -2862,9 +2886,6 @@ testXPath(const char *str, int xptr, int expr) {
     xmlXPathDebugDumpObject(xpathOutput, res, 0);
     xmlXPathFreeObject(res);
     xmlXPathFreeContext(ctxt);
-
-    /* Reset generic error handler. */
-    xmlSetGenericErrorFunc(NULL, NULL);
 }
 
 /**
@@ -2899,7 +2920,7 @@ xpathCommonTest(const char *filename, const char *result,
 
     input = fopen(filename, "rb");
     if (input == NULL) {
-        xmlGenericError(xmlGenericErrorContext,
+        fprintf(stderr,
 		"Cannot open %s for reading\n", filename);
         free(temp);
 	return(-1);
@@ -3074,13 +3095,16 @@ xmlidDocTest(const char *filename,
              const char *result,
              const char *err,
              int options) {
-
+    xmlParserCtxtPtr ctxt;
     int res = 0;
     int ret = 0;
     char *temp;
 
-    xpathDocument = xmlReadFile(filename, NULL,
-                                options | XML_PARSE_DTDATTR | XML_PARSE_NOENT);
+    ctxt = xmlNewParserCtxt();
+    xmlCtxtSetErrorHandler(ctxt, testStructuredErrorHandler, NULL);
+    xpathDocument = xmlCtxtReadFile(ctxt, filename, NULL,
+            options | XML_PARSE_DTDATTR | XML_PARSE_NOENT);
+    xmlFreeParserCtxt(ctxt);
     if (xpathDocument == NULL) {
         fprintf(stderr, "Failed to load %s\n", filename);
 	return(-1);
@@ -3500,7 +3524,8 @@ schemasOneTest(const char *sch,
         testErrors[parseErrorsSize] = 0;
 
         ctxt = xmlSchemaNewValidCtxt(schemas);
-        xmlSchemaSetValidErrors(ctxt, testErrorHandler, testErrorHandler, ctxt);
+        xmlSchemaSetValidStructuredErrors(ctxt, testStructuredErrorHandler,
+                                          NULL);
 
         schemasOutput = fopen(temp, "wb");
         if (schemasOutput == NULL) {
@@ -3583,7 +3608,7 @@ schemasTest(const char *filename,
 
     /* first compile the schemas if possible */
     ctxt = xmlSchemaNewParserCtxt(filename);
-    xmlSchemaSetParserErrors(ctxt, testErrorHandler, testErrorHandler, ctxt);
+    xmlSchemaSetParserStructuredErrors(ctxt, testStructuredErrorHandler, NULL);
     schemas = xmlSchemaParse(ctxt);
     xmlSchemaFreeParserCtxt(ctxt);
     parseErrorsSize = testErrorsSize;
@@ -3688,7 +3713,7 @@ rngOneTest(const char *sch,
     }
 
     ctxt = xmlRelaxNGNewValidCtxt(schemas);
-    xmlRelaxNGSetValidErrors(ctxt, testErrorHandler, testErrorHandler, ctxt);
+    xmlRelaxNGSetValidStructuredErrors(ctxt, testStructuredErrorHandler, NULL);
     ret = xmlRelaxNGValidateDoc(ctxt, doc);
     if (ret == 0) {
 	testErrorHandler(NULL, "%s validates\n", filename);
@@ -3747,7 +3772,8 @@ rngTest(const char *filename,
 
     /* first compile the schemas if possible */
     ctxt = xmlRelaxNGNewParserCtxt(filename);
-    xmlRelaxNGSetParserErrors(ctxt, testErrorHandler, testErrorHandler, ctxt);
+    xmlRelaxNGSetParserStructuredErrors(ctxt, testStructuredErrorHandler,
+                                        NULL);
     schemas = xmlRelaxNGParse(ctxt);
     xmlRelaxNGFreeParserCtxt(ctxt);
     if (schemas == NULL)
@@ -3887,6 +3913,8 @@ rngStreamTest(const char *filename,
 	    continue;
 	}
 	reader = xmlReaderForFile(instance, NULL, options);
+        xmlTextReaderSetStructuredErrorHandler(reader,
+                testStructuredErrorHandler, NULL);
 	if (reader == NULL) {
 	    fprintf(stderr, "Failed to build reader for %s\n", instance);
 	}
@@ -4286,7 +4314,8 @@ c14nRunTest(const char* xml_filename, int with_comments, int mode,
      * build an XML tree from a the file; we need to add default
      * attributes and resolve all character and entities references
      */
-    doc = xmlReadFile(xml_filename, NULL, XML_PARSE_DTDATTR | XML_PARSE_NOENT);
+    doc = xmlReadFile(xml_filename, NULL,
+            XML_PARSE_DTDATTR | XML_PARSE_NOENT | XML_PARSE_NOWARNING);
     if (doc == NULL) {
 	fprintf(stderr, "Error: unable to parse file \"%s\"\n", xml_filename);
 	return(-1);
@@ -4650,13 +4679,16 @@ regexpTest(const char *filename, const char *result, const char *err,
     char expression[5000];
     int len, ret, res = 0;
 
+    xmlSetStructuredErrorFunc(NULL, testStructuredErrorHandler);
+
     nb_tests++;
 
     input = fopen(filename, "rb");
     if (input == NULL) {
-        xmlGenericError(xmlGenericErrorContext,
+        fprintf(stderr,
 		"Cannot open %s for reading\n", filename);
-	return(-1);
+	ret = -1;
+        goto done;
     }
     temp = resultFilename(filename, "", ".res");
     if (temp == NULL) {
@@ -4667,7 +4699,8 @@ regexpTest(const char *filename, const char *result, const char *err,
     if (output == NULL) {
 	fprintf(stderr, "failed to open output file %s\n", temp);
         free(temp);
-	return(-1);
+	ret = -1;
+        goto done;
     }
     while (fgets(expression, 4500, input) != NULL) {
 	len = strlen(expression);
@@ -4725,6 +4758,9 @@ regexpTest(const char *filename, const char *result, const char *err,
         res = 1;
     }
 
+done:
+    xmlSetStructuredErrorFunc(NULL, NULL);
+
     return(res);
 }
 
@@ -4772,7 +4808,7 @@ automataTest(const char *filename, const char *result,
 
     input = fopen(filename, "rb");
     if (input == NULL) {
-        xmlGenericError(xmlGenericErrorContext,
+        fprintf(stderr,
 		"Cannot open %s for reading\n", filename);
 	return(-1);
     }
@@ -4790,14 +4826,14 @@ automataTest(const char *filename, const char *result,
 
     am = xmlNewAutomata();
     if (am == NULL) {
-        xmlGenericError(xmlGenericErrorContext,
+        fprintf(stderr,
 		"Cannot create automata\n");
 	fclose(input);
 	return(-1);
     }
     states[0] = xmlAutomataGetInitState(am);
     if (states[0] == NULL) {
-        xmlGenericError(xmlGenericErrorContext,
+        fprintf(stderr,
 		"Cannot get start state\n");
 	xmlFreeAutomata(am);
 	fclose(input);
@@ -4821,7 +4857,7 @@ automataTest(const char *filename, const char *result,
 
 		from = scanNumber(&ptr);
 		if (*ptr != ' ') {
-		    xmlGenericError(xmlGenericErrorContext,
+		    fprintf(stderr,
 			    "Bad line %s\n", expr);
 		    break;
 		}
@@ -4830,7 +4866,7 @@ automataTest(const char *filename, const char *result,
 		ptr++;
 		to = scanNumber(&ptr);
 		if (*ptr != ' ') {
-		    xmlGenericError(xmlGenericErrorContext,
+		    fprintf(stderr,
 			    "Bad line %s\n", expr);
 		    break;
 		}
@@ -4845,7 +4881,7 @@ automataTest(const char *filename, const char *result,
 
 		from = scanNumber(&ptr);
 		if (*ptr != ' ') {
-		    xmlGenericError(xmlGenericErrorContext,
+		    fprintf(stderr,
 			    "Bad line %s\n", expr);
 		    break;
 		}
@@ -4862,7 +4898,7 @@ automataTest(const char *filename, const char *result,
 
 		state = scanNumber(&ptr);
 		if (states[state] == NULL) {
-		    xmlGenericError(xmlGenericErrorContext,
+		    fprintf(stderr,
 			    "Bad state %d : %s\n", state, expr);
 		    break;
 		}
@@ -4874,7 +4910,7 @@ automataTest(const char *filename, const char *result,
 
 		from = scanNumber(&ptr);
 		if (*ptr != ' ') {
-		    xmlGenericError(xmlGenericErrorContext,
+		    fprintf(stderr,
 			    "Bad line %s\n", expr);
 		    break;
 		}
@@ -4883,7 +4919,7 @@ automataTest(const char *filename, const char *result,
 		ptr++;
 		to = scanNumber(&ptr);
 		if (*ptr != ' ') {
-		    xmlGenericError(xmlGenericErrorContext,
+		    fprintf(stderr,
 			    "Bad line %s\n", expr);
 		    break;
 		}
@@ -4892,14 +4928,14 @@ automataTest(const char *filename, const char *result,
 		ptr++;
 		min = scanNumber(&ptr);
 		if (*ptr != ' ') {
-		    xmlGenericError(xmlGenericErrorContext,
+		    fprintf(stderr,
 			    "Bad line %s\n", expr);
 		    break;
 		}
 		ptr++;
 		max = scanNumber(&ptr);
 		if (*ptr != ' ') {
-		    xmlGenericError(xmlGenericErrorContext,
+		    fprintf(stderr,
 			    "Bad line %s\n", expr);
 		    break;
 		}
@@ -4912,7 +4948,7 @@ automataTest(const char *filename, const char *result,
 		xmlFreeAutomata(am);
 		am = NULL;
 		if (regexp == NULL) {
-		    xmlGenericError(xmlGenericErrorContext,
+		    fprintf(stderr,
 			    "Failed to compile the automata");
 		    break;
 		}
@@ -4940,7 +4976,7 @@ automataTest(const char *filename, const char *result,
 		    exec = xmlRegNewExecCtxt(regexp, NULL, NULL);
 		ret = xmlRegExecPushString(exec, BAD_CAST expr, NULL);
 	    } else {
-		xmlGenericError(xmlGenericErrorContext,
+		fprintf(stderr,
 			"Unexpected line %s\n", expr);
 	    }
 	}

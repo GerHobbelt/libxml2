@@ -268,6 +268,11 @@ xmlSchematronPErr(xmlSchematronParserCtxtPtr ctxt, xmlNodePtr node, int error,
         schannel = ctxt->serror;
     }
 
+    if ((channel == NULL) && (schannel == NULL)) {
+        channel = xmlGenericError;
+        data = xmlGenericErrorContext;
+    }
+
     res = __xmlRaiseError(schannel, channel, data, ctxt, node,
                           XML_FROM_SCHEMASP, error, XML_ERR_ERROR, NULL, 0,
                           (const char *) str1, (const char *) str2, NULL, 0, 0,
@@ -318,6 +323,11 @@ xmlSchematronVErr(xmlSchematronValidCtxtPtr ctxt, int error,
         channel = ctxt->error;
         data = ctxt->userData;
         schannel = ctxt->serror;
+    }
+
+    if ((channel == NULL) && (schannel == NULL)) {
+        channel = xmlGenericError;
+        data = xmlGenericErrorContext;
     }
 
     res = __xmlRaiseError(schannel, channel, data, ctxt, NULL,
@@ -1634,6 +1644,11 @@ xmlSchematronReportSuccess(xmlSchematronValidCtxtPtr ctxt,
         schannel = ctxt->serror;
         channel = ctxt->error;
         data = ctxt->userData;
+
+        if ((channel == NULL) && (schannel == NULL)) {
+            channel = xmlGenericError;
+            data = xmlGenericErrorContext;
+        }
 
         res = __xmlRaiseError(schannel, channel, data, NULL, cur,
                               XML_FROM_SCHEMATRONV,

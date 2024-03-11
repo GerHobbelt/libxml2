@@ -139,9 +139,9 @@ int have_ipv6(void) {
  * Handle an out of memory condition
  */
 static void
-xmlFTPErrMemory(const char *extra)
+xmlFTPErrMemory(const char *extra ATTRIBUTE_UNUSED)
 {
-    __xmlSimpleError(XML_FROM_FTP, XML_ERR_NO_MEMORY, NULL, NULL, extra);
+    xmlRaiseMemoryError(NULL, NULL, NULL, XML_FROM_FTP, NULL);
 }
 
 /**
@@ -1926,7 +1926,7 @@ static
 void ftpList(void *userData, const char *filename, const char* attrib,
 	     const char *owner, const char *group, unsigned long size, int links,
 	     int year, const char *month, int day, int hour, int minute) {
-    xmlGenericError(xmlGenericErrorContext,
+    fprintf(stderr,
 	    "%s %s %s %ld %s\n", attrib, owner, group, size, filename);
 }
 static
@@ -1953,7 +1953,7 @@ int main(int argc, const char** argv) {
     if (argc > 1) {
 	ctxt = xmlNanoFTPNewCtxt(argv[1]);
 	if (xmlNanoFTPConnect(ctxt) < 0) {
-	    xmlGenericError(xmlGenericErrorContext,
+	    fprintf(stderr,
 		    "Couldn't connect to %s\n", argv[1]);
 	    exit(1);
 	}
@@ -1962,7 +1962,7 @@ int main(int argc, const char** argv) {
     } else
 	ctxt = xmlNanoFTPConnectTo("localhost", 0);
     if (ctxt == NULL) {
-        xmlGenericError(xmlGenericErrorContext,
+        fprintf(stderr,
 		"Couldn't connect to localhost\n");
         exit(1);
     }
@@ -1970,7 +1970,7 @@ int main(int argc, const char** argv) {
     output = fopen("/tmp/tstdata", "w");
     if (output != NULL) {
 		if (xmlNanoFTPGet(ctxt, ftpData, (void *) output, tstfile) < 0)
-			xmlGenericError(xmlGenericErrorContext,
+	        fprintf(stderr,
 				"Failed to get file\n");
     }
     xmlNanoFTPClose(ctxt);
@@ -1989,7 +1989,7 @@ int main(int argc, const char** argv) {
 #endif
 
 int main(int argc, const char** argv) {
-    xmlGenericError(xmlGenericErrorContext,
+    fprintf(stderr,
 	    "%s : FTP support not compiled in\n", argv[0]);
     return(0);
 }

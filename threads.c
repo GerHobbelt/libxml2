@@ -501,9 +501,8 @@ xmlGlobalInitMutexLock(void) {
     if (global_init_lock == NULL) {
         cs = malloc(sizeof(CRITICAL_SECTION));
         if (cs == NULL) {
-            xmlGenericError(xmlGenericErrorContext,
-                            "xmlGlobalInitMutexLock: out of memory\n");
-            return;
+            fprintf(stderr, "libxml2: xmlInitParser: out of memory\n");
+            abort();
         }
         InitializeCriticalSection(cs);
 
