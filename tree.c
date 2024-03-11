@@ -1369,7 +1369,6 @@ xmlStringLenGetNodeList(const xmlDoc *doc, const xmlChar *value, int len) {
                                     goto out;
                                 }
                             }
-                            ent->owner = 1;
                             ent->flags |= XML_ENT_PARSED;
 			    temp = ent->children;
 			    while (temp) {
@@ -1591,7 +1590,6 @@ xmlStringGetNodeList(const xmlDoc *doc, const xmlChar *value) {
                                     goto out;
                                 }
                             }
-			    ent->owner = 1;
                             ent->flags |= XML_ENT_PARSED;
 			    temp = ent->children;
 			    while (temp) {

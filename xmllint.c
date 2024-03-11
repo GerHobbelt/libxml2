@@ -1844,7 +1844,6 @@ static void streamFile(const char *filename) {
     int fd = -1;
     struct stat info;
     const char *base = NULL;
-    xmlParserInputBufferPtr input = NULL;
 
     if (memory) {
 	if (stat(filename, &info) < 0)
@@ -1996,7 +1995,6 @@ static void streamFile(const char *filename) {
 #endif
 #ifdef HAVE_MMAP
     if (memory) {
-        xmlFreeParserInputBuffer(input);
 	munmap((char *) base, info.st_size);
 	close(fd);
     }
