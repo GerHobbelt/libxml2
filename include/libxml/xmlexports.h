@@ -123,12 +123,21 @@
 #else
   #define XML_DECLARE_GLOBAL(name, type, attrs) \
     attrs XMLPUBVAR type name;
+  #define XML_GLOBAL_MACRO(name) (name)
+#endif
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 /*
  * Originally declared in xmlversion.h which is generated
  */
-XMLPUBFUN void xmlCheckVersion(int version);
+XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* __XML_EXPORTS_H__ */
 
