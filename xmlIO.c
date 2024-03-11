@@ -1235,16 +1235,16 @@ xmlInputDefaultOpen(xmlParserInputBufferPtr buf, const char *filename) {
         if (ret != XML_ERR_OK)
             return(ret);
 
-        gzStream = gzdopen(fd, "rb");
+        gzStream = zng_gzdopen(fd, "rb");
 
         if (gzStream == NULL) {
             close(fd);
         } else {
             char buff4[4];
 
-            if ((gzread(gzStream, buff4, 4) > 0) &&
-                (gzdirect(gzStream) == 0)) {
-                gzrewind(gzStream);
+            if ((zng_gzread(gzStream, buff4, 4) > 0) &&
+                (zng_gzdirect(gzStream) == 0)) {
+                zng_gzrewind(gzStream);
 
                 buf->context = gzStream;
                 buf->readcallback = xmlGzfileRead;
@@ -1305,7 +1305,7 @@ xmlOutputDefaultOpen(xmlOutputBufferPtr buf, const char *filename,
         char mode[15];
 
         snprintf(mode, sizeof(mode), "wb%d", compression);
-        gzStream = gzdopen(fd, mode);
+        gzStream = zng_gzdopen(fd, mode);
 
         if (gzStream == NULL) {
             close(fd);
