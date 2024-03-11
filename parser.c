@@ -207,15 +207,10 @@ static xmlEntityPtr xmlParseStringPEReference(xmlParserCtxtPtr ctxt,
 static int
 xmlCtxtUseOptionsInternal(xmlParserCtxtPtr ctxt, int options,
                           const char *encoding);
-#ifdef LIBXML_LEGACY_ENABLED
-static void
-xmlAddEntityReference(xmlEntityPtr ent, xmlNodePtr firstNode,
-                      xmlNodePtr lastNode);
-#endif /* LIBXML_LEGACY_ENABLED */
 
 static xmlParserErrors
-xmlCtxtParseInternalEntity(xmlParserCtxtPtr oldctxt, const xmlChar *string,
-                           xmlNodePtr *lst);
+xmlCtxtParseEntity(xmlParserCtxtPtr oldctxt, xmlEntityPtr ent,
+                   xmlNodePtr *lst);
 
 static int
 xmlLoadEntityContent(xmlParserCtxtPtr ctxt, xmlEntityPtr entity);
@@ -2337,9 +2332,9 @@ xmlPushInput(xmlParserCtxtPtr ctxt, xmlParserInputPtr input) {
 
     if (((ctxt->inputNr > 40) && ((ctxt->options & XML_PARSE_HUGE) == 0)) ||
         (ctxt->inputNr > 100)) {
-        xmlFatalErr(ctxt, XML_ERR_ENTITY_LOOP, NULL);
-        while (ctxt->inputNr > 1)
-            xmlFreeInputStream(inputPop(ctxt));
+        xmlFatalErrMsg(ctxt, XML_ERR_ENTITY_LOOP,
+                       "Maximum entity nesting depth exceeded");
+        xmlHaltParser(ctxt);
 	return(-1);
     }
     ret = inputPush(ctxt, input);
@@ -6990,7 +6985,6 @@ void
 xmlParseReference(xmlParserCtxtPtr ctxt) {
     xmlEntityPtr ent;
     xmlChar *val;
-    int was_checked;
     xmlNodePtr list = NULL;
     xmlParserErrors ret = XML_ERR_OK;
 
@@ -7027,7 +7021,6 @@ xmlParseReference(xmlParserCtxtPtr ctxt) {
     if (ent == NULL) return;
     if (!ctxt->wellFormed)
 	return;
-    was_checked = ent->flags & XML_ENT_PARSED;
 
     /* special case of predefined entities */
     if ((ent->name == NULL) ||
@@ -7086,181 +7079,92 @@ xmlParseReference(xmlParserCtxtPtr ctxt) {
      * expansion like we already do with custom SAX callbacks.
      * External entity content should be cached in this case.
      */
-    if (((ent->flags & XML_ENT_PARSED) == 0) &&
-        ((ent->etype != XML_EXTERNAL_GENERAL_PARSED_ENTITY) ||
-         (ctxt->options & (XML_PARSE_NOENT | XML_PARSE_DTDVALID)))) {
-	unsigned long oldsizeentcopy = ctxt->sizeentcopy;
+    if ((ent->etype == XML_INTERNAL_GENERAL_ENTITY) ||
+        (ctxt->replaceEntities) ||
+        (ctxt->validate)) {
+        if ((ent->flags & XML_ENT_PARSED) == 0) {
+            ret = xmlCtxtParseEntity(ctxt, ent, &list);
 
-        /* Avoid overflow as much as possible */
-        ctxt->sizeentcopy = 0;
-
-        if (ent->flags & XML_ENT_EXPANDING) {
-            xmlFatalErr(ctxt, XML_ERR_ENTITY_LOOP, NULL);
-            xmlHaltParser(ctxt);
-            return;
-        }
-
-        ent->flags |= XML_ENT_EXPANDING;
-
-	/*
-	 * Check that this entity is well formed
-	 * 4.3.2: An internal general parsed entity is well-formed
-	 * if its replacement text matches the production labeled
-	 * content.
-	 */
-	if (ent->etype == XML_INTERNAL_GENERAL_ENTITY) {
-	    ret = xmlCtxtParseInternalEntity(ctxt, ent->content, &list);
-
-	} else if (ent->etype == XML_EXTERNAL_GENERAL_PARSED_ENTITY) {
-	    ret = xmlParseCtxtExternalEntity(ctxt, ent->URI, ent->ExternalID,
-                                             &list);
-	} else {
-	    ret = XML_ERR_ENTITY_PE_INTERNAL;
-	    xmlErrMsgStr(ctxt, XML_ERR_INTERNAL_ERROR,
-			 "invalid entity type found\n", NULL);
-	}
-
-        ent->flags &= ~XML_ENT_EXPANDING;
-        ent->flags |= XML_ENT_PARSED | XML_ENT_CHECKED;
-        ent->expandedSize = ctxt->sizeentcopy;
-	if (ret == XML_ERR_ENTITY_LOOP) {
-            xmlHaltParser(ctxt);
-	    xmlFreeNodeList(list);
-	    return;
-	}
-	if (xmlParserEntityCheck(ctxt, oldsizeentcopy)) {
-	    xmlFreeNodeList(list);
-	    return;
-	}
-
-	if ((ret == XML_ERR_OK) && (list != NULL)) {
-            ent->children = list;
-            /*
-             * Prune it directly in the generated document
-             * except for single text nodes.
-             */
-            if ((ctxt->replaceEntities == 0) ||
-                (ctxt->parseMode == XML_PARSE_READER) ||
-                ((list->type == XML_TEXT_NODE) &&
-                 (list->next == NULL))) {
-                ent->owner = 1;
-                while (list != NULL) {
-                    list->parent = (xmlNodePtr) ent;
-                    if (list->doc != ent->doc)
-                        xmlSetTreeDoc(list, ent->doc);
-                    if (list->next == NULL)
-                        ent->last = list;
-                    list = list->next;
+            if ((ret == XML_ERR_OK) && (list != NULL)) {
+                ent->children = list;
+                /*
+                 * Prune it directly in the generated document
+                 * except for single text nodes.
+                 */
+                if ((ctxt->replaceEntities == 0) ||
+                    (ctxt->parseMode == XML_PARSE_READER) ||
+                    ((list->type == XML_TEXT_NODE) &&
+                     (list->next == NULL))) {
+                    ent->owner = 1;
+                    while (list != NULL) {
+                        list->parent = (xmlNodePtr) ent;
+                        if (list->doc != ent->doc)
+                            xmlSetTreeDoc(list, ent->doc);
+                        if (list->next == NULL)
+                            ent->last = list;
+                        list = list->next;
+                    }
+                    list = NULL;
+                } else {
+                    ent->owner = 0;
+                    while (list != NULL) {
+                        list->parent = (xmlNodePtr) ctxt->node;
+                        list->doc = ctxt->myDoc;
+                        if (list->next == NULL)
+                            ent->last = list;
+                        list = list->next;
+                    }
+                    list = ent->children;
                 }
-                list = NULL;
             } else {
-                ent->owner = 0;
-                while (list != NULL) {
-                    list->parent = (xmlNodePtr) ctxt->node;
-                    list->doc = ctxt->myDoc;
-                    if (list->next == NULL)
-                        ent->last = list;
-                    list = list->next;
+                if ((ret != XML_ERR_OK) &&
+                    (ret != XML_WAR_UNDECLARED_ENTITY)) {
+                    xmlFatalErrMsgStr(ctxt, XML_ERR_UNDECLARED_ENTITY,
+                             "Entity '%s' failed to parse\n", ent->name);
+                    if (ent->content != NULL)
+                        ent->content[0] = 0;
                 }
-                list = ent->children;
-#ifdef LIBXML_LEGACY_ENABLED
-                if (ent->etype == XML_EXTERNAL_GENERAL_PARSED_ENTITY)
-                    xmlAddEntityReference(ent, list, NULL);
-#endif /* LIBXML_LEGACY_ENABLED */
+                if (list != NULL) {
+                    xmlFreeNodeList(list);
+                    list = NULL;
+                }
             }
-	} else {
-            if ((ret != XML_ERR_OK) &&
-		(ret != XML_WAR_UNDECLARED_ENTITY)) {
-                xmlFatalErrMsgStr(ctxt, XML_ERR_UNDECLARED_ENTITY,
-                         "Entity '%s' failed to parse\n", ent->name);
-                if (ent->content != NULL)
-                    ent->content[0] = 0;
-            }
-            if (list != NULL) {
-                xmlFreeNodeList(list);
-                list = NULL;
-            }
-	}
-
-        /* Prevent entity from being parsed and expanded twice (Bug 760367). */
-        was_checked = 0;
-    }
-
-    /*
-     * Now that the entity content has been gathered
-     * provide it to the application, this can take different forms based
-     * on the parsing modes.
-     */
-    if (ent->children == NULL) {
-	/*
-	 * Probably running in SAX mode and the callbacks don't
-	 * build the entity content. So unless we already went
-	 * though parsing for first checking go though the entity
-	 * content to generate callbacks associated to the entity
-	 */
-	if (was_checked != 0) {
-	    unsigned long oldsizeentcopy = ctxt->sizeentcopy;
-
-            ctxt->sizeentcopy = 0;
-
-	    if (ent->etype == XML_INTERNAL_GENERAL_ENTITY) {
-		ret = xmlCtxtParseInternalEntity(ctxt, ent->content, NULL);
-	    } else if (ent->etype ==
-		       XML_EXTERNAL_GENERAL_PARSED_ENTITY) {
-	        unsigned long oldsizeentities = ctxt->sizeentities;
-
-                ctxt->sizeentcopy = 0;
-                ret = xmlParseCtxtExternalEntity(ctxt, ent->URI,
-                                                 ent->ExternalID, &list);
-
-                /* Undo the change to sizeentities */
-                ctxt->sizeentities = oldsizeentities;
-	    } else {
-		ret = XML_ERR_ENTITY_PE_INTERNAL;
-		xmlErrMsgStr(ctxt, XML_ERR_INTERNAL_ERROR,
-			     "invalid entity type found\n", NULL);
-	    }
-	    if (ret == XML_ERR_ENTITY_LOOP) {
-		xmlFatalErr(ctxt, XML_ERR_ENTITY_LOOP, NULL);
-		return;
-	    }
-
-            if (xmlParserEntityCheck(ctxt, oldsizeentcopy))
+        } else if (ent->children != NULL) {
+            /*
+             * We also check for amplification if entities aren't substituted.
+             * They might be expanded later.
+             */
+            if (xmlParserEntityCheck(ctxt, ent->expandedSize))
                 return;
-	}
-	if ((ctxt->sax != NULL) && (ctxt->sax->reference != NULL) &&
-	    (ctxt->replaceEntities == 0) && (!ctxt->disableSAX)) {
-	    /*
-	     * Entity reference callback comes second, it's somewhat
-	     * superfluous but a compatibility to historical behaviour
-	     */
-	    ctxt->sax->reference(ctxt->userData, ent->name);
-	}
-	return;
+        } else {
+            /*
+             * Probably running in SAX mode and the callbacks don't
+             * build the entity content. So unless we already went
+             * though parsing for first checking go though the entity
+             * content to generate callbacks associated to the entity
+             *
+             * This will also be triggered in normal tree builder mode
+             * if an entity happens to be empty, causing unnecessary
+             * reloads. It's hard to come up with a reliable check in
+             * which mode we're running.
+             */
+            xmlCtxtParseEntity(ctxt, ent, &list);
+        }
     }
 
-    /*
-     * We also check for amplification if entities aren't substituted.
-     * They might be expanded later.
-     */
-    if ((was_checked != 0) &&
-        (xmlParserEntityCheck(ctxt, ent->expandedSize)))
-        return;
-
-    /*
-     * If we didn't get any children for the entity being built
-     */
-    if ((ctxt->sax != NULL) && (ctxt->sax->reference != NULL) &&
-	(ctxt->replaceEntities == 0) && (!ctxt->disableSAX)) {
+    if (ctxt->replaceEntities == 0) {
 	/*
 	 * Create a node.
 	 */
-	ctxt->sax->reference(ctxt->userData, ent->name);
-	return;
-    }
-
-    if (ctxt->replaceEntities)  {
-	/*
+        if ((ctxt->sax != NULL) && (ctxt->sax->reference != NULL) &&
+	    (!ctxt->disableSAX))
+	    ctxt->sax->reference(ctxt->userData, ent->name);
+    } else if ((ent->children != NULL) && (ctxt->node != NULL)) {
+        /*
+         * Seems we are generating the DOM content, do
+         * a simple tree copy for all references except the first
+         * In the first occurrence list contains the replacement.
+	 *
 	 * There is a problem on the handling of _private for entities
 	 * (bug 155816): Should we copy the content of the field from
 	 * the entity (possibly overwriting some value set by the user
@@ -7273,125 +7177,110 @@ xmlParseReference(xmlParserCtxtPtr ctxt) {
 	 * hack - maybe we should have further tests to determine
 	 * what to do.
 	 */
-	if (ctxt->node != NULL) {
-	    /*
-	     * Seems we are generating the DOM content, do
-	     * a simple tree copy for all references except the first
-	     * In the first occurrence list contains the replacement.
-	     */
-	    if (((list == NULL) && (ent->owner == 0)) ||
-		(ctxt->parseMode == XML_PARSE_READER)) {
-		xmlNodePtr nw = NULL, cur, firstChild = NULL;
+        if (((list == NULL) && (ent->owner == 0)) ||
+            (ctxt->parseMode == XML_PARSE_READER)) {
+            xmlNodePtr nw = NULL, cur, firstChild = NULL;
 
-		/*
-		 * when operating on a reader, the entities definitions
-		 * are always owning the entities subtree.
-		if (ctxt->parseMode == XML_PARSE_READER)
-		    ent->owner = 1;
-		 */
+            /*
+             * when operating on a reader, the entities definitions
+             * are always owning the entities subtree.
+            if (ctxt->parseMode == XML_PARSE_READER)
+                ent->owner = 1;
+             */
 
-		cur = ent->children;
-		while (cur != NULL) {
-		    nw = xmlDocCopyNode(cur, ctxt->myDoc, 1);
-		    if (nw == NULL) {
+            cur = ent->children;
+            while (cur != NULL) {
+                nw = xmlDocCopyNode(cur, ctxt->myDoc, 1);
+                if (nw == NULL) {
+                    xmlErrMemory(ctxt);
+                } else {
+                    if (nw->_private == NULL)
+                        nw->_private = cur->_private;
+                    if (firstChild == NULL){
+                        firstChild = nw;
+                    }
+                    nw = xmlAddChild(ctxt->node, nw);
+                    if (nw == NULL)
                         xmlErrMemory(ctxt);
-                    } else {
-			if (nw->_private == NULL)
-			    nw->_private = cur->_private;
-			if (firstChild == NULL){
-			    firstChild = nw;
-			}
-			nw = xmlAddChild(ctxt->node, nw);
-                        if (nw == NULL)
-                            xmlErrMemory(ctxt);
-		    }
-		    if (cur == ent->last) {
-			/*
-			 * needed to detect some strange empty
-			 * node cases in the reader tests
-			 */
-			if ((ctxt->parseMode == XML_PARSE_READER) &&
-			    (nw != NULL) &&
-			    (nw->type == XML_ELEMENT_NODE) &&
-			    (nw->children == NULL))
-			    nw->extra = 1;
+                }
+                if (cur == ent->last) {
+                    /*
+                     * needed to detect some strange empty
+                     * node cases in the reader tests
+                     */
+                    if ((ctxt->parseMode == XML_PARSE_READER) &&
+                        (nw != NULL) &&
+                        (nw->type == XML_ELEMENT_NODE) &&
+                        (nw->children == NULL))
+                        nw->extra = 1;
 
-			break;
-		    }
-		    cur = cur->next;
-		}
-#ifdef LIBXML_LEGACY_ENABLED
-		if (ent->etype == XML_EXTERNAL_GENERAL_PARSED_ENTITY)
-		  xmlAddEntityReference(ent, firstChild, nw);
-#endif /* LIBXML_LEGACY_ENABLED */
-	    } else if ((list == NULL) || (ctxt->inputNr > 0)) {
-		xmlNodePtr nw = NULL, cur, next, last,
-			   firstChild = NULL;
+                    break;
+                }
+                cur = cur->next;
+            }
+	} else if ((list == NULL) || (ctxt->inputNr > 0)) {
+            xmlNodePtr nw = NULL, cur, next, last,
+                       firstChild = NULL;
 
-		/*
-		 * Copy the entity child list and make it the new
-		 * entity child list. The goal is to make sure any
-		 * ID or REF referenced will be the one from the
-		 * document content and not the entity copy.
-		 */
-		cur = ent->children;
-		ent->children = NULL;
-		last = ent->last;
-		ent->last = NULL;
-		while (cur != NULL) {
-		    next = cur->next;
-		    cur->next = NULL;
-		    cur->parent = NULL;
-		    nw = xmlDocCopyNode(cur, ctxt->myDoc, 1);
-		    if (nw == NULL) {
+            /*
+             * Copy the entity child list and make it the new
+             * entity child list. The goal is to make sure any
+             * ID or REF referenced will be the one from the
+             * document content and not the entity copy.
+             */
+            cur = ent->children;
+            ent->children = NULL;
+            last = ent->last;
+            ent->last = NULL;
+            while (cur != NULL) {
+                next = cur->next;
+                cur->next = NULL;
+                cur->parent = NULL;
+                nw = xmlDocCopyNode(cur, ctxt->myDoc, 1);
+                if (nw == NULL) {
+                    xmlErrMemory(ctxt);
+                } else {
+                    if (nw->_private == NULL)
+                        nw->_private = cur->_private;
+                    if (firstChild == NULL){
+                        firstChild = cur;
+                    }
+                    if (xmlAddChild((xmlNodePtr) ent, nw) == NULL)
                         xmlErrMemory(ctxt);
-                    } else {
-			if (nw->_private == NULL)
-			    nw->_private = cur->_private;
-			if (firstChild == NULL){
-			    firstChild = cur;
-			}
-			if (xmlAddChild((xmlNodePtr) ent, nw) == NULL)
-                            xmlErrMemory(ctxt);
-		    }
-		    if (xmlAddChild(ctxt->node, cur) == NULL)
-                        xmlErrMemory(ctxt);
-		    if (cur == last)
-			break;
-		    cur = next;
-		}
-		if (ent->owner == 0)
-		    ent->owner = 1;
-#ifdef LIBXML_LEGACY_ENABLED
-		if (ent->etype == XML_EXTERNAL_GENERAL_PARSED_ENTITY)
-		  xmlAddEntityReference(ent, firstChild, nw);
-#endif /* LIBXML_LEGACY_ENABLED */
-	    } else {
-		const xmlChar *nbktext;
+                }
+                if (xmlAddChild(ctxt->node, cur) == NULL)
+                    xmlErrMemory(ctxt);
+                if (cur == last)
+                    break;
+                cur = next;
+            }
+            if (ent->owner == 0)
+                ent->owner = 1;
+        } else {
+            const xmlChar *nbktext;
 
-		/*
-		 * the name change is to avoid coalescing of the
-		 * node with a possible previous text one which
-		 * would make ent->children a dangling pointer
-		 */
-		nbktext = xmlDictLookup(ctxt->dict, BAD_CAST "nbktext",
-					-1);
-		if (ent->children->type == XML_TEXT_NODE)
-		    ent->children->name = nbktext;
-		if ((ent->last != ent->children) &&
-		    (ent->last->type == XML_TEXT_NODE))
-		    ent->last->name = nbktext;
-		xmlAddChildList(ctxt->node, ent->children);
-	    }
+            /*
+             * the name change is to avoid coalescing of the
+             * node with a possible previous text one which
+             * would make ent->children a dangling pointer
+             */
+            nbktext = xmlDictLookup(ctxt->dict, BAD_CAST "nbktext",
+                                    -1);
+            if (ent->children->type == XML_TEXT_NODE)
+                ent->children->name = nbktext;
+            if ((ent->last != ent->children) &&
+                (ent->last->type == XML_TEXT_NODE))
+                ent->last->name = nbktext;
+            xmlAddChildList(ctxt->node, ent->children);
+        }
 
-	    /*
-	     * This is to avoid a nasty side effect, see
-	     * characters() in SAX.c
-	     */
-	    ctxt->nodemem = 0;
-	    ctxt->nodelen = 0;
-	    return;
-	}
+        /*
+         * This is to avoid a nasty side effect, see
+         * characters() in SAX.c
+         */
+        ctxt->nodemem = 0;
+        ctxt->nodelen = 0;
+        return;
     }
 }
 
@@ -12255,61 +12144,35 @@ xmlParseDTD(const xmlChar *ExternalID, const xmlChar *SystemID) {
 static xmlParserErrors
 xmlCtxtParseContent(xmlParserCtxtPtr ctxt, xmlParserInputPtr input,
                     int hasTextDecl, xmlNodePtr *list) {
-    xmlParserInputPtr oldInput;
-    xmlNodePtr oldNode, root = NULL;
+    xmlNodePtr root = NULL;
     int oldNameNr, oldSpaceNr, oldNodeNr;
     int oldWellFormed;
     int oldNodeLen, oldNodeMem;
-    xmlParserNsData *nsdb, *oldNsdb;
-    int ret;
+    int ret = XML_ERR_NO_MEMORY;
 
     if (list != NULL)
         *list = NULL;
 
-    if (((ctxt->depth > 40) && ((ctxt->options & XML_PARSE_HUGE) == 0)) ||
-	(ctxt->depth > 100)) {
-        xmlFatalErrMsg(ctxt, XML_ERR_ENTITY_LOOP,
-                       "Maximum entity nesting depth exceeded");
-        return(XML_ERR_ENTITY_LOOP);
-    }
-
     root = xmlNewDocNode(ctxt->myDoc, NULL, BAD_CAST "pseudoroot", NULL);
     if (root == NULL) {
         xmlErrMemory(ctxt);
-        return(XML_ERR_NO_MEMORY);
+        goto error;
     }
 
-    /*
-     * We need to reset the namespace database, so that entities don't
-     * pick up namespaces from the parent of a reference.
-     */
-    nsdb = xmlParserNsCreate();
-    if (nsdb == NULL) {
-        xmlErrMemory(ctxt);
-        xmlFreeNode(root);
-        return(XML_ERR_NO_MEMORY);
-    }
+    if (xmlPushInput(ctxt, input) < 0)
+        goto error;
 
-    oldNode = ctxt->node;
-    oldInput = ctxt->input;
     oldWellFormed = ctxt->wellFormed;
     oldNodeLen = ctxt->nodelen;
     oldNodeMem = ctxt->nodemem;
-    oldNsdb = ctxt->nsdb;
 
     oldNameNr = ctxt->nameNr;
     oldSpaceNr = ctxt->spaceNr;
     oldNodeNr = ctxt->nodeNr;
 
-    /*
-     * TODO: It would be nice if we could simply push the input onto
-     * the input stack. But there's still some code that assumes that
-     * ctxt->inputNr > 1 means that we're inside a parameter entity.
-     */
-    ctxt->input = input;
+    ctxt->wellFormed = 1;
     ctxt->nodelen = 0;
     ctxt->nodemem = 0;
-    ctxt->nsdb = nsdb;
 
     nameNsPush(ctxt, root->name, NULL, NULL, 0, 0);
     spacePush(ctxt, -1);
@@ -12336,9 +12199,7 @@ xmlCtxtParseContent(xmlParserCtxtPtr ctxt, xmlParserInputPtr input,
         }
     }
 
-    ctxt->depth++;
     xmlParseContent(ctxt);
-    ctxt->depth--;
 
     if ((RAW == '<') && (NXT(1) == '/')) {
 	xmlFatalErr(ctxt, XML_ERR_NOT_WELL_BALANCED, NULL);
@@ -12391,15 +12252,118 @@ xmlCtxtParseContent(xmlParserCtxtPtr ctxt, xmlParserInputPtr input,
         nodePop(ctxt);
     }
 
-    ctxt->node = oldNode;
-    ctxt->input = oldInput;
     ctxt->wellFormed = oldWellFormed && ctxt->wellFormed;
     ctxt->nodelen = oldNodeLen;
     ctxt->nodemem = oldNodeMem;
+
+    /* xmlPopInput would free the stream */
+    inputPop(ctxt);
+
+error:
+    xmlFreeNode(root);
+
+    return(ret);
+}
+
+static xmlParserErrors
+xmlCtxtParseEntity(xmlParserCtxtPtr ctxt, xmlEntityPtr ent, xmlNodePtr *list) {
+    xmlParserInputPtr input;
+    xmlParserNsData *nsdb = NULL;
+    xmlParserNsData *oldNsdb = ctxt->nsdb;
+    unsigned long oldsizeentcopy = ctxt->sizeentcopy;
+    unsigned long consumed;
+    int isExternal;
+    int alreadyParsed;
+    int ret;
+
+    *list = NULL;
+
+    isExternal = (ent->etype == XML_EXTERNAL_GENERAL_PARSED_ENTITY);
+    alreadyParsed = (ent->flags & XML_ENT_PARSED) ? 1 : 0;
+
+    ent->flags |= XML_ENT_PARSED | XML_ENT_CHECKED;
+
+    /*
+     * Recursion check
+     */
+    if (ent->flags & XML_ENT_EXPANDING) {
+        xmlFatalErr(ctxt, XML_ERR_ENTITY_LOOP, NULL);
+        xmlHaltParser(ctxt);
+        return(XML_ERR_ENTITY_LOOP);
+    }
+
+    /*
+     * Load entity
+     */
+    if (ent->content != NULL) {
+        input = xmlNewStringInputStream(ctxt, ent->content);
+    } else if ((ent->URI != NULL) || (ent->ExternalID != NULL)) {
+        input = xmlLoadExternalEntity((char *) ent->URI,
+                                      (char *) ent->ExternalID, ctxt);
+    } else {
+        /* Assume the content is empty */
+        return(XML_ERR_OK);
+    }
+
+    if (input == NULL)
+        return(ctxt->errNo);
+
+    /*
+     * Set entity in input stream
+     */
+    input->entity = ent;
+
+    /*
+     * We need to reset the namespace database, so that entities don't
+     * pick up namespaces from the parent of a reference.
+     */
+    nsdb = xmlParserNsCreate();
+    if (nsdb == NULL) {
+        xmlErrMemory(ctxt);
+        xmlFreeInputStream(input);
+        return(XML_ERR_NO_MEMORY);
+    }
+
+    /*
+     * We don't set parentConsumed for general entities, so we have
+     * to reset sizeentcopy temporarily.
+     */
+    ctxt->sizeentcopy = 0;
+
+    /*
+     * Parse content
+     */
+    ctxt->nsdb = nsdb;
+    ent->flags |= XML_ENT_EXPANDING;
+
+    ret = xmlCtxtParseContent(ctxt, input, isExternal, list);
+
+    ent->flags &= ~XML_ENT_EXPANDING;
     ctxt->nsdb = oldNsdb;
 
+    /*
+     * Entity size accounting
+     */
+    consumed = input->consumed;
+    xmlSaturatedAddSizeT(&consumed, input->cur - input->base);
+    xmlSaturatedAdd(&ctxt->sizeentcopy, consumed);
+
+    if (!alreadyParsed) {
+        if (isExternal)
+            xmlSaturatedAdd(&ctxt->sizeentities, consumed);
+
+        ent->expandedSize = ctxt->sizeentcopy;
+    }
+
+    /* This adds the old size back */
+    if (xmlParserEntityCheck(ctxt, oldsizeentcopy)) {
+        xmlFreeNodeList(*list);
+        *list = NULL;
+        ret = ctxt->errNo;
+    }
+
     xmlParserNsFree(nsdb);
-    xmlFreeNode(root);
+    xmlFreeInputStream(input);
 
     return(ret);
 }
@@ -12425,7 +12389,6 @@ int
 xmlParseCtxtExternalEntity(xmlParserCtxtPtr ctxt, const xmlChar *URL,
                            const xmlChar *ID, xmlNodePtr *list) {
     xmlParserInputPtr input;
-    unsigned long consumed;
     int ret;
 
     if (list != NULL)
@@ -12440,17 +12403,7 @@ xmlParseCtxtExternalEntity(xmlParserCtxtPtr ctxt, const xmlChar *URL,
 
     ret = xmlCtxtParseContent(ctxt, input, /* hasTextDecl */ 1, list);
 
-    /*
-     * Also record the size of the entity parsed
-     */
-    consumed = input->consumed;
-    xmlSaturatedAddSizeT(&consumed, input->cur - input->base);
-
-    xmlSaturatedAdd(&ctxt->sizeentities, consumed);
-    xmlSaturatedAdd(&ctxt->sizeentcopy, consumed);
-
     xmlFreeInputStream(input);
-
     return(ret);
 }
 
@@ -12477,9 +12430,12 @@ xmlParseCtxtExternalEntity(xmlParserCtxtPtr ctxt, const xmlChar *URL,
 
 int
 xmlParseExternalEntity(xmlDocPtr doc, xmlSAXHandlerPtr sax, void *user_data,
-	  int depth, const xmlChar *URL, const xmlChar *ID, xmlNodePtr *lst) {
+	  int depth, const xmlChar *URL, const xmlChar *ID, xmlNodePtr *list) {
     xmlParserCtxtPtr ctxt;
     int ret;
+
+    if (list != NULL)
+        *list = NULL;
 
     if (doc == NULL)
         return(XML_ERR_ARGUMENT);
@@ -12492,7 +12448,7 @@ xmlParseExternalEntity(xmlDocPtr doc, xmlSAXHandlerPtr sax, void *user_data,
 
     ctxt->depth = depth;
     ctxt->myDoc = doc;
-    ret = xmlParseCtxtExternalEntity(ctxt, URL, ID, lst);
+    ret = xmlParseCtxtExternalEntity(ctxt, URL, ID, list);
 
     xmlFreeParserCtxt(ctxt);
     return(ret);
@@ -12525,59 +12481,6 @@ xmlParseBalancedChunkMemory(xmlDocPtr doc, xmlSAXHandlerPtr sax,
                                                 depth, string, lst, 0 );
 }
 #endif /* LIBXML_SAX1_ENABLED */
-
-/**
- * xmlCtxtParseInternalEntity:
- * @oldctxt:  the existing parsing context
- * @string:  the input string in UTF8 or ISO-Latin (zero terminated)
- * @user_data:  the user data field for the parser context
- * @lst:  the return value for the set of parsed nodes
- *
- *
- * Parse a well-balanced chunk of an XML document
- * called by the parser
- * The allowed sequence for the Well Balanced Chunk is the one defined by
- * the content production in the XML grammar:
- *
- * [43] content ::= (element | CharData | Reference | CDSect | PI | Comment)*
- *
- * Returns XML_ERR_OK if the chunk is well balanced, and the parser
- * error code otherwise
- *
- * In case recover is set to 1, the nodelist will not be empty even if
- * the parsed chunk is not well balanced.
- */
-static xmlParserErrors
-xmlCtxtParseInternalEntity(xmlParserCtxtPtr ctxt, const xmlChar *string,
-                           xmlNodePtr *list) {
-    xmlParserInputPtr input;
-    unsigned long consumed;
-    int ret;
-
-    if (list != NULL)
-        *list = NULL;
-
-    if ((ctxt == NULL) || (string == NULL))
-        return(XML_ERR_ARGUMENT);
-
-    input = xmlNewStringInputStream(ctxt, string);
-    if (input == NULL)
-        return(ctxt->errNo);
-
-    ret = xmlCtxtParseContent(ctxt, input, /* hasTextDecl */ 0, list);
-
-    /*
-     * Also record the size of the entity parsed
-     */
-    consumed = input->consumed;
-    xmlSaturatedAddSizeT(&consumed, input->cur - input->base);
-
-    xmlSaturatedAdd(&ctxt->sizeentcopy, consumed);
-
-    xmlFreeInputStream(input);
-
-    return(ret);
-}
 
 /**
  * xmlParseInNodeContext:
@@ -12808,14 +12711,18 @@ xmlParseInNodeContext(xmlNodePtr node, const char *data, int datalen,
  */
 int
 xmlParseBalancedChunkMemoryRecover(xmlDocPtr doc, xmlSAXHandlerPtr sax,
-     void *user_data, int depth, const xmlChar *string, xmlNodePtr *lst,
+     void *user_data, int depth, const xmlChar *string, xmlNodePtr *list,
      int recover) {
     xmlParserCtxtPtr ctxt;
+    xmlParserInputPtr input;
     int ret;
 
+    if (list != NULL)
+        *list = NULL;
+
     ctxt = xmlNewSAXParserCtxt(sax, user_data);
-    if (ctxt == NULL)
-        return(XML_ERR_NO_MEMORY);
+    if ((ctxt == NULL) || (string == NULL))
+        return(XML_ERR_ARGUMENT);
 
     xmlDetectSAX2(ctxt);
 
@@ -12824,8 +12731,13 @@ xmlParseBalancedChunkMemoryRecover(xmlDocPtr doc, xmlSAXHandlerPtr sax,
     if (recover)
         ctxt->recovery = 1;
 
-    ret = xmlCtxtParseInternalEntity(ctxt, string, lst);
+    input = xmlNewStringInputStream(ctxt, string);
+    if (input == NULL)
+        return(ctxt->errNo);
 
+    ret = xmlCtxtParseContent(ctxt, input, /* hasTextDecl */ 0, list);
+
+    xmlFreeInputStream(input);
     xmlFreeParserCtxt(ctxt);
     return(ret);
 }
@@ -13608,47 +13520,6 @@ xmlParseDoc(const xmlChar *cur) {
     return(xmlSAXParseDoc(NULL, cur, 0));
 }
 #endif /* LIBXML_SAX1_ENABLED */
-
-#ifdef LIBXML_LEGACY_ENABLED
-/************************************************************************
- *									*
- *	Specific function to keep track of entities references		*
- *	and used by the XSLT debugger					*
- *									*
- ************************************************************************/
-
-static xmlEntityReferenceFunc xmlEntityRefFunc = NULL;
-
-/**
- * xmlAddEntityReference:
- * @ent : A valid entity
- * @firstNode : A valid first node for children of entity
- * @lastNode : A valid last node of children entity
- *
- * Notify of a reference to an entity of type XML_EXTERNAL_GENERAL_PARSED_ENTITY
- */
-static void
-xmlAddEntityReference(xmlEntityPtr ent, xmlNodePtr firstNode,
-                      xmlNodePtr lastNode)
-{
-    if (xmlEntityRefFunc != NULL) {
-        (*xmlEntityRefFunc) (ent, firstNode, lastNode);
-    }
-}
-
-
-/**
- * xmlSetEntityReferenceFunc:
- * @func: A valid function
- *
- * Set the function to call call back when a xml reference has been made
- */
-void
-xmlSetEntityReferenceFunc(xmlEntityReferenceFunc func)
-{
-    xmlEntityRefFunc = func;
-}
-#endif /* LIBXML_LEGACY_ENABLED */
 
 /************************************************************************
  *									*

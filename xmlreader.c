@@ -2083,7 +2083,6 @@ xmlNewTextReader(xmlParserInputBufferPtr input, const char *URI) {
     /*
      * use the parser dictionary to allocate all elements and attributes names
      */
-    ret->ctxt->docdict = 1;
     ret->dict = ret->ctxt->dict;
 #ifdef LIBXML_XINCLUDE_ENABLED
     ret->xinclude = 0;
@@ -4892,7 +4891,6 @@ xmlTextReaderSetup(xmlTextReaderPtr reader,
     /*
      * use the parser dictionary to allocate all elements and attributes names
      */
-    reader->ctxt->docdict = 1;
     reader->ctxt->parseMode = XML_PARSE_READER;
 
 #ifdef LIBXML_XINCLUDE_ENABLED
