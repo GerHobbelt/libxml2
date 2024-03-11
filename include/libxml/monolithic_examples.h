@@ -20,7 +20,6 @@ extern int xml_testdict_main(void);
 extern int xml_testhtml_main(int argc, const char** argv);
 extern int xml_testlimits_main(int argc, const char** argv);
 extern int xml_testmodule_main(int argc, const char** argv);
-extern int xml_testOOM_main(int argc, const char** argv);
 extern int xml_testreader_main(int argc, const char** argv);
 extern int xml_testrecurse_main(int argc, const char** argv);
 extern int xml_testregexp_main(int argc, const char** argv);
