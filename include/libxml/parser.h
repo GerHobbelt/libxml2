@@ -327,6 +327,9 @@ struct _xmlParserCtxt {
     xmlParserNsData       *nsdb;    /* namespace database */
     unsigned        attrHashMax;    /* allocated size */
     xmlAttrHashBucket *attrHash;    /* atttribute hash table */
+
+    xmlStructuredErrorFunc errorHandler;
+    void *errorCtxt;
 };
 
 /**
@@ -846,6 +849,8 @@ XMLPUBVAR const char *const xmlParserVersion;
 XML_DEPRECATED
 XMLPUBVAR const int oldXMLWDcompatibility;
 XML_DEPRECATED
+XMLPUBVAR const int xmlParserDebugEntities;
+XML_DEPRECATED
 XMLPUBVAR const xmlSAXLocator xmlDefaultSAXLocator;
 #ifdef LIBXML_SAX1_ENABLED
 XML_DEPRECATED
@@ -857,6 +862,8 @@ XMLPUBVAR /* const */ xmlSAXHandlerV1 xmlDefaultSAXHandler;
 XMLPUBFUN const char *const *__xmlParserVersion(void);
 XML_DEPRECATED
 XMLPUBFUN const int *__oldXMLWDcompatibility(void);
+XML_DEPRECATED
+XMLPUBFUN const int *__xmlParserDebugEntities(void);
 XML_DEPRECATED
 XMLPUBFUN const xmlSAXLocator *__xmlDefaultSAXLocator(void);
 #ifdef LIBXML_SAX1_ENABLED
@@ -872,7 +879,6 @@ XMLPUBFUN /* const */ xmlSAXHandlerV1 *__xmlDefaultSAXHandler(void);
   XML_OP(xmlKeepBlanksDefaultValue, int, XML_DEPRECATED) \
   XML_OP(xmlLineNumbersDefaultValue, int, XML_DEPRECATED) \
   XML_OP(xmlLoadExtDtdDefaultValue, int, XML_DEPRECATED) \
-  XML_OP(xmlParserDebugEntities, int, XML_DEPRECATED) \
   XML_OP(xmlPedanticParserDefaultValue, int, XML_DEPRECATED) \
   XML_OP(xmlSubstituteEntitiesDefaultValue, int, XML_DEPRECATED)
 
@@ -905,7 +911,6 @@ XML_GLOBALS_PARSER
   #define xmlLineNumbersDefaultValue \
     XML_GLOBAL_MACRO(xmlLineNumbersDefaultValue)
   #define xmlLoadExtDtdDefaultValue XML_GLOBAL_MACRO(xmlLoadExtDtdDefaultValue)
-  #define xmlParserDebugEntities XML_GLOBAL_MACRO(xmlParserDebugEntities)
   #define xmlPedanticParserDefaultValue \
     XML_GLOBAL_MACRO(xmlPedanticParserDefaultValue)
   #define xmlSubstituteEntitiesDefaultValue \
@@ -1272,6 +1277,10 @@ XMLPUBFUN int
 XMLPUBFUN int
 		xmlCtxtUseOptions	(xmlParserCtxtPtr ctxt,
 					 int options);
+XMLPUBFUN void
+		xmlCtxtSetErrorHandler	(xmlParserCtxtPtr ctxt,
+					 xmlStructuredErrorFunc handler,
+					 void *data);
 XMLPUBFUN void
 		xmlCtxtSetMaxAmplification(xmlParserCtxtPtr ctxt,
 					 unsigned maxAmpl);
