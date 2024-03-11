@@ -7889,18 +7889,15 @@ xmlLoadEntityContent(xmlParserCtxtPtr ctxt, xmlEntityPtr entity) {
         ((entity->etype != XML_EXTERNAL_PARAMETER_ENTITY) &&
 	 (entity->etype != XML_EXTERNAL_GENERAL_PARSED_ENTITY)) ||
 	(entity->content != NULL)) {
-	xmlFatalErr(ctxt, XML_ERR_INTERNAL_ERROR,
+	xmlFatalErr(ctxt, XML_ERR_ARGUMENT,
 	            "xmlLoadEntityContent parameter error");
         return(-1);
     }
 
     input = xmlLoadExternalEntity((char *) entity->URI,
            (char *) entity->ExternalID, ctxt);
-    if (input == NULL) {
-	xmlFatalErr(ctxt, XML_ERR_INTERNAL_ERROR,
-	            "xmlLoadEntityContent input error");
+    if (input == NULL)
         return(-1);
-    }
 
     oldinput = ctxt->input;
     oldinputNr = ctxt->inputNr;
@@ -8221,9 +8218,7 @@ xmlParseInternalSubset(xmlParserCtxtPtr ctxt) {
             } else if (RAW == '%') {
 	        xmlParsePEReference(ctxt);
             } else {
-		xmlFatalErr(ctxt, XML_ERR_INTERNAL_ERROR,
-                        "xmlParseInternalSubset: error detected in"
-                        " Markup declaration\n");
+		xmlFatalErr(ctxt, XML_ERR_INT_SUBSET_NOT_FINISHED, NULL);
                 xmlHaltParser(ctxt);
                 return;
             }
@@ -8404,11 +8399,8 @@ xmlParseStartTag(xmlParserCtxtPtr ctxt) {
 	   ((RAW != '/') || (NXT(1) != '>')) &&
 	   (IS_BYTE_CHAR(RAW))) && (PARSER_STOPPED(ctxt) == 0)) {
 	attname = xmlParseAttribute(ctxt, &attvalue);
-        if (attname == NULL) {
-	    xmlFatalErrMsg(ctxt, XML_ERR_INTERNAL_ERROR,
-			   "xmlParseStartTag: problem parsing attributes\n");
+        if (attname == NULL)
 	    break;
-	}
         if (attvalue != NULL) {
 	    /*
 	     * [ WFC: Unique Att Spec ]
@@ -8939,14 +8931,13 @@ xmlParseStartTag2(xmlParserCtxtPtr ctxt, const xmlChar **pref,
     const xmlChar **atts = ctxt->atts;
     unsigned attrHashSize = 0;
     int maxatts = ctxt->maxatts;
-    int nratts, nbatts, nbdef, inputid;
+    int nratts, nbatts, nbdef;
     int i, j, nbNs, nbTotalDef, attval, nsIndex, maxAtts;
     int alloc = 0;
 
     if (RAW != '<') return(NULL);
     NEXT1;
 
-    inputid = ctxt->input->id;
     nbatts = 0;
     nratts = 0;
     nbdef = 0;
@@ -9186,13 +9177,6 @@ next_attr:
 	    break;
 	}
         GROW;
-    }
-
-    if (ctxt->input->id != inputid) {
-        xmlFatalErr(ctxt, XML_ERR_INTERNAL_ERROR,
-                    "Unexpected change of input\n");
-        localname = NULL;
-        goto done;
     }
 
     /*
@@ -11513,6 +11497,8 @@ encoding_error:
 int
 xmlParseChunk(xmlParserCtxtPtr ctxt, const char *chunk, int size,
               int terminate) {
+    size_t curBase;
+    size_t maxLength;
     int end_in_lf = 0;
 
     if ((ctxt == NULL) || (size < 0))
@@ -11547,14 +11533,16 @@ xmlParseChunk(xmlParserCtxtPtr ctxt, const char *chunk, int size,
 
     xmlParseTryOrFinish(ctxt, terminate);
 
-    if ((ctxt->input != NULL) &&
-         (((ctxt->input->end - ctxt->input->cur) > XML_MAX_LOOKUP_LIMIT) ||
-         ((ctxt->input->cur - ctxt->input->base) > XML_MAX_LOOKUP_LIMIT)) &&
-        ((ctxt->options & XML_PARSE_HUGE) == 0)) {
+    curBase = ctxt->input->cur - ctxt->input->base;
+    maxLength = (ctxt->options & XML_PARSE_HUGE) ?
+                XML_MAX_HUGE_LENGTH :
+                XML_MAX_LOOKUP_LIMIT;
+    if (curBase > maxLength) {
         xmlFatalErr(ctxt, XML_ERR_RESOURCE_LIMIT,
                     "Buffer size limit exceeded, try XML_PARSE_HUGE\n");
         xmlHaltParser(ctxt);
     }
+
     if ((ctxt->errNo != XML_ERR_OK) && (ctxt->disableSAX == 1))
         return(ctxt->errNo);
 
@@ -12282,7 +12270,7 @@ xmlParseInNodeContext(xmlNodePtr node, const char *data, int datalen,
      * check all input parameters, grab the document
      */
     if ((lst == NULL) || (node == NULL) || (data == NULL) || (datalen < 0))
-        return(XML_ERR_INTERNAL_ERROR);
+        return(XML_ERR_ARGUMENT);
     switch (node->type) {
         case XML_ELEMENT_NODE:
         case XML_ATTRIBUTE_NODE:

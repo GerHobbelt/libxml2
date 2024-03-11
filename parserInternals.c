@@ -419,8 +419,11 @@ int
 xmlParserGrow(xmlParserCtxtPtr ctxt) {
     xmlParserInputPtr in = ctxt->input;
     xmlParserInputBufferPtr buf = in->buf;
-    ptrdiff_t curEnd = in->end - in->cur;
-    ptrdiff_t curBase = in->cur - in->base;
+    size_t curEnd = in->end - in->cur;
+    size_t curBase = in->cur - in->base;
+    size_t maxLength = (ctxt->options & XML_PARSE_HUGE) ?
+                       XML_MAX_HUGE_LENGTH :
+                       XML_MAX_LOOKUP_LIMIT;
     int ret;
 
     if (buf == NULL)
@@ -434,9 +437,7 @@ xmlParserGrow(xmlParserCtxtPtr ctxt) {
     if (buf->error != 0)
         return(-1);
 
-    if (((curEnd > XML_MAX_LOOKUP_LIMIT) ||
-         (curBase > XML_MAX_LOOKUP_LIMIT)) &&
-        ((ctxt->options & XML_PARSE_HUGE) == 0)) {
+    if (curBase > maxLength) {
         xmlFatalErr(ctxt, XML_ERR_RESOURCE_LIMIT,
                     "Buffer size limit exceeded, try XML_PARSE_HUGE\n");
         xmlHaltParser(ctxt);
@@ -998,7 +999,8 @@ xmlDetectEBCDIC(xmlParserInputPtr input, xmlCharEncodingHandlerPtr *hout) {
                 break;
             out[i] = 0;
             xmlCharEncCloseFunc(handler);
-            res = xmlOpenCharEncodingHandler((char *) out + start, &handler);
+            res = xmlOpenCharEncodingHandler((char *) out + start,
+                                             /* output */ 0, &handler);
             if (res != 0)
                 return(res);
             *hout = handler;
@@ -1088,7 +1090,7 @@ xmlSwitchInputEncodingName(xmlParserCtxtPtr ctxt, xmlParserInputPtr input,
     if (encoding == NULL)
         return(-1);
 
-    res = xmlOpenCharEncodingHandler(encoding, &handler);
+    res = xmlOpenCharEncodingHandler(encoding, /* output */ 0, &handler);
     if (res != 0) {
         xmlFatalErr(ctxt, res, encoding);
         return(-1);

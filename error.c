@@ -11,6 +11,7 @@
 
 #include <string.h>
 #include <stdarg.h>
+#include <stdlib.h>
 #include <libxml/parser.h>
 #include <libxml/xmlerror.h>
 #include <libxml/xmlmemory.h>
@@ -690,6 +691,13 @@ xmlVRaiseError(xmlStructuredErrorFunc schannel,
 
     if (code == XML_ERR_OK)
         return(0);
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+    if ((code == XML_ERR_INTERNAL_ERROR) ||
+        (code == XML_ERR_ARGUMENT)) {
+        fprintf(stderr, "Unexpected error: %d\n", code);
+        abort();
+    }
+#endif
     if ((xmlGetWarningsDefaultValue == 0) && (level == XML_ERR_WARNING))
         return(0);
 
@@ -1084,6 +1092,9 @@ xmlErrString(xmlParserErrors code) {
             break;
         case XML_ERR_CONDSEC_INVALID:
             errmsg = "XML conditional section '[' expected";
+            break;
+        case XML_ERR_INT_SUBSET_NOT_FINISHED:
+            errmsg = "Content error in the internal subset";
             break;
         case XML_ERR_EXT_SUBSET_NOT_FINISHED:
             errmsg = "Content error in the external subset";
