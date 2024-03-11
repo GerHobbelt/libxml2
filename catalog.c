@@ -869,7 +869,6 @@ xmlDocPtr
 xmlParseCatalogFile(const char *filename) {
     xmlDocPtr ret;
     xmlParserCtxtPtr ctxt;
-    char *directory = NULL;
     xmlParserInputPtr inputStream;
     xmlParserInputBufferPtr buf;
 
@@ -897,10 +896,7 @@ xmlParseCatalogFile(const char *filename) {
     xmlBufResetInput(buf->buffer, inputStream);
 
     inputPush(ctxt, inputStream);
-    if (ctxt->directory == NULL)
-        directory = xmlParserGetDirectory(filename);
-    if ((ctxt->directory == NULL) && (directory != NULL))
-        ctxt->directory = directory;
+
     ctxt->valid = 0;
     ctxt->validate = 0;
     ctxt->loadsubset = 0;

@@ -35,6 +35,7 @@
 #include <libxml/catalog.h>
 #endif
 #include <libxml/chvalid.h>
+#include <libxml/nanohttp.h>
 
 #define CUR(ctxt) ctxt->input->cur
 #define END(ctxt) ctxt->input->end
@@ -153,6 +154,53 @@ xmlCtxtErrMemory(xmlParserCtxtPtr ctxt)
 
     xmlRaiseMemoryError(schannel, channel, data, XML_FROM_PARSER,
                         &ctxt->lastError);
+}
+
+/**
+ * xmlCtxtErrIO:
+ * @ctxt:  parser context
+ * @code:  xmlParserErrors code
+ * @uri:  filename or URI (optional)
+ *
+ * If filename is empty, use the one from context input if available.
+ *
+ * Report an IO error to the parser context.
+ */
+void
+xmlCtxtErrIO(xmlParserCtxtPtr ctxt, int code, const char *uri)
+{
+    const char *errstr, *msg, *str1, *str2;
+    xmlErrorLevel level;
+
+    if (ctxt == NULL)
+        return;
+
+    if ((code == XML_IO_ENOENT) ||
+        (code == XML_IO_NETWORK_ATTEMPT) ||
+        (code == XML_IO_UNKNOWN)) {
+        if (ctxt->validate == 0)
+            level = XML_ERR_WARNING;
+        else
+            level = XML_ERR_ERROR;
+    } else {
+        level = XML_ERR_FATAL;
+    }
+
+    errstr = xmlErrString(code);
+
+    if (uri == NULL) {
+        msg = "%s\n";
+        str1 = errstr;
+        str2 = NULL;
+    } else {
+        msg = "failed to load \"%s\": %s\n";
+        str1 = uri;
+        str2 = errstr;
+    }
+
+    xmlCtxtErr(ctxt, NULL, XML_FROM_IO, code, level,
+               (const xmlChar *) uri, NULL, NULL, 0,
+               msg, str1, str2);
 }
 
 void
@@ -1372,7 +1420,6 @@ xmlFreeInputStream(xmlParserInputPtr input) {
     if (input == NULL) return;
 
     if (input->filename != NULL) xmlFree((char *) input->filename);
-    if (input->directory != NULL) xmlFree((char *) input->directory);
     if (input->version != NULL) xmlFree((char *) input->version);
     if ((input->free != NULL) && (input->base != NULL))
         input->free((xmlChar *) input->base);
@@ -1551,6 +1598,152 @@ xmlNewStringInputStream(xmlParserCtxtPtr ctxt, const xmlChar *buffer) {
     return(input);
 }
 
+/****************************************************************
+ *								*
+ *		External entities loading			*
+ *								*
+ ****************************************************************/
+
+#ifdef LIBXML_CATALOG_ENABLED
+
+/**
+ * xmlResolveResourceFromCatalog:
+ * @URL:  the URL for the entity to load
+ * @ID:  the System ID for the entity to load
+ * @ctxt:  the context in which the entity is called or NULL
+ *
+ * Resolves the URL and ID against the appropriate catalog.
+ * This function is used by xmlDefaultExternalEntityLoader and
+ * xmlNoNetExternalEntityLoader.
+ *
+ * Returns a new allocated URL, or NULL.
+ */
+static xmlChar *
+xmlResolveResourceFromCatalog(const char *URL, const char *ID,
+                              xmlParserCtxtPtr ctxt) {
+    xmlChar *resource = NULL;
+    xmlCatalogAllow pref;
+
+    /*
+     * If the resource doesn't exists as a file,
+     * try to load it from the resource pointed in the catalogs
+     */
+    pref = xmlCatalogGetDefaults();
+
+    if ((pref != XML_CATA_ALLOW_NONE) && (!xmlNoNetExists(URL))) {
+	/*
+	 * Do a local lookup
+	 */
+	if ((ctxt != NULL) && (ctxt->catalogs != NULL) &&
+	    ((pref == XML_CATA_ALLOW_ALL) ||
+	     (pref == XML_CATA_ALLOW_DOCUMENT))) {
+	    resource = xmlCatalogLocalResolve(ctxt->catalogs,
+					      (const xmlChar *)ID,
+					      (const xmlChar *)URL);
+        }
+	/*
+	 * Try a global lookup
+	 */
+	if ((resource == NULL) &&
+	    ((pref == XML_CATA_ALLOW_ALL) ||
+	     (pref == XML_CATA_ALLOW_GLOBAL))) {
+	    resource = xmlCatalogResolve((const xmlChar *)ID,
+					 (const xmlChar *)URL);
+	}
+	if ((resource == NULL) && (URL != NULL))
+	    resource = xmlStrdup((const xmlChar *) URL);
+
+	/*
+	 * TODO: do an URI lookup on the reference
+	 */
+	if ((resource != NULL) && (!xmlNoNetExists((const char *)resource))) {
+	    xmlChar *tmp = NULL;
+
+	    if ((ctxt != NULL) && (ctxt->catalogs != NULL) &&
+		((pref == XML_CATA_ALLOW_ALL) ||
+		 (pref == XML_CATA_ALLOW_DOCUMENT))) {
+		tmp = xmlCatalogLocalResolveURI(ctxt->catalogs, resource);
+	    }
+	    if ((tmp == NULL) &&
+		((pref == XML_CATA_ALLOW_ALL) ||
+	         (pref == XML_CATA_ALLOW_GLOBAL))) {
+		tmp = xmlCatalogResolveURI(resource);
+	    }
+
+	    if (tmp != NULL) {
+		xmlFree(resource);
+		resource = tmp;
+	    }
+	}
+    }
+
+    return resource;
+}
+
+#endif
+
+/**
+ * xmlCheckHTTPInput:
+ * @ctxt: an XML parser context
+ * @ret: an XML parser input
+ *
+ * DEPRECATED: Internal function, don't use.
+ *
+ * Check an input in case it was created from an HTTP stream, in that
+ * case it will handle encoding and update of the base URL in case of
+ * redirection. It also checks for HTTP errors in which case the input
+ * is cleanly freed up and an appropriate error is raised in context
+ *
+ * Returns the input or NULL in case of HTTP error.
+ */
+xmlParserInputPtr
+xmlCheckHTTPInput(xmlParserCtxtPtr ctxt, xmlParserInputPtr ret) {
+    /* Avoid unused variable warning if features are disabled. */
+    (void) ctxt;
+
+#ifdef LIBXML_HTTP_ENABLED
+    if ((ret != NULL) && (ret->buf != NULL) &&
+        (ret->buf->readcallback == xmlIOHTTPRead) &&
+        (ret->buf->context != NULL)) {
+        const char *encoding;
+        const char *redir;
+        const char *mime;
+        int code;
+
+        code = xmlNanoHTTPReturnCode(ret->buf->context);
+        if (code >= 400) {
+            /* fatal error */
+	    if (ret->filename != NULL)
+                xmlCtxtErrIO(ctxt, XML_IO_LOAD_ERROR, ret->filename);
+	    else
+                xmlCtxtErrIO(ctxt, XML_IO_LOAD_ERROR, "<null>");
+            xmlFreeInputStream(ret);
+            ret = NULL;
+        } else {
+
+            mime = xmlNanoHTTPMimeType(ret->buf->context);
+            if ((xmlStrstr(BAD_CAST mime, BAD_CAST "/xml")) ||
+                (xmlStrstr(BAD_CAST mime, BAD_CAST "+xml"))) {
+                encoding = xmlNanoHTTPEncoding(ret->buf->context);
+                if (encoding != NULL)
+                    xmlSwitchEncodingName(ctxt, encoding);
+#if 0
+            } else if (xmlStrstr(BAD_CAST mime, BAD_CAST "html")) {
+#endif
+            }
+            redir = xmlNanoHTTPRedir(ret->buf->context);
+            if (redir != NULL) {
+                if (ret->filename != NULL)
+                    xmlFree((xmlChar *) ret->filename);
+                ret->filename =
+                    (char *) xmlStrdup((const xmlChar *) redir);
+            }
+        }
+    }
+#endif
+    return(ret);
+}
+
 /**
  * xmlNewInputFromFile:
  * @ctxt:  an XML parser context
@@ -1564,7 +1757,6 @@ xmlParserInputPtr
 xmlNewInputFromFile(xmlParserCtxtPtr ctxt, const char *filename) {
     xmlParserInputBufferPtr buf;
     xmlParserInputPtr inputStream;
-    char *directory = NULL;
     xmlChar *URI = NULL;
     int code;
 
@@ -1593,16 +1785,168 @@ xmlNewInputFromFile(xmlParserCtxtPtr ctxt, const char *filename) {
 	URI = xmlStrdup((xmlChar *) filename);
     else
 	URI = xmlStrdup((xmlChar *) inputStream->filename);
-    directory = xmlParserGetDirectory((const char *) URI);
     if (inputStream->filename != NULL) xmlFree((char *)inputStream->filename);
     inputStream->filename = (char *) xmlCanonicPath((const xmlChar *) URI);
     if (URI != NULL) xmlFree((char *) URI);
-    inputStream->directory = directory;
 
     xmlBufResetInput(inputStream->buf->buffer, inputStream);
-    if ((ctxt->directory == NULL) && (directory != NULL))
-        ctxt->directory = (char *) xmlStrdup((const xmlChar *) directory);
+
     return(inputStream);
+}
+
+/**
+ * xmlDefaultExternalEntityLoader:
+ * @URL:  the URL for the entity to load
+ * @ID:  the System ID for the entity to load
+ * @ctxt:  the context in which the entity is called or NULL
+ *
+ * By default we don't load external entities, yet.
+ *
+ * Returns a new allocated xmlParserInputPtr, or NULL.
+ */
+static xmlParserInputPtr
+xmlDefaultExternalEntityLoader(const char *URL, const char *ID,
+                               xmlParserCtxtPtr ctxt)
+{
+    xmlParserInputPtr ret = NULL;
+    xmlChar *resource = NULL;
+
+    if (URL == NULL)
+        return(NULL);
+
+    if ((ctxt != NULL) && (ctxt->options & XML_PARSE_NONET)) {
+        int options = ctxt->options;
+
+	ctxt->options -= XML_PARSE_NONET;
+        ret = xmlNoNetExternalEntityLoader(URL, ID, ctxt);
+	ctxt->options = options;
+	return(ret);
+    }
+#ifdef LIBXML_CATALOG_ENABLED
+    resource = xmlResolveResourceFromCatalog(URL, ID, ctxt);
+#endif
+
+    if (resource == NULL)
+        resource = (xmlChar *) URL;
+
+    ret = xmlNewInputFromFile(ctxt, (const char *) resource);
+    if ((resource != NULL) && (resource != (xmlChar *) URL))
+        xmlFree(resource);
+    return (ret);
+}
+
+/**
+ * xmlNoNetExternalEntityLoader:
+ * @URL:  the URL for the entity to load
+ * @ID:  the System ID for the entity to load
+ * @ctxt:  the context in which the entity is called or NULL
+ *
+ * A specific entity loader disabling network accesses, though still
+ * allowing local catalog accesses for resolution.
+ *
+ * Returns a new allocated xmlParserInputPtr, or NULL.
+ */
+xmlParserInputPtr
+xmlNoNetExternalEntityLoader(const char *URL, const char *ID,
+                             xmlParserCtxtPtr ctxt) {
+    xmlParserInputPtr input = NULL;
+    xmlChar *resource = NULL;
+
+#ifdef LIBXML_CATALOG_ENABLED
+    resource = xmlResolveResourceFromCatalog(URL, ID, ctxt);
+#endif
+
+    if (resource == NULL)
+	resource = (xmlChar *) URL;
+
+    if (resource != NULL) {
+        if ((!xmlStrncasecmp(BAD_CAST resource, BAD_CAST "ftp://", 6)) ||
+            (!xmlStrncasecmp(BAD_CAST resource, BAD_CAST "http://", 7))) {
+            int res;
+
+            /*
+             * Forward this error to the generic error handler, not to
+             * the parser context for backward compatibility.
+             * Several downstream test suites rely on this behavior.
+             */
+            res = __xmlRaiseError(NULL, xmlGenericError,
+                                  xmlGenericErrorContext, NULL, NULL,
+                                  XML_FROM_IO, XML_IO_NETWORK_ATTEMPT,
+                                  XML_ERR_ERROR, NULL, 0,
+                                  (const char *) resource, NULL, NULL, 0, 0,
+                                  "Attempt to load network entity %s",
+                                  resource);
+            if (res < 0)
+                xmlCtxtErrMemory(ctxt);
+	    if (resource != (xmlChar *) URL)
+		xmlFree(resource);
+	    return(NULL);
+	}
+    }
+    input = xmlDefaultExternalEntityLoader((const char *) resource, ID, ctxt);
+    if (resource != (xmlChar *) URL)
+	xmlFree(resource);
+    return(input);
+}
+
+/*
+ * This global has to die eventually
+ */
+static xmlExternalEntityLoader
+xmlCurrentExternalEntityLoader = xmlDefaultExternalEntityLoader;
+
+/**
+ * xmlSetExternalEntityLoader:
+ * @f:  the new entity resolver function
+ *
+ * Changes the defaultexternal entity resolver function for the application
+ */
+void
+xmlSetExternalEntityLoader(xmlExternalEntityLoader f) {
+    xmlCurrentExternalEntityLoader = f;
+}
+
+/**
+ * xmlGetExternalEntityLoader:
+ *
+ * Get the default external entity resolver function for the application
+ *
+ * Returns the xmlExternalEntityLoader function pointer
+ */
+xmlExternalEntityLoader
+xmlGetExternalEntityLoader(void) {
+    return(xmlCurrentExternalEntityLoader);
+}
+
+/**
+ * xmlLoadExternalEntity:
+ * @URL:  the URL for the entity to load
+ * @ID:  the Public ID for the entity to load
+ * @ctxt:  the context in which the entity is called or NULL
+ *
+ * Load an external entity, note that the use of this function for
+ * unparsed entities may generate problems
+ *
+ * Returns the xmlParserInputPtr or NULL
+ */
+xmlParserInputPtr
+xmlLoadExternalEntity(const char *URL, const char *ID,
+                      xmlParserCtxtPtr ctxt) {
+    char *canonicFilename;
+    xmlParserInputPtr ret;
+
+    if (URL == NULL)
+        return(NULL);
+
+    canonicFilename = (char *) xmlCanonicPath((const xmlChar *) URL);
+    if (canonicFilename == NULL) {
+        xmlCtxtErrMemory(ctxt);
+        return(NULL);
+    }
+
+    ret = xmlCurrentExternalEntityLoader(canonicFilename, ID, ctxt);
+    xmlFree(canonicFilename);
+    return(ret);
 }
 
 /************************************************************************
@@ -1682,7 +2026,6 @@ xmlInitSAXParserCtxt(xmlParserCtxtPtr ctxt, const xmlSAXHandler *sax,
     ctxt->external = 0;
     ctxt->instate = XML_PARSER_START;
     ctxt->token = 0;
-    ctxt->directory = NULL;
 
     /* Allocate the Node stack */
     if (ctxt->nodeTab == NULL) {
@@ -1826,7 +2169,6 @@ xmlFreeParserCtxt(xmlParserCtxtPtr ctxt)
     if (ctxt->sax != NULL)
 #endif /* LIBXML_SAX1_ENABLED */
         xmlFree(ctxt->sax);
-    if (ctxt->directory != NULL) xmlFree((char *) ctxt->directory);
     if (ctxt->vctxt.nodeTab != NULL) xmlFree(ctxt->vctxt.nodeTab);
     if (ctxt->atts != NULL) xmlFree((xmlChar * *)ctxt->atts);
     if (ctxt->dict != NULL) xmlDictFree(ctxt->dict);

@@ -41,8 +41,6 @@
 
 #include <libxml/xmlIO.h>
 #include <libxml/xmlmemory.h>
-#include <libxml/parser.h>
-#include <libxml/parserInternals.h>
 #include <libxml/uri.h>
 #include <libxml/nanohttp.h>
 #include <libxml/nanoftp.h>
@@ -323,56 +321,6 @@ xmlIOErr(int code, const char *extra)
     return(__xmlIOErr(XML_FROM_IO, code, extra));
 }
 
-/**
- * xmlCtxtErrIO:
- * @ctxt:  parser context
- * @code:  xmlParserErrors code
- * @uri:  filename or URI (optional)
- *
- * If filename is empty, use the one from context input if available.
- *
- * Report an IO error to the parser context.
- */
-void
-xmlCtxtErrIO(xmlParserCtxtPtr ctxt, int code, const char *uri)
-{
-    const char *errstr, *msg, *str1, *str2;
-    xmlErrorLevel level;
-
-    if (ctxt == NULL)
-        return;
-
-    if ((code == XML_IO_ENOENT) ||
-        (code == XML_IO_NETWORK_ATTEMPT) ||
-        (code == XML_IO_UNKNOWN)) {
-        if (ctxt->validate == 0)
-            level = XML_ERR_WARNING;
-        else
-            level = XML_ERR_ERROR;
-    } else {
-        level = XML_ERR_FATAL;
-    }
-
-    errstr = xmlErrString(code);
-
-    if (uri == NULL) {
-        msg = "%s\n";
-        str1 = errstr;
-        str2 = NULL;
-    } else {
-        msg = "failed to load \"%s\": %s\n";
-        str1 = uri;
-        str2 = errstr;
-    }
-
-    /*
-     * TODO: Set filename in error
-     */
-    xmlCtxtErr(ctxt, NULL, XML_FROM_IO, code, level,
-               (const xmlChar *) uri, NULL, NULL, 0,
-               msg, str1, str2);
-}
-
 /************************************************************************
  *									*
  *		Standard I/O for file accesses				*
@@ -391,6 +339,7 @@ static wchar_t *
 __xmlIOWin32UTF8ToWChar(const char *u8String)
 {
     wchar_t *wString = NULL;
+    int i;
 
     if (u8String) {
         int wLen =
@@ -404,6 +353,14 @@ __xmlIOWin32UTF8ToWChar(const char *u8String)
                     xmlFree(wString);
                     wString = NULL;
                 }
+            }
+
+            /*
+             * Convert to backward slash
+             */
+            for (i = 0; wString[i] != 0; i++) {
+                if (wString[i] == '/')
+                    wString[i] = '\\';
             }
         }
     }
@@ -571,6 +528,37 @@ xmlCheckFilename (const char *path)
     return 1;
 }
 
+static int
+xmlConvertUriToPath(const char *uri, char **out) {
+    const char *escaped;
+    char *unescaped;
+
+    *out = NULL;
+
+    if (!xmlStrncasecmp(BAD_CAST uri, BAD_CAST "file://localhost/", 17)) {
+	escaped = &uri[16];
+    } else if (!xmlStrncasecmp(BAD_CAST uri, BAD_CAST "file:///", 8)) {
+	escaped = &uri[7];
+    } else if (!xmlStrncasecmp(BAD_CAST uri, BAD_CAST "file:/", 6)) {
+        /* lots of generators seems to lazy to read RFC 1738 */
+	escaped = &uri[5];
+    } else {
+        return(1);
+    }
+
+#ifdef _WIN32
+    /* Ignore slash like in file:///C:/file.txt */
+    escaped += 1;
+#endif
+
+    unescaped = xmlURIUnescapeString(escaped, 0, NULL);
+    if (unescaped == NULL)
+        return(-1);
+
+    *out = unescaped;
+    return(0);
+}
+
 /**
  * xmlFdOpen:
  * @filename:  the URI for matching
@@ -580,8 +568,7 @@ xmlCheckFilename (const char *path)
  */
 static int
 xmlFdOpen(const char *filename, void **out) {
-    const char *escaped = NULL;
-    char *unescaped = NULL;
+    char *fromUri = NULL;
     int fd;
     int ret;
 
@@ -589,45 +576,21 @@ xmlFdOpen(const char *filename, void **out) {
     if (filename == NULL)
         return(XML_ERR_ARGUMENT);
 
-    /*
-     * TODO: This should be moved to uri.c. We also need support for
-     * UNC paths on Windows.
-     */
-    if (!xmlStrncasecmp(BAD_CAST filename, BAD_CAST "file://localhost/", 17)) {
-#if defined (_WIN32)
-	escaped = &filename[17];
-#else
-	escaped = &filename[16];
-#endif
-    } else if (!xmlStrncasecmp(BAD_CAST filename, BAD_CAST "file:///", 8)) {
-#if defined (_WIN32)
-	escaped = &filename[8];
-#else
-	escaped = &filename[7];
-#endif
-    } else if (!xmlStrncasecmp(BAD_CAST filename, BAD_CAST "file:/", 6)) {
-        /* lots of generators seems to lazy to read RFC 1738 */
-#if defined (_WIN32)
-	escaped = &filename[6];
-#else
-	escaped = &filename[5];
-#endif
-    }
+    if (xmlConvertUriToPath(filename, &fromUri) < 0)
+        return(XML_ERR_NO_MEMORY);
 
-    if (escaped != NULL) {
-        unescaped = xmlURIUnescapeString(escaped, 0, NULL);
-        if (unescaped == NULL)
-            return(XML_ERR_NO_MEMORY);
-        filename = unescaped;
-    }
+    if (fromUri != NULL)
+        filename = fromUri;
 
 #if defined(_WIN32)
     {
         wchar_t *wpath;
 
         wpath = __xmlIOWin32UTF8ToWChar(filename);
-        if (wpath == NULL)
+        if (wpath == NULL) {
+            xmlFree(fromUri);
             return(XML_ERR_NO_MEMORY);
+        }
 	fd = _wopen(wpath, _O_RDONLY | _O_BINARY);
         xmlFree(wpath);
     }
@@ -654,9 +617,7 @@ xmlFdOpen(const char *filename, void **out) {
         ret = XML_ERR_OK;
     }
 
-    if (unescaped != NULL)
-        xmlFree(unescaped);
-
+    xmlFree(fromUri);
     return(ret);
 }
 
@@ -856,7 +817,7 @@ xmlFileOpen(const char *filename) {
  */
 static void *
 xmlFileOpenW (const char *filename) {
-    const char *path = NULL;
+    char *fromUri = NULL;
     FILE *fd;
 
     if (!strcmp(filename, "-")) {
@@ -864,33 +825,24 @@ xmlFileOpenW (const char *filename) {
 	return((void *) fd);
     }
 
-    if (!xmlStrncasecmp(BAD_CAST filename, BAD_CAST "file://localhost/", 17))
-#if defined (_WIN32)
-	path = &filename[17];
-#else
-	path = &filename[16];
-#endif
-    else if (!xmlStrncasecmp(BAD_CAST filename, BAD_CAST "file:///", 8)) {
-#if defined (_WIN32)
-	path = &filename[8];
-#else
-	path = &filename[7];
-#endif
-    } else
-	path = filename;
+    if (xmlConvertUriToPath(filename, &fromUri) < 0)
+        return(NULL);
 
-    if (path == NULL)
-	return(NULL);
+    if (fromUri != NULL)
+        filename = fromUri;
 
 #if defined(_WIN32)
-    fd = xmlWrapOpenUtf8(path, 1);
+    fd = xmlWrapOpenUtf8(filename, 1);
 #elif(__MVS__)
-    fd = fopen(path, "w");
+    fd = fopen(filename, "w");
 #else
-    fd = fopen(path, "wb");
+    fd = fopen(filename, "wb");
 #endif /* WIN32 */
 
-    if (fd == NULL) xmlIOErr(0, path);
+    if (fd == NULL)
+        xmlIOErr(0, filename);
+
+    xmlFree(fromUri);
     return((void *) fd);
 }
 #endif /* LIBXML_OUTPUT_ENABLED */
@@ -1043,34 +995,25 @@ xmlGzfileMatch (const char *filename ATTRIBUTE_UNUSED) {
  */
 static void *
 xmlGzfileOpen_real (const char *filename) {
-    const char *path = NULL;
+    char *fromUri = NULL;
     gzFile fd;
 
-    if (!xmlStrncasecmp(BAD_CAST filename, BAD_CAST "file://localhost/", 17))
-#if defined (_WIN32)
-	path = &filename[17];
-#else
-	path = &filename[16];
-#endif
-    else if (!xmlStrncasecmp(BAD_CAST filename, BAD_CAST "file:///", 8)) {
-#if defined (_WIN32)
-	path = &filename[8];
-#else
-	path = &filename[7];
-#endif
-    } else
-	path = filename;
+    if (xmlConvertUriToPath(filename, &fromUri) < 0)
+        return(NULL);
 
-    if (path == NULL)
-	return(NULL);
-    if (!xmlCheckFilename(path))
+    if (fromUri != NULL)
+        filename = fromUri;
+
+    if (!xmlCheckFilename(filename))
         return(NULL);
 
 #if defined(_WIN32)
-    fd = xmlWrapGzOpenUtf8(path, "rb");
+    fd = xmlWrapGzOpenUtf8(filename, "rb");
 #else
-    fd = zng_gzopen(path, "rb");
+    fd = zng_gzopen(filename, "rb");
 #endif
+
+    xmlFree(fromUri);
     return((void *) fd);
 }
 
@@ -1110,7 +1053,7 @@ xmlGzfileOpen (const char *filename) {
  */
 static void *
 xmlGzfileOpenW (const char *filename, int compression) {
-    const char *path = NULL;
+    char *fromUri = NULL;
     char mode[15];
     gzFile fd;
 
@@ -1125,29 +1068,19 @@ xmlGzfileOpenW (const char *filename, int compression) {
 	return((void *) fd);
     }
 
-    if (!xmlStrncasecmp(BAD_CAST filename, BAD_CAST "file://localhost/", 17))
-#if defined (_WIN32)
-	path = &filename[17];
-#else
-	path = &filename[16];
-#endif
-    else if (!xmlStrncasecmp(BAD_CAST filename, BAD_CAST "file:///", 8)) {
-#if defined (_WIN32)
-	path = &filename[8];
-#else
-	path = &filename[7];
-#endif
-    } else
-	path = filename;
+    if (xmlConvertUriToPath(filename, &fromUri) < 0)
+        return(NULL);
 
-    if (path == NULL)
-	return(NULL);
+    if (fromUri != NULL)
+        filename = fromUri;
 
 #if defined(_WIN32)
-    fd = xmlWrapGzOpenUtf8(path, mode);
+    fd = xmlWrapGzOpenUtf8(filename, mode);
 #else
-    fd = zng_gzopen(path, mode);
+    fd = zng_gzopen(filename, mode);
 #endif
+
+    xmlFree(fromUri);
     return((void *) fd);
 }
 #endif /* LIBXML_OUTPUT_ENABLED */
@@ -1239,25 +1172,23 @@ xmlXzfileMatch (const char *filename ATTRIBUTE_UNUSED) {
  */
 static void *
 xmlXzfileOpen_real (const char *filename) {
-    const char *path = NULL;
+    char *fromUri = NULL;
     xzFile fd;
 
-    if (!xmlStrncasecmp(BAD_CAST filename, BAD_CAST "file://localhost/", 17)) {
-	path = &filename[16];
-    } else if (!xmlStrncasecmp(BAD_CAST filename, BAD_CAST "file:///", 8)) {
-	path = &filename[7];
-    } else if (!xmlStrncasecmp(BAD_CAST filename, BAD_CAST "file:/", 6)) {
-        /* lots of generators seems to lazy to read RFC 1738 */
-	path = &filename[5];
-    } else
-	path = filename;
-
-    if (path == NULL)
-	return(NULL);
-    if (!xmlCheckFilename(path))
+    if (xmlConvertUriToPath(filename, &fromUri) < 0)
         return(NULL);
 
-    fd = __libxml2_xzopen(path, "rb");
+    if (fromUri != NULL)
+        filename = fromUri;
+
+    if (!xmlCheckFilename(filename)) {
+        xmlFree(fromUri);
+        return(NULL);
+    }
+
+    fd = __libxml2_xzopen(filename, "rb");
+
+    xmlFree(fromUri);
     return((void *) fd);
 }
 
@@ -1973,36 +1904,37 @@ __xmlOutputBufferCreateFilename(const char *URI,
     char *unescaped = NULL;
     int is_file_uri = 1;
 
-    (void) compression;
-
-    if (URI == NULL) return(NULL);
+    if (URI == NULL)
+        return(NULL);
 
     puri = xmlParseURI(URI);
     if (puri != NULL) {
         if ((puri->scheme != NULL) &&
-	    (!xmlStrEqual(BAD_CAST puri->scheme, BAD_CAST "file")))
-	    is_file_uri = 0;
+           (!xmlStrEqual(BAD_CAST puri->scheme, BAD_CAST "file")))
+           is_file_uri = 0;
 
-	/*
-	 * try to limit the damages of the URI unescaping code.
-	 */
-	if ((puri->scheme == NULL) ||
-	    (xmlStrEqual(BAD_CAST puri->scheme, BAD_CAST "file"))) {
-	    unescaped = xmlURIUnescapeString(URI, 0, NULL);
-            if (unescaped == NULL) {
-                xmlFreeURI(puri);
-                return(NULL);
-            }
+        /*
+         * try to limit the damages of the URI unescaping code.
+         */
+        if (puri->scheme == NULL) {
+            unescaped = xmlURIUnescapeString(URI, 0, NULL);
+             if (unescaped == NULL) {
+                 xmlFreeURI(puri);
+                 return(NULL);
+             }
+             URI = unescaped;
         }
-	xmlFreeURI(puri);
+        xmlFreeURI(puri);
     }
 
     /*
      * Allocate the Output buffer front-end.
      */
     ret = xmlAllocOutputBufferInternal(encoder);
-    if (ret == NULL)
+    if (ret == NULL) {
+        xmlFree(unescaped);
         return(NULL);
+    }
 
     /*
      * Try to find one of the output accept method accepting that scheme
@@ -2013,26 +1945,10 @@ __xmlOutputBufferCreateFilename(const char *URI,
         int code;
 
         if (cb->matchcallback == xmlIODefaultMatch) {
-            if (unescaped != NULL) {
-                code = xmlOutputDefaultOpen(ret, unescaped, compression,
-                                            is_file_uri);
-                /* TODO: Handle other errors */
-                if (code == XML_ERR_OK)
-                    break;
-            }
-
             code = xmlOutputDefaultOpen(ret, URI, compression, is_file_uri);
             /* TODO: Handle other errors */
             if (code == XML_ERR_OK)
                 break;
-        } else if ((cb->matchcallback != NULL) &&
-                   (cb->matchcallback(unescaped) != 0)) {
-            ret->context = cb->opencallback(unescaped);
-            if (ret->context != NULL) {
-                ret->writecallback = cb->writecallback;
-                ret->closecallback = cb->closecallback;
-                break;
-            }
         } else if ((cb->matchcallback != NULL) &&
                    (cb->matchcallback(URI) != 0)) {
             ret->context = cb->opencallback(URI);
@@ -2044,13 +1960,12 @@ __xmlOutputBufferCreateFilename(const char *URI,
         }
     }
 
-    xmlFree(unescaped);
-
     if (ret->context == NULL) {
         xmlOutputBufferClose(ret);
-	return(NULL);
+	ret = NULL;
     }
 
+    xmlFree(unescaped);
     return(ret);
 }
 
@@ -3137,322 +3052,32 @@ xmlParserGetDirectory(const char *filename) {
 #undef IS_XMLPGD_SEP
 }
 
-/****************************************************************
- *								*
- *		External entities loading			*
- *								*
- ****************************************************************/
-
 /**
- * xmlCheckHTTPInput:
- * @ctxt: an XML parser context
- * @ret: an XML parser input
+ * xmlNoNetExists:
+ * @filename:  the path to check
  *
  * DEPRECATED: Internal function, don't use.
  *
- * Check an input in case it was created from an HTTP stream, in that
- * case it will handle encoding and update of the base URL in case of
- * redirection. It also checks for HTTP errors in which case the input
- * is cleanly freed up and an appropriate error is raised in context
- *
- * Returns the input or NULL in case of HTTP error.
+ * Like xmlCheckFilename but handles file URIs.
  */
-xmlParserInputPtr
-xmlCheckHTTPInput(xmlParserCtxtPtr ctxt, xmlParserInputPtr ret) {
-    /* Avoid unused variable warning if features are disabled. */
-    (void) ctxt;
+int
+xmlNoNetExists(const char *filename) {
+    char *fromUri;
+    int ret;
 
-#ifdef LIBXML_HTTP_ENABLED
-    if ((ret != NULL) && (ret->buf != NULL) &&
-        (ret->buf->readcallback == xmlIOHTTPRead) &&
-        (ret->buf->context != NULL)) {
-        const char *encoding;
-        const char *redir;
-        const char *mime;
-        int code;
-
-        code = xmlNanoHTTPReturnCode(ret->buf->context);
-        if (code >= 400) {
-            /* fatal error */
-	    if (ret->filename != NULL)
-                xmlCtxtErrIO(ctxt, XML_IO_LOAD_ERROR, ret->filename);
-	    else
-                xmlCtxtErrIO(ctxt, XML_IO_LOAD_ERROR, "<null>");
-            xmlFreeInputStream(ret);
-            ret = NULL;
-        } else {
-
-            mime = xmlNanoHTTPMimeType(ret->buf->context);
-            if ((xmlStrstr(BAD_CAST mime, BAD_CAST "/xml")) ||
-                (xmlStrstr(BAD_CAST mime, BAD_CAST "+xml"))) {
-                encoding = xmlNanoHTTPEncoding(ret->buf->context);
-                if (encoding != NULL)
-                    xmlSwitchEncodingName(ctxt, encoding);
-#if 0
-            } else if (xmlStrstr(BAD_CAST mime, BAD_CAST "html")) {
-#endif
-            }
-            redir = xmlNanoHTTPRedir(ret->buf->context);
-            if (redir != NULL) {
-                if (ret->filename != NULL)
-                    xmlFree((xmlChar *) ret->filename);
-                if (ret->directory != NULL) {
-                    xmlFree((xmlChar *) ret->directory);
-                    ret->directory = NULL;
-                }
-                ret->filename =
-                    (char *) xmlStrdup((const xmlChar *) redir);
-            }
-        }
-    }
-#endif
-    return(ret);
-}
-
-static int xmlNoNetExists(const char *URL) {
-    const char *path;
-
-    if (URL == NULL)
+    if (filename == NULL)
 	return(0);
 
-    if (!xmlStrncasecmp(BAD_CAST URL, BAD_CAST "file://localhost/", 17))
-#if defined (_WIN32)
-	path = &URL[17];
-#else
-	path = &URL[16];
-#endif
-    else if (!xmlStrncasecmp(BAD_CAST URL, BAD_CAST "file:///", 8)) {
-#if defined (_WIN32)
-	path = &URL[8];
-#else
-	path = &URL[7];
-#endif
-    } else
-	path = URL;
+    if (xmlConvertUriToPath(filename, &fromUri) < 0)
+        return(0);
 
-    return xmlCheckFilename(path);
-}
+    if (fromUri != NULL)
+        filename = fromUri;
 
-#ifdef LIBXML_CATALOG_ENABLED
+    ret =  xmlCheckFilename(filename);
 
-/**
- * xmlResolveResourceFromCatalog:
- * @URL:  the URL for the entity to load
- * @ID:  the System ID for the entity to load
- * @ctxt:  the context in which the entity is called or NULL
- *
- * Resolves the URL and ID against the appropriate catalog.
- * This function is used by xmlDefaultExternalEntityLoader and
- * xmlNoNetExternalEntityLoader.
- *
- * Returns a new allocated URL, or NULL.
- */
-static xmlChar *
-xmlResolveResourceFromCatalog(const char *URL, const char *ID,
-                              xmlParserCtxtPtr ctxt) {
-    xmlChar *resource = NULL;
-    xmlCatalogAllow pref;
-
-    /*
-     * If the resource doesn't exists as a file,
-     * try to load it from the resource pointed in the catalogs
-     */
-    pref = xmlCatalogGetDefaults();
-
-    if ((pref != XML_CATA_ALLOW_NONE) && (!xmlNoNetExists(URL))) {
-	/*
-	 * Do a local lookup
-	 */
-	if ((ctxt != NULL) && (ctxt->catalogs != NULL) &&
-	    ((pref == XML_CATA_ALLOW_ALL) ||
-	     (pref == XML_CATA_ALLOW_DOCUMENT))) {
-	    resource = xmlCatalogLocalResolve(ctxt->catalogs,
-					      (const xmlChar *)ID,
-					      (const xmlChar *)URL);
-        }
-	/*
-	 * Try a global lookup
-	 */
-	if ((resource == NULL) &&
-	    ((pref == XML_CATA_ALLOW_ALL) ||
-	     (pref == XML_CATA_ALLOW_GLOBAL))) {
-	    resource = xmlCatalogResolve((const xmlChar *)ID,
-					 (const xmlChar *)URL);
-	}
-	if ((resource == NULL) && (URL != NULL))
-	    resource = xmlStrdup((const xmlChar *) URL);
-
-	/*
-	 * TODO: do an URI lookup on the reference
-	 */
-	if ((resource != NULL) && (!xmlNoNetExists((const char *)resource))) {
-	    xmlChar *tmp = NULL;
-
-	    if ((ctxt != NULL) && (ctxt->catalogs != NULL) &&
-		((pref == XML_CATA_ALLOW_ALL) ||
-		 (pref == XML_CATA_ALLOW_DOCUMENT))) {
-		tmp = xmlCatalogLocalResolveURI(ctxt->catalogs, resource);
-	    }
-	    if ((tmp == NULL) &&
-		((pref == XML_CATA_ALLOW_ALL) ||
-	         (pref == XML_CATA_ALLOW_GLOBAL))) {
-		tmp = xmlCatalogResolveURI(resource);
-	    }
-
-	    if (tmp != NULL) {
-		xmlFree(resource);
-		resource = tmp;
-	    }
-	}
-    }
-
-    return resource;
-}
-
-#endif
-
-/**
- * xmlDefaultExternalEntityLoader:
- * @URL:  the URL for the entity to load
- * @ID:  the System ID for the entity to load
- * @ctxt:  the context in which the entity is called or NULL
- *
- * By default we don't load external entities, yet.
- *
- * Returns a new allocated xmlParserInputPtr, or NULL.
- */
-static xmlParserInputPtr
-xmlDefaultExternalEntityLoader(const char *URL, const char *ID,
-                               xmlParserCtxtPtr ctxt)
-{
-    xmlParserInputPtr ret = NULL;
-    xmlChar *resource = NULL;
-
-    if (URL == NULL)
-        return(NULL);
-
-    if ((ctxt != NULL) && (ctxt->options & XML_PARSE_NONET)) {
-        int options = ctxt->options;
-
-	ctxt->options -= XML_PARSE_NONET;
-        ret = xmlNoNetExternalEntityLoader(URL, ID, ctxt);
-	ctxt->options = options;
-	return(ret);
-    }
-#ifdef LIBXML_CATALOG_ENABLED
-    resource = xmlResolveResourceFromCatalog(URL, ID, ctxt);
-#endif
-
-    if (resource == NULL)
-        resource = (xmlChar *) URL;
-
-    ret = xmlNewInputFromFile(ctxt, (const char *) resource);
-    if ((resource != NULL) && (resource != (xmlChar *) URL))
-        xmlFree(resource);
-    return (ret);
-}
-
-static xmlExternalEntityLoader xmlCurrentExternalEntityLoader =
-       xmlDefaultExternalEntityLoader;
-
-/**
- * xmlSetExternalEntityLoader:
- * @f:  the new entity resolver function
- *
- * Changes the defaultexternal entity resolver function for the application
- */
-void
-xmlSetExternalEntityLoader(xmlExternalEntityLoader f) {
-    xmlCurrentExternalEntityLoader = f;
-}
-
-/**
- * xmlGetExternalEntityLoader:
- *
- * Get the default external entity resolver function for the application
- *
- * Returns the xmlExternalEntityLoader function pointer
- */
-xmlExternalEntityLoader
-xmlGetExternalEntityLoader(void) {
-    return(xmlCurrentExternalEntityLoader);
-}
-
-/**
- * xmlLoadExternalEntity:
- * @URL:  the URL for the entity to load
- * @ID:  the Public ID for the entity to load
- * @ctxt:  the context in which the entity is called or NULL
- *
- * Load an external entity, note that the use of this function for
- * unparsed entities may generate problems
- *
- * Returns the xmlParserInputPtr or NULL
- */
-xmlParserInputPtr
-xmlLoadExternalEntity(const char *URL, const char *ID,
-                      xmlParserCtxtPtr ctxt) {
-    if ((URL != NULL) && (xmlNoNetExists(URL) == 0)) {
-	char *canonicFilename;
-	xmlParserInputPtr ret;
-
-	canonicFilename = (char *) xmlCanonicPath((const xmlChar *) URL);
-	if (canonicFilename == NULL) {
-            xmlCtxtErrMemory(ctxt);
-	    return(NULL);
-	}
-
-	ret = xmlCurrentExternalEntityLoader(canonicFilename, ID, ctxt);
-	xmlFree(canonicFilename);
-	return(ret);
-    }
-    return(xmlCurrentExternalEntityLoader(URL, ID, ctxt));
-}
-
-/************************************************************************
- *									*
- *		Disabling Network access				*
- *									*
- ************************************************************************/
-
-/**
- * xmlNoNetExternalEntityLoader:
- * @URL:  the URL for the entity to load
- * @ID:  the System ID for the entity to load
- * @ctxt:  the context in which the entity is called or NULL
- *
- * A specific entity loader disabling network accesses, though still
- * allowing local catalog accesses for resolution.
- *
- * Returns a new allocated xmlParserInputPtr, or NULL.
- */
-xmlParserInputPtr
-xmlNoNetExternalEntityLoader(const char *URL, const char *ID,
-                             xmlParserCtxtPtr ctxt) {
-    xmlParserInputPtr input = NULL;
-    xmlChar *resource = NULL;
-
-#ifdef LIBXML_CATALOG_ENABLED
-    resource = xmlResolveResourceFromCatalog(URL, ID, ctxt);
-#endif
-
-    if (resource == NULL)
-	resource = (xmlChar *) URL;
-
-    if (resource != NULL) {
-        if ((!xmlStrncasecmp(BAD_CAST resource, BAD_CAST "ftp://", 6)) ||
-            (!xmlStrncasecmp(BAD_CAST resource, BAD_CAST "http://", 7))) {
-            xmlCtxtErrIO(ctxt, XML_IO_NETWORK_ATTEMPT,
-                         (const char *) resource);
-	    if (resource != (xmlChar *) URL)
-		xmlFree(resource);
-	    return(NULL);
-	}
-    }
-    input = xmlDefaultExternalEntityLoader((const char *) resource, ID, ctxt);
-    if (resource != (xmlChar *) URL)
-	xmlFree(resource);
-    return(input);
+    xmlFree(fromUri);
+    return(ret);
 }
 
 /************************************************************************

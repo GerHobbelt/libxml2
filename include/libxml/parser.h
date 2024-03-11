@@ -62,7 +62,7 @@ struct _xmlParserInput {
     xmlParserInputBufferPtr buf;      /* UTF-8 encoded buffer */
 
     const char *filename;             /* The file analyzed, if any */
-    const char *directory;            /* the directory/base of the file */
+    const char *directory;            /* unused */
     const xmlChar *base;              /* Base of the array to parse */
     const xmlChar *cur;               /* Current char being parsed */
     const xmlChar *end;               /* end of the array to parse */
@@ -231,7 +231,7 @@ struct _xmlParserCtxt {
     xmlParserInputState instate;      /* current type of input */
     int                 token;        /* next char look-ahead */
 
-    char           *directory;        /* the data directory */
+    char           *directory;        /* unused */
 
     /* Node name stack */
     const xmlChar     *name;          /* Current parsed Node */
