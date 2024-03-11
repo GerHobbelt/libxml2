@@ -175,11 +175,9 @@ xmlCtxtErrIO(xmlParserCtxtPtr ctxt, int code, const char *uri)
     if (ctxt == NULL)
         return;
 
-    if (code == XML_ERR_UNSUPPORTED_ENCODING) {
-        level = XML_ERR_WARNING;
-    } else if ((code == XML_IO_ENOENT) ||
-               (code == XML_IO_NETWORK_ATTEMPT) ||
-               (code == XML_IO_UNKNOWN)) {
+    if ((code == XML_IO_ENOENT) ||
+        (code == XML_IO_NETWORK_ATTEMPT) ||
+        (code == XML_IO_UNKNOWN)) {
         if (ctxt->validate == 0)
             level = XML_ERR_WARNING;
         else
@@ -318,17 +316,23 @@ xmlCtxtErr(xmlParserCtxtPtr ctxt, xmlNodePtr node, xmlErrorDomain domain,
  * Handle a fatal parser error, i.e. violating Well-Formedness constraints
  */
 void
-xmlFatalErr(xmlParserCtxtPtr ctxt, xmlParserErrors error, const char *info)
+xmlFatalErr(xmlParserCtxtPtr ctxt, xmlParserErrors code, const char *info)
 {
     const char *errmsg;
+    xmlErrorLevel level;
 
-    errmsg = xmlErrString(error);
+    if (code == XML_ERR_UNSUPPORTED_ENCODING)
+        level = XML_ERR_WARNING;
+    else
+        level = XML_ERR_FATAL;
+
+    errmsg = xmlErrString(code);
 
     if (info == NULL) {
-        xmlCtxtErr(ctxt, NULL, XML_FROM_PARSER, error, XML_ERR_FATAL,
+        xmlCtxtErr(ctxt, NULL, XML_FROM_PARSER, code, level,
                    NULL, NULL, NULL, 0, "%s\n", errmsg);
     } else {
-        xmlCtxtErr(ctxt, NULL, XML_FROM_PARSER, error, XML_ERR_FATAL,
+        xmlCtxtErr(ctxt, NULL, XML_FROM_PARSER, code, level,
                    (const xmlChar *) info, NULL, NULL, 0,
                    "%s: %s\n", errmsg, info);
     }
@@ -1560,12 +1564,8 @@ xmlNewInputInternal(xmlParserCtxtPtr ctxt, xmlParserInputBufferPtr buf,
         }
     }
 
-    if (encoding != NULL) {
-        if (xmlSwitchInputEncodingName(ctxt, input, encoding) < 0) {
-            xmlFreeInputStream(input);
-            return(NULL);
-        }
-    }
+    if (encoding != NULL)
+        xmlSwitchInputEncodingName(ctxt, input, encoding);
 
     return(input);
 }
@@ -2122,22 +2122,14 @@ xmlNoNetExternalEntityLoader(const char *URL, const char *ID,
     if (resource != NULL) {
         if ((!xmlStrncasecmp(BAD_CAST resource, BAD_CAST "ftp://", 6)) ||
             (!xmlStrncasecmp(BAD_CAST resource, BAD_CAST "http://", 7))) {
-            int res;
-
+            xmlCtxtErrIO(ctxt, XML_IO_NETWORK_ATTEMPT,
+                         (const char *) resource);
             /*
-             * Forward this error to the generic error handler, not to
-             * the parser context for backward compatibility.
-             * Several downstream test suites rely on this behavior.
+             * Also forward the error directly to the global error
+             * handler, which the XML::LibXML test suite expects.
              */
-            res = __xmlRaiseError(NULL, xmlGenericError,
-                                  xmlGenericErrorContext, NULL, NULL,
-                                  XML_FROM_IO, XML_IO_NETWORK_ATTEMPT,
-                                  XML_ERR_ERROR, NULL, 0,
-                                  (const char *) resource, NULL, NULL, 0, 0,
-                                  "Attempt to load network entity %s",
-                                  resource);
-            if (res < 0)
-                xmlCtxtErrMemory(ctxt);
+            __xmlIOErr(XML_FROM_IO, XML_IO_NETWORK_ATTEMPT,
+                       (const char *) resource);
 	    if (resource != (xmlChar *) URL)
 		xmlFree(resource);
 	    return(NULL);
