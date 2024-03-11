@@ -59,13 +59,6 @@
 #define XML_SGML_DEFAULT_CATALOG "file://" SYSCONFDIR "/sgml/catalog"
 #endif
 
-#if defined(_WIN32) && defined(_MSC_VER)
-#if !defined(_WINDOWS_)
-void* __stdcall GetModuleHandleA(const char*);
-unsigned long __stdcall GetModuleFileNameA(void*, char*, unsigned long);
-#endif
-#endif
-
 static xmlChar *xmlCatalogNormalizePublic(const xmlChar *pubID);
 static int xmlExpandCatalog(xmlCatalogPtr catal, const char *filename);
 
@@ -3118,35 +3111,8 @@ xmlInitializeCatalog(void) {
 
 		catalogs = (const char*)getenv("XML_CATALOG_FILES");
 		if (catalogs == NULL)
-#if defined(_WIN32) && defined(_MSC_VER)
-		{
-			void* hmodule;
-
 			catalogs = XML_XML_DEFAULT_CATALOG;
 
-			hmodule = GetModuleHandleA("libxml2.dll");
-			if (hmodule == NULL)
-				hmodule = GetModuleHandleA(NULL);
-			if (hmodule != NULL) {
-				char buf[MAX_PATH + sizeof("\\..\\etc\\catalog")];
-				unsigned long len = GetModuleFileNameA(hmodule, buf, MAX_PATH);
-				if (len != 0) {
-					char* p = &(buf[len]);
-					while (*p != '\\' && p > buf)
-						p--;
-					if (p != buf) {
-						strcpy(p, "\\..\\etc\\catalog");
-						uri = xmlCanonicPath((const xmlChar*)buf);
-						if (uri != NULL) {
-							catalogs = (const char *)uri;
-						}
-					}
-				}
-			}
-		}
-#else
-			catalogs = XML_XML_DEFAULT_CATALOG;
-#endif
 
 		catal = xmlCreateNewCatalog(XML_XML_CATALOG_TYPE,
 			xmlCatalogDefaultPrefer);
