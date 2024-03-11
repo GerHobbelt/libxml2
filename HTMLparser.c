@@ -255,13 +255,16 @@ htmlNodeInfoPop(htmlParserCtxtPtr ctxt)
 #define CUR_PTR ctxt->input->cur
 #define BASE_PTR ctxt->input->base
 
-#define SHRINK if ((ctxt->input->cur - ctxt->input->base > 2 * INPUT_CHUNK) && \
-		   (ctxt->input->end - ctxt->input->cur < 2 * INPUT_CHUNK)) \
-	xmlParserShrink(ctxt)
+#define SHRINK \
+    if ((!PARSER_PROGRESSIVE(ctxt)) && \
+        (ctxt->input->cur - ctxt->input->base > 2 * INPUT_CHUNK) && \
+	(ctxt->input->end - ctxt->input->cur < 2 * INPUT_CHUNK)) \
+	xmlParserShrink(ctxt);
 
-#define GROW if ((ctxt->progressive == 0) &&				\
-		 (ctxt->input->end - ctxt->input->cur < INPUT_CHUNK))	\
-	xmlParserGrow(ctxt)
+#define GROW \
+    if ((!PARSER_PROGRESSIVE(ctxt)) && \
+        (ctxt->input->end - ctxt->input->cur < INPUT_CHUNK)) \
+	xmlParserGrow(ctxt);
 
 #define SKIP_BLANKS htmlSkipBlankChars(ctxt)
 
@@ -3134,7 +3137,8 @@ htmlParseCharDataInternal(htmlParserCtxtPtr ctxt, int readahead) {
     cur = CUR_CHAR(l);
     while (((cur != '<') || (ctxt->token == '<')) &&
            ((cur != '&') || (ctxt->token == '&')) &&
-	   (cur != 0)) {
+	   (cur != 0) &&
+           (!PARSER_STOPPED(ctxt))) {
 	if (!(IS_CHAR(cur))) {
 	    htmlParseErrInt(ctxt, XML_ERR_INVALID_CHAR,
 	                "Invalid char in CDATA 0x%X\n", cur);
@@ -4186,7 +4190,7 @@ htmlParseContent(htmlParserCtxtPtr ctxt) {
 
     currentNode = xmlStrdup(ctxt->name);
     depth = ctxt->nameNr;
-    while (1) {
+    while (!PARSER_STOPPED(ctxt)) {
         GROW;
 
 	/*
@@ -5866,6 +5870,8 @@ htmlCreatePushParserCtxt(htmlSAXHandlerPtr sax, void *user_data,
 	return(NULL);
     }
 
+    inputStream->flags |= XML_INPUT_PROGRESSIVE;
+
     if (filename == NULL)
 	inputStream->filename = NULL;
     else
@@ -5889,7 +5895,6 @@ htmlCreatePushParserCtxt(htmlSAXHandlerPtr sax, void *user_data,
             xmlHaltParser(ctxt);
         }
     }
-    ctxt->progressive = 1;
 
     if (enc != XML_CHAR_ENCODING_NONE)
         xmlSwitchEncoding(ctxt, enc);
@@ -6276,7 +6281,6 @@ htmlCtxtReset(htmlParserCtxtPtr ctxt)
     ctxt->hasExternalSubset = 0;
     ctxt->hasPErefs = 0;
     ctxt->html = 1;
-    ctxt->external = 0;
     ctxt->instate = XML_PARSER_START;
     ctxt->token = 0;
 

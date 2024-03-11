@@ -222,7 +222,7 @@ struct _xmlParserCtxt {
 
     int     hasExternalSubset;        /* reference and external subset */
     int             hasPErefs;        /* the internal subset has PE refs */
-    int              external;        /* are we parsing an external entity */
+    int              external;        /* unused */
 
     int                 valid;        /* is the document valid */
     int              validate;        /* shall we try to validate ? */
@@ -266,7 +266,7 @@ struct _xmlParserCtxt {
     int                linenumbers;   /* set line number in element content */
     void              *catalogs;      /* document's own catalog */
     int                recovery;      /* run in recovery mode */
-    int                progressive;   /* is this a progressive parsing */
+    int                progressive;   /* unused */
     xmlDictPtr         dict;          /* dictionary for the parser */
     const xmlChar *   *atts;          /* array for the attributes callbacks */
     int                maxatts;       /* the size of the array */
