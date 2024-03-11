@@ -339,23 +339,6 @@ xmlFatalErr(xmlParserCtxtPtr ctxt, xmlParserErrors code, const char *info)
 }
 
 /**
- * xmlErrEncodingInt:
- * @ctxt:  an XML parser context
- * @error:  the error number
- * @msg:  the error message
- * @val:  an integer value
- *
- * n encoding error
- */
-static void LIBXML_ATTR_FORMAT(3,0)
-xmlErrEncodingInt(xmlParserCtxtPtr ctxt, xmlParserErrors error,
-                  const char *msg, int val)
-{
-    xmlCtxtErr(ctxt, NULL, XML_FROM_PARSER, error, XML_ERR_FATAL,
-               NULL, NULL, NULL, val, msg, val);
-}
-
-/**
  * xmlIsLetter:
  * @c:  an unicode character (int)
  *
@@ -766,8 +749,8 @@ xmlCurrentChar(xmlParserCtxtPtr ctxt, int *len) {
                      * TODO: Null bytes should be handled by callers,
                      * but this can be tricky.
                      */
-                    xmlErrEncodingInt(ctxt, XML_ERR_INVALID_CHAR,
-                            "Char 0x0 out of allowed range\n", c);
+                    xmlFatalErr(ctxt, XML_ERR_INVALID_CHAR,
+                            "Char 0x0 out of allowed range\n");
                 }
             } else {
                 *len = 1;
@@ -903,9 +886,10 @@ xmlCopyCharMultiByte(xmlChar *out, int val) {
 	else if (val < 0x10000) { *out++= (val >> 12) | 0xE0;  bits=  6;}
 	else if (val < 0x110000)  { *out++= (val >> 18) | 0xF0;  bits=  12; }
 	else {
-	    xmlErrEncodingInt(NULL, XML_ERR_INVALID_CHAR,
-		    "Internal error, xmlCopyCharMultiByte 0x%X out of bound\n",
-			      val);
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+            fprintf(stderr, "xmlCopyCharMultiByte: codepoint out of range\n");
+            abort();
+#endif
 	    return(0);
 	}
 	for ( ; bits >= 0; bits-= 6)
