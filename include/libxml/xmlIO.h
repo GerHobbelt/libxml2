@@ -330,6 +330,7 @@ XMLPUBFUN void
 
 #endif /* LIBXML_OUTPUT_ENABLED */
 
+XML_DEPRECATED
 XMLPUBFUN xmlParserInputPtr
 	xmlCheckHTTPInput		(xmlParserCtxtPtr ctxt,
 					 xmlParserInputPtr ret);
@@ -342,10 +343,7 @@ XMLPUBFUN xmlParserInputPtr
 					 const char *ID,
 					 xmlParserCtxtPtr ctxt);
 
-/*
- * xmlNormalizeWindowsPath is obsolete, don't use it.
- * Check xmlCanonicPath in uri.h for a better alternative.
- */
+XML_DEPRECATED
 XMLPUBFUN xmlChar *
 	xmlNormalizeWindowsPath		(const xmlChar *path);
 
@@ -374,19 +372,24 @@ XMLPUBFUN int
  * Default 'http://' protocol callbacks
  */
 #ifdef LIBXML_HTTP_ENABLED
+XML_DEPRECATED
 XMLPUBFUN int
 	xmlIOHTTPMatch			(const char *filename);
+XML_DEPRECATED
 XMLPUBFUN void *
 	xmlIOHTTPOpen			(const char *filename);
 #ifdef LIBXML_OUTPUT_ENABLED
+XML_DEPRECATED
 XMLPUBFUN void *
 	xmlIOHTTPOpenW			(const char * post_uri,
 					 int   compression );
 #endif /* LIBXML_OUTPUT_ENABLED */
+XML_DEPRECATED
 XMLPUBFUN int
 	xmlIOHTTPRead			(void * context,
 					 char * buffer,
 					 int len);
+XML_DEPRECATED
 XMLPUBFUN int
 	xmlIOHTTPClose			(void * context);
 #endif /* LIBXML_HTTP_ENABLED */
@@ -395,14 +398,18 @@ XMLPUBFUN int
  * Default 'ftp://' protocol callbacks
  */
 #if defined(LIBXML_FTP_ENABLED)
+XML_DEPRECATED
 XMLPUBFUN int
 	xmlIOFTPMatch			(const char *filename);
+XML_DEPRECATED
 XMLPUBFUN void *
 	xmlIOFTPOpen			(const char *filename);
+XML_DEPRECATED
 XMLPUBFUN int
 	xmlIOFTPRead			(void * context,
 					 char * buffer,
 					 int len);
+XML_DEPRECATED
 XMLPUBFUN int
 	xmlIOFTPClose			(void * context);
 #endif /* defined(LIBXML_FTP_ENABLED) */
