@@ -947,7 +947,7 @@ xmlSAX2AttributeInternal(void *ctx, const xmlChar *fullname,
     xmlChar *name;
     xmlChar *ns;
     xmlChar *nval;
-    xmlNsPtr namespace;
+    xmlNsPtr namespace = NULL;
 
     if (ctxt->html) {
 	name = xmlStrdup(fullname);
@@ -1464,7 +1464,7 @@ xmlSAX2StartElement(void *ctx, const xmlChar *fullname, const xmlChar **atts)
     xmlParserCtxtPtr ctxt = (xmlParserCtxtPtr) ctx;
     xmlNodePtr ret;
     xmlNodePtr parent;
-    xmlNsPtr ns;
+    xmlNsPtr ns = NULL;
     xmlChar *name;
     xmlChar *prefix;
     const xmlChar *att;
