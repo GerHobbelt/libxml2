@@ -946,7 +946,7 @@ xmlSAX1Attribute(xmlParserCtxtPtr ctxt, const xmlChar *fullname,
     xmlAttrPtr ret;
     const xmlChar *name;
     xmlChar *ns;
-    xmlNsPtr namespace;
+    xmlNsPtr namespace = NULL;
 
     /*
      * Split the full name into a namespace prefix and the tag name
@@ -1393,7 +1393,7 @@ xmlSAX1StartElement(void *ctx, const xmlChar *fullname, const xmlChar **atts)
     xmlParserCtxtPtr ctxt = (xmlParserCtxtPtr) ctx;
     xmlNodePtr ret;
     xmlNodePtr parent;
-    xmlNsPtr ns;
+    xmlNsPtr ns = NULL;
     const xmlChar *name;
     xmlChar *prefix;
     const xmlChar *att;
