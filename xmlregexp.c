@@ -3560,7 +3560,7 @@ xmlRegFreeExecCtxt(xmlRegExecCtxtPtr exec) {
     xmlFree(exec);
 }
 
-static void
+static int
 xmlRegExecSetErrString(xmlRegExecCtxtPtr exec, const xmlChar *value) {
     if (exec->errString != NULL)
         xmlFree(exec->errString);
@@ -3568,9 +3568,12 @@ xmlRegExecSetErrString(xmlRegExecCtxtPtr exec, const xmlChar *value) {
         exec->errString = NULL;
     } else {
         exec->errString = xmlStrdup(value);
-        if (exec->errString == NULL)
+        if (exec->errString == NULL) {
             exec->status = XML_REGEXP_OUT_OF_MEMORY;
+            return(-1);
+        }
     }
+    return(0);
 }
 
 static void
@@ -3977,7 +3980,8 @@ xmlRegExecPushStringInternal(xmlRegExecCtxtPtr exec, const xmlChar *value,
 		     * entering a sink state, save the current state as error
 		     * state.
 		     */
-                    xmlRegExecSetErrString(exec, value);
+                    if (xmlRegExecSetErrString(exec, value) < 0)
+                        break;
 		    exec->errState = exec->state;
 		    memcpy(exec->errCounts, exec->counts,
 			   exec->comp->nbCounters * sizeof(int));
@@ -4014,7 +4018,8 @@ rollback:
 	    if ((progress) && (exec->state != NULL) &&
 	        (exec->state->type != XML_REGEXP_SINK_STATE)) {
 	        progress = 0;
-                xmlRegExecSetErrString(exec, value);
+                if (xmlRegExecSetErrString(exec, value) < 0)
+                    break;
 		exec->errState = exec->state;
                 if (exec->comp->nbCounters)
                     memcpy(exec->errCounts, exec->counts,
