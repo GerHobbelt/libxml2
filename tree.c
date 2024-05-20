@@ -59,6 +59,9 @@ int __xmlRegisterCallbacks = 0;
  *									*
  ************************************************************************/
 
+static xmlNodePtr
+xmlNewEntityRef(xmlDocPtr doc, xmlChar *name);
+
 static xmlNsPtr
 xmlNewReconciledNs(xmlNodePtr tree, xmlNsPtr ns);
 
@@ -1355,7 +1358,8 @@ xmlNodeParseContentInternal(const xmlDoc *doc, xmlNodePtr parent,
 			/*
 			 * Create a new REFERENCE_REF node
 			 */
-			node = xmlNewCharRef((xmlDocPtr) doc, val);
+			node = xmlNewEntityRef((xmlDocPtr) doc, val);
+                        val = NULL;
 			if (node == NULL)
 			    goto out;
                         node->parent = parent;
@@ -2380,6 +2384,42 @@ xmlNewTextChild(xmlNodePtr parent, xmlNsPtr ns,
 #endif /* LIBXML_TREE_ENABLED */
 
 /**
+ * xmlNewEntityRef:
+ * @doc: the target document (optional)
+ * @name:  the entity name
+ *
+ * Create an empty entity reference node. This function doesn't attempt
+ * to look up the entity in @doc.
+ *
+ * @name is consumed.
+ *
+ * Returns a pointer to the new node object or NULL if arguments are
+ * invalid or a memory allocation failed.
+ */
+static xmlNodePtr
+xmlNewEntityRef(xmlDocPtr doc, xmlChar *name) {
+    xmlNodePtr cur;
+
+    /*
+     * Allocate a new node and fill the fields.
+     */
+    cur = (xmlNodePtr) xmlMalloc(sizeof(xmlNode));
+    if (cur == NULL) {
+        xmlFree(name);
+	return(NULL);
+    }
+    memset(cur, 0, sizeof(xmlNode));
+    cur->type = XML_ENTITY_REF_NODE;
+    cur->doc = doc;
+    cur->name = name;
+
+    if ((__xmlRegisterCallbacks) && (xmlRegisterNodeDefaultValue))
+	xmlRegisterNodeDefaultValue(cur);
+
+    return(cur);
+}
+
+/**
  * xmlNewCharRef:
  * @doc: the target document (optional)
  * @name:  the entity name
@@ -2397,41 +2437,25 @@ xmlNewTextChild(xmlNodePtr parent, xmlNsPtr ns,
  */
 xmlNodePtr
 xmlNewCharRef(xmlDocPtr doc, const xmlChar *name) {
-    xmlNodePtr cur;
+    xmlChar *copy;
 
     if (name == NULL)
         return(NULL);
 
-    /*
-     * Allocate a new node and fill the fields.
-     */
-    cur = (xmlNodePtr) xmlMalloc(sizeof(xmlNode));
-    if (cur == NULL)
-	return(NULL);
-    memset(cur, 0, sizeof(xmlNode));
-    cur->type = XML_ENTITY_REF_NODE;
-
-    cur->doc = doc;
     if (name[0] == '&') {
         int len;
         name++;
 	len = xmlStrlen(name);
 	if (name[len - 1] == ';')
-	    cur->name = xmlStrndup(name, len - 1);
+	    copy = xmlStrndup(name, len - 1);
 	else
-	    cur->name = xmlStrndup(name, len);
+	    copy = xmlStrndup(name, len);
     } else
-	cur->name = xmlStrdup(name);
-    if (cur->name == NULL)
-        goto error;
+	copy = xmlStrdup(name);
+    if (copy == NULL)
+        return(NULL);
 
-    if ((__xmlRegisterCallbacks) && (xmlRegisterNodeDefaultValue))
-	xmlRegisterNodeDefaultValue(cur);
-    return(cur);
-
-error:
-    xmlFreeNode(cur);
-    return(NULL);
+    return(xmlNewEntityRef(doc, copy));
 }
 
 /**
@@ -5508,6 +5532,16 @@ xmlBufGetEntityRefContent(xmlBufPtr buf, const xmlNode *ref) {
         ent = xmlGetDocEntity(ref->doc, ref->name);
         if (ent == NULL)
             return;
+    }
+
+    /*
+     * The parser should always expand predefined entities but it's
+     * possible to create references to predefined entities using
+     * the tree API.
+     */
+    if (ent->etype == XML_INTERNAL_PREDEFINED_ENTITY) {
+        xmlBufCat(buf, ent->content);
+        return;
     }
 
     if (ent->flags & XML_ENT_EXPANDING)
