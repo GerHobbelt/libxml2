@@ -100,7 +100,7 @@ typedef enum {
     XMLLINT_ERR_SCHEMACOMP = 5,	    /* Schema compilation */
     XMLLINT_ERR_OUT = 6,	    /* Error writing output */
     XMLLINT_ERR_SCHEMAPAT = 7,	    /* Error in schema pattern */
-    XMLLINT_ERR_RDREGIS = 8,	    /* Error in Reader registration */
+    /*XMLLINT_ERR_RDREGIS = 8,*/
     XMLLINT_ERR_MEM = 9,	    /* Out of memory error */
     XMLLINT_ERR_XPATH = 10,	    /* XPath evaluation error */
     XMLLINT_ERR_XPATH_EMPTY = 11    /* XPath result is empty */
@@ -189,8 +189,6 @@ static xmlPatternPtr patternc = NULL;
 static xmlStreamCtxtPtr patstream = NULL;
 #endif
 #endif /* LIBXML_READER_ENABLED */
-static int chkregister = 0;
-static int nbregister = 0;
 #ifdef LIBXML_SAX1_ENABLED
 static int sax1 = 0;
 #endif /* LIBXML_SAX1_ENABLED */
@@ -3057,7 +3055,6 @@ static void showVersion(const char *name) {
     if (xmlHasFeature(XML_WITH_SCHEMATRON)) fprintf(stderr, "Schematron ");
     if (xmlHasFeature(XML_WITH_MODULES)) fprintf(stderr, "Modules ");
     if (xmlHasFeature(XML_WITH_DEBUG)) fprintf(stderr, "Debug ");
-    if (xmlHasFeature(XML_WITH_DEBUG_MEM)) fprintf(stderr, "MemDebug ");
     if (xmlHasFeature(XML_WITH_ZLIB)) fprintf(stderr, "Zlib ");
     if (xmlHasFeature(XML_WITH_LZMA)) fprintf(stderr, "Lzma ");
     fprintf(stderr, "\n");
@@ -3163,7 +3160,6 @@ static void usage(FILE *f, const char *name) {
     fprintf(f, "\t--pattern pattern_value : test the pattern support\n");
 #endif
 #endif /* LIBXML_READER_ENABLED */
-    fprintf(f, "\t--chkregister : verify the node registration code\n");
 #ifdef LIBXML_SCHEMAS_ENABLED
     fprintf(f, "\t--relaxng schema : do RelaxNG validation against the schema\n");
     fprintf(f, "\t--schema schema : do validation against the WXS schema\n");
@@ -3182,25 +3178,6 @@ static void usage(FILE *f, const char *name) {
     fprintf(f, "\t--max-ampl value: set maximum amplification factor\n");
 
     fprintf(f, "\nLibxml project home page: https://gitlab.gnome.org/GNOME/libxml2\n");
-}
-
-static void registerNode(xmlNodePtr node)
-{
-    node->_private = malloc(sizeof(long));
-    if (node->_private == NULL) {
-        fprintf(stderr, "Out of memory in xmllint:registerNode()\n");
-	exit(XMLLINT_ERR_MEM);
-    }
-    *(long*)node->_private = (long) 0x81726354;
-    nbregister++;
-}
-
-static void deregisterNode(xmlNodePtr node)
-{
-    assert(node->_private != NULL);
-    assert(*(long*)node->_private == (long) 0x81726354);
-    free(node->_private);
-    nbregister--;
 }
 
 static unsigned long
@@ -3537,10 +3514,6 @@ int main(int argc, const char** argv) {
 	else if ((!strcmp(argv[i], "-sax")) ||
 	         (!strcmp(argv[i], "--sax"))) {
 	    sax++;
-	}
-	else if ((!strcmp(argv[i], "-chkregister")) ||
-	         (!strcmp(argv[i], "--chkregister"))) {
-	    chkregister++;
 #ifdef LIBXML_SCHEMAS_ENABLED
 	} else if ((!strcmp(argv[i], "-relaxng")) ||
 	         (!strcmp(argv[i], "--relaxng"))) {
@@ -3614,11 +3587,6 @@ int main(int argc, const char** argv) {
 	}
     }
 #endif
-
-    if (chkregister) {
-	xmlRegisterNodeDefault(registerNode);
-	xmlDeregisterNodeDefault(deregisterNode);
-    }
 
 #ifdef LIBXML_OUTPUT_ENABLED
     {
@@ -3853,8 +3821,6 @@ int main(int argc, const char** argv) {
 
 		xmlFreeParserCtxt(ctxt);
 	    } else {
-		nbregister = 0;
-
 #ifdef LIBXML_READER_ENABLED
 		if (stream != 0)
 		    streamFile(argv[i]);
@@ -3864,11 +3830,6 @@ int main(int argc, const char** argv) {
 		    testSAX(argv[i]);
 		} else {
 		    parseAndPrintFile(argv[i], NULL);
-		}
-
-                if ((chkregister) && (nbregister != 0)) {
-		    fprintf(stderr, "Registration count off: %d\n", nbregister);
-		    progresult = XMLLINT_ERR_RDREGIS;
 		}
 	    }
 	    files ++;

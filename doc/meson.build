@@ -10,5 +10,3 @@ tutorial_files = files(
 install_data(tutorial_files, install_dir: dir_doc)
 
 subdir('devhelp')
-subdir('examples')
-subdir('tutorial')

@@ -175,13 +175,6 @@ static unsigned xmlMainThreadRngState[2];
  * Memory allocation routines
  */
 
-#if defined(DEBUG_MEMORY_LOCATION)
-xmlFreeFunc xmlFree = (xmlFreeFunc) xmlMemFree;
-xmlMallocFunc xmlMalloc = (xmlMallocFunc) xmlMemMalloc;
-xmlMallocFunc xmlMallocAtomic = (xmlMallocFunc) xmlMemMalloc;
-xmlReallocFunc xmlRealloc = (xmlReallocFunc) xmlMemRealloc;
-xmlStrdupFunc xmlMemStrdup = (xmlStrdupFunc) xmlMemoryStrdup;
-#else
 /* [i_a] make sure MS and other platforms always do the linkage right, irrespective of whether you're using dynamic loadable of statically linked runtime libs */
 static void XMLCALL lcl_xmlFreeFunc(void *mem) { free(mem); }
 static void * LIBXML_ATTR_ALLOC_SIZE(1) XMLCALL lcl_xmlMallocFunc(size_t size) { return malloc(size); }
@@ -234,7 +227,6 @@ xmlReallocFunc xmlRealloc = lcl_xmlReallocFunc;
  * Returns the copy of the string or NULL in case of error
  */
 xmlStrdupFunc xmlMemStrdup = lcl_xmlStrdupFunc;
-#endif /* DEBUG_MEMORY_LOCATION */
 
 /**
  * xmlBufferAllocScheme:
@@ -771,19 +763,11 @@ xmlInitGlobalState(xmlGlobalStatePtr gs) {
     gs->gs_xmlDoValidityCheckingDefaultValue =
          xmlDoValidityCheckingDefaultValueThrDef;
 #ifdef LIBXML_THREAD_ALLOC_ENABLED
-#ifdef DEBUG_MEMORY_LOCATION
-    gs->gs_xmlFree = xmlMemFree;
-    gs->gs_xmlMalloc = xmlMemMalloc;
-    gs->gs_xmlMallocAtomic = xmlMemMalloc;
-    gs->gs_xmlRealloc = xmlMemRealloc;
-    gs->gs_xmlMemStrdup = xmlMemoryStrdup;
-#else
     gs->gs_xmlFree = free;
     gs->gs_xmlMalloc = malloc;
     gs->gs_xmlMallocAtomic = malloc;
     gs->gs_xmlRealloc = realloc;
     gs->gs_xmlMemStrdup = xmlPosixStrdup;
-#endif
 #endif
     gs->gs_xmlGetWarningsDefaultValue = xmlGetWarningsDefaultValueThrDef;
 #ifdef LIBXML_OUTPUT_ENABLED

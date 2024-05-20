@@ -9908,6 +9908,8 @@ xmlIsXHTML(const xmlChar *systemID, const xmlChar *publicID) {
  * xmlRegisterNodeDefault:
  * @func: function pointer to the new RegisterNodeFunc
  *
+ * DEPRECATED: don't use
+ *
  * Registers a callback for node creation
  *
  * Returns the old value of the registration function
@@ -9925,6 +9927,8 @@ xmlRegisterNodeDefault(xmlRegisterNodeFunc func)
 /**
  * xmlDeregisterNodeDefault:
  * @func: function pointer to the new DeregisterNodeFunc
+ *
+ * DEPRECATED: don't use
  *
  * Registers a callback for node destruction
  *

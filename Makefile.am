@@ -381,7 +381,6 @@ EXTRA_DIST = xml2-config.in libxml.spec.in \
              libxml.m4 Copyright check-xml-test-suite.py gentest.py \
 	     check-relaxng-test-suite.py check-relaxng-test-suite2.py \
 	     check-xsddata-test-suite.py check-xinclude-test-suite.py \
-             example/Makefile.am example/gjobread.c example/gjobs.xml \
 	     libxml-2.0.pc.in libxml-2.0-uninstalled.pc.in \
 	     libxml2-config.cmake.in autogen.sh \
 	     libxml.h \
@@ -398,12 +397,6 @@ pkgconfig_DATA = libxml-2.0.pc
 
 cmakedir = $(libdir)/cmake/libxml2
 cmake_DATA = libxml2-config.cmake
-
-#
-# Install the tests program sources as examples 
-#
-examplesdir = $(docdir)/examples
-examples_DATA = xmllint.c
 
 tst: tst.c
 	$(CC) $(CFLAGS) -Iinclude -o tst tst.c .libs/libxml2.a -lpthread -lm -lz -llzma
