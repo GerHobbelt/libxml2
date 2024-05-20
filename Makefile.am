@@ -389,7 +389,8 @@ EXTRA_DIST = xml2-config.in libxml.spec.in \
 	     dbgen.pl dbgenattr.pl \
 	     libxml2.syms timsort.h \
 	     README.zOS README.md \
-	     CMakeLists.txt config.h.cmake.in libxml2-config.cmake.cmake.in
+	     CMakeLists.txt config.h.cmake.in libxml2-config.cmake.cmake.in \
+	     meson.build meson_options.txt
 
 
 pkgconfigdir = $(libdir)/pkgconfig
