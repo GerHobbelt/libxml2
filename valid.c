@@ -74,7 +74,9 @@ xmlDoErrValid(xmlValidCtxtPtr ctxt, xmlNodePtr node,
     xmlParserCtxtPtr pctxt = NULL;
     va_list ap;
 
-    if ((ctxt != NULL) && (ctxt->flags & XML_VCTXT_USE_PCTXT))
+    if (ctxt == NULL)
+        return;
+    if (ctxt->flags & XML_VCTXT_USE_PCTXT)
         pctxt = ctxt->userData;
 
     va_start(ap, msg);
@@ -1422,7 +1424,8 @@ xmlDumpElementDecl(xmlBufferPtr buf, xmlElementPtr elem) {
 
     save = xmlSaveToBuffer(buf, NULL, 0);
     xmlSaveTree(save, (xmlNodePtr) elem);
-    xmlSaveClose(save);
+    if (xmlSaveFinish(save) != XML_ERR_OK)
+        xmlFree(xmlBufferDetach(buf));
 }
 
 /**
@@ -1434,9 +1437,9 @@ xmlDumpElementDecl(xmlBufferPtr buf, xmlElementPtr elem) {
  * the arguments.
  */
 static void
-xmlDumpElementDeclScan(void *elem, void *buf,
+xmlDumpElementDeclScan(void *elem, void *save,
                        const xmlChar *name ATTRIBUTE_UNUSED) {
-    xmlDumpElementDecl((xmlBufferPtr) buf, (xmlElementPtr) elem);
+    xmlSaveTree(save, elem);
 }
 
 /**
@@ -1450,9 +1453,15 @@ xmlDumpElementDeclScan(void *elem, void *buf,
  */
 void
 xmlDumpElementTable(xmlBufferPtr buf, xmlElementTablePtr table) {
+    xmlSaveCtxtPtr save;
+
     if ((buf == NULL) || (table == NULL))
         return;
-    xmlHashScan(table, xmlDumpElementDeclScan, buf);
+
+    save = xmlSaveToBuffer(buf, NULL, 0);
+    xmlHashScan(table, xmlDumpElementDeclScan, save);
+    if (xmlSaveFinish(save) != XML_ERR_OK)
+        xmlFree(xmlBufferDetach(buf));
 }
 #endif /* LIBXML_OUTPUT_ENABLED */
 
@@ -1964,7 +1973,8 @@ xmlDumpAttributeDecl(xmlBufferPtr buf, xmlAttributePtr attr) {
 
     save = xmlSaveToBuffer(buf, NULL, 0);
     xmlSaveTree(save, (xmlNodePtr) attr);
-    xmlSaveClose(save);
+    if (xmlSaveFinish(save) != XML_ERR_OK)
+        xmlFree(xmlBufferDetach(buf));
 }
 
 /**
@@ -1975,9 +1985,9 @@ xmlDumpAttributeDecl(xmlBufferPtr buf, xmlAttributePtr attr) {
  * This is used with the hash scan function - just reverses arguments
  */
 static void
-xmlDumpAttributeDeclScan(void *attr, void *buf,
+xmlDumpAttributeDeclScan(void *attr, void *save,
                          const xmlChar *name ATTRIBUTE_UNUSED) {
-    xmlDumpAttributeDecl((xmlBufferPtr) buf, (xmlAttributePtr) attr);
+    xmlSaveTree(save, attr);
 }
 
 /**
@@ -1991,9 +2001,15 @@ xmlDumpAttributeDeclScan(void *attr, void *buf,
  */
 void
 xmlDumpAttributeTable(xmlBufferPtr buf, xmlAttributeTablePtr table) {
+    xmlSaveCtxtPtr save;
+
     if ((buf == NULL) || (table == NULL))
         return;
-    xmlHashScan(table, xmlDumpAttributeDeclScan, buf);
+
+    save = xmlSaveToBuffer(buf, NULL, 0);
+    xmlHashScan(table, xmlDumpAttributeDeclScan, save);
+    if (xmlSaveFinish(save) != XML_ERR_OK)
+        xmlFree(xmlBufferDetach(buf));
 }
 #endif /* LIBXML_OUTPUT_ENABLED */
 
@@ -2200,7 +2216,8 @@ xmlDumpNotationDecl(xmlBufferPtr buf, xmlNotationPtr nota) {
 
     save = xmlSaveToBuffer(buf, NULL, 0);
     xmlSaveNotationDecl(save, nota);
-    xmlSaveClose(save);
+    if (xmlSaveFinish(save) != XML_ERR_OK)
+        xmlFree(xmlBufferDetach(buf));
 }
 
 /**
@@ -2221,7 +2238,8 @@ xmlDumpNotationTable(xmlBufferPtr buf, xmlNotationTablePtr table) {
 
     save = xmlSaveToBuffer(buf, NULL, 0);
     xmlSaveNotationTable(save, table);
-    xmlSaveClose(save);
+    if (xmlSaveFinish(save) != XML_ERR_OK)
+        xmlFree(xmlBufferDetach(buf));
 }
 #endif /* LIBXML_OUTPUT_ENABLED */
 
@@ -2273,6 +2291,11 @@ xmlFreeID(xmlIDPtr id) {
 	DICT_FREE(id->value)
     if (id->name != NULL)
 	DICT_FREE(id->name)
+    if (id->attr != NULL) {
+        id->attr->id = NULL;
+        id->attr->atype = 0;
+    }
+
     xmlFree(id);
 }
 
@@ -2527,9 +2550,6 @@ xmlRemoveID(xmlDocPtr doc, xmlAttrPtr attr) {
 
     if (xmlHashRemoveEntry(table, attr->id->value, xmlFreeIDTableEntry) < 0)
         return(-1);
-
-    attr->atype = 0;
-    attr->id = NULL;
 
     return(0);
 }
@@ -2872,7 +2892,7 @@ xmlRemoveRef(xmlDocPtr doc, xmlAttrPtr attr) {
 
     /*If the list is empty then remove the list entry in the hash */
     if (xmlListEmpty(ref_list))
-        xmlHashUpdateEntry(table, ID, NULL, xmlFreeRefTableEntry);
+        xmlHashRemoveEntry(table, ID, xmlFreeRefTableEntry);
     xmlFree(ID);
     return(0);
 }
@@ -3222,41 +3242,6 @@ xmlValidNormalizeString(xmlChar *str) {
 	}
     }
     *dst = 0;
-}
-
-/**
- * xmlCtxtGetDtdElementDesc:
- * @ctxt:  validation context
- * @dtd:  a pointer to the DtD to search
- * @name:  the element name
- *
- * Search the DTD for the description of this element
- *
- * returns the xmlElementPtr if found or NULL
- */
-
-static xmlElementPtr
-xmlCtxtGetDtdElementDesc(xmlValidCtxtPtr ctxt, xmlDtdPtr dtd,
-                         const xmlChar *name) {
-    xmlElementTablePtr table;
-    xmlElementPtr cur;
-    const xmlChar *localName;
-    xmlChar *prefix;
-
-    if ((dtd == NULL) || (name == NULL)) return(NULL);
-    if (dtd->elements == NULL)
-	return(NULL);
-    table = (xmlElementTablePtr) dtd->elements;
-
-    localName = xmlSplitQName4(name, &prefix);
-    if (localName == NULL) {
-        xmlVErrMemory(ctxt);
-        return(NULL);
-    }
-    cur = xmlHashLookup2(table, localName, prefix);
-    if (prefix != NULL)
-        xmlFree(prefix);
-    return(cur);
 }
 
 static int
@@ -3994,11 +3979,21 @@ xmlValidateAttributeDecl(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
 
     /* One ID per Element Type */
     if (attr->atype == XML_ATTRIBUTE_ID) {
+        xmlElementPtr elem = NULL;
+        const xmlChar *elemLocalName;
+        xmlChar *elemPrefix;
         int nbId;
 
+        elemLocalName = xmlSplitQName4(attr->elem, &elemPrefix);
+        if (elemLocalName == NULL) {
+            xmlVErrMemory(ctxt);
+            return(0);
+        }
+
 	/* the trick is that we parse DtD as their own internal subset */
-        xmlElementPtr elem = xmlCtxtGetDtdElementDesc(ctxt, doc->intSubset,
-	                                              attr->elem);
+        if (doc->intSubset != NULL)
+            elem = xmlHashLookup2(doc->intSubset->elements,
+                                  elemLocalName, elemPrefix);
 	if (elem != NULL) {
 	    nbId = xmlScanIDAttributeDecl(ctxt, elem, 0);
 	} else {
@@ -4020,9 +4015,11 @@ xmlValidateAttributeDecl(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
 	    xmlErrValidNodeNr(ctxt, (xmlNodePtr) attr, XML_DTD_ID_SUBSET,
        "Element %s has %d ID attribute defined in the internal subset : %s\n",
 		   attr->elem, nbId, attr->name);
+            ret = 0;
 	} else if (doc->extSubset != NULL) {
 	    int extId = 0;
-	    elem = xmlCtxtGetDtdElementDesc(ctxt, doc->extSubset, attr->elem);
+	    elem = xmlHashLookup2(doc->extSubset->elements,
+                                  elemLocalName, elemPrefix);
 	    if (elem != NULL) {
 		extId = xmlScanIDAttributeDecl(ctxt, elem, 0);
 	    }
@@ -4030,12 +4027,16 @@ xmlValidateAttributeDecl(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
 		xmlErrValidNodeNr(ctxt, (xmlNodePtr) attr, XML_DTD_ID_SUBSET,
        "Element %s has %d ID attribute defined in the external subset : %s\n",
 		       attr->elem, extId, attr->name);
+                ret = 0;
 	    } else if (extId + nbId > 1) {
 		xmlErrValidNode(ctxt, (xmlNodePtr) attr, XML_DTD_ID_SUBSET,
 "Element %s has ID attributes defined in the internal and external subset : %s\n",
 		       attr->elem, attr->name, NULL);
+                ret = 0;
 	    }
 	}
+
+        xmlFree(elemPrefix);
     }
 
     /* Validity Constraint: Enumeration */
@@ -4077,6 +4078,8 @@ xmlValidateElementDecl(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
                        xmlElementPtr elem) {
     int ret = 1;
     xmlElementPtr tst;
+    const xmlChar *localName;
+    xmlChar *prefix;
 
     CHECK_DTD;
 
@@ -4140,32 +4143,47 @@ xmlValidateElementDecl(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
 	}
     }
 
+    localName = xmlSplitQName4(elem->name, &prefix);
+    if (localName == NULL) {
+        xmlVErrMemory(ctxt);
+        return(0);
+    }
+
     /* VC: Unique Element Type Declaration */
-    tst = xmlCtxtGetDtdElementDesc(ctxt, doc->intSubset, elem->name);
-    if ((tst != NULL ) && (tst != elem) &&
-	((tst->prefix == elem->prefix) ||
-	 (xmlStrEqual(tst->prefix, elem->prefix))) &&
-	(tst->etype != XML_ELEMENT_TYPE_UNDEFINED)) {
-	xmlErrValidNode(ctxt, (xmlNodePtr) elem, XML_DTD_ELEM_REDEFINED,
-	                "Redefinition of element %s\n",
-		       elem->name, NULL, NULL);
-	ret = 0;
+    if (doc->intSubset != NULL) {
+        tst = xmlHashLookup2(doc->intSubset->elements, localName, prefix);
+
+        if ((tst != NULL ) && (tst != elem) &&
+            ((tst->prefix == elem->prefix) ||
+             (xmlStrEqual(tst->prefix, elem->prefix))) &&
+            (tst->etype != XML_ELEMENT_TYPE_UNDEFINED)) {
+            xmlErrValidNode(ctxt, (xmlNodePtr) elem, XML_DTD_ELEM_REDEFINED,
+                            "Redefinition of element %s\n",
+                           elem->name, NULL, NULL);
+            ret = 0;
+        }
     }
-    tst = xmlCtxtGetDtdElementDesc(ctxt, doc->extSubset, elem->name);
-    if ((tst != NULL ) && (tst != elem) &&
-	((tst->prefix == elem->prefix) ||
-	 (xmlStrEqual(tst->prefix, elem->prefix))) &&
-	(tst->etype != XML_ELEMENT_TYPE_UNDEFINED)) {
-	xmlErrValidNode(ctxt, (xmlNodePtr) elem, XML_DTD_ELEM_REDEFINED,
-	                "Redefinition of element %s\n",
-		       elem->name, NULL, NULL);
-	ret = 0;
+    if (doc->extSubset != NULL) {
+        tst = xmlHashLookup2(doc->extSubset->elements, localName, prefix);
+
+        if ((tst != NULL ) && (tst != elem) &&
+            ((tst->prefix == elem->prefix) ||
+             (xmlStrEqual(tst->prefix, elem->prefix))) &&
+            (tst->etype != XML_ELEMENT_TYPE_UNDEFINED)) {
+            xmlErrValidNode(ctxt, (xmlNodePtr) elem, XML_DTD_ELEM_REDEFINED,
+                            "Redefinition of element %s\n",
+                           elem->name, NULL, NULL);
+            ret = 0;
+        }
     }
+
     /* One ID per Element Type
      * already done when registering the attribute
     if (xmlScanIDAttributeDecl(ctxt, elem) > 1) {
 	ret = 0;
     } */
+
+    xmlFree(prefix);
     return(ret);
 }
 
@@ -4242,6 +4260,8 @@ xmlValidateOneAttribute(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
 	       attr->name, elem->name, NULL);
 	return(0);
     }
+    if (attr->atype == XML_ATTRIBUTE_ID)
+        xmlRemoveID(doc, attr);
     attr->atype = attrDecl->atype;
 
     val = xmlValidateAttributeValueInternal(doc, attrDecl->atype, value);
@@ -5768,61 +5788,19 @@ xmlValidateOneElement(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
 
     if (elem == NULL) return(0);
     switch (elem->type) {
-        case XML_ATTRIBUTE_NODE:
-	    xmlErrValidNode(ctxt, elem, XML_ERR_INTERNAL_ERROR,
-		   "Attribute element not expected\n", NULL, NULL ,NULL);
-	    return(0);
         case XML_TEXT_NODE:
-	    if (elem->children != NULL) {
-		xmlErrValidNode(ctxt, elem, XML_ERR_INTERNAL_ERROR,
-		                "Text element has children !\n",
-				NULL,NULL,NULL);
-		return(0);
-	    }
-	    if (elem->ns != NULL) {
-		xmlErrValidNode(ctxt, elem, XML_ERR_INTERNAL_ERROR,
-		                "Text element has namespace !\n",
-				NULL,NULL,NULL);
-		return(0);
-	    }
-	    if (elem->content == NULL) {
-		xmlErrValidNode(ctxt, elem, XML_ERR_INTERNAL_ERROR,
-		                "Text element has no content !\n",
-				NULL,NULL,NULL);
-		return(0);
-	    }
-	    return(1);
-        case XML_XINCLUDE_START:
-        case XML_XINCLUDE_END:
-            return(1);
         case XML_CDATA_SECTION_NODE:
         case XML_ENTITY_REF_NODE:
         case XML_PI_NODE:
         case XML_COMMENT_NODE:
+        case XML_XINCLUDE_START:
+        case XML_XINCLUDE_END:
 	    return(1);
-        case XML_ENTITY_NODE:
-	    xmlErrValidNode(ctxt, elem, XML_ERR_INTERNAL_ERROR,
-		   "Entity element not expected\n", NULL, NULL ,NULL);
-	    return(0);
-        case XML_NOTATION_NODE:
-	    xmlErrValidNode(ctxt, elem, XML_ERR_INTERNAL_ERROR,
-		   "Notation element not expected\n", NULL, NULL ,NULL);
-	    return(0);
-        case XML_DOCUMENT_NODE:
-        case XML_DOCUMENT_TYPE_NODE:
-        case XML_DOCUMENT_FRAG_NODE:
-	    xmlErrValidNode(ctxt, elem, XML_ERR_INTERNAL_ERROR,
-		   "Document element not expected\n", NULL, NULL ,NULL);
-	    return(0);
-        case XML_HTML_DOCUMENT_NODE:
-	    xmlErrValidNode(ctxt, elem, XML_ERR_INTERNAL_ERROR,
-		   "HTML Document not expected\n", NULL, NULL ,NULL);
-	    return(0);
         case XML_ELEMENT_NODE:
 	    break;
 	default:
 	    xmlErrValidNode(ctxt, elem, XML_ERR_INTERNAL_ERROR,
-		   "unknown element type\n", NULL, NULL ,NULL);
+		   "unexpected element type\n", NULL, NULL ,NULL);
 	    return(0);
     }
 
@@ -5966,7 +5944,7 @@ child_ok:
 	    cont = elemDecl->content;
 	    tmp = xmlValidateElementContent(ctxt, child, elemDecl, 1, elem);
 	    if (tmp <= 0)
-		ret = tmp;
+		ret = 0;
 	    break;
     }
     } /* not continuous */
@@ -6201,11 +6179,13 @@ xmlValidateElement(xmlValidCtxtPtr ctxt, xmlDocPtr doc, xmlNodePtr root) {
             attr = elem->properties;
             while (attr != NULL) {
                 value = xmlNodeListGetString(doc, attr->children, 0);
-                if (value == NULL)
+                if (value == NULL) {
                     xmlVErrMemory(ctxt);
-                ret &= xmlValidateOneAttribute(ctxt, doc, elem, attr, value);
-                if (value != NULL)
+                    ret = 0;
+                } else {
+                    ret &= xmlValidateOneAttribute(ctxt, doc, elem, attr, value);
                     xmlFree((char *)value);
+                }
                 attr= attr->next;
             }
 
@@ -6443,31 +6423,42 @@ xmlValidateDtd(xmlValidCtxtPtr ctxt, xmlDocPtr doc, xmlDtdPtr dtd) {
     xmlDtdPtr oldExt, oldInt;
     xmlNodePtr root;
 
-    if (dtd == NULL) return(0);
-    if (doc == NULL) return(0);
+    if (dtd == NULL)
+        return(0);
+    if (doc == NULL)
+        return(0);
+
     oldExt = doc->extSubset;
     oldInt = doc->intSubset;
     doc->extSubset = dtd;
     doc->intSubset = NULL;
-    ret = xmlValidateRoot(ctxt, doc);
-    if (ret == 0) {
-	doc->extSubset = oldExt;
-	doc->intSubset = oldInt;
-	return(ret);
-    }
     if (doc->ids != NULL) {
-          xmlFreeIDTable(doc->ids);
-          doc->ids = NULL;
+        xmlFreeIDTable(doc->ids);
+        doc->ids = NULL;
     }
     if (doc->refs != NULL) {
-          xmlFreeRefTable(doc->refs);
-          doc->refs = NULL;
+        xmlFreeRefTable(doc->refs);
+        doc->refs = NULL;
     }
-    root = xmlDocGetRootElement(doc);
-    ret = xmlValidateElement(ctxt, doc, root);
-    ret &= xmlValidateDocumentFinal(ctxt, doc);
+
+    ret = xmlValidateRoot(ctxt, doc);
+    if (ret != 0) {
+        root = xmlDocGetRootElement(doc);
+        ret = xmlValidateElement(ctxt, doc, root);
+        ret &= xmlValidateDocumentFinal(ctxt, doc);
+    }
+
     doc->extSubset = oldExt;
     doc->intSubset = oldInt;
+    if (doc->ids != NULL) {
+        xmlFreeIDTable(doc->ids);
+        doc->ids = NULL;
+    }
+    if (doc->refs != NULL) {
+        xmlFreeRefTable(doc->refs);
+        doc->refs = NULL;
+    }
+
     return(ret);
 }
 
@@ -6534,6 +6525,9 @@ xmlValidateAttributeCallback(void *payload, void *data,
 	    }
     }
     if (cur->atype == XML_ATTRIBUTE_NOTATION) {
+        const xmlChar *elemLocalName;
+        xmlChar *elemPrefix;
+
 	doc = cur->doc;
 	if (cur->elem == NULL) {
 	    xmlErrValid(ctxt, XML_ERR_INTERNAL_ERROR,
@@ -6542,14 +6536,25 @@ xmlValidateAttributeCallback(void *payload, void *data,
 	    return;
 	}
 
-	if (doc != NULL)
-	    elem = xmlCtxtGetDtdElementDesc(ctxt, doc->intSubset, cur->elem);
-	if ((elem == NULL) && (doc != NULL))
-	    elem = xmlCtxtGetDtdElementDesc(ctxt, doc->extSubset, cur->elem);
+        elemLocalName = xmlSplitQName4(cur->elem, &elemPrefix);
+        if (elemLocalName == NULL) {
+            xmlVErrMemory(ctxt);
+            return;
+        }
+
+	if ((doc != NULL) && (doc->intSubset != NULL))
+	    elem = xmlHashLookup2(doc->intSubset->elements,
+                                  elemLocalName, elemPrefix);
+	if ((elem == NULL) && (doc != NULL) && (doc->extSubset != NULL))
+	    elem = xmlHashLookup2(doc->extSubset->elements,
+                                  elemLocalName, elemPrefix);
 	if ((elem == NULL) && (cur->parent != NULL) &&
 	    (cur->parent->type == XML_DTD_NODE))
-	    elem = xmlCtxtGetDtdElementDesc(ctxt, (xmlDtdPtr) cur->parent,
-                                            cur->elem);
+	    elem = xmlHashLookup2(((xmlDtdPtr) cur->parent)->elements,
+                                  elemLocalName, elemPrefix);
+
+        xmlFree(elemPrefix);
+
 	if (elem == NULL) {
 	    xmlErrValidNode(ctxt, NULL, XML_DTD_UNKNOWN_ELEM,
 		   "attribute %s: could not find decl for element %s\n",
