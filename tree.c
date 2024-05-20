@@ -7870,39 +7870,6 @@ xmlDOMWrapNSNormGatherInScopeNs(xmlNsMapPtr *map,
 }
 
 /*
-* XML_TREE_ADOPT_STR: If we have a dest-dict, put @str in the dict;
-* otherwise copy it, when it was in the source-dict.
-*/
-#define XML_TREE_ADOPT_STR(str) \
-    if (adoptStr && (str != NULL)) { \
-	if (destDoc->dict) { \
-	    const xmlChar *old = str;	\
-	    str = xmlDictLookup(destDoc->dict, str, -1); \
-	    if ((sourceDoc == NULL) || (sourceDoc->dict == NULL) || \
-	        (!xmlDictOwns(sourceDoc->dict, old))) \
-		xmlFree((char *)old); \
-	} else if ((sourceDoc) && (sourceDoc->dict) && \
-	    xmlDictOwns(sourceDoc->dict, str)) { \
-	    str = BAD_CAST xmlStrdup(str); \
-	} \
-    }
-
-/*
-* XML_TREE_ADOPT_STR_2: If @str was in the source-dict, then
-* put it in dest-dict or copy it.
-*/
-#define XML_TREE_ADOPT_STR_2(str) \
-    if (adoptStr && (str != NULL) && (sourceDoc != NULL) && \
-	(sourceDoc->dict != NULL) && \
-	xmlDictOwns(sourceDoc->dict, cur->content)) { \
-	if (destDoc->dict) \
-	    cur->content = (xmlChar *) \
-		xmlDictLookup(destDoc->dict, cur->content, -1); \
-	else \
-	    cur->content = xmlStrdup(BAD_CAST cur->content); \
-    }
-
-/*
 * xmlDOMWrapNSNormAddNsMapItem2:
 *
 * For internal use. Adds a ns-decl mapping.
@@ -7913,19 +7880,18 @@ static int
 xmlDOMWrapNSNormAddNsMapItem2(xmlNsPtr **list, int *size, int *number,
 			xmlNsPtr oldNs, xmlNsPtr newNs)
 {
-    if (*list == NULL) {
-	*list = (xmlNsPtr *) xmlMalloc(6 * sizeof(xmlNsPtr));
-	if (*list == NULL)
-	    return(-1);
-	*size = 3;
-	*number = 0;
-    } else if ((*number) >= (*size)) {
-	*size *= 2;
-	*list = (xmlNsPtr *) xmlRealloc(*list,
-	    (*size) * 2 * sizeof(xmlNsPtr));
-	if (*list == NULL)
-	    return(-1);
+    if (*number >= *size) {
+        xmlNsPtr *tmp;
+        size_t newSize;
+
+        newSize = *size ? *size * 2 : 3;
+        tmp = xmlRealloc(*list, newSize * 2 * sizeof(tmp[0]));
+        if (tmp == NULL)
+            return(-1);
+        *list = tmp;
+        *size = newSize;
     }
+
     (*list)[2 * (*number)] = oldNs;
     (*list)[2 * (*number) +1] = newNs;
     (*number)++;
@@ -7954,7 +7920,7 @@ xmlDOMWrapRemoveNode(xmlDOMWrapCtxtPtr ctxt, xmlDocPtr doc,
 		     xmlNodePtr node, int options ATTRIBUTE_UNUSED)
 {
     xmlNsPtr *list = NULL;
-    int sizeList, nbList = 0, i, j;
+    int sizeList = 0, nbList = 0, ret = 0, i, j;
     xmlNsPtr ns;
 
     if ((node == NULL) || (doc == NULL) || (node->doc != doc))
@@ -7990,7 +7956,7 @@ xmlDOMWrapRemoveNode(xmlDOMWrapCtxtPtr ctxt, xmlDocPtr doc,
 		    do {
 			if (xmlDOMWrapNSNormAddNsMapItem2(&list, &sizeList,
 			    &nbList, ns, ns) == -1)
-			    goto internal_error;
+			    ret = -1;
 			ns = ns->next;
 		    } while (ns != NULL);
 		}
@@ -8020,7 +7986,7 @@ xmlDOMWrapRemoveNode(xmlDOMWrapCtxtPtr ctxt, xmlDocPtr doc,
 			ns = xmlDOMWrapStoreNs(doc, node->ns->href,
 			    node->ns->prefix);
 			if (ns == NULL)
-			    goto internal_error;
+			    ret = -1;
 		    }
 		    if (ns != NULL) {
 			/*
@@ -8028,7 +7994,7 @@ xmlDOMWrapRemoveNode(xmlDOMWrapCtxtPtr ctxt, xmlDocPtr doc,
 			*/
 			if (xmlDOMWrapNSNormAddNsMapItem2(&list, &sizeList,
 			    &nbList, node->ns, ns) == -1)
-			    goto internal_error;
+			    ret = -1;
 		    }
 		    node->ns = ns;
 		}
@@ -8053,19 +8019,22 @@ next_sibling:
 	if (node->next != NULL)
 	    node = node->next;
 	else {
+            int type = node->type;
+
 	    node = node->parent;
-	    goto next_sibling;
+            if ((type == XML_ATTRIBUTE_NODE) &&
+                (node != NULL) &&
+                (node->children != NULL)) {
+                node = node->children;
+            } else {
+	        goto next_sibling;
+            }
 	}
     } while (node != NULL);
 
     if (list != NULL)
 	xmlFree(list);
-    return (0);
-
-internal_error:
-    if (list != NULL)
-	xmlFree(list);
-    return (-1);
+    return (ret);
 }
 
 /*
@@ -8476,7 +8445,7 @@ xmlDOMWrapReconcileNamespaces(xmlDOMWrapCtxtPtr ctxt ATTRIBUTE_UNUSED,
     int optRemoveRedundantNS =
 	((xmlDOMReconcileNSOptions) options & XML_DOM_RECONNS_REMOVEREDUND) ? 1 : 0;
     xmlNsPtr *listRedund = NULL;
-    int sizeRedund = 0, nbRedund = 0, ret, i, j;
+    int sizeRedund = 0, nbRedund = 0, ret = 0, i, j;
 
     if ((elem == NULL) || (elem->doc == NULL) ||
 	(elem->type != XML_ELEMENT_NODE))
@@ -8505,7 +8474,7 @@ xmlDOMWrapReconcileNamespaces(xmlDOMWrapCtxtPtr ctxt ATTRIBUTE_UNUSED,
 				*/
 				if (xmlDOMWrapNSNormGatherInScopeNs(&nsMap,
 				    elem->parent) == -1)
-				    goto internal_error;
+				    ret = -1;
 			    }
 			    parnsdone = 1;
 			}
@@ -8527,16 +8496,18 @@ xmlDOMWrapReconcileNamespaces(xmlDOMWrapCtxtPtr ctxt ATTRIBUTE_UNUSED,
 				    * Add it to the list of redundant ns-decls.
 				    */
 				    if (xmlDOMWrapNSNormAddNsMapItem2(&listRedund,
-					&sizeRedund, &nbRedund, ns, mi->newNs) == -1)
-					goto internal_error;
-				    /*
-				    * Remove the ns-decl from the element-node.
-				    */
-				    if (prevns)
-					prevns->next = ns->next;
-				    else
-					cur->nsDef = ns->next;
-				    goto next_ns_decl;
+					&sizeRedund, &nbRedund, ns, mi->newNs) == -1) {
+					ret = -1;
+                                    } else {
+                                        /*
+                                        * Remove the ns-decl from the element-node.
+                                        */
+                                        if (prevns)
+                                            prevns->next = ns->next;
+                                        else
+                                            cur->nsDef = ns->next;
+                                        goto next_ns_decl;
+                                    }
 				}
 			    }
 			}
@@ -8566,7 +8537,7 @@ xmlDOMWrapReconcileNamespaces(xmlDOMWrapCtxtPtr ctxt ATTRIBUTE_UNUSED,
 			*/
 			if (xmlDOMWrapNsMapAddItem(&nsMap, -1, ns, ns,
 			    depth) == NULL)
-			    goto internal_error;
+			    ret = -1;
 
 			prevns = ns;
 next_ns_decl:
@@ -8586,7 +8557,7 @@ next_ns_decl:
 			((xmlNodePtr) elem->parent->doc != elem->parent)) {
 			if (xmlDOMWrapNSNormGatherInScopeNs(&nsMap,
 				elem->parent) == -1)
-			    goto internal_error;
+			    ret = -1;
 		    }
 		    parnsdone = 1;
 		}
@@ -8625,7 +8596,7 @@ next_ns_decl:
 			&nsMap, depth,
 			ancestorsOnly,
 			(cur->type == XML_ATTRIBUTE_NODE) ? 1 : 0) == -1)
-		    goto internal_error;
+		    ret = -1;
 		cur->ns = ns;
 
 ns_end:
@@ -8685,11 +8656,6 @@ next_sibling:
 	}
     } while (cur != NULL);
 
-    ret = 0;
-    goto exit;
-internal_error:
-    ret = -1;
-exit:
     if (listRedund) {
 	for (i = 0, j = 0; i < nbRedund; i++, j += 2) {
 	    xmlFreeNs(listRedund[j]);
@@ -8725,7 +8691,7 @@ exit:
 */
 static int
 xmlDOMWrapAdoptBranch(xmlDOMWrapCtxtPtr ctxt,
-		      xmlDocPtr sourceDoc,
+		      xmlDocPtr sourceDoc ATTRIBUTE_UNUSED,
 		      xmlNodePtr node,
 		      xmlDocPtr destDoc,
 		      xmlNodePtr destParent,
@@ -8736,20 +8702,11 @@ xmlDOMWrapAdoptBranch(xmlDOMWrapCtxtPtr ctxt,
     xmlNsMapPtr nsMap = NULL;
     xmlNsMapItemPtr mi;
     xmlNsPtr ns = NULL;
-    int depth = -1, adoptStr = 1;
+    int depth = -1;
     /* gather @parent's ns-decls. */
     int parnsdone;
     /* @ancestorsOnly should be set per option. */
     int ancestorsOnly = 0;
-
-    /*
-    * Optimize string adoption for equal or none dicts.
-    */
-    if ((sourceDoc != NULL) &&
-	(sourceDoc->dict == destDoc->dict))
-	adoptStr = 0;
-    else
-	adoptStr = 1;
 
     /*
     * Get the ns-map from the context if available.
@@ -8770,40 +8727,21 @@ xmlDOMWrapAdoptBranch(xmlDOMWrapCtxtPtr ctxt,
 	parnsdone = 0;
 
     cur = node;
-    if ((cur != NULL) && (cur->type == XML_NAMESPACE_DECL))
-	goto internal_error;
 
     while (cur != NULL) {
-	/*
-	* Paranoid source-doc sanity check.
-	*/
-	if (cur->doc != sourceDoc) {
-	    /*
-	    * We'll assume XIncluded nodes if the doc differs.
-	    * TODO: Do we need to reconciliate XIncluded nodes?
-	    * This here skips XIncluded nodes and tries to handle
-	    * broken sequences.
-	    */
-	    if (cur->next == NULL)
-		goto leave_node;
-	    do {
-		cur = cur->next;
-		if ((cur->type == XML_XINCLUDE_END) ||
-		    (cur->doc == node->doc))
-		    break;
-	    } while (cur->next != NULL);
+        if (cur->doc != destDoc) {
+            if (xmlNodeSetDoc(cur, destDoc) < 0)
+                ret = -1;
+        }
 
-	    if (cur->doc != node->doc)
-		goto leave_node;
-	}
-	cur->doc = destDoc;
 	switch (cur->type) {
 	    case XML_XINCLUDE_START:
 	    case XML_XINCLUDE_END:
 		/*
 		* TODO
 		*/
-		return (-1);
+		ret = -1;
+                goto leave_node;
 	    case XML_ELEMENT_NODE:
 		curElem = cur;
 		depth++;
@@ -8824,14 +8762,12 @@ xmlDOMWrapAdoptBranch(xmlDOMWrapCtxtPtr ctxt,
 			*/
 			if (xmlDOMWrapNSNormGatherInScopeNs(&nsMap,
 			    destParent) == -1)
-			    goto internal_error;
+			    ret = -1;
 			parnsdone = 1;
 		    }
 		    for (ns = cur->nsDef; ns != NULL; ns = ns->next) {
 			/*
 			* NOTE: ns->prefix and ns->href are never in the dict.
-			* XML_TREE_ADOPT_STR(ns->prefix)
-			* XML_TREE_ADOPT_STR(ns->href)
 			*/
 			/*
 			* Does it shadow any ns-decl?
@@ -8853,7 +8789,7 @@ xmlDOMWrapAdoptBranch(xmlDOMWrapCtxtPtr ctxt,
 			*/
 			if (xmlDOMWrapNsMapAddItem(&nsMap, -1,
 			    ns, ns, depth) == NULL)
-			    goto internal_error;
+			    ret = -1;
 		    }
 		}
                 /* Falls through. */
@@ -8865,7 +8801,7 @@ xmlDOMWrapAdoptBranch(xmlDOMWrapCtxtPtr ctxt,
 		if (! parnsdone) {
 		    if (xmlDOMWrapNSNormGatherInScopeNs(&nsMap,
 			destParent) == -1)
-			goto internal_error;
+			ret = -1;
 		    parnsdone = 1;
 		}
 		/*
@@ -8899,7 +8835,7 @@ xmlDOMWrapAdoptBranch(xmlDOMWrapCtxtPtr ctxt,
 		    */
 		    if (xmlDOMWrapNsMapAddItem(&nsMap, -1,
 			    cur->ns, ns, XML_TREE_NSMAP_CUSTOM) == NULL)
-			goto internal_error;
+			ret = -1;
 		    cur->ns = ns;
 		} else {
 		    /*
@@ -8913,15 +8849,11 @@ xmlDOMWrapAdoptBranch(xmlDOMWrapCtxtPtr ctxt,
 			ancestorsOnly,
 			/* ns-decls must be prefixed for attributes. */
 			(cur->type == XML_ATTRIBUTE_NODE) ? 1 : 0) == -1)
-			goto internal_error;
+			ret = -1;
 		    cur->ns = ns;
 		}
+
 ns_end:
-		/*
-		* Further node properties.
-		* TODO: Is this all?
-		*/
-		XML_TREE_ADOPT_STR(cur->name)
 		if (cur->type == XML_ELEMENT_NODE) {
 		    cur->psvi = NULL;
 		    cur->line = 0;
@@ -8936,55 +8868,16 @@ ns_end:
 			cur = (xmlNodePtr) cur->properties;
 			continue;
 		    }
-		} else {
-		    /*
-		    * Attributes.
-		    */
-		    if ((sourceDoc != NULL) &&
-			(((xmlAttrPtr) cur)->atype == XML_ATTRIBUTE_ID))
-		    {
-			xmlRemoveID(sourceDoc, (xmlAttrPtr) cur);
-		    }
-		    ((xmlAttrPtr) cur)->atype = 0;
-		    ((xmlAttrPtr) cur)->psvi = NULL;
 		}
 		break;
 	    case XML_TEXT_NODE:
 	    case XML_CDATA_SECTION_NODE:
-		/*
-		* This puts the content in the dest dict, only if
-		* it was previously in the source dict.
-		*/
-		XML_TREE_ADOPT_STR_2(cur->content)
-		goto leave_node;
-	    case XML_ENTITY_REF_NODE:
-		/*
-		* Remove reference to the entity-node.
-		*/
-		cur->content = NULL;
-		cur->children = NULL;
-		cur->last = NULL;
-		if ((destDoc->intSubset) || (destDoc->extSubset)) {
-		    xmlEntityPtr ent;
-		    /*
-		    * Assign new entity-node if available.
-		    */
-		    ent = xmlGetDocEntity(destDoc, cur->name);
-		    if (ent != NULL) {
-			cur->content = ent->content;
-			cur->children = (xmlNodePtr) ent;
-			cur->last = (xmlNodePtr) ent;
-		    }
-		}
-		goto leave_node;
 	    case XML_PI_NODE:
-		XML_TREE_ADOPT_STR(cur->name)
-		XML_TREE_ADOPT_STR_2(cur->content)
-		break;
 	    case XML_COMMENT_NODE:
-		break;
+	    case XML_ENTITY_REF_NODE:
+		goto leave_node;
 	    default:
-		goto internal_error;
+		ret = -1;
 	}
 	/*
 	* Walk the tree.
@@ -9035,12 +8928,6 @@ leave_node:
 	}
     }
 
-    goto exit;
-
-internal_error:
-    ret = -1;
-
-exit:
     /*
     * Cleanup.
     */
@@ -9102,7 +8989,7 @@ xmlDOMWrapCloneNode(xmlDOMWrapCtxtPtr ctxt,
 		      int options ATTRIBUTE_UNUSED)
 {
     int ret = 0;
-    xmlNodePtr cur, curElem = NULL;
+    xmlNodePtr cur, cloneElem = NULL;
     xmlNsMapPtr nsMap = NULL;
     xmlNsMapItemPtr mi;
     xmlNsPtr ns;
@@ -9120,7 +9007,8 @@ xmlDOMWrapCloneNode(xmlDOMWrapCtxtPtr ctxt,
     xmlNsPtr cloneNs = NULL, *cloneNsDefSlot = NULL;
     xmlDictPtr dict; /* The destination dict */
 
-    if ((node == NULL) || (resNode == NULL) || (destDoc == NULL))
+    if ((node == NULL) || (resNode == NULL) || (destDoc == NULL) ||
+	((destParent != NULL) && (destParent->doc != destDoc)))
 	return(-1);
     /*
     * TODO: Initially we support only element-nodes.
@@ -9199,6 +9087,7 @@ xmlDOMWrapCloneNode(xmlDOMWrapCtxtPtr ctxt,
 			clone->prev = prevClone;
 		    } else
 			parentClone->children = clone;
+                    parentClone->last = clone;
 		} else
 		    resultClone = clone;
 
@@ -9267,7 +9156,7 @@ xmlDOMWrapCloneNode(xmlDOMWrapCtxtPtr ctxt,
 		*/
 		return (-1);
 	    case XML_ELEMENT_NODE:
-		curElem = cur;
+		cloneElem = clone;
 		depth++;
 		/*
 		* Namespace declarations.
@@ -9453,8 +9342,8 @@ xmlDOMWrapCloneNode(xmlDOMWrapCtxtPtr ctxt,
 	    * Acquire a normalized ns-decl and add it to the map.
 	    */
 	    if (xmlDOMWrapNSNormAcquireNormalizedNs(destDoc,
-		/* ns-decls on curElem or on destDoc->oldNs */
-		destParent ? curElem : NULL,
+		/* ns-decls on cloneElem or on destDoc->oldNs */
+		destParent ? cloneElem : NULL,
 		cur->ns, &ns,
 		&nsMap, depth,
 		/* if we need to search only in the ancestor-axis */
@@ -9555,11 +9444,6 @@ leave_node:
 	    prevClone = clone;
 	    cur = cur->next;
 	} else if (cur->type != XML_ATTRIBUTE_NODE) {
-	    /*
-	    * Set clone->last.
-	    */
-	    if (clone->parent != NULL)
-		clone->parent->last = clone;
 	    clone = clone->parent;
 	    if (clone != NULL)
 		parentClone = clone->parent;
@@ -9628,19 +9512,22 @@ exit:
 */
 static int
 xmlDOMWrapAdoptAttr(xmlDOMWrapCtxtPtr ctxt,
-		    xmlDocPtr sourceDoc,
+		    xmlDocPtr sourceDoc ATTRIBUTE_UNUSED,
 		    xmlAttrPtr attr,
 		    xmlDocPtr destDoc,
 		    xmlNodePtr destParent,
 		    int options ATTRIBUTE_UNUSED)
 {
-    xmlNodePtr cur;
-    int adoptStr = 1;
+    int ret = 0;
 
     if ((attr == NULL) || (destDoc == NULL))
 	return (-1);
 
-    attr->doc = destDoc;
+    if (attr->doc != destDoc) {
+        if (xmlSetTreeDoc((xmlNodePtr) attr, destDoc) < 0)
+            ret = -1;
+    }
+
     if (attr->ns != NULL) {
 	xmlNsPtr ns = NULL;
 
@@ -9661,75 +9548,18 @@ xmlDOMWrapAdoptAttr(xmlDOMWrapCtxtPtr ctxt,
 	    */
 	    if (xmlSearchNsByNamespaceStrict(destDoc, destParent, attr->ns->href,
 		&ns, 1) == -1)
-		goto internal_error;
+		ret = -1;
 	    if (ns == NULL) {
 		ns = xmlDOMWrapNSNormDeclareNsForced(destDoc, destParent,
 		    attr->ns->href, attr->ns->prefix, 1);
 	    }
 	}
 	if (ns == NULL)
-	    goto internal_error;
+	    ret = -1;
 	attr->ns = ns;
     }
 
-    XML_TREE_ADOPT_STR(attr->name);
-    attr->atype = 0;
-    attr->psvi = NULL;
-    /*
-    * Walk content.
-    */
-    if (attr->children == NULL)
-	return (0);
-    cur = attr->children;
-    if ((cur != NULL) && (cur->type == XML_NAMESPACE_DECL))
-        goto internal_error;
-    while (cur != NULL) {
-	cur->doc = destDoc;
-	switch (cur->type) {
-	    case XML_TEXT_NODE:
-	    case XML_CDATA_SECTION_NODE:
-		XML_TREE_ADOPT_STR_2(cur->content)
-		break;
-	    case XML_ENTITY_REF_NODE:
-		/*
-		* Remove reference to the entity-node.
-		*/
-		cur->content = NULL;
-		cur->children = NULL;
-		cur->last = NULL;
-		if ((destDoc->intSubset) || (destDoc->extSubset)) {
-		    xmlEntityPtr ent;
-		    /*
-		    * Assign new entity-node if available.
-		    */
-		    ent = xmlGetDocEntity(destDoc, cur->name);
-		    if (ent != NULL) {
-			cur->content = ent->content;
-			cur->children = (xmlNodePtr) ent;
-			cur->last = (xmlNodePtr) ent;
-		    }
-		}
-		break;
-	    default:
-		break;
-	}
-	if (cur->children != NULL) {
-	    cur = cur->children;
-	    continue;
-	}
-next_sibling:
-	if (cur == (xmlNodePtr) attr)
-	    break;
-	if (cur->next != NULL)
-	    cur = cur->next;
-	else {
-	    cur = cur->parent;
-	    goto next_sibling;
-	}
-    }
-    return (0);
-internal_error:
-    return (-1);
+    return (ret);
 }
 
 /*
@@ -9767,6 +9597,8 @@ xmlDOMWrapAdoptNode(xmlDOMWrapCtxtPtr ctxt,
 		    xmlNodePtr destParent,
 		    int options)
 {
+    int ret = 0;
+
     if ((node == NULL) || (node->type == XML_NAMESPACE_DECL) ||
         (destDoc == NULL) ||
 	((destParent != NULL) && (destParent->doc != destDoc)))
@@ -9774,17 +9606,18 @@ xmlDOMWrapAdoptNode(xmlDOMWrapCtxtPtr ctxt,
     /*
     * Check node->doc sanity.
     */
-    if ((node->doc != NULL) && (sourceDoc != NULL) &&
-	(node->doc != sourceDoc)) {
-	/*
-	* Might be an XIncluded node.
-	*/
+    if (sourceDoc == NULL) {
+        sourceDoc = node->doc;
+    } else if (node->doc != sourceDoc) {
 	return (-1);
     }
-    if (sourceDoc == NULL)
-	sourceDoc = node->doc;
+
+    /*
+     * TODO: Shouldn't this be allowed?
+     */
     if (sourceDoc == destDoc)
 	return (-1);
+
     switch (node->type) {
 	case XML_ELEMENT_NODE:
 	case XML_ATTRIBUTE_NODE:
@@ -9813,52 +9646,12 @@ xmlDOMWrapAdoptNode(xmlDOMWrapCtxtPtr ctxt,
 	    return (xmlDOMWrapAdoptAttr(ctxt, sourceDoc,
 		(xmlAttrPtr) node, destDoc, destParent, options));
     } else {
-	xmlNodePtr cur = node;
-	int adoptStr = 1;
-
-	cur->doc = destDoc;
-	/*
-	* Optimize string adoption.
-	*/
-	if ((sourceDoc != NULL) &&
-	    (sourceDoc->dict == destDoc->dict))
-		adoptStr = 0;
-	switch (node->type) {
-	    case XML_TEXT_NODE:
-	    case XML_CDATA_SECTION_NODE:
-		XML_TREE_ADOPT_STR_2(node->content)
-		    break;
-	    case XML_ENTITY_REF_NODE:
-		/*
-		* Remove reference to the entity-node.
-		*/
-		node->content = NULL;
-		node->children = NULL;
-		node->last = NULL;
-		if ((destDoc->intSubset) || (destDoc->extSubset)) {
-		    xmlEntityPtr ent;
-		    /*
-		    * Assign new entity-node if available.
-		    */
-		    ent = xmlGetDocEntity(destDoc, node->name);
-		    if (ent != NULL) {
-			node->content = ent->content;
-			node->children = (xmlNodePtr) ent;
-			node->last = (xmlNodePtr) ent;
-		    }
-		}
-		XML_TREE_ADOPT_STR(node->name)
-		break;
-	    case XML_PI_NODE: {
-		XML_TREE_ADOPT_STR(node->name)
-		XML_TREE_ADOPT_STR_2(node->content)
-		break;
-	    }
-	    default:
-		break;
-	}
+        if (node->doc != destDoc) {
+            if (xmlNodeSetDoc(node, destDoc) < 0)
+                ret = -1;
+        }
     }
-    return (0);
+    return (ret);
 }
 
 /************************************************************************
