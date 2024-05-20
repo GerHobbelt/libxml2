@@ -129,17 +129,17 @@ static int oldout = 0;
 #ifdef LIBXML_VALID_ENABLED
 static int valid = 0;
 static int postvalid = 0;
-static const char * dtdvalid = NULL;
-static const char * dtdvalidfpi = NULL;
+static const char *dtdvalid = NULL;
+static const char *dtdvalidfpi = NULL;
 #endif
 #ifdef LIBXML_SCHEMAS_ENABLED
-static const char * relaxng = NULL;
+static const char *relaxng = NULL;
 static xmlRelaxNGPtr relaxngschemas = NULL;
-static const char * schema = NULL;
+static const char *schema = NULL;
 static xmlSchemaPtr wxschemas = NULL;
 #endif
 #ifdef LIBXML_SCHEMATRON_ENABLED
-static const char * schematron = NULL;
+static const char *schematron = NULL;
 static xmlSchematronPtr wxschematron = NULL;
 #endif
 static int repeat = 0;

@@ -1905,7 +1905,6 @@ xmlParserInputBufferCreateFd(int fd, xmlCharEncoding enc) {
     if (ret != NULL) {
         ret->context = (void *) (ptrdiff_t) fd;
 	ret->readcallback = xmlFdRead;
-	ret->closecallback = xmlFdClose;
     }
 
     return(ret);
