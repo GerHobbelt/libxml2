@@ -9,8 +9,10 @@
 XML_HIDDEN extern int
 __xmlRegisterCallbacks;
 
-XML_HIDDEN extern xmlNsPtr
-xmlXmlNamespace;
+XML_HIDDEN int
+xmlSearchNsSafe(xmlNodePtr node, const xmlChar *href, xmlNsPtr *out);
+XML_HIDDEN int
+xmlSearchNsByHrefSafe(xmlNodePtr node, const xmlChar *href, xmlNsPtr *out);
 
 XML_HIDDEN int
 xmlNodeParseContent(xmlNodePtr node, const xmlChar *content, int len);
