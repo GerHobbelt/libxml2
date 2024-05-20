@@ -71,6 +71,9 @@ static xmlChar* xmlGetPropNodeValueInternal(const xmlAttr *prop);
 static void
 xmlBufGetChildContent(xmlBufPtr buf, const xmlNode *tree);
 
+static void
+xmlUnlinkNodeInternal(xmlNodePtr cur);
+
 /************************************************************************
  *									*
  *		A few static variables and macros			*
@@ -1058,7 +1061,7 @@ xmlFreeDtd(xmlDtdPtr cur) {
 	    if ((c->type != XML_ELEMENT_DECL) &&
 		(c->type != XML_ATTRIBUTE_DECL) &&
 		(c->type != XML_ENTITY_DECL)) {
-		xmlUnlinkNode(c);
+		xmlUnlinkNodeInternal(c);
 		xmlFreeNode(c);
 	    }
 	    c = next;
@@ -1161,12 +1164,12 @@ xmlFreeDoc(xmlDocPtr cur) {
     if (intSubset == extSubset)
 	extSubset = NULL;
     if (extSubset != NULL) {
-	xmlUnlinkNode((xmlNodePtr) cur->extSubset);
+	xmlUnlinkNodeInternal((xmlNodePtr) cur->extSubset);
 	cur->extSubset = NULL;
 	xmlFreeDtd(extSubset);
     }
     if (intSubset != NULL) {
-	xmlUnlinkNode((xmlNodePtr) cur->intSubset);
+	xmlUnlinkNodeInternal((xmlNodePtr) cur->intSubset);
 	cur->intSubset = NULL;
 	xmlFreeDtd(intSubset);
     }
@@ -2667,6 +2670,40 @@ xmlNewDocComment(xmlDocPtr doc, const xmlChar *content) {
     return(cur);
 }
 
+static void
+xmlRemoveEntity(xmlEntityPtr ent) {
+    xmlDocPtr doc = ent->doc;
+    xmlDtdPtr intSubset, extSubset;
+
+    if (doc == NULL)
+        return;
+    intSubset = doc->intSubset;
+    extSubset = doc->extSubset;
+
+    if ((ent->etype == XML_INTERNAL_GENERAL_ENTITY) ||
+        (ent->etype == XML_EXTERNAL_GENERAL_PARSED_ENTITY) ||
+        (ent->etype == XML_EXTERNAL_GENERAL_UNPARSED_ENTITY)) {
+        if (intSubset != NULL) {
+            if (xmlHashLookup(intSubset->entities, ent->name) == ent)
+                xmlHashRemoveEntry(intSubset->entities, ent->name, NULL);
+        }
+        if (extSubset != NULL) {
+            if (xmlHashLookup(extSubset->entities, ent->name) == ent)
+                xmlHashRemoveEntry(extSubset->entities, ent->name, NULL);
+        }
+    } else if ((ent->etype == XML_INTERNAL_PARAMETER_ENTITY) ||
+               (ent->etype == XML_EXTERNAL_PARAMETER_ENTITY)) {
+        if (intSubset != NULL) {
+            if (xmlHashLookup(intSubset->pentities, ent->name) == ent)
+                xmlHashRemoveEntry(intSubset->entities, ent->name, NULL);
+        }
+        if (extSubset != NULL) {
+            if (xmlHashLookup(extSubset->pentities, ent->name) == ent)
+                xmlHashRemoveEntry(extSubset->entities, ent->name, NULL);
+        }
+    }
+}
+
 static int
 xmlNodeSetDoc(xmlNodePtr node, xmlDocPtr doc) {
     xmlDocPtr oldDoc;
@@ -2706,41 +2743,69 @@ xmlNodeSetDoc(xmlNodePtr node, xmlDocPtr doc) {
         }
     }
 
-    /*
-     * Handle IDs
-     *
-     * TODO: ID attributes should also be added to the new
-     * document, but it's not clear how to handle clashes.
-     */
-    if (node->type == XML_ATTRIBUTE_NODE) {
-        xmlAttrPtr attr = (xmlAttrPtr) node;
-
-        if (attr->atype == XML_ATTRIBUTE_ID)
-            xmlRemoveID(oldDoc, attr);
-    }
-
-    /*
-     * Handle entity references
-     */
-    if (node->type == XML_ENTITY_REF_NODE) {
-        node->children = NULL;
-        node->last = NULL;
-        node->content = NULL;
-
-        if ((doc != NULL) &&
-            ((doc->intSubset != NULL) || (doc->extSubset != NULL))) {
-            xmlEntityPtr ent;
+    switch (node->type) {
+        case XML_ATTRIBUTE_NODE: {
+            xmlAttrPtr attr = (xmlAttrPtr) node;
 
             /*
-            * Assign new entity node if available
-            */
-            ent = xmlGetDocEntity(doc, node->name);
-            if (ent != NULL) {
-                node->children = (xmlNodePtr) ent;
-                node->last = (xmlNodePtr) ent;
-                node->content = ent->content;
-            }
+             * Handle IDs
+             *
+             * TODO: ID attributes should also be added to the new
+             * document, but it's not clear how to handle clashes.
+             */
+            if (attr->atype == XML_ATTRIBUTE_ID)
+                xmlRemoveID(oldDoc, attr);
+
+            break;
         }
+
+        case XML_ENTITY_REF_NODE:
+            /*
+             * Handle entity references
+             */
+            node->children = NULL;
+            node->last = NULL;
+            node->content = NULL;
+
+            if ((doc != NULL) &&
+                ((doc->intSubset != NULL) || (doc->extSubset != NULL))) {
+                xmlEntityPtr ent;
+
+                /*
+                * Assign new entity node if available
+                */
+                ent = xmlGetDocEntity(doc, node->name);
+                if (ent != NULL) {
+                    node->children = (xmlNodePtr) ent;
+                    node->last = (xmlNodePtr) ent;
+                    node->content = ent->content;
+                }
+            }
+
+            break;
+
+        case XML_DTD_NODE:
+            if (oldDoc != NULL) {
+                if (oldDoc->intSubset == (xmlDtdPtr) node)
+                    oldDoc->intSubset = NULL;
+                if (oldDoc->extSubset == (xmlDtdPtr) node)
+                    oldDoc->extSubset = NULL;
+            }
+
+            break;
+
+        case XML_ENTITY_DECL:
+            xmlRemoveEntity((xmlEntityPtr) node);
+            break;
+
+        /*
+         * TODO:
+         * - Remove element decls from doc->elements
+         * - Remove attribtue decls form doc->attributes
+         */
+
+        default:
+            break;
     }
 
     /*
@@ -2962,7 +3027,7 @@ xmlInsertProp(xmlDocPtr doc, xmlNodePtr cur, xmlNodePtr parent,
     attr = xmlGetPropNodeInternal(parent, cur->name,
                                   cur->ns ? cur->ns->href : NULL, 0);
 
-    xmlUnlinkNode(cur);
+    xmlUnlinkNodeInternal(cur);
 
     if (cur->doc != doc) {
         if (xmlSetTreeDoc(cur, doc) < 0)
@@ -2994,10 +3059,10 @@ xmlInsertProp(xmlDocPtr doc, xmlNodePtr cur, xmlNodePtr parent,
 static xmlNodePtr
 xmlInsertNode(xmlDocPtr doc, xmlNodePtr cur, xmlNodePtr parent,
               xmlNodePtr prev, xmlNodePtr next) {
+    xmlNodePtr oldParent;
+
     if (cur->type == XML_ATTRIBUTE_NODE)
 	return xmlInsertProp(doc, cur, parent, prev, next);
-
-    xmlUnlinkNode(cur);
 
     /*
      * Coalesce text nodes
@@ -3007,6 +3072,7 @@ xmlInsertNode(xmlDocPtr doc, xmlNodePtr cur, xmlNodePtr parent,
             (prev->name == cur->name)) {
             if (xmlTextAddContent(prev, cur->content, -1) < 0)
                 return(NULL);
+            xmlUnlinkNodeInternal(cur);
 	    xmlFreeNode(cur);
 	    return(prev);
 	}
@@ -3022,14 +3088,39 @@ xmlInsertNode(xmlDocPtr doc, xmlNodePtr cur, xmlNodePtr parent,
                 xmlTextSetContent(next, merged);
             }
 
+            xmlUnlinkNodeInternal(cur);
 	    xmlFreeNode(cur);
 	    return(next);
 	}
     }
 
+    /* Unlink */
+    oldParent = cur->parent;
+    if (oldParent != NULL) {
+        if (oldParent->children == cur)
+            oldParent->children = cur->next;
+        if (oldParent->last == cur)
+            oldParent->last = cur->prev;
+    }
+    if (cur->next != NULL)
+        cur->next->prev = cur->prev;
+    if (cur->prev != NULL)
+        cur->prev->next = cur->next;
+
     if (cur->doc != doc) {
-	if (xmlSetTreeDoc(cur, doc) < 0)
+	if (xmlSetTreeDoc(cur, doc) < 0) {
+            /*
+             * We shouldn't make any modifications to the inserted
+             * tree if a memory allocation fails, but that's hard to
+             * implement. The tree has been moved to the target
+             * document now but some contents are corrupted.
+             * Unlinking is the best we can do.
+             */
+            cur->parent = NULL;
+            cur->prev = NULL;
+            cur->next = NULL;
             return(NULL);
+        }
     }
 
     cur->parent = parent;
@@ -3248,11 +3339,7 @@ xmlAddChildList(xmlNodePtr parent, xmlNodePtr cur) {
  * @parent:  the parent node
  * @cur:  the child node
  *
- * Append @cur to the children of @parent.
- *
- * Unlike functions like xmlAddSibling, this function doesn't unlink
- * @cur before appending. It is an error if @cur has siblings or a
- * parent. This behavior might change in future releases.
+ * Unlink @cur and append it to the children of @parent.
  *
  * If @cur is a text node, it may be merged with an adjacent text
  * node and freed. In this case the text node containing the merged
@@ -3281,6 +3368,12 @@ xmlAddChildList(xmlNodePtr parent, xmlNodePtr cur) {
  * document, document fragments, elements and attributes
  * should be used as parent nodes.
  *
+ * When moving a node between documents and a memory allocation
+ * fails, the node's content will be corrupted and it will be
+ * unlinked. In this case, the node must be freed manually.
+ *
+ * Moving DTDs between documents isn't supported.
+ *
  * Returns @elem or a sibling if @elem was merged. Returns NULL
  * if arguments are invalid or a memory allocation failed.
  */
@@ -3288,22 +3381,14 @@ xmlNodePtr
 xmlAddChild(xmlNodePtr parent, xmlNodePtr cur) {
     xmlNodePtr prev;
 
-    if ((parent == NULL) || (parent->type == XML_NAMESPACE_DECL)) {
-	return(NULL);
-    }
-
-    if ((cur == NULL) || (cur->type == XML_NAMESPACE_DECL) ||
-        (cur->next != NULL) || (cur->prev != NULL) ||
-        ((cur->parent != NULL && cur->parent != parent))) {
-	return(NULL);
-    }
-
-    if (parent == cur) {
-	return(NULL);
-    }
+    if ((parent == NULL) || (parent->type == XML_NAMESPACE_DECL) ||
+        (cur == NULL) || (cur->type == XML_NAMESPACE_DECL) ||
+        (parent == cur))
+        return(NULL);
 
     /*
-     * Handle text parent
+     * If parent is a text node, call xmlTextAddContent. This
+     * undocumented quirk should probably be removed.
      */
     if (parent->type == XML_TEXT_NODE) {
         if (xmlTextAddContent(parent, cur->content, -1) < 0)
@@ -3312,79 +3397,20 @@ xmlAddChild(xmlNodePtr parent, xmlNodePtr cur) {
         return(parent);
     }
 
-    /*
-     * If cur is a TEXT node, merge its content with adjacent TEXT nodes
-     * cur is then freed.
-     */
-    if (cur->type == XML_TEXT_NODE) {
-        xmlNodePtr last = parent->last;
-
-	if ((last != NULL) && (last->type == XML_TEXT_NODE) &&
-	    (last->name == cur->name) &&
-            (last != cur)) {
-            if (xmlTextAddContent(last, cur->content, -1) < 0)
-                return(NULL);
-	    xmlFreeNode(cur);
-	    return(last);
-	}
-    } else if (cur->type == XML_ATTRIBUTE_NODE) {
-        if (parent->type != XML_ELEMENT_NODE)
-            return(NULL);
-    }
-
-    /*
-     * add the new element at the end of the children list.
-     */
-    prev = cur->parent;
-    if (cur->doc != parent->doc) {
-	if (xmlSetTreeDoc(cur, parent->doc) < 0)
-            return(NULL);
-    }
-    cur->parent = parent;
-    /* this check prevents a loop on tree-traversions if a developer
-     * tries to add a node to its parent multiple times
-     */
-    if (prev == parent)
-	return(cur);
-
     if (cur->type == XML_ATTRIBUTE_NODE) {
-	if (parent->properties != NULL) {
-	    /* check if an attribute with the same name exists */
-	    xmlAttrPtr lastattr;
-
-            lastattr = xmlGetPropNodeInternal(parent, cur->name,
-                    cur->ns ? cur->ns->href : NULL, 0);
-	    if (lastattr != NULL) {
-                if (lastattr == (xmlAttrPtr) cur)
-                    return(cur);
-		/* different instance, destroy it (attributes must be unique) */
-                xmlUnlinkNode((xmlNodePtr) lastattr);
-		xmlFreeProp(lastattr);
-	    }
-	}
-	if (parent->properties == NULL) {
-	    parent->properties = (xmlAttrPtr) cur;
-	} else {
-	    /* find the end */
-	    xmlAttrPtr lastattr = parent->properties;
-	    while (lastattr->next != NULL) {
-		lastattr = lastattr->next;
-	    }
-	    lastattr->next = (xmlAttrPtr) cur;
-	    ((xmlAttrPtr) cur)->prev = lastattr;
-	}
+        prev = (xmlNodePtr) parent->properties;
+        if (prev != NULL) {
+            while (prev->next != NULL)
+                prev = prev->next;
+        }
     } else {
-	if (parent->children == NULL) {
-	    parent->children = cur;
-	    parent->last = cur;
-	} else {
-	    prev = parent->last;
-	    prev->next = cur;
-	    cur->prev = prev;
-	    parent->last = cur;
-	}
+        prev = parent->last;
     }
-    return(cur);
+
+    if (cur == prev)
+        return(cur);
+
+    return(xmlInsertNode(parent->doc, cur, parent, prev, NULL));
 }
 
 /**
@@ -3748,53 +3774,16 @@ xmlFreeNode(xmlNodePtr cur) {
 }
 
 /**
- * xmlUnlinkNode:
+ * xmlUnlinkNodeInternal:
  * @cur:  the node
  *
  * Unlink a node from its tree.
  *
- * The node is not freed. Unless it is reinserted, it must be managed
- * manually and freed eventually by calling xmlFreeNode.
+ * This function only unlinks the node from the tree. It doesn't
+ * clear references to DTD nodes.
  */
-void
-xmlUnlinkNode(xmlNodePtr cur) {
-    if (cur == NULL) {
-	return;
-    }
-    if (cur->type == XML_NAMESPACE_DECL)
-        return;
-    if (cur->type == XML_DTD_NODE) {
-	xmlDocPtr doc;
-	doc = cur->doc;
-	if (doc != NULL) {
-	    if (doc->intSubset == (xmlDtdPtr) cur)
-		doc->intSubset = NULL;
-	    if (doc->extSubset == (xmlDtdPtr) cur)
-		doc->extSubset = NULL;
-	}
-    }
-    if (cur->type == XML_ENTITY_DECL) {
-        xmlDocPtr doc;
-	doc = cur->doc;
-	if (doc != NULL) {
-	    if (doc->intSubset != NULL) {
-	        if (xmlHashLookup(doc->intSubset->entities, cur->name) == cur)
-		    xmlHashRemoveEntry(doc->intSubset->entities, cur->name,
-		                       NULL);
-	        if (xmlHashLookup(doc->intSubset->pentities, cur->name) == cur)
-		    xmlHashRemoveEntry(doc->intSubset->pentities, cur->name,
-		                       NULL);
-	    }
-	    if (doc->extSubset != NULL) {
-	        if (xmlHashLookup(doc->extSubset->entities, cur->name) == cur)
-		    xmlHashRemoveEntry(doc->extSubset->entities, cur->name,
-		                       NULL);
-	        if (xmlHashLookup(doc->extSubset->pentities, cur->name) == cur)
-		    xmlHashRemoveEntry(doc->extSubset->pentities, cur->name,
-		                       NULL);
-	    }
-	}
-    }
+static void
+xmlUnlinkNodeInternal(xmlNodePtr cur) {
     if (cur->parent != NULL) {
 	xmlNodePtr parent;
 	parent = cur->parent;
@@ -3809,11 +3798,47 @@ xmlUnlinkNode(xmlNodePtr cur) {
 	}
 	cur->parent = NULL;
     }
+
     if (cur->next != NULL)
         cur->next->prev = cur->prev;
     if (cur->prev != NULL)
         cur->prev->next = cur->next;
-    cur->next = cur->prev = NULL;
+    cur->next = NULL;
+    cur->prev = NULL;
+}
+
+/**
+ * xmlUnlinkNode:
+ * @cur:  the node
+ *
+ * Unlink a node from its tree.
+ *
+ * The node is not freed. Unless it is reinserted, it must be managed
+ * manually and freed eventually by calling xmlFreeNode.
+ */
+void
+xmlUnlinkNode(xmlNodePtr cur) {
+    if (cur == NULL)
+	return;
+
+    if (cur->type == XML_NAMESPACE_DECL)
+        return;
+
+    if (cur->type == XML_DTD_NODE) {
+	xmlDocPtr doc = cur->doc;
+
+	if (doc != NULL) {
+	    if (doc->intSubset == (xmlDtdPtr) cur)
+		doc->intSubset = NULL;
+	    if (doc->extSubset == (xmlDtdPtr) cur)
+		doc->extSubset = NULL;
+	}
+    }
+
+    if (cur->type == XML_ENTITY_DECL)
+        xmlRemoveEntity((xmlEntityPtr) cur);
+
+    xmlUnlinkNodeInternal(cur);
 }
 
 #if defined(LIBXML_TREE_ENABLED) || defined(LIBXML_WRITER_ENABLED)
@@ -3843,6 +3868,7 @@ xmlReplaceNode(xmlNodePtr old, xmlNodePtr cur) {
 	return(NULL);
     }
     if ((cur == NULL) || (cur->type == XML_NAMESPACE_DECL)) {
+        /* Don't call xmlUnlinkNodeInternal to handle DTDs. */
 	xmlUnlinkNode(old);
 	return(old);
     }
@@ -3855,7 +3881,7 @@ xmlReplaceNode(xmlNodePtr old, xmlNodePtr cur) {
     if ((cur->type==XML_ATTRIBUTE_NODE) && (old->type!=XML_ATTRIBUTE_NODE)) {
 	return(old);
     }
-    xmlUnlinkNode(cur);
+    xmlUnlinkNodeInternal(cur);
     if (xmlSetTreeDoc(cur, old->doc) < 0)
         return(NULL);
     cur->parent = old->parent;
@@ -4207,32 +4233,6 @@ xmlStaticCopyNode(xmlNodePtr node, xmlDocPtr doc, xmlNodePtr parent,
       if (node->type == XML_ELEMENT_NODE)
         ret->line = node->line;
     }
-    if (parent != NULL) {
-	xmlNodePtr tmp;
-
-	/*
-	 * this is a tricky part for the node register thing:
-	 * in case ret does get coalesced in xmlAddChild
-	 * the deregister-node callback is called; so we register ret now already
-	 */
-	if ((__xmlRegisterCallbacks) && (xmlRegisterNodeDefaultValue))
-	    xmlRegisterNodeDefaultValue((xmlNodePtr)ret);
-
-        /*
-         * Note that since ret->parent is already set, xmlAddChild will
-         * return early and not actually insert the node. It will only
-         * coalesce text nodes and unnecessarily call xmlSetTreeDoc.
-         * Assuming that the subtree to be copied always has its text
-         * nodes coalesced, the somewhat confusing call to xmlAddChild
-         * could be removed.
-         */
-        tmp = xmlAddChild(parent, ret);
-	/* node could have coalesced */
-        if (tmp == NULL)
-            goto error;
-	if (tmp != ret)
-	    return(tmp);
-    }
 
     if (!extended)
 	goto out;
@@ -4342,9 +4342,7 @@ xmlStaticCopyNode(xmlNodePtr node, xmlDocPtr doc, xmlNodePtr parent,
     }
 
 out:
-    /* if parent != NULL we already registered the node above */
-    if ((parent == NULL) &&
-        ((__xmlRegisterCallbacks) && (xmlRegisterNodeDefaultValue)))
+    if ((__xmlRegisterCallbacks) && (xmlRegisterNodeDefaultValue))
 	xmlRegisterNodeDefaultValue((xmlNodePtr)ret);
     return(ret);
 
@@ -5071,7 +5069,7 @@ xmlDocSetRootElement(xmlDocPtr doc, xmlNodePtr root) {
     }
     if (old == root)
         return(old);
-    xmlUnlinkNode(root);
+    xmlUnlinkNodeInternal(root);
     if (xmlSetTreeDoc(root, doc) < 0)
         return(NULL);
     root->parent = (xmlNodePtr) doc;
@@ -5853,7 +5851,7 @@ xmlTextMerge(xmlNodePtr first, xmlNodePtr second) {
     if (xmlTextAddContent(first, second->content, -1) < 0)
         return(NULL);
 
-    xmlUnlinkNode(second);
+    xmlUnlinkNodeInternal(second);
     xmlFreeNode(second);
     return(first);
 }
@@ -6819,7 +6817,7 @@ xmlUnsetProp(xmlNodePtr node, const xmlChar *name) {
     prop = xmlGetPropNodeInternal(node, name, NULL, 0);
     if (prop == NULL)
 	return(-1);
-    xmlUnlinkNode((xmlNodePtr) prop);
+    xmlUnlinkNodeInternal((xmlNodePtr) prop);
     xmlFreeProp(prop);
     return(0);
 }
@@ -6841,7 +6839,7 @@ xmlUnsetNsProp(xmlNodePtr node, xmlNsPtr ns, const xmlChar *name) {
                                   (ns != NULL) ? ns->href : NULL, 0);
     if (prop == NULL)
 	return(-1);
-    xmlUnlinkNode((xmlNodePtr) prop);
+    xmlUnlinkNodeInternal((xmlNodePtr) prop);
     xmlFreeProp(prop);
     return(0);
 }
@@ -8133,7 +8131,7 @@ xmlDOMWrapRemoveNode(xmlDOMWrapCtxtPtr ctxt, xmlDocPtr doc,
 	case XML_ENTITY_REF_NODE:
 	case XML_PI_NODE:
 	case XML_COMMENT_NODE:
-	    xmlUnlinkNode(node);
+	    xmlUnlinkNodeInternal(node);
 	    return (0);
 	case XML_ELEMENT_NODE:
 	case XML_ATTRIBUTE_NODE:
@@ -8141,7 +8139,7 @@ xmlDOMWrapRemoveNode(xmlDOMWrapCtxtPtr ctxt, xmlDocPtr doc,
 	default:
 	    return (1);
     }
-    xmlUnlinkNode(node);
+    xmlUnlinkNodeInternal(node);
     /*
     * Save out-of-scope ns-references in doc->oldNs.
     */
@@ -9840,7 +9838,7 @@ xmlDOMWrapAdoptNode(xmlDOMWrapCtxtPtr ctxt,
     * Unlink only if @node was not already added to @destParent.
     */
     if ((node->parent != NULL) && (destParent != node->parent))
-	xmlUnlinkNode(node);
+	xmlUnlinkNodeInternal(node);
 
     if (node->type == XML_ELEMENT_NODE) {
 	    return (xmlDOMWrapAdoptBranch(ctxt, sourceDoc, node,
