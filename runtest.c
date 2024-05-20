@@ -1549,8 +1549,8 @@ saxParseTest(const char *filename, const char *result,
         xmlFreeDoc(ctxt->myDoc);
         xmlFreeParserCtxt(ctxt);
     }
-    if (ret == XML_WAR_UNDECLARED_ENTITY) {
-        fprintf(SAXdebug, "xmlSAXUserParseFile returned error %d\n", ret);
+    if (ret == XML_ERR_UNDECLARED_ENTITY) {
+        fprintf(SAXdebug, "xmlParseDocument returned error %d\n", ret);
         ret = 0;
     }
     if (ret != 0) {
@@ -1589,10 +1589,6 @@ saxParseTest(const char *filename, const char *result,
         xmlHashFree(userData.parameterEntities, hashFreeEntity);
         xmlFreeDoc(ctxt->myDoc);
         xmlFreeParserCtxt(ctxt);
-    }
-    if (ret == XML_WAR_UNDECLARED_ENTITY) {
-        fprintf(SAXdebug, "xmlSAXUserParseFile returned error %d\n", ret);
-        ret = 0;
     }
     fclose(SAXdebug);
     if (compareFiles(temp, result)) {
