@@ -12,7 +12,12 @@
 gcc:
   extends: .test
   variables:
-    CONFIG: "--without-tls"
+    CFLAGS: "-O2"
+
+gcc:c89:
+  extends: .test
+  variables:
+    CONFIG: "--without-python"
     CFLAGS: "-O2 -std=c89 -D_XOPEN_SOURCE=600"
 
 gcc:minimum:
@@ -35,13 +40,6 @@ gcc:legacy:
   variables:
     BASE_CONFIG: "--with-legacy"
     CFLAGS: "-O2"
-
-gcc:python3:
-  extends: .test
-  variables:
-    # TODO: Re-enable the warning after #208 is fixed.
-    CFLAGS: "-O2 -Wno-error=deprecated-declarations"
-    PYTHON: "/usr/bin/python3"
 
 gcc:static:
   extends: .test
