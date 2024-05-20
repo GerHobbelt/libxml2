@@ -2589,6 +2589,9 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
     if (noout == 0) {
         int ret;
 
+        if (compress)
+            xmlSetDocCompressMode(doc, 9);
+
 	/*
 	 * print it.
 	 */
@@ -3431,7 +3434,6 @@ int main(int argc, const char** argv) {
 	else if ((!strcmp(argv[i], "-compress")) ||
 	         (!strcmp(argv[i], "--compress"))) {
 	    compress++;
-	    xmlSetCompressMode(9);
         }
 #endif
 #endif /* LIBXML_OUTPUT_ENABLED */

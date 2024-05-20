@@ -1297,8 +1297,10 @@ XMLPUBFUN int
 XMLPUBFUN void
 		xmlSetDocCompressMode	(xmlDocPtr doc,
 					 int mode);
+XML_DEPRECATED
 XMLPUBFUN int
 		xmlGetCompressMode	(void);
+XML_DEPRECATED
 XMLPUBFUN void
 		xmlSetCompressMode	(int mode);
 
