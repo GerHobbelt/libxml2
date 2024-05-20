@@ -15,6 +15,8 @@ export V=1
 
 ./autogen.sh \
     --disable-shared \
+    --with-zlib \
+    --with-lzma \
     --without-debug \
     --without-http \
     --without-python
@@ -24,7 +26,7 @@ cd fuzz
 make clean-corpus
 make fuzz.o
 
-for fuzzer in api html regexp schema uri valid xinclude xml xpath; do
+for fuzzer in api html reader regexp schema uri valid xinclude xml xpath; do
     make $fuzzer.o
     # Link with $CXX
     $CXX $CXXFLAGS \
