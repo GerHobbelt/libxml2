@@ -740,10 +740,13 @@ xmlHTMLValidityError(void *ctx, const char *msg, ...)
 
     buffer[0] = 0;
     input = ctxt->input;
-    if ((input->filename == NULL) && (ctxt->inputNr > 1))
-        input = ctxt->inputTab[ctxt->inputNr - 2];
 
-    xmlHTMLPrintFileInfo(input);
+    if (input != NULL) {
+        if ((input->filename == NULL) && (ctxt->inputNr > 1))
+            input = ctxt->inputTab[ctxt->inputNr - 2];
+
+        xmlHTMLPrintFileInfo(input);
+    }
 
     fprintf(ERR_STREAM, "<b>validity error</b>: ");
     len = strlen(buffer);
@@ -753,7 +756,8 @@ xmlHTMLValidityError(void *ctx, const char *msg, ...)
     xmlHTMLEncodeSend();
     fprintf(ERR_STREAM, "</p>\n");
 
-    xmlHTMLPrintFileContext(input);
+    if (input != NULL)
+        xmlHTMLPrintFileContext(input);
     xmlHTMLEncodeSend();
     progresult = XMLLINT_ERR_VALID;
 }
@@ -2007,45 +2011,51 @@ static void walkDoc(xmlDocPtr doc) {
     int ret;
 
 #ifdef LIBXML_PATTERN_ENABLED
-    xmlNodePtr root;
-    const xmlChar *namespaces[22];
-    int i;
-    xmlNsPtr ns;
-
-    root = xmlDocGetRootElement(doc);
-    if (root == NULL ) {
-        fprintf(ERR_STREAM,
-                "Document does not have a root element");
-        progresult = XMLLINT_ERR_UNCLASS;
-        return;
-    }
-    for (ns = root->nsDef, i = 0;ns != NULL && i < 20;ns=ns->next) {
-        namespaces[i++] = ns->href;
-        namespaces[i++] = ns->prefix;
-    }
-    namespaces[i++] = NULL;
-    namespaces[i] = NULL;
-
     if (pattern != NULL) {
-        patternc = xmlPatterncompile((const xmlChar *) pattern, doc->dict,
-	                             0, &namespaces[0]);
+        xmlNodePtr root;
+        const xmlChar *namespaces[22];
+        int i;
+        xmlNsPtr ns;
+
+        root = xmlDocGetRootElement(doc);
+        if (root == NULL ) {
+            fprintf(ERR_STREAM,
+                    "Document does not have a root element");
+            progresult = XMLLINT_ERR_UNCLASS;
+            return;
+        }
+        for (ns = root->nsDef, i = 0;ns != NULL && i < 20;ns=ns->next) {
+            namespaces[i++] = ns->href;
+            namespaces[i++] = ns->prefix;
+        }
+        namespaces[i++] = NULL;
+        namespaces[i] = NULL;
+
+        ret = xmlPatternCompileSafe((const xmlChar *) pattern, doc->dict,
+                                    0, &namespaces[0], &patternc);
 	if (patternc == NULL) {
-	    fprintf(ERR_STREAM,
-		    "Pattern %s failed to compile\n", pattern);
-            progresult = XMLLINT_ERR_SCHEMAPAT;
-	    pattern = NULL;
-	}
-    }
-    if (patternc != NULL) {
-        patstream = xmlPatternGetStreamCtxt(patternc);
-	if (patstream != NULL) {
-	    ret = xmlStreamPush(patstream, NULL, NULL);
-	    if (ret < 0) {
-		fprintf(ERR_STREAM, "xmlStreamPush() failure\n");
-		xmlFreeStreamCtxt(patstream);
-		patstream = NULL;
+            if (ret < 0) {
+                progresult = XMLLINT_ERR_MEM;
+            } else {
+                fprintf(ERR_STREAM,
+                        "Pattern %s failed to compile\n", pattern);
+                progresult = XMLLINT_ERR_SCHEMAPAT;
             }
+            goto error;
 	}
+
+        patstream = xmlPatternGetStreamCtxt(patternc);
+        if (patstream == NULL) {
+            progresult = XMLLINT_ERR_MEM;
+            goto error;
+        }
+
+        ret = xmlStreamPush(patstream, NULL, NULL);
+        if (ret < 0) {
+            fprintf(ERR_STREAM, "xmlStreamPush() failure\n");
+            progresult = XMLLINT_ERR_MEM;
+            goto error;
+        }
     }
 #endif /* LIBXML_PATTERN_ENABLED */
     reader = xmlReaderWalker(doc);
@@ -2075,7 +2085,13 @@ static void walkDoc(xmlDocPtr doc) {
 	fprintf(ERR_STREAM, "Failed to crate a reader from the document\n");
 	progresult = XMLLINT_ERR_UNCLASS;
     }
+
 #ifdef LIBXML_PATTERN_ENABLED
+error:
+    if (patternc != NULL) {
+        xmlFreePattern(patternc);
+        patternc = NULL;
+    }
     if (patstream != NULL) {
 	xmlFreeStreamCtxt(patstream);
 	patstream = NULL;
@@ -3205,6 +3221,48 @@ parseInteger(const char *ctxt, const char *str,
     return(val);
 }
 
+static int
+skipArgs(const char *arg) {
+    if ((!strcmp(arg, "-encode")) ||
+        (!strcmp(arg, "--encode")) ||
+        (!strcmp(arg, "-o")) ||
+        (!strcmp(arg, "-output")) ||
+        (!strcmp(arg, "--output")) ||
+        (!strcmp(arg, "-path")) ||
+        (!strcmp(arg, "--path")) ||
+#ifdef LIBXML_VALID_ENABLED
+        (!strcmp(arg, "-dtdvalid")) ||
+        (!strcmp(arg, "--dtdvalid")) ||
+        (!strcmp(arg, "-dtdvalidfpi")) ||
+        (!strcmp(arg, "--dtdvalidfpi")) ||
+#endif /* LIBXML_VALID_ENABLED */
+        (!strcmp(arg, "-relaxng")) ||
+        (!strcmp(arg, "--relaxng")) ||
+        (!strcmp(arg, "-maxmem")) ||
+        (!strcmp(arg, "--maxmem")) ||
+        (!strcmp(arg, "-pretty")) ||
+        (!strcmp(arg, "--pretty")) ||
+        (!strcmp(arg, "-schema")) ||
+        (!strcmp(arg, "--schema")) ||
+        (!strcmp(arg, "-schematron")) ||
+        (!strcmp(arg, "--schematron")) ||
+#if defined(LIBXML_READER_ENABLED) && defined(LIBXML_PATTERN_ENABLED)
+        (!strcmp(arg, "-pattern")) ||
+        (!strcmp(arg, "--pattern")) ||
+#endif
+#ifdef LIBXML_XPATH_ENABLED
+        (!strcmp(arg, "-xpath")) ||
+        (!strcmp(arg, "--xpath")) ||
+#endif
+        (!strcmp(arg, "-max-ampl")) ||
+        (!strcmp(arg, "--max-ampl"))
+    ) {
+        return(1);
+    }
+
+    return(0);
+}
+
 
 #if defined(BUILD_MONOLITHIC)
 #define main(cnt, arr)      xml_xmllint_main(cnt, arr)
@@ -3222,9 +3280,6 @@ int main(int argc, const char** argv) {
 
     /* xmlMemSetup must be called before initializing the parser. */
     for (i = 1; i < argc ; i++) {
-	if (argv[i][0] != '-')
-	    continue;
-
 	if ((!strcmp(argv[i], "-maxmem")) ||
 	    (!strcmp(argv[i], "--maxmem"))) {
             i++;
@@ -3234,7 +3289,9 @@ int main(int argc, const char** argv) {
             }
             errno = 0;
             maxmem = parseInteger("maxmem", argv[i], 0, INT_MAX);
-        }
+        } else if (argv[i][0] == '-') {
+            i += skipArgs(argv[i]);
+	}
     }
     if (maxmem != 0)
         xmlMemSetup(myFreeFunc, myMallocFunc, myReallocFunc, myStrdupFunc);
@@ -3722,126 +3779,56 @@ int main(int argc, const char** argv) {
     }
 #endif /* LIBXML_READER_ENABLED && LIBXML_PATTERN_ENABLED */
     for (i = 1; i < argc ; i++) {
-	if ((!strcmp(argv[i], "-encode")) ||
-	         (!strcmp(argv[i], "--encode"))) {
-	    i++;
-	    continue;
-        } else if ((!strcmp(argv[i], "-o")) ||
-                   (!strcmp(argv[i], "-output")) ||
-                   (!strcmp(argv[i], "--output"))) {
-            i++;
-	    continue;
-        }
-#ifdef LIBXML_VALID_ENABLED
-	if ((!strcmp(argv[i], "-dtdvalid")) ||
-	         (!strcmp(argv[i], "--dtdvalid"))) {
-	    i++;
-	    continue;
-        }
-	if ((!strcmp(argv[i], "-path")) ||
-                   (!strcmp(argv[i], "--path"))) {
-            i++;
-	    continue;
-        }
-	if ((!strcmp(argv[i], "-dtdvalidfpi")) ||
-	         (!strcmp(argv[i], "--dtdvalidfpi"))) {
-	    i++;
-	    continue;
-        }
-#endif /* LIBXML_VALID_ENABLED */
-	if ((!strcmp(argv[i], "-relaxng")) ||
-	         (!strcmp(argv[i], "--relaxng"))) {
-	    i++;
-	    continue;
-        }
-	if ((!strcmp(argv[i], "-maxmem")) ||
-	         (!strcmp(argv[i], "--maxmem"))) {
-	    i++;
-	    continue;
-        }
-	if ((!strcmp(argv[i], "-pretty")) ||
-	         (!strcmp(argv[i], "--pretty"))) {
-	    i++;
-	    continue;
-        }
-	if ((!strcmp(argv[i], "-schema")) ||
-	         (!strcmp(argv[i], "--schema"))) {
-	    i++;
-	    continue;
-        }
-	if ((!strcmp(argv[i], "-schematron")) ||
-	         (!strcmp(argv[i], "--schematron"))) {
-	    i++;
-	    continue;
-        }
-#if defined(LIBXML_READER_ENABLED) && defined(LIBXML_PATTERN_ENABLED)
-        if ((!strcmp(argv[i], "-pattern")) ||
-	    (!strcmp(argv[i], "--pattern"))) {
-	    i++;
-	    continue;
-	}
-#endif
-#ifdef LIBXML_XPATH_ENABLED
-        if ((!strcmp(argv[i], "-xpath")) ||
-	    (!strcmp(argv[i], "--xpath"))) {
-	    i++;
-	    continue;
-	}
-#endif
-        if ((!strcmp(argv[i], "-max-ampl")) ||
-            (!strcmp(argv[i], "--max-ampl"))) {
-	    i++;
-	    continue;
+	if ((argv[i][0] == '-') && (strcmp(argv[i], "-") != 0)) {
+            i += skipArgs(argv[i]);
+            continue;
         }
 	if ((timing) && (repeat))
 	    startTimer();
-	/* Remember file names.  "-" means stdin.  <sven@zen.org> */
-	if ((argv[i][0] != '-') || (strcmp(argv[i], "-") == 0)) {
-	    if (repeat) {
-		xmlParserCtxtPtr ctxt;
+        if (repeat) {
+            xmlParserCtxtPtr ctxt;
 
-                ctxt = xmlNewParserCtxt();
-                if (ctxt == NULL) {
-                    progresult = XMLLINT_ERR_MEM;
-                    goto error;
+            ctxt = xmlNewParserCtxt();
+            if (ctxt == NULL) {
+                progresult = XMLLINT_ERR_MEM;
+                goto error;
+            }
+            if (maxAmpl > 0)
+                xmlCtxtSetMaxAmplification(ctxt, maxAmpl);
+
+            for (acount = 0;acount < repeat;acount++) {
+#ifdef LIBXML_READER_ENABLED
+                if (stream != 0) {
+                    streamFile(argv[i]);
+                } else {
+#endif /* LIBXML_READER_ENABLED */
+                    if (sax) {
+                        testSAX(argv[i]);
+                    } else {
+                        parseAndPrintFile(argv[i], ctxt);
+                    }
+#ifdef LIBXML_READER_ENABLED
                 }
-                if (maxAmpl > 0)
-                    xmlCtxtSetMaxAmplification(ctxt, maxAmpl);
+#endif /* LIBXML_READER_ENABLED */
+            }
 
-		for (acount = 0;acount < repeat;acount++) {
+            xmlFreeParserCtxt(ctxt);
+        } else {
 #ifdef LIBXML_READER_ENABLED
-		    if (stream != 0) {
-			streamFile(argv[i]);
-		    } else {
+            if (stream != 0)
+                streamFile(argv[i]);
+            else
 #endif /* LIBXML_READER_ENABLED */
-                        if (sax) {
-			    testSAX(argv[i]);
-			} else {
-			    parseAndPrintFile(argv[i], ctxt);
-			}
-#ifdef LIBXML_READER_ENABLED
-		    }
-#endif /* LIBXML_READER_ENABLED */
-		}
-
-		xmlFreeParserCtxt(ctxt);
-	    } else {
-#ifdef LIBXML_READER_ENABLED
-		if (stream != 0)
-		    streamFile(argv[i]);
-		else
-#endif /* LIBXML_READER_ENABLED */
-                if (sax) {
-		    testSAX(argv[i]);
-		} else {
-		    parseAndPrintFile(argv[i], NULL);
-		}
-	    }
-	    files ++;
-	    if ((timing) && (repeat)) {
-		endTimer("%d iterations", repeat);
-	    }
-	}
+            if (sax) {
+                testSAX(argv[i]);
+            } else {
+                parseAndPrintFile(argv[i], NULL);
+            }
+        }
+        files ++;
+        if ((timing) && (repeat)) {
+            endTimer("%d iterations", repeat);
+        }
     }
     if (generate)
 	parseAndPrintFile(NULL, NULL);
