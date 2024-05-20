@@ -1777,8 +1777,12 @@ xmlAddAttributeDecl(xmlValidCtxtPtr ctxt,
 	else
 	    ret->defaultValue = xmlStrdup(defaultValue);
         if (ret->defaultValue == NULL)
-            xmlVErrMemory(ctxt);
+            goto mem_error;
     }
+
+    elemDef = xmlGetDtdElementDesc2(ctxt, dtd, elem);
+    if (elemDef == NULL)
+        goto mem_error;
 
     /*
      * Validity Check:
@@ -1805,48 +1809,44 @@ xmlAddAttributeDecl(xmlValidCtxtPtr ctxt,
      * Validity Check:
      * Multiple ID per element
      */
-    elemDef = xmlGetDtdElementDesc2(ctxt, dtd, elem);
-    if (elemDef != NULL) {
-
 #ifdef LIBXML_VALID_ENABLED
-        if ((type == XML_ATTRIBUTE_ID) &&
-	    (xmlScanIDAttributeDecl(ctxt, elemDef, 1) != 0)) {
-	    xmlErrValidNode(ctxt, (xmlNodePtr) dtd, XML_DTD_MULTIPLE_ID,
-	   "Element %s has too may ID attributes defined : %s\n",
-		   elem, name, NULL);
-	    if (ctxt != NULL)
-		ctxt->valid = 0;
-	}
+    if ((type == XML_ATTRIBUTE_ID) &&
+        (xmlScanIDAttributeDecl(ctxt, elemDef, 1) != 0)) {
+        xmlErrValidNode(ctxt, (xmlNodePtr) dtd, XML_DTD_MULTIPLE_ID,
+       "Element %s has too may ID attributes defined : %s\n",
+               elem, name, NULL);
+        if (ctxt != NULL)
+            ctxt->valid = 0;
+    }
 #endif /* LIBXML_VALID_ENABLED */
 
-	/*
-	 * Insert namespace default def first they need to be
-	 * processed first.
-	 */
-	if ((xmlStrEqual(ret->name, BAD_CAST "xmlns")) ||
-	    ((ret->prefix != NULL &&
-	     (xmlStrEqual(ret->prefix, BAD_CAST "xmlns"))))) {
-	    ret->nexth = elemDef->attributes;
-	    elemDef->attributes = ret;
-	} else {
-	    xmlAttributePtr tmp = elemDef->attributes;
+    /*
+     * Insert namespace default def first they need to be
+     * processed first.
+     */
+    if ((xmlStrEqual(ret->name, BAD_CAST "xmlns")) ||
+        ((ret->prefix != NULL &&
+         (xmlStrEqual(ret->prefix, BAD_CAST "xmlns"))))) {
+        ret->nexth = elemDef->attributes;
+        elemDef->attributes = ret;
+    } else {
+        xmlAttributePtr tmp = elemDef->attributes;
 
-	    while ((tmp != NULL) &&
-		   ((xmlStrEqual(tmp->name, BAD_CAST "xmlns")) ||
-		    ((ret->prefix != NULL &&
-		     (xmlStrEqual(ret->prefix, BAD_CAST "xmlns")))))) {
-		if (tmp->nexth == NULL)
-		    break;
-		tmp = tmp->nexth;
-	    }
-	    if (tmp != NULL) {
-		ret->nexth = tmp->nexth;
-	        tmp->nexth = ret;
-	    } else {
-		ret->nexth = elemDef->attributes;
-		elemDef->attributes = ret;
-	    }
-	}
+        while ((tmp != NULL) &&
+               ((xmlStrEqual(tmp->name, BAD_CAST "xmlns")) ||
+                ((ret->prefix != NULL &&
+                 (xmlStrEqual(ret->prefix, BAD_CAST "xmlns")))))) {
+            if (tmp->nexth == NULL)
+                break;
+            tmp = tmp->nexth;
+        }
+        if (tmp != NULL) {
+            ret->nexth = tmp->nexth;
+            tmp->nexth = ret;
+        } else {
+            ret->nexth = elemDef->attributes;
+            elemDef->attributes = ret;
+        }
     }
 
     /*
@@ -2951,19 +2951,23 @@ xmlElementPtr
 xmlGetDtdElementDesc(xmlDtdPtr dtd, const xmlChar *name) {
     xmlElementTablePtr table;
     xmlElementPtr cur;
-    xmlChar *uqname = NULL, *prefix = NULL;
+    const xmlChar *localname;
+    xmlChar *prefix;
 
-    if ((dtd == NULL) || (name == NULL)) return(NULL);
-    if (dtd->elements == NULL)
-	return(NULL);
+    if ((dtd == NULL) || (dtd->elements == NULL) ||
+        (name == NULL))
+        return(NULL);
+
     table = (xmlElementTablePtr) dtd->elements;
+    if (table == NULL)
+	return(NULL);
 
-    uqname = xmlSplitQName2(name, &prefix);
-    if (uqname != NULL)
-        name = uqname;
-    cur = xmlHashLookup2(table, name, prefix);
-    if (prefix != NULL) xmlFree(prefix);
-    if (uqname != NULL) xmlFree(uqname);
+    localname = xmlSplitQName4(name, &prefix);
+    if (localname == NULL)
+        return(NULL);
+    cur = xmlHashLookup2(table, localname, prefix);
+    if (prefix != NULL)
+        xmlFree(prefix);
     return(cur);
 }
 
@@ -3077,23 +3081,23 @@ xmlAttributePtr
 xmlGetDtdAttrDesc(xmlDtdPtr dtd, const xmlChar *elem, const xmlChar *name) {
     xmlAttributeTablePtr table;
     xmlAttributePtr cur;
-    xmlChar *uqname = NULL, *prefix = NULL;
+    const xmlChar *localname;
+    xmlChar *prefix = NULL;
 
-    if (dtd == NULL) return(NULL);
-    if (dtd->attributes == NULL) return(NULL);
+    if ((dtd == NULL) || (dtd->attributes == NULL) ||
+        (elem == NULL) || (name == NULL))
+        return(NULL);
 
     table = (xmlAttributeTablePtr) dtd->attributes;
     if (table == NULL)
 	return(NULL);
 
-    uqname = xmlSplitQName2(name, &prefix);
-
-    if (uqname != NULL) {
-	cur = xmlHashLookup3(table, uqname, prefix, elem);
-	if (prefix != NULL) xmlFree(prefix);
-	if (uqname != NULL) xmlFree(uqname);
-    } else
-	cur = xmlHashLookup3(table, name, NULL, elem);
+    localname = xmlSplitQName4(name, &prefix);
+    if (localname == NULL)
+        return(NULL);
+    cur = xmlHashLookup3(table, localname, prefix, elem);
+    if (prefix != NULL)
+        xmlFree(prefix);
     return(cur);
 }
 

@@ -2199,27 +2199,7 @@ error:
  */
 xmlNodePtr
 xmlNewNodeEatName(xmlNsPtr ns, xmlChar *name) {
-    xmlNodePtr cur;
-
-    if (name == NULL) {
-	return(NULL);
-    }
-
-    /*
-     * Allocate a new node and fill the fields.
-     */
-    cur = (xmlNodePtr) xmlMalloc(sizeof(xmlNode));
-    if (cur == NULL)
-	return(NULL);
-    memset(cur, 0, sizeof(xmlNode));
-    cur->type = XML_ELEMENT_NODE;
-
-    cur->name = name;
-    cur->ns = ns;
-
-    if ((__xmlRegisterCallbacks) && (xmlRegisterNodeDefaultValue))
-	xmlRegisterNodeDefaultValue((xmlNodePtr)cur);
-    return(cur);
+    return(xmlNewDocNodeEatName(NULL, ns, name, NULL));
 }
 
 /**
@@ -2243,11 +2223,13 @@ xmlNewDocNode(xmlDocPtr doc, xmlNsPtr ns,
               const xmlChar *name, const xmlChar *content) {
     xmlNodePtr cur;
 
-    if ((doc != NULL) && (doc->dict != NULL))
-        cur = xmlNewNodeEatName(ns, (xmlChar *)
-	                        xmlDictLookup(doc->dict, name, -1));
-    else
-	cur = xmlNewNode(ns, name);
+    if ((doc != NULL) && (doc->dict != NULL)) {
+        xmlChar *dictName = (xmlChar *) xmlDictLookup(doc->dict, name, -1);
+
+        return(xmlNewDocNodeEatName(doc, ns, dictName, content));
+    }
+
+    cur = xmlNewNode(ns, name);
     if (cur != NULL) {
         cur->doc = doc;
 	if (content != NULL) {
@@ -2281,27 +2263,43 @@ xmlNewDocNode(xmlDocPtr doc, xmlNsPtr ns,
  */
 xmlNodePtr
 xmlNewDocNodeEatName(xmlDocPtr doc, xmlNsPtr ns,
-              xmlChar *name, const xmlChar *content) {
+                     xmlChar *name, const xmlChar *content) {
     xmlNodePtr cur;
 
-    cur = xmlNewNodeEatName(ns, name);
-    if (cur != NULL) {
-        cur->doc = doc;
-	if (content != NULL) {
-	    cur->children = xmlStringGetNodeList(doc, content);
-            if (cur->children == NULL) {
-                xmlFreeNode(cur);
-                return(NULL);
-            }
-	    UPDATE_LAST_CHILD_AND_PARENT(cur)
-	}
-    } else {
+    if (name == NULL)
+        return(NULL);
+
+    /*
+     * Allocate a new node and fill the fields.
+     */
+    cur = (xmlNodePtr) xmlMalloc(sizeof(xmlNode));
+    if (cur == NULL) {
         /* if name don't come from the doc dictionary free it here */
         if ((name != NULL) &&
             ((doc == NULL) || (doc->dict == NULL) ||
-	     (!(xmlDictOwns(doc->dict, name)))))
-	    xmlFree(name);
+             (!(xmlDictOwns(doc->dict, name)))))
+            xmlFree(name);
+        return(NULL);
     }
+    memset(cur, 0, sizeof(xmlNode));
+
+    cur->type = XML_ELEMENT_NODE;
+    cur->name = name;
+    cur->ns = ns;
+    cur->doc = doc;
+
+    if (content != NULL) {
+        cur->children = xmlStringGetNodeList(doc, content);
+        if (cur->children == NULL) {
+            xmlFreeNode(cur);
+            return(NULL);
+        }
+        UPDATE_LAST_CHILD_AND_PARENT(cur)
+    }
+
+    if ((__xmlRegisterCallbacks) && (xmlRegisterNodeDefaultValue))
+	xmlRegisterNodeDefaultValue((xmlNodePtr)cur);
+
     return(cur);
 }
 
@@ -3412,10 +3410,8 @@ xmlAddChild(xmlNodePtr parent, xmlNodePtr cur) {
 	if ((parent->last != NULL) && (parent->last->type == XML_TEXT_NODE) &&
 	    (parent->last->name == cur->name) &&
 	    (parent->last != cur)) {
-	    if (xmlNodeAddContent(parent->last, cur->content) != 0) {
-                xmlFreeNode(cur);
+	    if (xmlNodeAddContent(parent->last, cur->content) != 0)
                 return(NULL);
-            }
 	    xmlFreeNode(cur);
 	    return(parent->last);
 	}
@@ -4306,6 +4302,8 @@ xmlStaticCopyNode(xmlNodePtr node, xmlDocPtr doc, xmlNodePtr parent,
          */
         tmp = xmlAddChild(parent, ret);
 	/* node could have coalesced */
+        if (tmp == NULL)
+            goto error;
 	if (tmp != ret)
 	    return(tmp);
     }
@@ -5438,6 +5436,8 @@ xmlNodeGetBaseSafe(const xmlDoc *doc, const xmlNode *cur, xmlChar **baseOut) {
 	if (cur->type == XML_ENTITY_DECL) {
 	    xmlEntityPtr ent = (xmlEntityPtr) cur;
 
+            if (ent->URI == NULL)
+                break;
             xmlFree(ret);
 	    ret = xmlStrdup(ent->URI);
             if (ret == NULL)
@@ -5926,8 +5926,10 @@ xmlNodeAddContentLen(xmlNodePtr cur, const xmlChar *content, int len) {
 	    if (newNode == NULL)
                 return(-1);
             tmp = xmlAddChild(cur, newNode);
-            if (tmp == NULL)
+            if (tmp == NULL) {
+                xmlFreeNode(newNode);
                 return(-1);
+            }
 	    break;
 	}
         case XML_ATTRIBUTE_NODE:
