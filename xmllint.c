@@ -83,6 +83,8 @@
 
 #include <libxml/monolithic_examples.h>
 
+#define ERR_STREAM stderr
+
 #ifndef XML_XML_DEFAULT_CATALOG
 #define XML_XML_DEFAULT_CATALOG "file://" SYSCONFDIR "/xml/catalog"
 #endif
@@ -223,7 +225,7 @@ void parsePath(const xmlChar *path) {
 	return;
     while (*path != 0) {
 	if (nbpaths >= MAX_PATHS) {
-	    fprintf(stderr, "MAX_PATHS reached: too many paths\n");
+	    fprintf(ERR_STREAM, "MAX_PATHS reached: too many paths\n");
 	    return;
 	}
 	cur = path;
@@ -278,7 +280,7 @@ xmllintExternalEntityLoader(const char *URL, const char *ID,
 		ctxt->sax->error = err;
 	    if (load_trace) {
 		fprintf \
-			(stderr,
+			(ERR_STREAM,
 			 "Loaded URL=\"%s\" ID=\"%s\"\n",
 			 URL ? URL : "(null)",
 			 ID ? ID : "(null)");
@@ -301,7 +303,7 @@ xmllintExternalEntityLoader(const char *URL, const char *ID,
 		    ctxt->sax->error = err;
 		if (load_trace) {
 		    fprintf \
-			(stderr,
+			(ERR_STREAM,
 			 "Loaded URL=\"%s\" ID=\"%s\"\n",
 			 newURL,
 			 ID ? ID : "(null)");
@@ -332,7 +334,7 @@ xmllintExternalEntityLoader(const char *URL, const char *ID,
 static void
 OOM(void)
 {
-    fprintf(stderr, "Ran out of memory needs > %d bytes\n", maxmem);
+    fprintf(ERR_STREAM, "Ran out of memory needs > %d bytes\n", maxmem);
     progresult = XMLLINT_ERR_MEM;
 }
 
@@ -510,10 +512,10 @@ endTimer(const char *fmt, ...)
     msec += (end.tv_usec - begin.tv_usec) / 1000;
 
     va_start(ap, fmt);
-    vfprintf(stderr, fmt, ap);
+    vfprintf(ERR_STREAM, fmt, ap);
     va_end(ap);
 
-    fprintf(stderr, " took %ld ms\n", msec);
+    fprintf(ERR_STREAM, " took %ld ms\n", msec);
 }
 #else
 /*
@@ -541,9 +543,9 @@ endTimer(const char *fmt, ...)
     msec = ((end - begin) * 1000) / CLOCKS_PER_SEC;
 
     va_start(ap, fmt);
-    vfprintf(stderr, fmt, ap);
+    vfprintf(ERR_STREAM, fmt, ap);
     va_end(ap);
-    fprintf(stderr, " took %ld ms\n", msec);
+    fprintf(ERR_STREAM, " took %ld ms\n", msec);
 }
 #endif
 /************************************************************************
@@ -565,7 +567,7 @@ xmlHTMLEncodeSend(void) {
     memset(&buffer[sizeof(buffer)-4], 0, 4);
     result = (char *) xmlEncodeEntitiesReentrant(NULL, BAD_CAST buffer);
     if (result) {
-	fprintf(stderr, "%s", result);
+	fprintf(ERR_STREAM, "%s", result);
 	xmlFree(result);
     }
     buffer[0] = 0;
@@ -581,7 +583,7 @@ xmlHTMLEncodeSend(void) {
 static void
 xmlHTMLPrintFileInfo(xmlParserInputPtr input) {
     int len;
-    fprintf(stderr, "<p>");
+    fprintf(ERR_STREAM, "<p>");
 
     len = strlen(buffer);
     if (input != NULL) {
@@ -609,7 +611,7 @@ xmlHTMLPrintFileContext(xmlParserInputPtr input) {
     int n;
 
     if (input == NULL) return;
-    fprintf(stderr, "<pre>\n");
+    fprintf(ERR_STREAM, "<pre>\n");
     cur = input->cur;
     base = input->base;
     while ((cur > base) && ((*cur == '\n') || (*cur == '\r'))) {
@@ -641,7 +643,7 @@ xmlHTMLPrintFileContext(xmlParserInputPtr input) {
     len = strlen(buffer);
     snprintf(&buffer[len], sizeof(buffer) - len, "^\n");
     xmlHTMLEncodeSend();
-    fprintf(stderr, "</pre>");
+    fprintf(ERR_STREAM, "</pre>");
 }
 
 /**
@@ -669,13 +671,13 @@ xmlHTMLError(void *ctx, const char *msg, ...)
 
     xmlHTMLPrintFileInfo(input);
 
-    fprintf(stderr, "<b>error</b>: ");
+    fprintf(ERR_STREAM, "<b>error</b>: ");
     va_start(args, msg);
     len = strlen(buffer);
     vsnprintf(&buffer[len],  sizeof(buffer) - len, msg, args);
     va_end(args);
     xmlHTMLEncodeSend();
-    fprintf(stderr, "</p>\n");
+    fprintf(ERR_STREAM, "</p>\n");
 
     xmlHTMLPrintFileContext(input);
     xmlHTMLEncodeSend();
@@ -707,13 +709,13 @@ xmlHTMLWarning(void *ctx, const char *msg, ...)
 
     xmlHTMLPrintFileInfo(input);
 
-    fprintf(stderr, "<b>warning</b>: ");
+    fprintf(ERR_STREAM, "<b>warning</b>: ");
     va_start(args, msg);
     len = strlen(buffer);
     vsnprintf(&buffer[len],  sizeof(buffer) - len, msg, args);
     va_end(args);
     xmlHTMLEncodeSend();
-    fprintf(stderr, "</p>\n");
+    fprintf(ERR_STREAM, "</p>\n");
 
     xmlHTMLPrintFileContext(input);
     xmlHTMLEncodeSend();
@@ -743,13 +745,13 @@ xmlHTMLValidityError(void *ctx, const char *msg, ...)
 
     xmlHTMLPrintFileInfo(input);
 
-    fprintf(stderr, "<b>validity error</b>: ");
+    fprintf(ERR_STREAM, "<b>validity error</b>: ");
     len = strlen(buffer);
     va_start(args, msg);
     vsnprintf(&buffer[len],  sizeof(buffer) - len, msg, args);
     va_end(args);
     xmlHTMLEncodeSend();
-    fprintf(stderr, "</p>\n");
+    fprintf(ERR_STREAM, "</p>\n");
 
     xmlHTMLPrintFileContext(input);
     xmlHTMLEncodeSend();
@@ -780,13 +782,13 @@ xmlHTMLValidityWarning(void *ctx, const char *msg, ...)
 
     xmlHTMLPrintFileInfo(input);
 
-    fprintf(stderr, "<b>validity warning</b>: ");
+    fprintf(ERR_STREAM, "<b>validity warning</b>: ");
     va_start(args, msg);
     len = strlen(buffer);
     vsnprintf(&buffer[len],  sizeof(buffer) - len, msg, args);
     va_end(args);
     xmlHTMLEncodeSend();
-    fprintf(stderr, "</p>\n");
+    fprintf(ERR_STREAM, "</p>\n");
 
     xmlHTMLPrintFileContext(input);
     xmlHTMLEncodeSend();
@@ -1697,13 +1699,13 @@ testSAX(const char *filename) {
 	if (repeat == 0) {
 	    if (ret == 0) {
 	        if (!quiet) {
-	            fprintf(stderr, "%s validates\n", filename);
+	            fprintf(ERR_STREAM, "%s validates\n", filename);
 	        }
 	    } else if (ret > 0) {
-		fprintf(stderr, "%s fails to validate\n", filename);
+		fprintf(ERR_STREAM, "%s fails to validate\n", filename);
 		progresult = XMLLINT_ERR_VALID;
 	    } else {
-		fprintf(stderr, "%s validation generated an internal error\n",
+		fprintf(ERR_STREAM, "%s validation generated an internal error\n",
 		       filename);
 		progresult = XMLLINT_ERR_VALID;
 	    }
@@ -1731,7 +1733,7 @@ testSAX(const char *filename) {
             xmlCtxtReadFile(ctxt, filename, NULL, options);
 
 	if (ctxt->myDoc != NULL) {
-	    fprintf(stderr, "SAX generated a doc !\n");
+	    fprintf(ERR_STREAM, "SAX generated a doc !\n");
 	    xmlFreeDoc(ctxt->myDoc);
 	    ctxt->myDoc = NULL;
 	}
@@ -1799,7 +1801,7 @@ static void processNode(xmlTextReaderPtr reader) {
 		                    xmlTextReaderConstLocalName(reader),
 				    xmlTextReaderConstNamespaceUri(reader));
 		if (ret < 0) {
-		    fprintf(stderr, "xmlStreamPush() failure\n");
+		    fprintf(ERR_STREAM, "xmlStreamPush() failure\n");
                     xmlFreeStreamCtxt(patstream);
 		    patstream = NULL;
 		} else if (ret != match) {
@@ -1809,13 +1811,13 @@ static void processNode(xmlTextReaderPtr reader) {
 		                       xmlTextReaderCurrentNode(reader));
 		    }
 #endif
-		    fprintf(stderr,
+		    fprintf(ERR_STREAM,
 		            "xmlPatternMatch and xmlStreamPush disagree\n");
                     if (path != NULL)
-                        fprintf(stderr, "  pattern %s node %s\n",
+                        fprintf(ERR_STREAM, "  pattern %s node %s\n",
                                 pattern, path);
                     else
-		        fprintf(stderr, "  pattern %s node %s\n",
+		        fprintf(ERR_STREAM, "  pattern %s node %s\n",
 			    pattern, xmlTextReaderConstName(reader));
 		}
 
@@ -1824,7 +1826,7 @@ static void processNode(xmlTextReaderPtr reader) {
 	        ((type == XML_READER_TYPE_ELEMENT) && (empty))) {
 	        ret = xmlStreamPop(patstream);
 		if (ret < 0) {
-		    fprintf(stderr, "xmlStreamPop() failure\n");
+		    fprintf(ERR_STREAM, "xmlStreamPop() failure\n");
                     xmlFreeStreamCtxt(patstream);
 		    patstream = NULL;
 		}
@@ -1852,7 +1854,7 @@ static void streamFile(const char *filename) {
 	base = mmap(NULL, info.st_size, PROT_READ, MAP_SHARED, fd, 0) ;
 	if (base == (void *) MAP_FAILED) {
 	    close(fd);
-	    fprintf(stderr, "mmap failure for file %s\n", filename);
+	    fprintf(ERR_STREAM, "mmap failure for file %s\n", filename);
 	    progresult = XMLLINT_ERR_RDFILE;
 	    return;
 	}
@@ -1871,7 +1873,7 @@ static void streamFile(const char *filename) {
 	if (patstream != NULL) {
 	    ret = xmlStreamPush(patstream, NULL, NULL);
 	    if (ret < 0) {
-		fprintf(stderr, "xmlStreamPush() failure\n");
+		fprintf(ERR_STREAM, "xmlStreamPush() failure\n");
 		xmlFreeStreamCtxt(patstream);
 		patstream = NULL;
             }
@@ -1897,7 +1899,7 @@ static void streamFile(const char *filename) {
 	    }
 	    ret = xmlTextReaderRelaxNGValidate(reader, relaxng);
 	    if (ret < 0) {
-		fprintf(stderr,
+		fprintf(ERR_STREAM,
 			"Relax-NG schema %s failed to compile\n", relaxng);
 		progresult = XMLLINT_ERR_SCHEMACOMP;
 		relaxng = NULL;
@@ -1912,7 +1914,7 @@ static void streamFile(const char *filename) {
 	    }
 	    ret = xmlTextReaderSchemaValidate(reader, schema);
 	    if (ret < 0) {
-		fprintf(stderr,
+		fprintf(ERR_STREAM,
 			"XSD schema %s failed to compile\n", schema);
 		progresult = XMLLINT_ERR_SCHEMACOMP;
 		schema = NULL;
@@ -1956,7 +1958,7 @@ static void streamFile(const char *filename) {
 #ifdef LIBXML_VALID_ENABLED
 	if (valid) {
 	    if (xmlTextReaderIsValid(reader) != 1) {
-		fprintf(stderr,
+		fprintf(ERR_STREAM,
 			"Document %s does not validate\n", filename);
 		progresult = XMLLINT_ERR_VALID;
 	    }
@@ -1965,11 +1967,11 @@ static void streamFile(const char *filename) {
 #ifdef LIBXML_SCHEMAS_ENABLED
 	if ((relaxng != NULL) || (schema != NULL)) {
 	    if (xmlTextReaderIsValid(reader) != 1) {
-		fprintf(stderr, "%s fails to validate\n", filename);
+		fprintf(ERR_STREAM, "%s fails to validate\n", filename);
 		progresult = XMLLINT_ERR_VALID;
 	    } else {
 	        if (!quiet) {
-	            fprintf(stderr, "%s validates\n", filename);
+	            fprintf(ERR_STREAM, "%s validates\n", filename);
 	        }
 	    }
 	}
@@ -1979,11 +1981,11 @@ static void streamFile(const char *filename) {
 	 */
 	xmlFreeTextReader(reader);
 	if (ret != 0) {
-	    fprintf(stderr, "%s : failed to parse\n", filename);
+	    fprintf(ERR_STREAM, "%s : failed to parse\n", filename);
 	    progresult = XMLLINT_ERR_UNCLASS;
 	}
     } else {
-	fprintf(stderr, "Unable to open %s\n", filename);
+	fprintf(ERR_STREAM, "Unable to open %s\n", filename);
 	progresult = XMLLINT_ERR_UNCLASS;
     }
 #ifdef LIBXML_PATTERN_ENABLED
@@ -2012,7 +2014,7 @@ static void walkDoc(xmlDocPtr doc) {
 
     root = xmlDocGetRootElement(doc);
     if (root == NULL ) {
-        fprintf(stderr,
+        fprintf(ERR_STREAM,
                 "Document does not have a root element");
         progresult = XMLLINT_ERR_UNCLASS;
         return;
@@ -2028,7 +2030,7 @@ static void walkDoc(xmlDocPtr doc) {
         patternc = xmlPatterncompile((const xmlChar *) pattern, doc->dict,
 	                             0, &namespaces[0]);
 	if (patternc == NULL) {
-	    fprintf(stderr,
+	    fprintf(ERR_STREAM,
 		    "Pattern %s failed to compile\n", pattern);
             progresult = XMLLINT_ERR_SCHEMAPAT;
 	    pattern = NULL;
@@ -2039,7 +2041,7 @@ static void walkDoc(xmlDocPtr doc) {
 	if (patstream != NULL) {
 	    ret = xmlStreamPush(patstream, NULL, NULL);
 	    if (ret < 0) {
-		fprintf(stderr, "xmlStreamPush() failure\n");
+		fprintf(ERR_STREAM, "xmlStreamPush() failure\n");
 		xmlFreeStreamCtxt(patstream);
 		patstream = NULL;
             }
@@ -2066,11 +2068,11 @@ static void walkDoc(xmlDocPtr doc) {
 	}
 	xmlFreeTextReader(reader);
 	if (ret != 0) {
-	    fprintf(stderr, "failed to walk through the doc\n");
+	    fprintf(ERR_STREAM, "failed to walk through the doc\n");
 	    progresult = XMLLINT_ERR_UNCLASS;
 	}
     } else {
-	fprintf(stderr, "Failed to crate a reader from the document\n");
+	fprintf(ERR_STREAM, "Failed to crate a reader from the document\n");
 	progresult = XMLLINT_ERR_UNCLASS;
     }
 #ifdef LIBXML_PATTERN_ENABLED
@@ -2100,13 +2102,13 @@ static void doXPathDump(xmlXPathObjectPtr cur) {
             if ((cur->nodesetval == NULL) || (cur->nodesetval->nodeNr <= 0)) {
                 progresult = XMLLINT_ERR_XPATH_EMPTY;
                 if (!quiet) {
-                    fprintf(stderr, "XPath set is empty\n");
+                    fprintf(ERR_STREAM, "XPath set is empty\n");
                 }
                 break;
             }
             buf = xmlOutputBufferCreateFile(stdout, NULL);
             if (buf == NULL) {
-                fprintf(stderr, "Out of memory for XPath\n");
+                fprintf(ERR_STREAM, "Out of memory for XPath\n");
                 progresult = XMLLINT_ERR_MEM;
                 return;
             }
@@ -2145,11 +2147,11 @@ static void doXPathDump(xmlXPathObjectPtr cur) {
 	    printf("%s\n", (const char *) cur->stringval);
 	    break;
         case XPATH_UNDEFINED:
-	    fprintf(stderr, "XPath Object is uninitialized\n");
+	    fprintf(ERR_STREAM, "XPath Object is uninitialized\n");
             progresult = XMLLINT_ERR_XPATH;
 	    break;
 	default:
-	    fprintf(stderr, "XPath object of unexpected type\n");
+	    fprintf(ERR_STREAM, "XPath object of unexpected type\n");
             progresult = XMLLINT_ERR_XPATH;
 	    break;
     }
@@ -2161,7 +2163,7 @@ static void doXPathQuery(xmlDocPtr doc, const char *query) {
 
     ctxt = xmlXPathNewContext(doc);
     if (ctxt == NULL) {
-        fprintf(stderr, "Out of memory for XPath\n");
+        fprintf(ERR_STREAM, "Out of memory for XPath\n");
         progresult = XMLLINT_ERR_MEM;
         return;
     }
@@ -2170,7 +2172,7 @@ static void doXPathQuery(xmlDocPtr doc, const char *query) {
     xmlXPathFreeContext(ctxt);
 
     if (res == NULL) {
-        fprintf(stderr, "XPath evaluation failure\n");
+        fprintf(ERR_STREAM, "XPath evaluation failure\n");
         progresult = XMLLINT_ERR_XPATH;
         return;
     }
@@ -2219,7 +2221,7 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
         } else {
 	    f = fopen(filename, "rb");
             if (f == NULL) {
-                fprintf(stderr, "Can't open %s\n", filename);
+                fprintf(ERR_STREAM, "Can't open %s\n", filename);
                 progresult = XMLLINT_ERR_UNCLASS;
                 return;
             }
@@ -2257,7 +2259,7 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 	base = mmap(NULL, info.st_size, PROT_READ, MAP_SHARED, fd, 0) ;
 	if (base == (void *) MAP_FAILED) {
 	    close(fd);
-	    fprintf(stderr, "mmap failure for file %s\n", filename);
+	    fprintf(ERR_STREAM, "mmap failure for file %s\n", filename);
 	    progresult = XMLLINT_ERR_RDFILE;
 	    return;
 	}
@@ -2284,8 +2286,8 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 	if (push) {
 	    FILE *f;
             int ret;
-            int res, size = 1024;
-            char chars[1024];
+            int res;
+            char chars[4096];
             xmlParserCtxtPtr ctxt;
 
 	    /* '-' Usually means stdin -<sven@zen.org> */
@@ -2294,7 +2296,7 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 	    } else {
 		f = fopen(filename, "rb");
                 if (f == NULL) {
-                    fprintf(stderr, "Can't open %s\n", filename);
+                    fprintf(ERR_STREAM, "Can't open %s\n", filename);
                     progresult = XMLLINT_ERR_UNCLASS;
                     return;
                 }
@@ -2312,7 +2314,7 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
             xmlCtxtUseOptions(ctxt, options);
             if (maxAmpl > 0)
                 xmlCtxtSetMaxAmplification(ctxt, maxAmpl);
-            while ((res = fread(chars, 1, size, f)) > 0) {
+            while ((res = fread(chars, 1, pushsize, f)) > 0) {
                 xmlParseChunk(ctxt, chars, res, 0);
             }
             xmlParseChunk(ctxt, chars, 0, 1);
@@ -2383,7 +2385,7 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 	    base = mmap(NULL, info.st_size, PROT_READ, MAP_SHARED, fd, 0) ;
 	    if (base == (void *) MAP_FAILED) {
 	        close(fd);
-	        fprintf(stderr, "mmap failure for file %s\n", filename);
+	        fprintf(ERR_STREAM, "mmap failure for file %s\n", filename);
 		progresult = XMLLINT_ERR_RDFILE;
 	        return;
 	    }
@@ -2393,7 +2395,7 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 
                 ctxt = xmlNewParserCtxt();
                 if (ctxt == NULL) {
-                    fprintf(stderr, "out of memory\n");
+                    fprintf(ERR_STREAM, "out of memory\n");
                     progresult = XMLLINT_ERR_MEM;
                     return;
                 }
@@ -2449,7 +2451,7 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 
                 ctxt = xmlNewParserCtxt();
                 if (ctxt == NULL) {
-                    fprintf(stderr, "out of memory\n");
+                    fprintf(ERR_STREAM, "out of memory\n");
                     progresult = XMLLINT_ERR_MEM;
                     return;
                 }
@@ -2560,18 +2562,21 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 
 	if (doc->children != NULL) {
 	    node = doc->children;
-	    while ((node != NULL) && (node->last == NULL)) node = node->next;
+	    while ((node != NULL) &&
+                   ((node->type != XML_ELEMENT_NODE) ||
+                    (node->last == NULL)))
+                node = node->next;
 	    if (node != NULL) {
 		nb = xmlValidGetValidElements(node->last, NULL, list, 256);
 		if (nb < 0) {
-		    fprintf(stderr, "could not get valid list of elements\n");
+		    fprintf(ERR_STREAM, "could not get valid list of elements\n");
 		} else if (nb == 0) {
-		    fprintf(stderr, "No element can be inserted under root\n");
+		    fprintf(ERR_STREAM, "No element can be inserted under root\n");
 		} else {
-		    fprintf(stderr, "%d element types can be inserted under root:\n",
+		    fprintf(ERR_STREAM, "%d element types can be inserted under root:\n",
 		           nb);
 		    for (i = 0;i < nb;i++) {
-			 fprintf(stderr, "%s\n", (char *) list[i]);
+			 fprintf(ERR_STREAM, "%s\n", (char *) list[i]);
 		    }
 		}
 	    }
@@ -2629,7 +2634,7 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 			if (output != NULL)
 			    fclose(out);
 		    } else {
-			fprintf(stderr, "failed to open %s\n", output);
+			fprintf(ERR_STREAM, "failed to open %s\n", output);
 			progresult = XMLLINT_ERR_OUT;
 		    }
 		}
@@ -2646,11 +2651,11 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 		size = xmlC14NDocDumpMemory(doc, NULL, XML_C14N_1_0, NULL, 1, &result);
 		if (size >= 0) {
 		    if (write(1, result, size) == -1) {
-		        fprintf(stderr, "Can't write data\n");
+		        fprintf(ERR_STREAM, "Can't write data\n");
 		    }
 		    xmlFree(result);
 		} else {
-		    fprintf(stderr, "Failed to canonicalize\n");
+		    fprintf(ERR_STREAM, "Failed to canonicalize\n");
 		    progresult = XMLLINT_ERR_OUT;
 		}
 	    } else if (canonical_11) {
@@ -2660,11 +2665,11 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 		size = xmlC14NDocDumpMemory(doc, NULL, XML_C14N_1_1, NULL, 1, &result);
 		if (size >= 0) {
 		    if (write(1, result, size) == -1) {
-		        fprintf(stderr, "Can't write data\n");
+		        fprintf(ERR_STREAM, "Can't write data\n");
 		    }
 		    xmlFree(result);
 		} else {
-		    fprintf(stderr, "Failed to canonicalize\n");
+		    fprintf(ERR_STREAM, "Failed to canonicalize\n");
 		    progresult = XMLLINT_ERR_OUT;
 		}
 	    } else
@@ -2675,11 +2680,11 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 		size = xmlC14NDocDumpMemory(doc, NULL, XML_C14N_EXCLUSIVE_1_0, NULL, 1, &result);
 		if (size >= 0) {
 		    if (write(1, result, size) == -1) {
-		        fprintf(stderr, "Can't write data\n");
+		        fprintf(ERR_STREAM, "Can't write data\n");
 		    }
 		    xmlFree(result);
 		} else {
-		    fprintf(stderr, "Failed to canonicalize\n");
+		    fprintf(ERR_STREAM, "Failed to canonicalize\n");
 		    progresult = XMLLINT_ERR_OUT;
 		}
 	    } else
@@ -2702,11 +2707,11 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 			xmlDocDumpMemory(doc, &result, &len);
 		}
 		if (result == NULL) {
-		    fprintf(stderr, "Failed to save\n");
+		    fprintf(ERR_STREAM, "Failed to save\n");
 		    progresult = XMLLINT_ERR_OUT;
 		} else {
 		    if (write(1, result, len) == -1) {
-		        fprintf(stderr, "Can't write data\n");
+		        fprintf(ERR_STREAM, "Can't write data\n");
 		    }
 		    xmlFree(result);
 		}
@@ -2726,14 +2731,14 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 			                     encoding);
 		    }
 		    if (ret < 0) {
-			fprintf(stderr, "failed save to %s\n",
+			fprintf(ERR_STREAM, "failed save to %s\n",
 				output ? output : "-");
 			progresult = XMLLINT_ERR_OUT;
 		    }
 		} else if (format == 1) {
 		    ret = xmlSaveFormatFile(output ? output : "-", doc, 1);
 		    if (ret < 0) {
-			fprintf(stderr, "failed save to %s\n",
+			fprintf(ERR_STREAM, "failed save to %s\n",
 				output ? output : "-");
 			progresult = XMLLINT_ERR_OUT;
 		    }
@@ -2751,7 +2756,7 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 			if (output != NULL)
 			    fclose(out);
 		    } else {
-			fprintf(stderr, "failed to open %s\n", output);
+			fprintf(ERR_STREAM, "failed to open %s\n", output);
 			progresult = XMLLINT_ERR_OUT;
 		    }
 		}
@@ -2776,7 +2781,7 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 
 		if (ctxt != NULL) {
 		    if (xmlSaveDoc(ctxt, doc) < 0) {
-			fprintf(stderr, "failed save to %s\n",
+			fprintf(ERR_STREAM, "failed save to %s\n",
 				output ? output : "-");
 			progresult = XMLLINT_ERR_OUT;
 		    }
@@ -2802,7 +2807,7 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 		if (output != NULL)
 		    fclose(out);
 	    } else {
-		fprintf(stderr, "failed to open %s\n", output);
+		fprintf(ERR_STREAM, "failed to open %s\n", output);
 		progresult = XMLLINT_ERR_OUT;
 	    }
 	}
@@ -2829,17 +2834,17 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 	}
 	if (dtd == NULL) {
 	    if (dtdvalid != NULL)
-		fprintf(stderr,
+		fprintf(ERR_STREAM,
 			"Could not parse DTD %s\n", dtdvalid);
 	    else
-		fprintf(stderr,
+		fprintf(ERR_STREAM,
 			"Could not parse DTD %s\n", dtdvalidfpi);
 	    progresult = XMLLINT_ERR_DTD;
 	} else {
 	    xmlValidCtxtPtr cvp;
 
 	    if ((cvp = xmlNewValidCtxt()) == NULL) {
-		fprintf(stderr,
+		fprintf(ERR_STREAM,
 			"Couldn't allocate validation context\n");
                 progresult = XMLLINT_ERR_MEM;
                 xmlFreeDtd(dtd);
@@ -2851,11 +2856,11 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 	    }
 	    if (!xmlValidateDtd(cvp, doc, dtd)) {
 		if (dtdvalid != NULL)
-		    fprintf(stderr,
+		    fprintf(ERR_STREAM,
 			    "Document %s does not validate against %s\n",
 			    filename, dtdvalid);
 		else
-		    fprintf(stderr,
+		    fprintf(ERR_STREAM,
 			    "Document %s does not validate against %s\n",
 			    filename, dtdvalidfpi);
 		progresult = XMLLINT_ERR_VALID;
@@ -2870,7 +2875,7 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 	xmlValidCtxtPtr cvp;
 
 	if ((cvp = xmlNewValidCtxt()) == NULL) {
-	    fprintf(stderr,
+	    fprintf(ERR_STREAM,
 		    "Couldn't allocate validation context\n");
             progresult = XMLLINT_ERR_MEM;
             xmlFreeDoc(doc);
@@ -2881,7 +2886,7 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 	    startTimer();
 	}
 	if (!xmlValidateDocument(cvp, doc)) {
-	    fprintf(stderr,
+	    fprintf(ERR_STREAM,
 		    "Document %s does not validate\n", filename);
 	    progresult = XMLLINT_ERR_VALID;
 	}
@@ -2916,13 +2921,13 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 	ret = xmlSchematronValidateDoc(ctxt, doc);
 	if (ret == 0) {
 	    if (!quiet) {
-	        fprintf(stderr, "%s validates\n", filename);
+	        fprintf(ERR_STREAM, "%s validates\n", filename);
 	    }
 	} else if (ret > 0) {
-	    fprintf(stderr, "%s fails to validate\n", filename);
+	    fprintf(ERR_STREAM, "%s fails to validate\n", filename);
 	    progresult = XMLLINT_ERR_VALID;
 	} else {
-	    fprintf(stderr, "%s validation generated an internal error\n",
+	    fprintf(ERR_STREAM, "%s validation generated an internal error\n",
 		   filename);
 	    progresult = XMLLINT_ERR_VALID;
 	}
@@ -2950,13 +2955,13 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 	ret = xmlRelaxNGValidateDoc(ctxt, doc);
 	if (ret == 0) {
 	    if (!quiet) {
-	        fprintf(stderr, "%s validates\n", filename);
+	        fprintf(ERR_STREAM, "%s validates\n", filename);
 	    }
 	} else if (ret > 0) {
-	    fprintf(stderr, "%s fails to validate\n", filename);
+	    fprintf(ERR_STREAM, "%s fails to validate\n", filename);
 	    progresult = XMLLINT_ERR_VALID;
 	} else {
-	    fprintf(stderr, "%s validation generated an internal error\n",
+	    fprintf(ERR_STREAM, "%s validation generated an internal error\n",
 		   filename);
 	    progresult = XMLLINT_ERR_VALID;
 	}
@@ -2981,13 +2986,13 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 	ret = xmlSchemaValidateDoc(ctxt, doc);
 	if (ret == 0) {
 	    if (!quiet) {
-	        fprintf(stderr, "%s validates\n", filename);
+	        fprintf(ERR_STREAM, "%s validates\n", filename);
 	    }
 	} else if (ret > 0) {
-	    fprintf(stderr, "%s fails to validate\n", filename);
+	    fprintf(ERR_STREAM, "%s fails to validate\n", filename);
 	    progresult = XMLLINT_ERR_VALID;
 	} else {
-	    fprintf(stderr, "%s validation generated an internal error\n",
+	    fprintf(ERR_STREAM, "%s validation generated an internal error\n",
 		   filename);
 	    progresult = XMLLINT_ERR_VALID;
 	}
@@ -3001,7 +3006,7 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 #ifdef LIBXML_DEBUG_ENABLED
 #if defined(LIBXML_HTML_ENABLED) || defined(LIBXML_VALID_ENABLED)
     if ((debugent) && (!html))
-	xmlDebugDumpEntities(stderr, doc);
+	xmlDebugDumpEntities(ERR_STREAM, doc);
 #endif
 #endif
 
@@ -3024,40 +3029,40 @@ static void parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
  ************************************************************************/
 
 static void showVersion(const char *name) {
-    fprintf(stderr, "%s: using libxml version %s\n", name, xmlParserVersion);
-    fprintf(stderr, "   compiled with: ");
-    if (xmlHasFeature(XML_WITH_THREAD)) fprintf(stderr, "Threads ");
-    if (xmlHasFeature(XML_WITH_TREE)) fprintf(stderr, "Tree ");
-    if (xmlHasFeature(XML_WITH_OUTPUT)) fprintf(stderr, "Output ");
-    if (xmlHasFeature(XML_WITH_PUSH)) fprintf(stderr, "Push ");
-    if (xmlHasFeature(XML_WITH_READER)) fprintf(stderr, "Reader ");
-    if (xmlHasFeature(XML_WITH_PATTERN)) fprintf(stderr, "Patterns ");
-    if (xmlHasFeature(XML_WITH_WRITER)) fprintf(stderr, "Writer ");
-    if (xmlHasFeature(XML_WITH_SAX1)) fprintf(stderr, "SAXv1 ");
-    if (xmlHasFeature(XML_WITH_FTP)) fprintf(stderr, "FTP ");
-    if (xmlHasFeature(XML_WITH_HTTP)) fprintf(stderr, "HTTP ");
-    if (xmlHasFeature(XML_WITH_VALID)) fprintf(stderr, "DTDValid ");
-    if (xmlHasFeature(XML_WITH_HTML)) fprintf(stderr, "HTML ");
-    if (xmlHasFeature(XML_WITH_LEGACY)) fprintf(stderr, "Legacy ");
-    if (xmlHasFeature(XML_WITH_C14N)) fprintf(stderr, "C14N ");
-    if (xmlHasFeature(XML_WITH_CATALOG)) fprintf(stderr, "Catalog ");
-    if (xmlHasFeature(XML_WITH_XPATH)) fprintf(stderr, "XPath ");
-    if (xmlHasFeature(XML_WITH_XPTR)) fprintf(stderr, "XPointer ");
-    if (xmlHasFeature(XML_WITH_XINCLUDE)) fprintf(stderr, "XInclude ");
-    if (xmlHasFeature(XML_WITH_ICONV)) fprintf(stderr, "Iconv ");
-    if (xmlHasFeature(XML_WITH_ICU)) fprintf(stderr, "ICU ");
-    if (xmlHasFeature(XML_WITH_ISO8859X)) fprintf(stderr, "ISO8859X ");
-    if (xmlHasFeature(XML_WITH_UNICODE)) fprintf(stderr, "Unicode ");
-    if (xmlHasFeature(XML_WITH_REGEXP)) fprintf(stderr, "Regexps ");
-    if (xmlHasFeature(XML_WITH_AUTOMATA)) fprintf(stderr, "Automata ");
-    if (xmlHasFeature(XML_WITH_EXPR)) fprintf(stderr, "Expr ");
-    if (xmlHasFeature(XML_WITH_SCHEMAS)) fprintf(stderr, "Schemas ");
-    if (xmlHasFeature(XML_WITH_SCHEMATRON)) fprintf(stderr, "Schematron ");
-    if (xmlHasFeature(XML_WITH_MODULES)) fprintf(stderr, "Modules ");
-    if (xmlHasFeature(XML_WITH_DEBUG)) fprintf(stderr, "Debug ");
-    if (xmlHasFeature(XML_WITH_ZLIB)) fprintf(stderr, "Zlib ");
-    if (xmlHasFeature(XML_WITH_LZMA)) fprintf(stderr, "Lzma ");
-    fprintf(stderr, "\n");
+    fprintf(ERR_STREAM, "%s: using libxml version %s\n", name, xmlParserVersion);
+    fprintf(ERR_STREAM, "   compiled with: ");
+    if (xmlHasFeature(XML_WITH_THREAD)) fprintf(ERR_STREAM, "Threads ");
+    if (xmlHasFeature(XML_WITH_TREE)) fprintf(ERR_STREAM, "Tree ");
+    if (xmlHasFeature(XML_WITH_OUTPUT)) fprintf(ERR_STREAM, "Output ");
+    if (xmlHasFeature(XML_WITH_PUSH)) fprintf(ERR_STREAM, "Push ");
+    if (xmlHasFeature(XML_WITH_READER)) fprintf(ERR_STREAM, "Reader ");
+    if (xmlHasFeature(XML_WITH_PATTERN)) fprintf(ERR_STREAM, "Patterns ");
+    if (xmlHasFeature(XML_WITH_WRITER)) fprintf(ERR_STREAM, "Writer ");
+    if (xmlHasFeature(XML_WITH_SAX1)) fprintf(ERR_STREAM, "SAXv1 ");
+    if (xmlHasFeature(XML_WITH_FTP)) fprintf(ERR_STREAM, "FTP ");
+    if (xmlHasFeature(XML_WITH_HTTP)) fprintf(ERR_STREAM, "HTTP ");
+    if (xmlHasFeature(XML_WITH_VALID)) fprintf(ERR_STREAM, "DTDValid ");
+    if (xmlHasFeature(XML_WITH_HTML)) fprintf(ERR_STREAM, "HTML ");
+    if (xmlHasFeature(XML_WITH_LEGACY)) fprintf(ERR_STREAM, "Legacy ");
+    if (xmlHasFeature(XML_WITH_C14N)) fprintf(ERR_STREAM, "C14N ");
+    if (xmlHasFeature(XML_WITH_CATALOG)) fprintf(ERR_STREAM, "Catalog ");
+    if (xmlHasFeature(XML_WITH_XPATH)) fprintf(ERR_STREAM, "XPath ");
+    if (xmlHasFeature(XML_WITH_XPTR)) fprintf(ERR_STREAM, "XPointer ");
+    if (xmlHasFeature(XML_WITH_XINCLUDE)) fprintf(ERR_STREAM, "XInclude ");
+    if (xmlHasFeature(XML_WITH_ICONV)) fprintf(ERR_STREAM, "Iconv ");
+    if (xmlHasFeature(XML_WITH_ICU)) fprintf(ERR_STREAM, "ICU ");
+    if (xmlHasFeature(XML_WITH_ISO8859X)) fprintf(ERR_STREAM, "ISO8859X ");
+    if (xmlHasFeature(XML_WITH_UNICODE)) fprintf(ERR_STREAM, "Unicode ");
+    if (xmlHasFeature(XML_WITH_REGEXP)) fprintf(ERR_STREAM, "Regexps ");
+    if (xmlHasFeature(XML_WITH_AUTOMATA)) fprintf(ERR_STREAM, "Automata ");
+    if (xmlHasFeature(XML_WITH_EXPR)) fprintf(ERR_STREAM, "Expr ");
+    if (xmlHasFeature(XML_WITH_SCHEMAS)) fprintf(ERR_STREAM, "Schemas ");
+    if (xmlHasFeature(XML_WITH_SCHEMATRON)) fprintf(ERR_STREAM, "Schematron ");
+    if (xmlHasFeature(XML_WITH_MODULES)) fprintf(ERR_STREAM, "Modules ");
+    if (xmlHasFeature(XML_WITH_DEBUG)) fprintf(ERR_STREAM, "Debug ");
+    if (xmlHasFeature(XML_WITH_ZLIB)) fprintf(ERR_STREAM, "Zlib ");
+    if (xmlHasFeature(XML_WITH_LZMA)) fprintf(ERR_STREAM, "Lzma ");
+    fprintf(ERR_STREAM, "\n");
 }
 
 static void usage(FILE *f, const char *name) {
@@ -3189,11 +3194,11 @@ parseInteger(const char *ctxt, const char *str,
     errno = 0;
     val = strtoul(str, &strEnd, 10);
     if (errno == EINVAL || *strEnd != 0) {
-        fprintf(stderr, "%s: invalid integer: %s\n", ctxt, str);
+        fprintf(ERR_STREAM, "%s: invalid integer: %s\n", ctxt, str);
         exit(XMLLINT_ERR_UNCLASS);
     }
     if (errno != 0 || val < min || val > max) {
-        fprintf(stderr, "%s: integer out of range: %s\n", ctxt, str);
+        fprintf(ERR_STREAM, "%s: integer out of range: %s\n", ctxt, str);
         exit(XMLLINT_ERR_UNCLASS);
     }
 
@@ -3211,7 +3216,7 @@ int main(int argc, const char** argv) {
     int version = 0;
 
     if (argc <= 1) {
-	usage(stderr, argv[0]);
+	usage(ERR_STREAM, argv[0]);
 	return(XMLLINT_ERR_UNCLASS);
     }
 
@@ -3224,7 +3229,7 @@ int main(int argc, const char** argv) {
 	    (!strcmp(argv[i], "--maxmem"))) {
             i++;
             if (i >= argc) {
-                fprintf(stderr, "maxmem: missing integer value\n");
+                fprintf(ERR_STREAM, "maxmem: missing integer value\n");
                 return(XMLLINT_ERR_UNCLASS);
             }
             errno = 0;
@@ -3562,13 +3567,13 @@ int main(int argc, const char** argv) {
 	           (!strcmp(argv[i], "--max-ampl"))) {
             i++;
             if (i >= argc) {
-                fprintf(stderr, "max-ampl: missing integer value\n");
+                fprintf(ERR_STREAM, "max-ampl: missing integer value\n");
                 return(XMLLINT_ERR_UNCLASS);
             }
             maxAmpl = parseInteger("max-ampl", argv[i], 1, UINT_MAX);
 	} else {
-	    fprintf(stderr, "Unknown option %s\n", argv[i]);
-	    usage(stderr, argv[0]);
+	    fprintf(ERR_STREAM, "Unknown option %s\n", argv[i]);
+	    usage(ERR_STREAM, argv[0]);
 	    return(XMLLINT_ERR_UNCLASS);
 	}
     }
@@ -3582,7 +3587,7 @@ int main(int argc, const char** argv) {
 	    if (catal != NULL) {
 		xmlLoadCatalogs(catal);
 	    } else {
-		fprintf(stderr, "Variable $SGML_CATALOG_FILES not set\n");
+		fprintf(ERR_STREAM, "Variable $SGML_CATALOG_FILES not set\n");
 	    }
 	}
     }
@@ -3605,14 +3610,14 @@ int main(int argc, const char** argv) {
     if ((noblanks != 0) || (format == 1))
         options |= XML_PARSE_NOBLANKS;
     if ((htmlout) && (!nowrap)) {
-	fprintf(stderr,
+	fprintf(ERR_STREAM,
          "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\"\n");
-	fprintf(stderr,
+	fprintf(ERR_STREAM,
 		"\t\"http://www.w3.org/TR/REC-html40/loose.dtd\">\n");
-	fprintf(stderr,
+	fprintf(ERR_STREAM,
 	 "<html><head><title>%s output</title></head>\n",
 		argv[0]);
-	fprintf(stderr,
+	fprintf(ERR_STREAM,
 	 "<body bgcolor=\"#ffffff\"><h1 align=\"center\">%s output</h1>\n",
 		argv[0]);
     }
@@ -3637,7 +3642,7 @@ int main(int argc, const char** argv) {
         }
 	wxschematron = xmlSchematronParse(ctxt);
 	if (wxschematron == NULL) {
-	    fprintf(stderr,
+	    fprintf(ERR_STREAM,
 		    "Schematron schema %s failed to compile\n", schematron);
             progresult = XMLLINT_ERR_SCHEMACOMP;
 	    schematron = NULL;
@@ -3668,7 +3673,7 @@ int main(int argc, const char** argv) {
         }
 	relaxngschemas = xmlRelaxNGParse(ctxt);
 	if (relaxngschemas == NULL) {
-	    fprintf(stderr,
+	    fprintf(ERR_STREAM,
 		    "Relax-NG schema %s failed to compile\n", relaxng);
             progresult = XMLLINT_ERR_SCHEMACOMP;
 	    relaxng = NULL;
@@ -3694,7 +3699,7 @@ int main(int argc, const char** argv) {
         }
 	wxschemas = xmlSchemaParse(ctxt);
 	if (wxschemas == NULL) {
-	    fprintf(stderr,
+	    fprintf(ERR_STREAM,
 		    "WXS schema %s failed to compile\n", schema);
             progresult = XMLLINT_ERR_SCHEMACOMP;
 	    schema = NULL;
@@ -3709,7 +3714,7 @@ int main(int argc, const char** argv) {
     if ((pattern != NULL) && (walker == 0)) {
         patternc = xmlPatterncompile((const xmlChar *) pattern, NULL, 0, NULL);
 	if (patternc == NULL) {
-	    fprintf(stderr,
+	    fprintf(ERR_STREAM,
 		    "Pattern %s failed to compile\n", pattern);
             progresult = XMLLINT_ERR_SCHEMAPAT;
 	    pattern = NULL;
@@ -3841,10 +3846,10 @@ int main(int argc, const char** argv) {
     if (generate)
 	parseAndPrintFile(NULL, NULL);
     if ((htmlout) && (!nowrap)) {
-	fprintf(stderr, "</body></html>\n");
+	fprintf(ERR_STREAM, "</body></html>\n");
     }
     if ((files == 0) && (!generate) && (version == 0)) {
-	usage(stderr, argv[0]);
+	usage(ERR_STREAM, argv[0]);
         progresult = XMLLINT_ERR_UNCLASS;
     }
 #ifdef LIBXML_SCHEMATRON_ENABLED
