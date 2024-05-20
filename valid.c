@@ -2499,7 +2499,9 @@ xmlIsID(xmlDocPtr doc, xmlNodePtr elem, xmlAttrPtr attr) {
             ((doc->intSubset == NULL) && (doc->extSubset == NULL)))
             return(0);
 
-        if ((elem == NULL) || (elem->type != XML_ELEMENT_NODE))
+        if ((elem == NULL) ||
+            (elem->type != XML_ELEMENT_NODE) ||
+            (elem->name == NULL))
             return(0);
 
 	fullelemname = (elem->ns != NULL && elem->ns->prefix != NULL) ?
@@ -5923,7 +5925,8 @@ child_ok:
 		 */
 		child = elem->children;
 		while (child != NULL) {
-		    if (child->type == XML_TEXT_NODE) {
+		    if ((child->type == XML_TEXT_NODE) &&
+                        (child->content != NULL)) {
 			const xmlChar *content = child->content;
 
 			while (IS_BLANK_CH(*content))
