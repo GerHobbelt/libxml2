@@ -108,7 +108,6 @@
     <ClCompile Include="..\..\HTMLtree.c" />
     <ClCompile Include="..\..\legacy.c" />
     <ClCompile Include="..\..\list.c" />
-    <ClCompile Include="..\..\nanoftp.c" />
     <ClCompile Include="..\..\nanohttp.c" />
     <ClCompile Include="..\..\parser.c" />
     <ClCompile Include="..\..\parserInternals.c" />

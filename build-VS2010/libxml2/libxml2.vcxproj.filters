@@ -132,9 +132,6 @@
     <ClCompile Include="..\..\list.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\nanoftp.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\nanohttp.c">
       <Filter>Source Files</Filter>
     </ClCompile>
