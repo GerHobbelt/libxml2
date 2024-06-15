@@ -2173,7 +2173,6 @@ xmlNewDocNode(xmlDocPtr doc, xmlNsPtr ns,
 
 /**
  * xmlNewDocNodeEatName:
- * xmlNewDocNode:
  * @doc:  the target document
  * @ns:  namespace (optional)
  * @name:  the node name
@@ -4184,6 +4183,17 @@ xmlCopyPropList(xmlNodePtr target, xmlAttrPtr cur) {
  * namespace info, but don't recurse on children.
  */
 
+/**
+ * xmlStaticCopyNode:
+ * @node:  source node
+ * @doc:  target document
+ * @parent:  target parent
+ * @extended:  flags
+ *
+ * Copy a node.
+ *
+ * Returns the copy or NULL if a memory allocation failed.
+ */
 xmlNodePtr
 xmlStaticCopyNode(xmlNodePtr node, xmlDocPtr doc, xmlNodePtr parent,
                   int extended) {
@@ -5357,7 +5367,7 @@ xmlNodeSetBase(xmlNodePtr cur, const xmlChar* uri) {
 #endif /* LIBXML_TREE_ENABLED */
 
 /**
- * xmlNodeGetBase:
+ * xmlNodeGetBaseSafe:
  * @doc:  the document the node pertains to
  * @cur:  the node being checked
  * @baseOut:  pointer to base
@@ -5370,6 +5380,8 @@ xmlNodeSetBase(xmlNodePtr cur, const xmlChar* uri) {
  * 5.1.2. Base URI from the Encapsulating Entity
  * However it does not return the document base (5.1.3), use
  * doc->URL in this case
+ *
+ * Available since 2.13.0.
  *
  * Return 0 in case of success, 1 if a URI or argument is invalid, -1 if a
  * memory allocation failed.
@@ -5896,6 +5908,8 @@ xmlTextMerge(xmlNodePtr first, xmlNodePtr second) {
  * terminated array of namespace pointers that must be freed by
  * the caller.
  *
+ * Available since 2.13.0.
+ *
  * Returns 0 on success, 1 if no namespaces were found, -1 if a
  * memory allocation failed.
  */
@@ -6021,6 +6035,17 @@ xmlTreeEnsureXMLDecl(xmlDocPtr doc)
     return(ns);
 }
 
+/**
+ * xmlSearchNsSafe:
+ * @node:  a node
+ * @prefix:  a namespace prefix
+ * @out:  pointer to resulting namespace
+ *
+ * Search a namespace with @prefix in scope of @node.
+ *
+ * Returns 0 on success, -1 if a memory allocation failed, 1 on
+ * other errors.
+ */
 int
 xmlSearchNsSafe(xmlNodePtr node, const xmlChar *prefix,
                 xmlNsPtr *out) {
@@ -6162,6 +6187,17 @@ xmlNsInScope(xmlDocPtr doc ATTRIBUTE_UNUSED, xmlNodePtr node,
     return (1);
 }
 
+/**
+ * xmlSearchNsByHrefSafe:
+ * @node:  a node
+ * @href:  a namespace URI
+ * @out:  pointer to resulting namespace
+ *
+ * Search a namespace matching @URI in scope of @node.
+ *
+ * Returns 0 on success, -1 if a memory allocation failed, 1 on
+ * other errors.
+ */
 int
 xmlSearchNsByHrefSafe(xmlNodePtr node, const xmlChar *href,
                       xmlNsPtr *out) {
@@ -6722,6 +6758,8 @@ xmlHasNsProp(const xmlNode *node, const xmlChar *name, const xmlChar *nameSpace)
  * This attribute has to be anchored in the namespace specified.
  * This does the entity substitution. The returned value must be
  * freed by the caller.
+ *
+ * Available since 2.13.0.
  *
  * Returns 0 on success, 1 if no attribute was found, -1 if a
  * memory allocation failed.

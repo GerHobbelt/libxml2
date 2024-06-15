@@ -2,9 +2,7 @@
 # AC_ARG_WITH / AC_ARG_ENABLE in configure.ac
 # [X] c14n
 # [X] catalog
-# [M] coverage    - use meson, not minimum
 # [X] debugging
-# [X] fexceptions
 # [X] ftp         - not minimum
 # [X] history
 # [X] html
@@ -23,7 +21,6 @@
 # [X] reader
 # [X] readline
 # [X] regexps
-# [ ] run-debug   - not used
 # [X] sax1
 # [X] schemas
 # [X] schematron
@@ -42,6 +39,7 @@
 # [X] minimum
 # [X] ipv6
 
+# TODO: Options should be three-valued: "yes", "no", default
 
 option('c14n',
   type: 'boolean',
@@ -59,12 +57,6 @@ option('debuging',
   type: 'boolean',
   value: true,
   description: 'Debugging module and shell'
-)
-
-option('fexceptions',
-  type: 'boolean',
-  value: false,
-  description: 'add GCC flag -fexceptions for C++ exceptions'
 )
 
 option('ftp',
@@ -87,7 +79,7 @@ option('html',
 
 option('http',
   type: 'boolean',
-  value: true,
+  value: false,
   description: 'HTTP support'
 )
 
@@ -174,12 +166,6 @@ option('regexps',
   type: 'boolean',
   value: true,
   description: 'Regular expressions support'
-)
-
-option('run-debug',
-  type: 'boolean',
-  value: false,
-  description: 'Runtime debugging module'
 )
 
 option('sax1',

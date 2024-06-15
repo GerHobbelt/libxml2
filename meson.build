@@ -50,13 +50,10 @@ endif
 # binaries
 cc = meson.get_compiler('c')
 
-cc.has_type('uint32_t', prefix: '#include <stdint.h>')
-
 # options
 want_c14n = get_option('c14n')
 want_catalog = get_option('catalog')
 want_debug = get_option('debuging')
-want_fexceptions = get_option('fexceptions')
 want_ftp = get_option('ftp')
 want_history = get_option('history')
 want_html = get_option('html')
@@ -75,7 +72,6 @@ want_python = get_option('python')
 want_reader = get_option('reader')
 want_readline = get_option('readline')
 want_regexps = get_option('regexps')
-want_run_debug = get_option('run-debug')
 want_sax1 = get_option('sax1')
 want_schemas = get_option('schemas')
 want_schematron = get_option('schematron')
@@ -90,6 +86,10 @@ want_xpath = get_option('xpath')
 want_xptr = get_option('xptr')
 want_xptr_locs = get_option('xptr-locs')
 want_zlib = get_option('zlib')
+
+# TODO: Options should be three-valued: "yes", "no", default
+
+# TODO: Legacy defaults
 
 # hard dependencies on options
 
@@ -176,10 +176,10 @@ endif
 # minimum dependencies
 
 if get_option('minimum')
+    # TODO: This is should allow other options
     want_c14n = false
     want_catalog = false
     want_debug = false
-    want_fexceptions = false
     want_history = false
     want_html = false
     want_http = false
@@ -195,7 +195,6 @@ if get_option('minimum')
     want_reader = false
     want_readline = false
     want_regexps = false
-    want_run_debug = false
     want_sax1 = false
     want_schemas = false
     want_schematron = false
@@ -253,10 +252,6 @@ if cc.get_argument_syntax() == 'gcc'
         '-Wno-format-extra-args',
     ]
 
-    if want_fexceptions == true
-        cflags_try += '-fexceptions'
-    endif
-
     if host_machine.cpu_family() == 'alpha'
         cflags_try += '-mieee'
     endif
@@ -299,7 +294,6 @@ config_h.set_quoted('LOCALEDIR', dir_locale)
 # header files
 xml_check_headers = [
     'stdint.h',
-    'inttypes.h',
     'fcntl.h',
     'unistd.h',
     'sys/stat.h',
@@ -329,7 +323,6 @@ xml_check_functions = [
     ['gettimeofday', 'sys/time.h'],
     ['ftime', 'sys/timeb.h'],
     ['stat', 'sys/stat.h'],
-    ['isascii', 'ctype.h'],
     ['mmap', 'sys/mman.h'],
     ['munmap', 'sys/mman.h'],
 ]
@@ -826,7 +819,6 @@ summary(
         'c14n': want_c14n,
         'catalog': want_catalog,
         'debug': want_debug,
-        'fexceptions': want_fexceptions,
         'ftp': want_ftp,
         'history': want_history,
         'html': want_html,
@@ -845,7 +837,6 @@ summary(
         'reader': want_reader,
         'readline': want_readline,
         'regexps': want_regexps,
-        'run-debug': want_run_debug,
         'sax1': want_sax1,
         'schemas': want_schemas,
         'schematron': want_schematron,

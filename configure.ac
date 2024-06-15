@@ -78,7 +78,7 @@ AC_ARG_WITH(readline,
 AC_ARG_WITH(html,
 [  --with-html             HTML parser (on)])
 AC_ARG_WITH(http,
-[  --with-http             HTTP support (on)])
+[  --with-http             HTTP support (off)])
 AC_ARG_WITH(iconv,
 [  --with-iconv[[=DIR]]      iconv support (on)])
 AC_ARG_WITH(icu,
@@ -135,10 +135,21 @@ AC_ARG_WITH(legacy,
 
 AC_ARG_WITH(tls,
 [  --with-tls              thread-local storage (off)])
-AC_ARG_WITH(fexceptions,
-[  --with-fexceptions      add GCC flag -fexceptions for C++ exceptions (off)])
-AC_ARG_WITH(coverage,
-[  --with-coverage         build for code coverage with GCC (off)])
+
+dnl
+dnl Legacy defaults
+dnl
+if test "$with_legacy" = "yes"; then
+    if test "$with_http" = ""; then
+        with_http=yes
+    fi
+    if test "$with_lzma" = ""; then
+        with_lzma=yes
+    fi
+    if test "$with_zlib" = ""; then
+        with_zlib=yes
+    fi
+fi
 
 dnl
 dnl hard dependencies on options
@@ -224,7 +235,6 @@ if test "$with_minimum" = "yes"; then
     test "$with_c14n" = "" && with_c14n=no
     test "$with_catalog" = "" && with_catalog=no
     test "$with_debug" = "" && with_debug=no
-    test "$with_fexceptions" = "" && with_fexceptions=no
     test "$with_history" = "" && with_history=no
     test "$with_html" = "" && with_html=no
     test "$with_http" = "" && with_http=no
@@ -290,24 +300,17 @@ XML_PC_REQUIRES=
 dnl
 dnl Checks for header files.
 dnl
-AC_CHECK_HEADERS([stdint.h inttypes.h])
+AC_CHECK_HEADERS([stdint.h])
 AC_CHECK_HEADERS([fcntl.h unistd.h sys/stat.h])
 AC_CHECK_HEADERS([sys/mman.h])
-AC_CHECK_HEADERS([sys/socket.h netinet/in.h arpa/inet.h netdb.h])
-AC_CHECK_HEADERS([sys/select.h poll.h])
 AC_CHECK_HEADERS([sys/time.h sys/timeb.h])
 AC_CHECK_HEADERS([sys/random.h])
 AC_CHECK_HEADERS([dl.h dlfcn.h])
 AC_CHECK_HEADERS([glob.h])
 AM_CONDITIONAL(WITH_GLOB, test "$ac_cv_header_glob_h" = "yes")
 
-dnl
-dnl Checking types
-dnl
-AC_TYPE_UINT32_T
-
 dnl Checks for library functions.
-AC_CHECK_FUNCS([getentropy gettimeofday ftime isascii stat mmap munmap])
+AC_CHECK_FUNCS([getentropy gettimeofday ftime stat mmap munmap])
 
 AH_VERBATIM([HAVE_MUNMAP_AFTER],[/* mmap() is no good without munmap() */
 #if defined(HAVE_MMAP) && !defined(HAVE_MUNMAP)
@@ -317,7 +320,10 @@ AH_VERBATIM([HAVE_MUNMAP_AFTER],[/* mmap() is no good without munmap() */
 dnl
 dnl Checks for inet libraries
 dnl
-if test "$with_http" != "no" || test "with_ftp" = "yes"; then
+if test "$with_http" = "yes" || test "$with_ftp" = "yes"; then
+    AC_CHECK_HEADERS([sys/socket.h netinet/in.h arpa/inet.h netdb.h])
+    AC_CHECK_HEADERS([sys/select.h poll.h])
+
     case "$host" in
         *-*-mingw*)
             dnl AC_SEARCH_LIBS doesn't work because of non-standard calling
@@ -470,15 +476,6 @@ if test "${GCC}" != "yes" ; then
 	       ;;
     esac
 else
-    if test "$with_fexceptions" = "yes"
-    then
-        #
-	# Not activated by default because this inflates the code size
-	# Used to allow propagation of C++ exceptions through the library
-	#
-	AM_CFLAGS="${AM_CFLAGS} -fexceptions"
-    fi
-
     # warnings we'd like to see
     AM_CFLAGS="${AM_CFLAGS} -pedantic -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes"
     # warnings we'd like to suppress
@@ -531,10 +528,10 @@ fi
 AC_SUBST(WITH_FTP)
 AM_CONDITIONAL(WITH_FTP_SOURCES, test "$WITH_FTP" = "1")
 
-if test "$with_http" = "no" ; then
-    echo Disabling HTTP support
+if test "$with_http" != "yes" ; then
     WITH_HTTP=0
 else
+    echo Enabling HTTP support
     WITH_HTTP=1
 fi
 AC_SUBST(WITH_HTTP)
@@ -885,9 +882,7 @@ dnl Checks for zlib library.
 dnl
 WITH_ZLIB=0
 
-if test "$with_zlib" != "no" && \
-   (test "$with_zlib" != "" || test "$with_legacy" = "yes")
-then
+if test "$with_zlib" != "no" && test "$with_zlib" != ""; then
     echo "Enabling zlib compression support"
 
     if test "$with_zlib" != "yes"; then
@@ -939,9 +934,7 @@ dnl Checks for lzma library.
 dnl
 WITH_LZMA=0
 
-if test "$with_lzma" != "no" && \
-   (test "$with_lzma" != "" || test "$with_legacy" = "yes")
-then
+if test "$with_lzma" != "no" && test "$with_lzma" != ""; then
     echo "Enabling lzma compression support"
 
     if test "$with_lzma" != "yes"; then
@@ -1037,9 +1030,9 @@ dnl Checks for ICU library.
 dnl
 WITH_ICU=0
 
-if test "$with_icu" = "no" || test "$with_icu" = "" ; then
-    echo Disabling ICU support
-else
+if test "$with_icu" != "no" && test "$with_icu" != "" ; then
+    echo Enabling ICU support
+
     # Try pkg-config first so that static linking works.
     # If this succeeeds, we ignore the WITH_ICU directory.
     PKG_CHECK_MODULES([ICU], [icu-i18n], [
@@ -1094,15 +1087,6 @@ case "$host" in
         CRYPTO_LIBS="-lbcrypt"
         ;;
 esac
-
-if test "$with_coverage" = "yes" && test "${GCC}" = "yes"
-then
-    echo Enabling code coverage for GCC
-    AM_CFLAGS="$AM_CFLAGS -fprofile-arcs -ftest-coverage"
-    AM_LDFLAGS="$AM_LDFLAGS -fprofile-arcs -ftest-coverage"
-else
-    echo Disabling code coverage for GCC
-fi
 
 XML_LIBS="-lxml2"
 XML_LIBTOOLLIBS="libxml2.la"

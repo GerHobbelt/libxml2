@@ -1654,6 +1654,8 @@ xmlParserInputBufferCreateFilename(const char *URI, xmlCharEncoding enc) {
  * @enc:  encoding enum (deprecated)
  * @out:  pointer to resulting input buffer
  *
+ * Create an input buffer for a filename or URI.
+ *
  * Returns an xmlParserErrors code.
  */
 int
@@ -1940,6 +1942,17 @@ xmlMemClose(void *vctxt) {
     return(0);
 }
 
+/**
+ * xmlNewInputBufferMemory:
+ * @mem:  memory buffer
+ * @size:  size of buffer
+ * @flags:  flags
+ * @enc:  the charset encoding if known (deprecated)
+ *
+ * Create an input buffer for memory.
+ *
+ * Returns the new input buffer or NULL.
+ */
 xmlParserInputBufferPtr
 xmlNewInputBufferMemory(const void *mem, size_t size, int flags,
                         xmlCharEncoding enc) {
@@ -2062,6 +2075,15 @@ xmlStringClose(void *vctxt) {
     return(0);
 }
 
+/**
+ * xmlNewInputBufferString:
+ * @str:  C string
+ * @flags:  flags
+ *
+ * Create an input buffer for a null-teriminated C string.
+ *
+ * Returns the new input buffer or NULL.
+ */
 xmlParserInputBufferPtr
 xmlNewInputBufferString(const char *str, int flags) {
     xmlParserInputBufferPtr ret;
@@ -2897,6 +2919,8 @@ xmlParserGetDirectory(const char *filename) {
  * DEPRECATED: Internal function, don't use.
  *
  * Like xmlCheckFilename but handles file URIs.
+ *
+ * Returns 0, 1, or 2.
  */
 int
 xmlNoNetExists(const char *filename) {

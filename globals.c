@@ -891,6 +891,11 @@ XML_GLOBALS_TREE
 #undef XML_OP
 
 #ifdef LIBXML_THREAD_ENABLED
+/**
+ * xmlGetLocalRngState:
+ *
+ * Returns the local RNG state.
+ */
 unsigned *
 xmlGetLocalRngState(void) {
     if (IS_MAIN_THREAD)
@@ -968,6 +973,8 @@ xmlCheckThreadLocalStorage(void) {
 #endif
     return(0);
 }
+
+/** DOC_DISABLE */
 
 /**
  * DllMain:
@@ -1220,4 +1227,6 @@ xmlThrDefOutputBufferCreateFilenameDefault(xmlOutputBufferCreateFilenameFunc fun
 
     return(old);
 }
+
+/** DOC_ENABLE */
 

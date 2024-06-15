@@ -5047,6 +5047,14 @@ xmlTextReaderSetMaxAmplification(xmlTextReaderPtr reader, unsigned maxAmpl)
     xmlCtxtSetMaxAmplification(reader->ctxt, maxAmpl);
 }
 
+/**
+ * xmlTextReaderGetLastError:
+ * @reader: an XML reader
+ *
+ * Available since 2.13.0.
+ *
+ * Returns the last error.
+ */
 const xmlError *
 xmlTextReaderGetLastError(xmlTextReaderPtr reader)
 {
