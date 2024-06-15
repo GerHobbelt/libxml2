@@ -13,6 +13,12 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
+#include <libxml/monolithic_examples.h>
+
+#if defined(BUILD_MONOLITHIC)
+#define main      xml_tree1_example_main
+#endif
+
 #ifdef LIBXML_TREE_ENABLED
 
 /*
@@ -48,7 +54,7 @@ print_element_names(xmlNode * a_node)
  * xml elements nodes.
  */
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
     xmlDoc *doc = NULL;
     xmlNode *root_element = NULL;
@@ -81,7 +87,7 @@ main(int argc, char **argv)
     return 0;
 }
 #else
-int main(void) {
+int main(int argc, const char **argv) {
     fprintf(stderr, "Tree support not compiled in\n");
     return 0;
 }

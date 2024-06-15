@@ -14,6 +14,12 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
+#include <libxml/monolithic_examples.h>
+
+#if defined(BUILD_MONOLITHIC)
+#define main      xml_parse4_example_main
+#endif
+
 #ifdef LIBXML_PUSH_ENABLED
 static FILE *desc;
 
@@ -103,7 +109,7 @@ example4Func(const char *filename) {
     xmlFreeDoc(doc);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, const char **argv) {
     if (argc != 2)
         return(1);
 
@@ -128,7 +134,7 @@ int main(int argc, char **argv) {
     return(0);
 }
 #else /* ! LIBXML_PUSH_ENABLED */
-int main(void) {
+int main(int argc, const char **argv) {
     fprintf(stderr, "Library not compiled with push parser support\n");
     return(0);
 }

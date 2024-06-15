@@ -18,6 +18,12 @@
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
 
+#include <libxml/monolithic_examples.h>
+
+#if defined(BUILD_MONOLITHIC)
+#define main      xml_xpath2_example_main
+#endif
+
 #if defined(LIBXML_XPATH_ENABLED) && defined(LIBXML_SAX1_ENABLED) && \
     defined(LIBXML_OUTPUT_ENABLED)
 
@@ -29,7 +35,7 @@ static void update_xpath_nodes(xmlNodeSetPtr nodes, const xmlChar * value);
 
 
 int 
-main(int argc, char **argv) {
+main(int argc, const char **argv) {
     /* Parse command line and process file */
     if (argc != 4) {
 	fprintf(stderr, "Error: wrong number of arguments.\n");
@@ -176,7 +182,7 @@ update_xpath_nodes(xmlNodeSetPtr nodes, const xmlChar* value) {
 }
 
 #else
-int main(void) {
+int main(int argc, const char **argv) {
     fprintf(stderr, "XPath support not compiled in\n");
     return 0;
 }

@@ -15,8 +15,13 @@
 #include <stdio.h>
 #include <libxml/xmlreader.h>
 
-#if defined(LIBXML_READER_ENABLED) && defined(LIBXML_PATTERN_ENABLED) && defined(LIBXML_OUTPUT_ENABLED)
+#include <libxml/monolithic_examples.h>
 
+#if defined(BUILD_MONOLITHIC)
+#define main      xml_reader3_example_main
+#endif
+
+#if defined(LIBXML_READER_ENABLED) && defined(LIBXML_PATTERN_ENABLED) && defined(LIBXML_OUTPUT_ENABLED)
 
 /**
  * streamFile:
@@ -71,7 +76,7 @@ extractFile(const char *filename, const xmlChar *pattern) {
     return(doc);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, const char **argv) {
     const char *filename = "test3.xml";
     const char *pattern = "preserved";
     xmlDocPtr doc;
@@ -104,7 +109,7 @@ int main(int argc, char **argv) {
 }
 
 #else
-int main(void) {
+int main(int argc, const char **argv) {
     fprintf(stderr, "Reader, Pattern or output support not compiled in\n");
     return(0);
 }

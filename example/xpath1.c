@@ -18,16 +18,21 @@
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
 
+#include <libxml/monolithic_examples.h>
+
+#if defined(BUILD_MONOLITHIC)
+#define main      xml_xpath1_example_main
+#endif
+
 #if defined(LIBXML_XPATH_ENABLED) && defined(LIBXML_SAX1_ENABLED)
 
-
 static void usage(const char *name);
-int  execute_xpath_expression(const char* filename, const xmlChar* xpathExpr, const xmlChar* nsList);
-int  register_namespaces(xmlXPathContextPtr xpathCtx, const xmlChar* nsList);
-void print_xpath_nodes(xmlNodeSetPtr nodes, FILE* output);
+static int  execute_xpath_expression(const char* filename, const xmlChar* xpathExpr, const xmlChar* nsList);
+static int  register_namespaces(xmlXPathContextPtr xpathCtx, const xmlChar* nsList);
+static void print_xpath_nodes(xmlNodeSetPtr nodes, FILE* output);
 
 int 
-main(int argc, char **argv) {
+main(int argc, const char **argv) {
     /* Parse command line and process file */
     if((argc < 3) || (argc > 4)) {
 	fprintf(stderr, "Error: wrong number of arguments.\n");
@@ -74,7 +79,7 @@ usage(const char *name) {
  *
  * Returns 0 on success and a negative value otherwise.
  */
-int 
+static int
 execute_xpath_expression(const char* filename, const xmlChar* xpathExpr, const xmlChar* nsList) {
     xmlDocPtr doc;
     xmlXPathContextPtr xpathCtx; 
@@ -136,7 +141,7 @@ execute_xpath_expression(const char* filename, const xmlChar* xpathExpr, const x
  *
  * Returns 0 on success and a negative value otherwise.
  */
-int 
+static int
 register_namespaces(xmlXPathContextPtr xpathCtx, const xmlChar* nsList) {
     xmlChar* nsListDup;
     xmlChar* prefix;
@@ -194,7 +199,7 @@ register_namespaces(xmlXPathContextPtr xpathCtx, const xmlChar* nsList) {
  *
  * Prints the @nodes content to @output.
  */
-void
+static void
 print_xpath_nodes(xmlNodeSetPtr nodes, FILE* output) {
     xmlNodePtr cur;
     int size;
@@ -236,7 +241,7 @@ print_xpath_nodes(xmlNodeSetPtr nodes, FILE* output) {
 }
 
 #else
-int main(void) {
+int main(int argc, const char **argv) {
     fprintf(stderr, "XPath support not compiled in\n");
     return 0;
 }

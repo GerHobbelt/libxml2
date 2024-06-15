@@ -13,6 +13,8 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
+#include <libxml/monolithic_examples.h>
+
 static const char *document = "<doc/>";
 
 /**
@@ -37,6 +39,10 @@ example3Func(const char *content, int length) {
     }
     xmlFreeDoc(doc);
 }
+
+#if defined(BUILD_MONOLITHIC)
+#define main      xml_parse3_example_main
+#endif
 
 int main(void) {
     /*

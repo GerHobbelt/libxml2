@@ -11,6 +11,8 @@
 
 #include <string.h>
 
+#include <libxml/monolithic_examples.h>
+
 static int
 testStandaloneWithEncoding(void) {
     xmlDocPtr doc;
@@ -384,6 +386,10 @@ testWriterClose(void){
     xmlFreeTextWriter(writer);
     return err;
 }
+#endif
+
+#if defined(BUILD_MONOLITHIC)
+#define main      xml_testparser_main
 #endif
 
 int

@@ -14,6 +14,12 @@
 #include <stdio.h>
 #include <libxml/xmlreader.h>
 
+#include <libxml/monolithic_examples.h>
+
+#if defined(BUILD_MONOLITHIC)
+#define main      xml_reader4_example_main
+#endif
+
 #ifdef LIBXML_READER_ENABLED
 
 static void processDoc(xmlTextReaderPtr readerPtr) {
@@ -50,7 +56,7 @@ static void processDoc(xmlTextReaderPtr readerPtr) {
     printf("%s: Processed ok\n", (const char *)URL);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, const char **argv) {
     xmlTextReaderPtr readerPtr;
     int i;
     xmlDocPtr docPtr;
@@ -107,7 +113,7 @@ int main(int argc, char **argv) {
 }
 
 #else
-int main(void) {
+int main(int argc, const char **argv) {
     fprintf(stderr, "xmlReader support not compiled in\n");
     return(0);
 }

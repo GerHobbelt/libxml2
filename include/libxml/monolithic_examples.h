@@ -32,8 +32,26 @@ extern int xml_xmlcatalog_main(int argc, const char** argv);
 extern int xml_xmllint_main(int argc, const char** argv);
 extern int xml_test_xmlreader_main(int argc, const char** argv);
 
+extern int xml_gio_bread_example_main(int argc, const char** argv);
+extern int xml_io1_example_main(void);
+extern int xml_io2_example_main(void);
+extern int xml_parse1_example_main(int argc, const char** argv);
+extern int xml_parse2_example_main(int argc, const char** argv);
+extern int xml_parse3_example_main(void);
+extern int xml_parse4_example_main(int argc, const char** argv);
+extern int xml_reader1_example_main(int argc, const char** argv);
+extern int xml_reader2_example_main(int argc, const char** argv);
+extern int xml_reader3_example_main(int argc, const char** argv);
+extern int xml_reader4_example_main(int argc, const char** argv);
+extern int xml_testWriter_example_main(void);
+extern int xml_tree1_example_main(int argc, const char** argv);
+extern int xml_tree2_example_main(int argc, const char** argv);
+extern int xml_xpath1_example_main(int argc, const char** argv);
+extern int xml_xpath2_example_main(int argc, const char** argv);
+
 extern int xml_testthreads_main(void);
 extern int xml_testchar_main(void);
+extern int xml_testparser_main(void);
 
 #ifdef __cplusplus
 }

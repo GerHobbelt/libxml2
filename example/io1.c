@@ -19,7 +19,14 @@
 #include <libxml/xinclude.h>
 #include <libxml/xmlIO.h>
 
+#include <libxml/monolithic_examples.h>
+
+#if defined(BUILD_MONOLITHIC)
+#define main      xml_io1_example_main
+#endif
+
 #ifdef LIBXML_XINCLUDE_ENABLED
+
 static const char *result = "<list><people>a</people><people>b</people></list>";
 static const char *cur = NULL;
 static int rlen;

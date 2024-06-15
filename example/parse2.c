@@ -14,6 +14,8 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
+#include <libxml/monolithic_examples.h>
+
 /**
  * exampleFunc:
  * @filename: a filename or an URL
@@ -47,7 +49,11 @@ exampleFunc(const char *filename) {
     xmlFreeParserCtxt(ctxt);
 }
 
-int main(int argc, char **argv) {
+#if defined(BUILD_MONOLITHIC)
+#define main      xml_parse2_example_main
+#endif
+
+int main(int argc, const char **argv) {
     if (argc != 2)
         return(1);
 

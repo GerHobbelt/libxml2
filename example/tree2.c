@@ -12,6 +12,12 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
+#include <libxml/monolithic_examples.h>
+
+#if defined(BUILD_MONOLITHIC)
+#define main      xml_tree2_example_main
+#endif
+
 #if defined(LIBXML_TREE_ENABLED) && defined(LIBXML_OUTPUT_ENABLED)
 
 /*
@@ -23,7 +29,7 @@
  * allocates the necessary amount of memory to it.
 */
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
     xmlDocPtr doc = NULL;       /* document pointer */
     xmlNodePtr root_node = NULL, node = NULL, node1 = NULL;/* node pointers */
@@ -100,7 +106,7 @@ main(int argc, char **argv)
     return(0);
 }
 #else
-int main(void) {
+int main(int argc, const char **argv) {
     fprintf(stderr, "tree support not compiled in\n");
     return(0);
 }

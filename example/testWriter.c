@@ -21,15 +21,21 @@
 #include <unistd.h>
 #endif
 
+#include <libxml/monolithic_examples.h>
+
+#if defined(BUILD_MONOLITHIC)
+#define main      xml_testWriter_example_main
+#endif
+
 #if defined(LIBXML_WRITER_ENABLED) && defined(LIBXML_OUTPUT_ENABLED)
 
 #define MY_ENCODING "ISO-8859-1"
 
-void testXmlwriterFilename(const char *uri);
-void testXmlwriterMemory(void);
-void testXmlwriterDoc(void);
-void testXmlwriterTree(void);
-xmlChar *ConvertInput(const char *in, const char *encoding);
+static void testXmlwriterFilename(const char *uri);
+static void testXmlwriterMemory(void);
+static void testXmlwriterDoc(void);
+static void testXmlwriterTree(void);
+static xmlChar *ConvertInput(const char *in, const char *encoding);
 
 int
 main(void)
@@ -63,7 +69,7 @@ main(void)
  *
  * test the xmlWriter interface when writing to a new file
  */
-void
+static void
 testXmlwriterFilename(const char *uri)
 {
     int rc;
@@ -331,7 +337,7 @@ testXmlwriterFilename(const char *uri)
  *
  * test the xmlWriter interface when writing to memory
  */
-void
+static void
 testXmlwriterMemory(void)
 {
     int rc;
@@ -606,7 +612,7 @@ testXmlwriterMemory(void)
  *
  * test the xmlWriter interface when creating a new document
  */
-void
+static void
 testXmlwriterDoc(void)
 {
     int rc;
@@ -856,7 +862,7 @@ testXmlwriterDoc(void)
  *
  * test the xmlWriter interface when writing to a subtree
  */
-void
+static void
 testXmlwriterTree(void)
 {
     int rc;
@@ -1123,7 +1129,7 @@ testXmlwriterTree(void)
  *
  * Returns the converted UTF-8 string, or NULL in case of error.
  */
-xmlChar *
+static xmlChar *
 ConvertInput(const char *in, const char *encoding)
 {
     xmlChar *out;

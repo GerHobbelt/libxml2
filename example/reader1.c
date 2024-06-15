@@ -14,6 +14,12 @@
 #include <stdio.h>
 #include <libxml/xmlreader.h>
 
+#include <libxml/monolithic_examples.h>
+
+#if defined(BUILD_MONOLITHIC)
+#define main      xml_reader1_example_main
+#endif
+
 #ifdef LIBXML_READER_ENABLED
 
 /**
@@ -75,7 +81,7 @@ streamFile(const char *filename) {
     }
 }
 
-int main(int argc, char **argv) {
+int main(int argc, const char **argv) {
     if (argc != 2)
         return(1);
 
@@ -92,7 +98,7 @@ int main(int argc, char **argv) {
 }
 
 #else
-int main(void) {
+int main(int argc, const char **argv) {
     fprintf(stderr, "XInclude support not compiled in\n");
     return(0);
 }
