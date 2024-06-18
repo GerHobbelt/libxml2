@@ -622,7 +622,6 @@ xml_opt_src = [
     [want_pattern, ['pattern.c']],
     [want_reader, ['xmlreader.c']],
     [want_regexps, ['xmlregexp.c', 'xmlunicode.c']],
-    [want_sax1, ['SAX.c']],
     [want_schemas, ['relaxng.c', 'xmlschemas.c', 'xmlschemastypes.c']],
     [want_schemas and not want_xpath, ['xpath.c']],
     [want_schematron, ['schematron.c']],
@@ -665,7 +664,7 @@ meson.override_dependency('libxml-2.0', xml_dep)
 
 executable(
     'xmllint',
-    files('xmllint.c'),
+    files('xmllint.c', 'shell.c'),
     dependencies: [xml_dep, xmllint_deps],
     include_directories: config_dir,
     install: true,
@@ -699,7 +698,6 @@ checks = [
     'runxmlconf',
 # Disabled for now, see #694
 #    'testModule',
-    'testThreads',
     'testapi',
     'testchar',
     'testdict',

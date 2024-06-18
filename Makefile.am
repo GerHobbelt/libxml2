@@ -19,7 +19,6 @@ check_PROGRAMS = \
 	runtest \
 	runxmlconf \
 	testModule \
-	testThreads \
 	testapi \
 	testchar \
 	testdict \
@@ -63,9 +62,6 @@ libxml2_la_SOURCES += nanohttp.c
 endif
 if WITH_LEGACY_SOURCES
 libxml2_la_SOURCES += legacy.c
-if WITH_SAX1_SOURCES
-libxml2_la_SOURCES += SAX.c
-endif
 endif
 if WITH_LZMA_SOURCES
 libxml2_la_SOURCES += xzlib.c
@@ -138,7 +134,7 @@ runsuite_SOURCES=runsuite.c
 runsuite_DEPENDENCIES = $(DEPS)
 runsuite_LDADD= $(LDADDS)
 
-xmllint_SOURCES=xmllint.c
+xmllint_SOURCES = xmllint.c shell.c
 xmllint_CFLAGS = $(AM_CFLAGS) $(RDL_CFLAGS) $(ICONV_CFLAGS)
 xmllint_DEPENDENCIES = $(DEPS)
 xmllint_LDADD=  $(RDL_LIBS) $(LDADDS)
@@ -147,10 +143,6 @@ xmlcatalog_SOURCES=xmlcatalog.c
 xmlcatalog_CFLAGS = $(AM_CFLAGS) $(RDL_CFLAGS) $(ICONV_CFLAGS)
 xmlcatalog_DEPENDENCIES = $(DEPS)
 xmlcatalog_LDADD = $(RDL_LIBS) $(LDADDS)
-
-testThreads_SOURCES = testThreads.c
-testThreads_DEPENDENCIES = $(DEPS)
-testThreads_LDADD= $(BASE_THREAD_LIBS) $(THREAD_LIBS) $(LDADDS)
 
 testModule_SOURCES=testModule.c
 testModule_DEPENDENCIES = $(DEPS)
@@ -184,7 +176,6 @@ check-local:
 	$(CHECKER) ./testdict$(EXEEXT)
 	$(CHECKER) ./testparser$(EXEEXT)
 	$(CHECKER) ./testModule$(EXEEXT)
-	$(CHECKER) ./testThreads$(EXEEXT)
 	$(CHECKER) ./runxmlconf$(EXEEXT)
 	$(CHECKER) ./runsuite$(EXEEXT)
 

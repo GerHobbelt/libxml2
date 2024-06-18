@@ -276,7 +276,6 @@ set(
     parserInternals.c
     pattern.c
     relaxng.c
-    SAX.c
     SAX2.c
     schematron.c
     threads.c
@@ -468,13 +467,14 @@ if(MSVC AND BUILD_SHARED_LIBS)
 endif()
 
 if(LIBXML2_WITH_PROGRAMS)
+    add_executable(xmllint xmllint.c shell.c)
+    add_executable(xmlcatalog xmlcatalog.c)
     set(
         PROGRAMS
         xmlcatalog
         xmllint
     )
     foreach(PROGRAM ${PROGRAMS})
-        add_executable(${PROGRAM} ${PROGRAM}.c)
         add_executable(LibXml2::${PROGRAM} ALIAS ${PROGRAM})
         target_compile_definitions(${PROGRAM} PRIVATE SYSCONFDIR="${CMAKE_INSTALL_FULL_SYSCONFDIR}")
         target_link_libraries(${PROGRAM} LibXml2)
@@ -502,7 +502,6 @@ if(LIBXML2_WITH_TESTS)
         testlimits
         testparser
         testrecurse
-        testThreads
     )
     foreach(TEST ${TESTS})
         add_executable(${TEST} ${TEST}.c)
@@ -510,7 +509,7 @@ if(LIBXML2_WITH_TESTS)
         target_link_libraries(${TEST} LibXml2)
     endforeach()
     if(Threads_FOUND)
-        foreach(TEST runtest testThreads)
+        foreach(TEST runtest)
             target_link_libraries(${TEST} Threads::Threads)
         endforeach()
     endif()
@@ -526,7 +525,6 @@ if(LIBXML2_WITH_TESTS)
     add_test(NAME testdict COMMAND testdict)
     add_test(NAME testparser COMMAND testparser)
     add_test(NAME testrecurse COMMAND testrecurse WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-    add_test(NAME testThreads COMMAND testThreads WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 
 if(LIBXML2_WITH_PYTHON)

@@ -17,6 +17,7 @@
 #include <libxml/tree.h>
 #include <libxml/entities.h>
 #include <libxml/SAX.h>
+#include <libxml/SAX2.h>
 #include <libxml/parserInternals.h>
 #include <libxml/HTMLparser.h>
 
@@ -1350,11 +1351,101 @@ cdataBlock(void *ctx, const xmlChar * value, int len)
         xmlSAX2CDataBlock(ctx, value, len);
 }
 
+/**
+ * initxmlDefaultSAXHandler:
+ * @hdlr:  the SAX handler
+ * @warning:  flag if non-zero sets the handler warning procedure
+ *
+ * Initialize the default XML SAX version 1 handler
+ * DEPRECATED: use xmlSAX2InitDefaultSAXHandler() for the new SAX2 blocks
+ */
+void
+initxmlDefaultSAXHandler(xmlSAXHandlerV1 *hdlr, int warning)
+{
+
+    if(hdlr->initialized == 1)
+	return;
+
+    hdlr->internalSubset = xmlSAX2InternalSubset;
+    hdlr->externalSubset = xmlSAX2ExternalSubset;
+    hdlr->isStandalone = xmlSAX2IsStandalone;
+    hdlr->hasInternalSubset = xmlSAX2HasInternalSubset;
+    hdlr->hasExternalSubset = xmlSAX2HasExternalSubset;
+    hdlr->resolveEntity = xmlSAX2ResolveEntity;
+    hdlr->getEntity = xmlSAX2GetEntity;
+    hdlr->getParameterEntity = xmlSAX2GetParameterEntity;
+    hdlr->entityDecl = xmlSAX2EntityDecl;
+    hdlr->attributeDecl = xmlSAX2AttributeDecl;
+    hdlr->elementDecl = xmlSAX2ElementDecl;
+    hdlr->notationDecl = xmlSAX2NotationDecl;
+    hdlr->unparsedEntityDecl = xmlSAX2UnparsedEntityDecl;
+    hdlr->setDocumentLocator = xmlSAX2SetDocumentLocator;
+    hdlr->startDocument = xmlSAX2StartDocument;
+    hdlr->endDocument = xmlSAX2EndDocument;
+    hdlr->startElement = xmlSAX2StartElement;
+    hdlr->endElement = xmlSAX2EndElement;
+    hdlr->reference = xmlSAX2Reference;
+    hdlr->characters = xmlSAX2Characters;
+    hdlr->cdataBlock = xmlSAX2CDataBlock;
+    hdlr->ignorableWhitespace = xmlSAX2Characters;
+    hdlr->processingInstruction = xmlSAX2ProcessingInstruction;
+    if (warning == 0)
+	hdlr->warning = NULL;
+    else
+	hdlr->warning = xmlParserWarning;
+    hdlr->error = xmlParserError;
+    hdlr->fatalError = xmlParserError;
+
+    hdlr->initialized = 1;
+}
+
+/**
+ * inithtmlDefaultSAXHandler:
+ * @hdlr:  the SAX handler
+ *
+ * Initialize the default HTML SAX version 1 handler
+ * DEPRECATED: use xmlSAX2InitHtmlDefaultSAXHandler() for the new SAX2 blocks
+ */
+void
+inithtmlDefaultSAXHandler(xmlSAXHandlerV1 *hdlr)
+{
+    if(hdlr->initialized == 1)
+	return;
+
+    hdlr->internalSubset = xmlSAX2InternalSubset;
+    hdlr->externalSubset = NULL;
+    hdlr->isStandalone = NULL;
+    hdlr->hasInternalSubset = NULL;
+    hdlr->hasExternalSubset = NULL;
+    hdlr->resolveEntity = NULL;
+    hdlr->getEntity = xmlSAX2GetEntity;
+    hdlr->getParameterEntity = NULL;
+    hdlr->entityDecl = NULL;
+    hdlr->attributeDecl = NULL;
+    hdlr->elementDecl = NULL;
+    hdlr->notationDecl = NULL;
+    hdlr->unparsedEntityDecl = NULL;
+    hdlr->setDocumentLocator = xmlSAX2SetDocumentLocator;
+    hdlr->startDocument = xmlSAX2StartDocument;
+    hdlr->endDocument = xmlSAX2EndDocument;
+    hdlr->startElement = xmlSAX2StartElement;
+    hdlr->endElement = xmlSAX2EndElement;
+    hdlr->reference = NULL;
+    hdlr->characters = xmlSAX2Characters;
+    hdlr->cdataBlock = xmlSAX2CDataBlock;
+    hdlr->ignorableWhitespace = xmlSAX2IgnorableWhitespace;
+    hdlr->processingInstruction = xmlSAX2ProcessingInstruction;
+    hdlr->comment = xmlSAX2Comment;
+    hdlr->warning = xmlParserWarning;
+    hdlr->error = xmlParserError;
+    hdlr->fatalError = xmlParserError;
+
+    hdlr->initialized = 1;
+}
+
 /*
  * nanoftp.h
  */
-
-/** DOC_DISABLE */
 
 #ifdef _WIN32
   #include <winsock2.h>
@@ -1591,13 +1682,9 @@ xmlIOFTPClose(void *context ATTRIBUTE_UNUSED) {
     return(-1);
 }
 
-/** DOC_ENABLE */
-
 /*
  * xpointer.h
  */
-
-/** DOC_DISABLE */
 
 XMLPUBFUN void *
 xmlXPtrNewRange(void *start, int startindex,
@@ -1753,7 +1840,164 @@ xmlXPtrRangeToFunction(void *ctxt ATTRIBUTE_UNUSED,
                        int nargs ATTRIBUTE_UNUSED) {
 }
 
-/** DOC_ENABLE */
+/*
+ * xmllint shell functions formerly in debugXML.h
+ */
+
+XMLPUBFUN void
+xmlLsOneNode(FILE *output, xmlNodePtr node);
+
+void
+xmlLsOneNode(FILE *output ATTRIBUTE_UNUSED, xmlNodePtr node ATTRIBUTE_UNUSED) {
+}
+
+XMLPUBFUN int
+xmlLsCountNode(xmlNodePtr node);
+
+int
+xmlLsCountNode(xmlNodePtr node ATTRIBUTE_UNUSED) {
+    return(0);
+}
+
+XMLPUBFUN const char *
+xmlBoolToText(int boolval);
+
+const char *
+xmlBoolToText(int boolval) {
+    if (boolval)
+        return("True");
+    else
+        return("False");
+}
+
+#ifdef LIBXML_XPATH_ENABLED
+XMLPUBFUN void
+xmlShellPrintXPathError(int errorType, const char *arg);
+
+void
+xmlShellPrintXPathError(int errorType ATTRIBUTE_UNUSED,
+                        const char *arg ATTRIBUTE_UNUSED) {
+}
+
+XMLPUBFUN void
+xmlShellPrintXPathResult(void *list);
+
+void
+xmlShellPrintXPathResult(void *list ATTRIBUTE_UNUSED) {
+}
+
+XMLPUBFUN int
+xmlShellList(void *ctxt, char *arg, void *node, void *node2);
+
+int
+xmlShellList(void *ctxt ATTRIBUTE_UNUSED, char *arg ATTRIBUTE_UNUSED,
+             void *node ATTRIBUTE_UNUSED, void *node2 ATTRIBUTE_UNUSED) {
+    return(0);
+}
+
+XMLPUBFUN int
+xmlShellBase(void *ctxt, char *arg, void *node, void *node2);
+
+int
+xmlShellBase(void *ctxt ATTRIBUTE_UNUSED, char *arg ATTRIBUTE_UNUSED,
+             void *node ATTRIBUTE_UNUSED, void *node2 ATTRIBUTE_UNUSED) {
+    return(0);
+}
+
+XMLPUBFUN int
+xmlShellDir(void *ctxt, char *arg, void *node, void *node2);
+
+int
+xmlShellDir(void *ctxt ATTRIBUTE_UNUSED, char *arg ATTRIBUTE_UNUSED,
+            void *node ATTRIBUTE_UNUSED, void *node2 ATTRIBUTE_UNUSED) {
+    return(0);
+}
+
+XMLPUBFUN int
+xmlShellLoad(void *ctxt, char *arg, void *node, void *node2);
+
+int
+xmlShellLoad(void *ctxt ATTRIBUTE_UNUSED, char *arg ATTRIBUTE_UNUSED,
+             void *node ATTRIBUTE_UNUSED, void *node2 ATTRIBUTE_UNUSED) {
+    return(0);
+}
+
+#ifdef LIBXML_OUTPUT_ENABLED
+XMLPUBFUN void
+xmlShellPrintNode(void *node);
+
+void
+xmlShellPrintNode(void *ctxt ATTRIBUTE_UNUSED) {
+}
+
+XMLPUBFUN int
+xmlShellCat(void *ctxt, char *arg, void *node, void *node2);
+
+int
+xmlShellCat(void *ctxt ATTRIBUTE_UNUSED, char *arg ATTRIBUTE_UNUSED,
+            void *node ATTRIBUTE_UNUSED, void *node2 ATTRIBUTE_UNUSED) {
+    return(0);
+}
+
+XMLPUBFUN int
+xmlShellWrite(void *ctxt, char *arg, void *node, void *node2);
+
+int
+xmlShellWrite(void *ctxt ATTRIBUTE_UNUSED, char *arg ATTRIBUTE_UNUSED,
+              void *node ATTRIBUTE_UNUSED, void *node2 ATTRIBUTE_UNUSED) {
+    return(0);
+}
+
+XMLPUBFUN int
+xmlShellSave(void *ctxt, char *arg, void *node, void *node2);
+
+int
+xmlShellSave(void *ctxt ATTRIBUTE_UNUSED, char *arg ATTRIBUTE_UNUSED,
+             void *node ATTRIBUTE_UNUSED, void *node2 ATTRIBUTE_UNUSED) {
+    return(0);
+}
+#endif /* LIBXML_OUTPUT_ENABLED */
+
+#ifdef LIBXML_VALID_ENABLED
+XMLPUBFUN int
+xmlShellValidate(void *ctxt, char *arg, void *node, void *node2);
+
+int
+xmlShellValidate(void *ctxt ATTRIBUTE_UNUSED, char *arg ATTRIBUTE_UNUSED,
+                 void *node ATTRIBUTE_UNUSED, void *node2 ATTRIBUTE_UNUSED) {
+    return(0);
+}
+#endif /* LIBXML_VALID_ENABLED */
+
+XMLPUBFUN int
+xmlShellDu(void *ctxt, char *arg, void *node, void *node2);
+
+int
+xmlShellDu(void *ctxt ATTRIBUTE_UNUSED, char *arg ATTRIBUTE_UNUSED,
+           void *node ATTRIBUTE_UNUSED, void *node2 ATTRIBUTE_UNUSED) {
+    return(0);
+}
+
+XMLPUBFUN int
+xmlShellPwd(void *ctxt, char *arg, void *node, void *node2);
+
+int
+xmlShellPwd(void *ctxt ATTRIBUTE_UNUSED, char *arg ATTRIBUTE_UNUSED,
+            void *node ATTRIBUTE_UNUSED, void *node2 ATTRIBUTE_UNUSED) {
+    return(0);
+}
+
+typedef char * (*xmlShellReadlineFunc)(char *prompt);
+
+XMLPUBFUN void
+xmlShell(void *doc, char *filename, xmlShellReadlineFunc input, void *output);
+
+void
+xmlShell(void *doc ATTRIBUTE_UNUSED, char *filename ATTRIBUTE_UNUSED,
+         xmlShellReadlineFunc input ATTRIBUTE_UNUSED,
+         void *output ATTRIBUTE_UNUSED) {
+}
+#endif /* LIBXML_XPATH_ENABLED */
 
 #endif /* LIBXML_LEGACY_ENABLED */
 
