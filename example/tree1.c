@@ -19,8 +19,6 @@
 #define main      xml_tree1_example_main
 #endif
 
-#ifdef LIBXML_TREE_ENABLED
-
 /*
  *To compile this file using gcc you can type
  *gcc `xml2-config --cflags --libs` -o xmlexample libxml2-example.c
@@ -86,9 +84,3 @@ main(int argc, const char **argv)
 
     return 0;
 }
-#else
-int main(int argc, const char **argv) {
-    fprintf(stderr, "Tree support not compiled in\n");
-    return 0;
-}
-#endif

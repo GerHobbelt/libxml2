@@ -121,9 +121,7 @@ static int debugent = 0;
 #endif
 static int debug = 0;
 static int maxmem = 0;
-#ifdef LIBXML_TREE_ENABLED
 static int copy = 0;
-#endif /* LIBXML_TREE_ENABLED */
 static int noout = 0;
 #ifdef LIBXML_OUTPUT_ENABLED
 static const char *output = NULL;
@@ -1660,13 +1658,8 @@ static void processNode(xmlTextReaderPtr reader) {
 	    match = xmlPatternMatch(patternc, xmlTextReaderCurrentNode(reader));
 
 	    if (match) {
-#if defined(LIBXML_TREE_ENABLED) || defined(LIBXML_DEBUG_ENABLED)
 		path = xmlGetNodePath(xmlTextReaderCurrentNode(reader));
 		printf("Node %s matches pattern %s\n", path, pattern);
-#else
-                printf("Node %s matches pattern %s\n",
-                       xmlTextReaderConstName(reader), pattern);
-#endif
 	    }
 	}
 	if (patstream != NULL) {
@@ -1681,12 +1674,10 @@ static void processNode(xmlTextReaderPtr reader) {
                     xmlFreeStreamCtxt(patstream);
 		    patstream = NULL;
 		} else if (ret != match) {
-#if defined(LIBXML_TREE_ENABLED) || defined(LIBXML_DEBUG_ENABLED)
 		    if (path == NULL) {
 		        path = xmlGetNodePath(
 		                       xmlTextReaderCurrentNode(reader));
 		    }
-#endif
 		    fprintf(ERR_STREAM,
 		            "xmlPatternMatch and xmlStreamPush disagree\n");
                     if (path != NULL)
@@ -2075,7 +2066,6 @@ parseFile(const char *filename, xmlParserCtxtPtr rectxt) {
     xmlParserCtxtPtr ctxt;
     xmlDocPtr doc = NULL;
 
-#ifdef LIBXML_TREE_ENABLED
     if ((generate) && (filename == NULL)) {
         xmlNodePtr n;
 
@@ -2100,7 +2090,6 @@ parseFile(const char *filename, xmlParserCtxtPtr rectxt) {
 
         return(doc);
     }
-#endif /* LIBXML_TREE_ENABLED */
 
 #ifdef LIBXML_HTML_ENABLED
 #ifdef LIBXML_PUSH_ENABLED
@@ -2382,7 +2371,6 @@ parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 #endif
 #endif
 
-#ifdef LIBXML_TREE_ENABLED
     /*
      * test intermediate copy if needed.
      */
@@ -2410,7 +2398,6 @@ parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 	    endTimer("Freeing original");
 	}
     }
-#endif /* LIBXML_TREE_ENABLED */
 
 #ifdef LIBXML_VALID_ENABLED
     if ((insert)
@@ -2903,9 +2890,7 @@ static void usage(FILE *f, const char *name) {
     fprintf(f, "\t--debug : dump the nodes content when using --stream\n");
 #endif /* LIBXML_READER_ENABLED */
 #endif
-#ifdef LIBXML_TREE_ENABLED
     fprintf(f, "\t--copy : used to test the internal copy implementation\n");
-#endif /* LIBXML_TREE_ENABLED */
     fprintf(f, "\t--recover : output what was parsable on broken XML documents\n");
     fprintf(f, "\t--huge : remove any internal arbitrary parser limits\n");
     fprintf(f, "\t--noent : substitute entity references by their value\n");
@@ -3096,9 +3081,7 @@ xmllintMain(int argc, const char **argv, xmlResourceLoader loader) {
 #endif
     debug = 0;
     maxmem = 0;
-#ifdef LIBXML_TREE_ENABLED
     copy = 0;
-#endif /* LIBXML_TREE_ENABLED */
     noout = 0;
 #ifdef LIBXML_OUTPUT_ENABLED
     format = 0;
@@ -3203,11 +3186,9 @@ xmllintMain(int argc, const char **argv, xmlResourceLoader loader) {
             noout = 1;
         } else
 #endif
-#ifdef LIBXML_TREE_ENABLED
 	if ((!strcmp(argv[i], "-copy")) || (!strcmp(argv[i], "--copy")))
 	    copy++;
 	else
-#endif /* LIBXML_TREE_ENABLED */
 	if ((!strcmp(argv[i], "-recover")) ||
 	         (!strcmp(argv[i], "--recover"))) {
 	    options |= XML_PARSE_RECOVER;

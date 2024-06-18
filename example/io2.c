@@ -17,7 +17,7 @@
 #define main      xml_io2_example_main
 #endif
 
-#if defined(LIBXML_TREE_ENABLED) && defined(LIBXML_OUTPUT_ENABLED)
+#if defined(LIBXML_OUTPUT_ENABLED)
 
 int main(void)
 {
@@ -57,7 +57,7 @@ int
 main(void)
 {
     fprintf(stderr,
-            "library not configured with tree and output support\n");
+            "library not configured with output support\n");
     return (0);
 }
 #endif
