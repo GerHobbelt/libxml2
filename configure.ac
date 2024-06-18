@@ -68,11 +68,11 @@ AC_ARG_WITH(c14n,
 AC_ARG_WITH(catalog,
 [  --with-catalog          XML Catalogs support (on)])
 AC_ARG_WITH(debug,
-[  --with-debug            debugging module and shell (on)])
+[  --with-debug            debugging module (on)])
 AC_ARG_WITH(history,
-[  --with-history          history support for shell (off)])
+[  --with-history          history support for xmllint shell (off)])
 AC_ARG_WITH(readline,
-[  --with-readline[[=DIR]]   use readline in DIR (for shell history)])
+[  --with-readline[[=DIR]]   use readline in DIR for shell (on)])
 AC_ARG_WITH(html,
 [  --with-html             HTML parser (on)])
 AC_ARG_WITH(http,
@@ -746,7 +746,6 @@ dnl
 dnl Thread-related stuff
 dnl
 THREAD_LIBS=""
-BASE_THREAD_LIBS=""
 WITH_THREADS=0
 WITH_THREAD_ALLOC=0
 
@@ -776,30 +775,22 @@ else
     if test "$WITH_THREADS" = "0"; then
         AC_MSG_ERROR([libpthread not found])
     fi
-
-    case $host_os in
-        *linux*)
-            if test "${GCC}" = "yes" ; then
-                BASE_THREAD_LIBS="$THREAD_LIBS"
-                THREAD_LIBS=""
-            fi
-            ;;
-    esac
 fi
 if test "$with_thread_alloc" = "yes" && test "$WITH_THREADS" = "1" ; then
     WITH_THREAD_ALLOC=1
 fi
 
 AC_SUBST(THREAD_LIBS)
-AC_SUBST(BASE_THREAD_LIBS)
 AC_SUBST(WITH_THREADS)
 AC_SUBST(WITH_THREAD_ALLOC)
 
 dnl
-dnl xmllint shell history
+dnl xmllint shell
 dnl
-if test "$with_history" = "yes" && test "$with_readline" != "no"; then
-    echo Enabling xmllint shell history
+if test "$with_readline" != "no"; then
+    _cppflags=$CPPFLAGS
+    _libs=$LIBS
+
     dnl check for terminal library. this is a very cool solution
     dnl from octave's configure.in
     unset tcap
@@ -808,21 +799,11 @@ if test "$with_history" = "yes" && test "$with_readline" != "no"; then
 	test -n "$tcap" && break
     done
 
-    _cppflags=$CPPFLAGS
-    _libs=$LIBS
     if test "$with_readline" != "" && test "$with_readline" != "yes"; then
         RDL_DIR=$with_readline
         CPPFLAGS="${CPPFLAGS} -I$RDL_DIR/include"
         LIBS="${LIBS} -L$RDL_DIR/lib"
     fi
-    AC_CHECK_HEADER(readline/history.h,
-	AC_CHECK_LIB(history, append_history,[
-	    RDL_LIBS="-lhistory"
-            if test "x${RDL_DIR}" != "x"; then
-                RDL_CFLAGS="-I$RDL_DIR/include"
-                RDL_LIBS="-L$RDL_DIR/lib $RDL_LIBS"
-            fi
-	    AC_DEFINE([HAVE_LIBHISTORY], [], [Define if history library is there (-lhistory)])]))
     AC_CHECK_HEADER(readline/readline.h,
 	AC_CHECK_LIB(readline, readline,[
 	    RDL_LIBS="-lreadline $RDL_LIBS $tcap"
@@ -831,6 +812,19 @@ if test "$with_history" = "yes" && test "$with_readline" != "no"; then
                 RDL_LIBS="-L$RDL_DIR/lib $RDL_LIBS"
             fi
 	    AC_DEFINE([HAVE_LIBREADLINE], [], [Define if readline library is there (-lreadline)])], , $tcap))
+
+    if test "$with_history" = "yes"; then
+        echo Enabling xmllint shell history
+        AC_CHECK_HEADER(readline/history.h,
+            AC_CHECK_LIB(history, append_history,[
+                RDL_LIBS="-lhistory"
+                if test "x${RDL_DIR}" != "x"; then
+                    RDL_CFLAGS="-I$RDL_DIR/include"
+                    RDL_LIBS="-L$RDL_DIR/lib $RDL_LIBS"
+                fi
+                AC_DEFINE([HAVE_LIBHISTORY], [], [Define if history library is there (-lhistory)])]))
+    fi
+
     CPPFLAGS=$_cppflags
     LIBS=$_libs
 fi

@@ -32,8 +32,10 @@ dir_locale = dir_prefix / get_option('localedir')
 
 host_os = host_machine.system()
 
+bsd = ['freebsd', 'openbsd', 'dragonfly']
 cygwin = 'cygwin'
 windows = 'windows'
+sys_bsd = bsd.contains(host_os)
 sys_cygwin = cygwin.contains(host_os)
 sys_windows = windows.contains(host_os)
 
@@ -408,11 +410,11 @@ want_thread_alloc = threads_dep.found()
 
 ### xmllint shell history
 xmllint_deps = []
-if want_history == true and want_readline == true
+if want_readline == true
     termlib_lib = ['ncurses', 'curses', 'termcap', 'terminfo', 'termlib']
 
     foreach tl : termlib_lib
-        termlib_dep = cc.find_library(tl)
+        termlib_dep = cc.find_library(tl, required: false)
         if (
             termlib_dep.found()
             and cc.has_function('tputs', dependencies: termlib_dep)
@@ -423,16 +425,18 @@ if want_history == true and want_readline == true
         endif
     endforeach
 
-    history_dep = dependency('history', required: false)
-    if history_dep.found()
-        xmllint_deps += history_dep
-        config_h.set10('HAVE_LIBHISTORY', true)
-    endif
-
     readline_dep = dependency('readline', required: false)
     if readline_dep.found()
         xmllint_deps += readline_dep
         config_h.set10('HAVE_LIBREADLINE', true)
+    endif
+
+    if want_history == true
+        history_dep = dependency('history', required: false)
+        if history_dep.found()
+            xmllint_deps += history_dep
+            config_h.set10('HAVE_LIBHISTORY', true)
+        endif
     endif
 endif
 
@@ -557,9 +561,24 @@ else
 endif
 xml_deps += lzma_dep
 
+# icu
+icu_dep = dependency('icu-i18n', method: 'pkg-config', required: get_option('icu'))
+if icu_dep.found()
+    defs = icu_dep.get_variable(pkgconfig: 'DEFS')
+    if cc.has_argument(defs)
+        libxml2_cflags += defs
+    endif
+endif
+xml_deps += icu_dep
+
 ### iconv
 if not get_option('minimum')
-    iconv_dep = dependency('iconv', required: get_option('iconv'))
+# this is a hack for the BSDs. The iconv dependency works as long as libiconv is not in the include path.
+    if sys_bsd and icu_dep.found()
+        iconv_dep = cc.find_library('iconv', dirs: icu_dep.get_variable(pkgconfig: 'includedir'), required: get_option('iconv'))
+    else
+        iconv_dep = dependency('iconv', required: get_option('iconv'))
+    endif
 else
     iconv_dep = dependency('', required: false)
 endif
@@ -569,14 +588,6 @@ if not iconv_dep.found() and want_iso8859x == false
     want_iso8859x = false
 else
     want_iso8859x = true
-endif
-
-# icu
-icu_dep = dependency('icu-i18n', method: 'pkg-config', required: get_option('icu'))
-if icu_dep.found()
-    def_var = icu_dep.get_variable(pkgconfig: 'DEFS')
-    config_dir += include_directories(def_var)
-    xml_deps += icu_dep
 endif
 
 subdir('include/libxml')
