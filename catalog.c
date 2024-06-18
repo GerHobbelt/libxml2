@@ -3114,7 +3114,6 @@ xmlInitializeCatalog(void) {
 		char* path;
 		const char* cur;
 		const char* paths;
-		xmlChar* uri = NULL;
 		xmlCatalogPtr catal;
 		xmlCatalogEntryPtr* nextent;
 
@@ -3149,9 +3148,6 @@ xmlInitializeCatalog(void) {
 			}
 			xmlDefaultCatalog = catal;
 		}
-
-		if (uri)
-			xmlFree(uri);
 	}
 
 	xmlRMutexUnlock(xmlCatalogMutex);
