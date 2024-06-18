@@ -2165,7 +2165,8 @@ noentParseTest(const char *filename, const char *result,
     /*
      * base of the test, parse with the old API
      */
-    doc = xmlReadFile(filename, NULL, options | XML_PARSE_NOWARNING);
+    doc = xmlReadFile(filename, NULL,
+                      options | XML_PARSE_NOWARNING | XML_PARSE_NOERROR);
     if (doc == NULL)
         return(1);
     temp = resultFilename(filename, temp_directory, ".res");
@@ -2182,7 +2183,8 @@ noentParseTest(const char *filename, const char *result,
     /*
      * Parse the saved result to make sure the round trip is okay
      */
-    doc = xmlReadFile(filename, NULL, options | XML_PARSE_NOWARNING);
+    doc = xmlReadFile(filename, NULL,
+                      options | XML_PARSE_NOWARNING | XML_PARSE_NOERROR);
     if (doc == NULL)
         return(1);
     xmlSaveFile(temp, doc);
@@ -4966,10 +4968,29 @@ launchTests(testDescPtr tst) {
     char *result;
     char *error;
     int mem;
-    xmlCharEncodingHandlerPtr ebcdicHandler, eucJpHandler;
+    xmlCharEncodingHandlerPtr ebcdicHandler, ibm1141Handler, eucJpHandler;
 
     ebcdicHandler = xmlGetCharEncodingHandler(XML_CHAR_ENCODING_EBCDIC);
+    ibm1141Handler = xmlFindCharEncodingHandler("IBM-1141");
+
+    /*
+     * When decoding EUC-JP, musl doesn't seem to support 0x8F control
+     * codes.
+     */
     eucJpHandler = xmlGetCharEncodingHandler(XML_CHAR_ENCODING_EUC_JP);
+    if (eucJpHandler != NULL) {
+        xmlBufferPtr in, out;
+
+        in = xmlBufferCreateSize(10);
+        xmlBufferCCat(in, "\x8f\xe9\xae");
+        out = xmlBufferCreateSize(10);
+        if (xmlCharEncInFunc(eucJpHandler, out, in) != 3) {
+            xmlCharEncCloseFunc(eucJpHandler);
+            eucJpHandler = NULL;
+        }
+        xmlBufferFree(out);
+        xmlBufferFree(in);
+    }
 
     if (tst == NULL) return(-1);
     if (tst->in != NULL) {
@@ -4980,7 +5001,7 @@ launchTests(testDescPtr tst) {
 	for (i = 0;i < globbuf.gl_pathc;i++) {
 	    if (!checkTestFile(globbuf.gl_pathv[i]))
 	        continue;
-            if (((ebcdicHandler == NULL) &&
+            if ((((ebcdicHandler == NULL) || (ibm1141Handler == NULL)) &&
                  (strstr(globbuf.gl_pathv[i], "ebcdic") != NULL)) ||
                 ((eucJpHandler == NULL) &&
                  (strstr(globbuf.gl_pathv[i], "icu_parse_test") != NULL)))
@@ -5046,6 +5067,7 @@ launchTests(testDescPtr tst) {
     }
 
     xmlCharEncCloseFunc(ebcdicHandler);
+    xmlCharEncCloseFunc(ibm1141Handler);
     xmlCharEncCloseFunc(eucJpHandler);
 
     return(err);

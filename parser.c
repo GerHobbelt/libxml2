@@ -1525,7 +1525,7 @@ xmlParserNsStartElement(xmlParserNsData *nsdb) {
 static int
 xmlParserNsLookup(xmlParserCtxtPtr ctxt, const xmlHashedString *prefix,
                   xmlParserNsBucket **bucketPtr) {
-    xmlParserNsBucket *bucket;
+    xmlParserNsBucket *bucket, *tombstone;
     unsigned index, hashValue;
 
     if (prefix->name == NULL)
@@ -1537,10 +1537,13 @@ xmlParserNsLookup(xmlParserCtxtPtr ctxt, const xmlHashedString *prefix,
     hashValue = prefix->hashValue;
     index = hashValue & (ctxt->nsdb->hashSize - 1);
     bucket = &ctxt->nsdb->hash[index];
+    tombstone = NULL;
 
     while (bucket->hashValue) {
-        if ((bucket->hashValue == hashValue) &&
-            (bucket->index != INT_MAX)) {
+        if (bucket->index == INT_MAX) {
+            if (tombstone == NULL)
+                tombstone = bucket;
+        } else if (bucket->hashValue == hashValue) {
             if (ctxt->nsTab[bucket->index * 2] == prefix->name) {
                 if (bucketPtr != NULL)
                     *bucketPtr = bucket;
@@ -1557,7 +1560,7 @@ xmlParserNsLookup(xmlParserCtxtPtr ctxt, const xmlHashedString *prefix,
     }
 
     if (bucketPtr != NULL)
-        *bucketPtr = bucket;
+        *bucketPtr = tombstone ? tombstone : bucket;
     return(INT_MAX);
 }
 
@@ -1798,7 +1801,7 @@ xmlParserNsPush(xmlParserCtxtPtr ctxt, const xmlHashedString *prefix,
             unsigned hv = ctxt->nsdb->hash[i].hashValue;
             unsigned newIndex;
 
-            if (hv == 0)
+            if ((hv == 0) || (ctxt->nsdb->hash[i].index == INT_MAX))
                 continue;
             newIndex = hv & (newSize - 1);
 
@@ -10581,6 +10584,7 @@ xmlParseDocument(xmlParserCtxtPtr ctxt) {
 	        xmlFatalErr(ctxt, XML_ERR_DOCUMENT_END, NULL);
         } else if ((ctxt->input->buf != NULL) &&
                    (ctxt->input->buf->encoder != NULL) &&
+                   (ctxt->input->buf->error == 0) &&
                    (!xmlBufIsEmpty(ctxt->input->buf->raw))) {
             xmlFatalErrMsg(ctxt, XML_ERR_INVALID_CHAR,
                            "Truncated multi-byte sequence at EOF\n");
@@ -11586,6 +11590,7 @@ xmlParseChunk(xmlParserCtxtPtr ctxt, const char *chunk, int size,
             }
         } else if ((ctxt->input->buf != NULL) &&
                    (ctxt->input->buf->encoder != NULL) &&
+                   (ctxt->input->buf->error == 0) &&
                    (!xmlBufIsEmpty(ctxt->input->buf->raw))) {
             xmlFatalErrMsg(ctxt, XML_ERR_INVALID_CHAR,
                            "Truncated multi-byte sequence at EOF\n");

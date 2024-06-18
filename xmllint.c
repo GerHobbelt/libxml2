@@ -2519,7 +2519,11 @@ parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 #endif /* LIBXML_TREE_ENABLED */
 
 #ifdef LIBXML_VALID_ENABLED
-    if ((insert) && (!html)) {
+    if ((insert)
+#ifdef LIBXML_HTML_ENABLED
+        && (!html)
+#endif
+    ) {
         const xmlChar* list[256];
 	int nb, i;
 	xmlNodePtr node;
@@ -2691,7 +2695,7 @@ parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
                 else if (format == 2)
                     saveOpts |= XML_SAVE_WSNONSIG;
 
-#if defined(LIBXML_HTML_ENABLED) || defined(LIBXML_VALID_ENABLED)
+#if defined(LIBXML_HTML_ENABLED)
                 if (xmlout)
                     saveOpts |= XML_SAVE_AS_XML;
 #endif
@@ -2926,10 +2930,12 @@ parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 #endif
 
 #ifdef LIBXML_DEBUG_ENABLED
-#if defined(LIBXML_HTML_ENABLED) || defined(LIBXML_VALID_ENABLED)
-    if ((debugent) && (!html))
-	xmlDebugDumpEntities(ERR_STREAM, doc);
+    if ((debugent)
+#if defined(LIBXML_HTML_ENABLED)
+        && (!html)
 #endif
+    )
+	xmlDebugDumpEntities(ERR_STREAM, doc);
 #endif
 
     /*

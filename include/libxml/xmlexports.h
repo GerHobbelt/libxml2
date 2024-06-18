@@ -126,13 +126,14 @@
   #define XML_GLOBAL_MACRO(name) (name)
 #endif
 
+/*
+ * Originally declared in xmlversion.h which is generated
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/*
- * Originally declared in xmlversion.h which is generated
- */
 XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
 
 #ifdef __cplusplus
