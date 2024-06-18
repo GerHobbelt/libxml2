@@ -341,7 +341,11 @@ xmlXIncludeParseFile(xmlXIncludeCtxtPtr ctxt, const char *URL) {
 	xmlDictReference(pctxt->dict);
     }
 
-    xmlCtxtUseOptions(pctxt, ctxt->parseFlags);
+    /*
+     * We set DTDLOAD to make sure that ID attributes declared in
+     * external DTDs are detected.
+     */
+    xmlCtxtUseOptions(pctxt, ctxt->parseFlags | XML_PARSE_DTDLOAD);
 
     inputStream = xmlLoadResource(pctxt, URL, NULL, XML_RESOURCE_XINCLUDE);
     if (inputStream == NULL)
@@ -1211,6 +1215,8 @@ loaded:
 #ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
             ctxt->xpctxt->opLimit = 100000;
 #endif
+        } else {
+            ctxt->xpctxt->doc = doc;
         }
 	xptr = xmlXPtrEval(fragment, ctxt->xpctxt);
 	if (ctxt->xpctxt->lastError.code != XML_ERR_OK) {
