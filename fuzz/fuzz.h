@@ -53,8 +53,10 @@ int
 LLVMFuzzerTestOneInput(const char *data, size_t size);
 
 void
-xmlFuzzErrorFunc(void *ctx ATTRIBUTE_UNUSED, const char *msg ATTRIBUTE_UNUSED,
-                 ...);
+xmlFuzzErrorFunc(void *ctx, const char *msg, ...);
+
+void
+xmlFuzzSErrorFunc(void *ctx, const xmlError *error);
 
 void
 xmlFuzzMemSetup(void);
@@ -103,6 +105,10 @@ xmlFuzzMainUrl(void);
 
 const char *
 xmlFuzzMainEntity(size_t *size);
+
+int
+xmlFuzzResourceLoader(void *data, const char *URL, const char *ID,
+                      xmlResourceType type, int flags, xmlParserInputPtr *out);
 
 xmlParserInputPtr
 xmlFuzzEntityLoader(const char *URL, const char *ID, xmlParserCtxtPtr ctxt);

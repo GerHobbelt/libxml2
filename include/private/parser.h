@@ -88,9 +88,9 @@ xmlParserNsUpdateSax(xmlParserCtxtPtr ctxt, const xmlChar *prefix,
 XML_HIDDEN void *
 xmlParserNsLookupSax(xmlParserCtxtPtr ctxt, const xmlChar *prefix);
 
-#define XML_INPUT_BUF_STATIC		(1u << 1)
-#define XML_INPUT_BUF_ZERO_TERMINATED	(1u << 2)
-
+XML_HIDDEN xmlParserInputPtr
+xmlLoadResource(xmlParserCtxtPtr ctxt, const char *url, const char *publicId,
+                xmlResourceType type);
 XML_HIDDEN xmlParserInputPtr
 xmlNewInputURL(xmlParserCtxtPtr ctxt, const char *url, const char *publicId,
                const char *encoding, int flags);
@@ -111,8 +111,7 @@ xmlNewInputIO(xmlParserCtxtPtr ctxt, const char *url,
               void *ioCtxt,
               const char *encoding, int flags);
 XML_HIDDEN xmlParserInputPtr
-xmlNewInputPush(xmlParserCtxtPtr ctxt, const char *url,
-                const char *chunk, int size, const char *encoding);
+xmlInputCreatePush(const char *url, const char *chunk, int size);
 
 XML_HIDDEN xmlChar *
 xmlExpandEntitiesInAttValue(xmlParserCtxtPtr ctxt, const xmlChar *str,

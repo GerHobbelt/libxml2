@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ([2.63])
 
 m4_define([MAJOR_VERSION], 2)
-m4_define([MINOR_VERSION], 13)
+m4_define([MINOR_VERSION], 14)
 m4_define([MICRO_VERSION], 0)
 
 AC_INIT([libxml2],[MAJOR_VERSION.MINOR_VERSION.MICRO_VERSION])
@@ -69,8 +69,6 @@ AC_ARG_WITH(catalog,
 [  --with-catalog          XML Catalogs support (on)])
 AC_ARG_WITH(debug,
 [  --with-debug            debugging module and shell (on)])
-AC_ARG_WITH(ftp,
-[  --with-ftp              FTP support (off)])
 AC_ARG_WITH(history,
 [  --with-history          history support for shell (off)])
 AC_ARG_WITH(readline,
@@ -123,8 +121,6 @@ AC_ARG_WITH(xpath,
 [  --with-xpath            XPath 1.0 support (on)])
 AC_ARG_WITH(xptr,
 [  --with-xptr             XPointer support (on)])
-AC_ARG_WITH(xptr-locs,
-[  --with-xptr-locs        XPointer ranges and points (off)])
 AC_ARG_WITH(zlib,
 [  --with-zlib[[=DIR]]       use libz in DIR (off)])
 
@@ -213,12 +209,6 @@ if test "$with_xinclude" = "yes"; then
         echo WARNING: --with-xinclude overrides --without-xpath
     fi
     with_xpath=yes
-fi
-if test "$with_xptr_locs" = "yes"; then
-    if test "$with_xptr" = "no"; then
-        echo WARNING: --with-xptr-locs overrides --without-xptr
-    fi
-    with_xptr=yes
 fi
 if test "$with_xptr" = "yes"; then
     if test "$with_xpath" = "no"; then
@@ -320,7 +310,7 @@ AH_VERBATIM([HAVE_MUNMAP_AFTER],[/* mmap() is no good without munmap() */
 dnl
 dnl Checks for inet libraries
 dnl
-if test "$with_http" = "yes" || test "$with_ftp" = "yes"; then
+if test "$with_http" = "yes"; then
     AC_CHECK_HEADERS([sys/socket.h netinet/in.h arpa/inet.h netdb.h])
     AC_CHECK_HEADERS([sys/select.h poll.h])
 
@@ -519,15 +509,6 @@ else
 fi
 AC_SUBST(WITH_TREE)
 
-if test "$with_ftp" != "yes" ; then
-    WITH_FTP=0
-else
-    echo Enabling FTP support
-    WITH_FTP=1
-fi
-AC_SUBST(WITH_FTP)
-AM_CONDITIONAL(WITH_FTP_SOURCES, test "$WITH_FTP" = "1")
-
 if test "$with_http" != "yes" ; then
     WITH_HTTP=0
 else
@@ -620,20 +601,11 @@ AM_CONDITIONAL(WITH_CATALOG_SOURCES, test "$WITH_CATALOG" = "1")
 if test "$with_xptr" = "no" ; then
     echo Disabling XPointer support
     WITH_XPTR=0
-    WITH_XPTR_LOCS=0
 else
     WITH_XPTR=1
 fi
 AC_SUBST(WITH_XPTR)
 AM_CONDITIONAL(WITH_XPTR_SOURCES, test "$WITH_XPTR" = "1")
-
-if test "$with_xptr_locs" != "yes" ; then
-    WITH_XPTR_LOCS=0
-else
-    echo Enabling Xpointer locations support
-    WITH_XPTR_LOCS=1
-fi
-AC_SUBST(WITH_XPTR_LOCS)
 
 if test "$with_c14n" = "no" ; then
     echo Disabling C14N support

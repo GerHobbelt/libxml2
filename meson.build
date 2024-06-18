@@ -56,7 +56,6 @@ cc = meson.get_compiler('c')
 want_c14n = get_option('c14n')
 want_catalog = get_option('catalog')
 want_debug = get_option('debuging')
-want_ftp = get_option('ftp')
 want_history = get_option('history')
 want_html = get_option('html')
 want_http = get_option('http')
@@ -81,7 +80,6 @@ want_writer = get_option('writer')
 want_xinclude = get_option('xinclude')
 want_xpath = get_option('xpath')
 want_xptr = get_option('xptr')
-want_xptr_locs = get_option('xptr-locs')
 
 # TODO: Options should be three-valued: "yes", "no", default
 
@@ -155,13 +153,6 @@ if want_xinclude == true
     want_xpath = true
 endif
 
-if want_xptr_locs == true
-    if want_xptr == false
-        message('-Dxptr-locs=true overrides -Dxptr')
-    endif
-    want_xptr = true
-endif
-
 if want_xptr == true
     if want_xpath == false
         message('-Dxptr=true overrides -Dxpath')
@@ -198,7 +189,6 @@ if get_option('minimum')
     want_xinclude = false
     want_xpath = false
     want_xptr = false
-    want_xptr_locs = false
 else
     # Disable dependent modules
     if want_output == false
@@ -469,7 +459,7 @@ if sys_windows == true
 endif
 
 ### inet
-if want_http == true or want_ftp == true
+if want_http == true
     if sys_windows == true
         ws2_dep = cc.find_library('ws2_32', required: true)
         xml_deps += ws2_dep
@@ -639,7 +629,6 @@ xml_opt_src = [
     [want_c14n, ['c14n.c']],
     [want_catalog, ['catalog.c']],
     [want_debug, ['debugXML.c']],
-    [want_ftp, ['nanoftp.c']],
     [want_html, ['HTMLparser.c', 'HTMLtree.c']],
     [want_http, ['nanohttp.c']],
     [want_legacy, ['legacy.c']],
@@ -806,7 +795,6 @@ summary(
         'c14n': want_c14n,
         'catalog': want_catalog,
         'debug': want_debug,
-        'ftp': want_ftp,
         'history': want_history,
         'html': want_html,
         'http': want_http,
@@ -836,7 +824,6 @@ summary(
         'xinclude': want_xinclude,
         'xpath': want_xpath,
         'xptr': want_xptr,
-        'xptr-locs': want_xptr_locs,
         'zlib': zlib_dep.found(),
     },
     section: 'Configuration Options Summary:',

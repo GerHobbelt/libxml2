@@ -38,6 +38,16 @@ extern "C" {
  */
 #define XML_DEFAULT_VERSION	"1.0"
 
+typedef enum {
+    XML_RESOURCE_UNKNOWN = 0,
+    XML_RESOURCE_MAIN_DOCUMENT,
+    XML_RESOURCE_DTD,
+    XML_RESOURCE_GENERAL_ENTITY,
+    XML_RESOURCE_PARAMETER_ENTITY,
+    XML_RESOURCE_XINCLUDE,
+    XML_RESOURCE_XINCLUDE_TEXT
+} xmlResourceType;
+
 /**
  * xmlParserInput:
  *
@@ -160,6 +170,10 @@ typedef enum {
 typedef struct _xmlStartTag xmlStartTag;
 typedef struct _xmlParserNsData xmlParserNsData;
 typedef struct _xmlAttrHashBucket xmlAttrHashBucket;
+
+typedef int
+(*xmlResourceLoader)(void *ctxt, const char *url, const char *publicId,
+                     xmlResourceType type, int flags, xmlParserInputPtr *out);
 
 /**
  * xmlParserCtxt:
@@ -314,6 +328,9 @@ struct _xmlParserCtxt {
 
     xmlStructuredErrorFunc errorHandler;
     void *errorCtxt;
+
+    xmlResourceLoader resourceLoader;
+    void *resourceCtxt;
 };
 
 /**
@@ -1199,6 +1216,10 @@ XMLPUBFUN void
 		xmlSetExternalEntityLoader(xmlExternalEntityLoader f);
 XMLPUBFUN xmlExternalEntityLoader
 		xmlGetExternalEntityLoader(void);
+XMLPUBFUN void
+		xmlCtxtSetResourceLoader(xmlParserCtxtPtr ctxt,
+					 xmlResourceLoader loader,
+					 void *vctxt);
 XMLPUBFUN xmlParserInputPtr
 		xmlLoadExternalEntity	(const char *URL,
 					 const char *ID,
@@ -1245,7 +1266,10 @@ typedef enum {
     XML_PARSE_OLDSAX    = 1<<20,/* parse using SAX2 interface before 2.7.0 */
     XML_PARSE_IGNORE_ENC= 1<<21,/* ignore internal document encoding hint */
     XML_PARSE_BIG_LINES = 1<<22,/* Store big lines numbers in text PSVI field */
-    XML_PARSE_NO_XXE    = 1<<23 /* disable loading of external content */
+    /* since 2.13.0 */
+    XML_PARSE_NO_XXE    = 1<<23,/* disable loading of external content */
+    /* since 2.14.0 */
+    XML_PARSE_NO_UNZIP  = 1<<24 /* disable compressed content */
 } xmlParserOption;
 
 XMLPUBFUN void

@@ -50,25 +50,30 @@ static struct {
 #if defined(HAVE_SCHEMA_FUZZER) || \
     defined(HAVE_XML_FUZZER)
 /*
- * A custom entity loader that writes all external DTDs or entities to a
- * single file in the format expected by xmlFuzzEntityLoader.
+ * A custom resource loader that writes all external DTDs or entities to a
+ * single file in the format expected by xmlFuzzResourceLoader.
  */
-static xmlParserInputPtr
-fuzzEntityRecorder(const char *URL, const char *ID,
-                      xmlParserCtxtPtr ctxt) {
+static int
+fuzzResourceRecorder(void *data ATTRIBUTE_UNUSED, const char *URL,
+                     const char *ID ATTRIBUTE_UNUSED,
+                     xmlResourceType type ATTRIBUTE_UNUSED, int flags,
+                     xmlParserInputPtr *out) {
     xmlParserInputPtr in;
     static const int chunkSize = 16384;
-    int len;
+    int code, len;
 
-    in = xmlNoNetExternalEntityLoader(URL, ID, ctxt);
-    if (in == NULL)
-        return(NULL);
+    *out = NULL;
+
+    code = xmlInputCreateUrl(URL, flags, &in);
+    if (code != XML_ERR_OK)
+        return(code);
 
     if (globalData.entities == NULL) {
         globalData.entities = xmlHashCreate(4);
     } else if (xmlHashLookup(globalData.entities,
                              (const xmlChar *) URL) != NULL) {
-        return(in);
+        *out = in;
+        return(XML_ERR_OK);
     }
 
     do {
@@ -76,7 +81,7 @@ fuzzEntityRecorder(const char *URL, const char *ID,
         if (len < 0) {
             fprintf(stderr, "Error reading %s\n", URL);
             xmlFreeInputStream(in);
-            return(NULL);
+            return(in->buf->error);
         }
     } while (len > 0);
 
@@ -89,7 +94,7 @@ fuzzEntityRecorder(const char *URL, const char *ID,
     xmlHashAddEntry(globalData.entities, (const xmlChar *) URL,
                     globalData.entities);
 
-    return(xmlNoNetExternalEntityLoader(URL, ID, ctxt));
+    return(xmlInputCreateUrl(URL, flags, out));
 }
 
 static void
@@ -97,12 +102,10 @@ fuzzRecorderInit(FILE *out) {
     globalData.out = out;
     globalData.entities = xmlHashCreate(8);
     globalData.oldLoader = xmlGetExternalEntityLoader();
-    xmlSetExternalEntityLoader(fuzzEntityRecorder);
 }
 
 static void
 fuzzRecorderCleanup(void) {
-    xmlSetExternalEntityLoader(globalData.oldLoader);
     xmlHashFree(globalData.entities, NULL);
     globalData.out = NULL;
     globalData.entities = NULL;
@@ -114,6 +117,7 @@ fuzzRecorderCleanup(void) {
 static int
 processXml(const char *docFile, FILE *out) {
     int opts = XML_PARSE_NOENT | XML_PARSE_DTDLOAD;
+    xmlParserCtxtPtr ctxt;
     xmlDocPtr doc;
 
     if (globalData.flags & FLAG_LINT) {
@@ -146,11 +150,23 @@ processXml(const char *docFile, FILE *out) {
 
     fuzzRecorderInit(out);
 
-    doc = xmlReadFile(docFile, NULL, opts);
+    ctxt = xmlNewParserCtxt();
+    xmlCtxtSetErrorHandler(ctxt, xmlFuzzSErrorFunc, NULL);
+    xmlCtxtSetResourceLoader(ctxt, fuzzResourceRecorder, NULL);
+    doc = xmlCtxtReadFile(ctxt, docFile, NULL, opts);
 #ifdef LIBXML_XINCLUDE_ENABLED
-    xmlXIncludeProcessFlags(doc, opts);
+    {
+        xmlXIncludeCtxtPtr xinc = xmlXIncludeNewContext(doc);
+
+        xmlXIncludeSetErrorHandler(xinc, xmlFuzzSErrorFunc, NULL);
+        xmlXIncludeSetResourceLoader(xinc, fuzzResourceRecorder, NULL);
+        xmlXIncludeSetFlags(xinc, opts);
+        xmlXIncludeProcessNode(xinc, (xmlNodePtr) doc);
+        xmlXIncludeFreeContext(xinc);
+    }
 #endif
     xmlFreeDoc(doc);
+    xmlFreeParserCtxt(ctxt);
 
     fuzzRecorderCleanup();
 
@@ -199,7 +215,8 @@ processSchema(const char *docFile, FILE *out) {
     fuzzRecorderInit(out);
 
     pctxt = xmlSchemaNewParserCtxt(docFile);
-    xmlSchemaSetParserErrors(pctxt, xmlFuzzErrorFunc, xmlFuzzErrorFunc, NULL);
+    xmlSchemaSetParserStructuredErrors(pctxt, xmlFuzzSErrorFunc, NULL);
+    xmlSchemaSetResourceLoader(pctxt, fuzzResourceRecorder, NULL);
     schema = xmlSchemaParse(pctxt);
     xmlSchemaFreeParserCtxt(pctxt);
     xmlSchemaFree(schema);
@@ -434,8 +451,6 @@ main(int argc, const char **argv) {
         fprintf(stderr, "usage: seed [FUZZER] [PATTERN...]\n");
         return(1);
     }
-
-    xmlSetGenericErrorFunc(NULL, xmlFuzzErrorFunc);
 
     fuzzer = argv[1];
     if (strcmp(fuzzer, "html") == 0) {

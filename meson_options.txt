@@ -3,7 +3,6 @@
 # [X] c14n
 # [X] catalog
 # [X] debugging
-# [X] ftp         - not minimum
 # [X] history
 # [X] html
 # [X] http
@@ -33,7 +32,6 @@
 # [X] xinclude
 # [X] xpath
 # [X] xptr
-# [X] xptr-locs
 # [X] zlib
 
 # [X] minimum
@@ -57,12 +55,6 @@ option('debuging',
   type: 'boolean',
   value: true,
   description: 'Debugging module and shell'
-)
-
-option('ftp',
-  type: 'boolean',
-  value: false,
-  description: 'FTP support'
 )
 
 option('history',
@@ -233,12 +225,6 @@ option('xptr',
   type: 'boolean',
   value: true,
   description: 'XPointer support'
-)
-
-option('xptr-locs',
-  type: 'boolean',
-  value: false,
-  description: 'XPointer ranges and points'
 )
 
 option('zlib',
