@@ -35,7 +35,6 @@ static void testXmlwriterFilename(const char *uri);
 static void testXmlwriterMemory(void);
 static void testXmlwriterDoc(void);
 static void testXmlwriterTree(void);
-static xmlChar *ConvertInput(const char *in, const char *encoding);
 
 int
 main(void)
@@ -74,7 +73,6 @@ testXmlwriterFilename(const char *uri)
 {
     int rc;
     xmlTextWriterPtr writer;
-    xmlChar *tmp;
 
     /* Create a new XmlWriter for uri, with no compression. */
     writer = xmlNewTextWriterFilename(uri, 0);
@@ -102,19 +100,12 @@ testXmlwriterFilename(const char *uri)
         return;
     }
 
-    /* Write a comment as child of EXAMPLE.
-     * Please observe, that the input to the xmlTextWriter functions
-     * HAS to be in UTF-8, even if the output XML is encoded
-     * in iso-8859-1 */
-    tmp = ConvertInput("This is a comment with special chars: <\xE4\xF6\xFC>",
-                       MY_ENCODING);
-    rc = xmlTextWriterWriteComment(writer, tmp);
+    rc = xmlTextWriterWriteComment(writer, BAD_CAST "This is a comment");
     if (rc < 0) {
         printf
             ("testXmlwriterFilename: Error at xmlTextWriterWriteComment\n");
         return;
     }
-    if (tmp != NULL) xmlFree(tmp);
 
     /* Start an element named "ORDER" as child of EXAMPLE. */
     rc = xmlTextWriterStartElement(writer, BAD_CAST "ORDER");
@@ -143,16 +134,12 @@ testXmlwriterFilename(const char *uri)
     }
 
     /* Write a comment as child of ORDER */
-    tmp = ConvertInput("<\xE4\xF6\xFC>", MY_ENCODING);
-    rc = xmlTextWriterWriteFormatComment(writer,
-		     "This is another comment with special chars: %s",
-		     tmp);
+    rc = xmlTextWriterWriteComment(writer, BAD_CAST "This is another comment");
     if (rc < 0) {
         printf
             ("testXmlwriterFilename: Error at xmlTextWriterWriteFormatComment\n");
         return;
     }
-    if (tmp != NULL) xmlFree(tmp);
 
     /* Start an element named "HEADER" as child of ORDER. */
     rc = xmlTextWriterStartElement(writer, BAD_CAST "HEADER");
@@ -181,24 +168,22 @@ testXmlwriterFilename(const char *uri)
     }
 
     /* Write an element named "NAME_1" as child of HEADER. */
-    tmp = ConvertInput("M\xFCller", MY_ENCODING);
-    rc = xmlTextWriterWriteElement(writer, BAD_CAST "NAME_1", tmp);
+    rc = xmlTextWriterWriteElement(writer, BAD_CAST "NAME_1",
+                                   BAD_CAST "Mueller");
     if (rc < 0) {
         printf
             ("testXmlwriterFilename: Error at xmlTextWriterWriteElement\n");
         return;
     }
-    if (tmp != NULL) xmlFree(tmp);
 
     /* Write an element named "NAME_2" as child of HEADER. */
-    tmp = ConvertInput("J\xF6rg", MY_ENCODING);
-    rc = xmlTextWriterWriteElement(writer, BAD_CAST "NAME_2", tmp);
+    rc = xmlTextWriterWriteElement(writer, BAD_CAST "NAME_2",
+                                   BAD_CAST "Joerg");
     if (rc < 0) {
         printf
             ("testXmlwriterFilename: Error at xmlTextWriterWriteElement\n");
         return;
     }
-    if (tmp != NULL) xmlFree(tmp);
 
     /* Close the element named HEADER. */
     rc = xmlTextWriterEndElement(writer);
@@ -343,7 +328,6 @@ testXmlwriterMemory(void)
     int rc;
     xmlTextWriterPtr writer;
     xmlBufferPtr buf;
-    xmlChar *tmp;
 
     /* Create a new XML buffer, to which the XML document will be
      * written */
@@ -380,19 +364,13 @@ testXmlwriterMemory(void)
         return;
     }
 
-    /* Write a comment as child of EXAMPLE.
-     * Please observe, that the input to the xmlTextWriter functions
-     * HAS to be in UTF-8, even if the output XML is encoded
-     * in iso-8859-1 */
-    tmp = ConvertInput("This is a comment with special chars: <\xE4\xF6\xFC>",
-                       MY_ENCODING);
-    rc = xmlTextWriterWriteComment(writer, tmp);
+    /* Write a comment as child of EXAMPLE. */
+    rc = xmlTextWriterWriteComment(writer, BAD_CAST "This is a comment");
     if (rc < 0) {
         printf
             ("testXmlwriterMemory: Error at xmlTextWriterWriteComment\n");
         return;
     }
-    if (tmp != NULL) xmlFree(tmp);
 
     /* Start an element named "ORDER" as child of EXAMPLE. */
     rc = xmlTextWriterStartElement(writer, BAD_CAST "ORDER");
@@ -421,16 +399,12 @@ testXmlwriterMemory(void)
     }
 
     /* Write a comment as child of ORDER */
-    tmp = ConvertInput("<\xE4\xF6\xFC>", MY_ENCODING);
-    rc = xmlTextWriterWriteFormatComment(writer,
-		     "This is another comment with special chars: %s",
-                                         tmp);
+    rc = xmlTextWriterWriteComment(writer, BAD_CAST "This is another comment");
     if (rc < 0) {
         printf
             ("testXmlwriterMemory: Error at xmlTextWriterWriteFormatComment\n");
         return;
     }
-    if (tmp != NULL) xmlFree(tmp);
 
     /* Start an element named "HEADER" as child of ORDER. */
     rc = xmlTextWriterStartElement(writer, BAD_CAST "HEADER");
@@ -459,25 +433,23 @@ testXmlwriterMemory(void)
     }
 
     /* Write an element named "NAME_1" as child of HEADER. */
-    tmp = ConvertInput("M\xFCller", MY_ENCODING);
-    rc = xmlTextWriterWriteElement(writer, BAD_CAST "NAME_1", tmp);
+    rc = xmlTextWriterWriteElement(writer, BAD_CAST "NAME_1",
+                                   BAD_CAST "Mueller");
     if (rc < 0) {
         printf
             ("testXmlwriterMemory: Error at xmlTextWriterWriteElement\n");
         return;
     }
-    if (tmp != NULL) xmlFree(tmp);
 
     /* Write an element named "NAME_2" as child of HEADER. */
-    tmp = ConvertInput("J\xF6rg", MY_ENCODING);
-    rc = xmlTextWriterWriteElement(writer, BAD_CAST "NAME_2", tmp);
+    rc = xmlTextWriterWriteElement(writer, BAD_CAST "NAME_2",
+                                   BAD_CAST "Joerg");
 
     if (rc < 0) {
         printf
             ("testXmlwriterMemory: Error at xmlTextWriterWriteElement\n");
         return;
     }
-    if (tmp != NULL) xmlFree(tmp);
 
     /* Close the element named HEADER. */
     rc = xmlTextWriterEndElement(writer);
@@ -617,7 +589,6 @@ testXmlwriterDoc(void)
 {
     int rc;
     xmlTextWriterPtr writer;
-    xmlChar *tmp;
     xmlDocPtr doc;
 
 
@@ -645,18 +616,12 @@ testXmlwriterDoc(void)
         return;
     }
 
-    /* Write a comment as child of EXAMPLE.
-     * Please observe, that the input to the xmlTextWriter functions
-     * HAS to be in UTF-8, even if the output XML is encoded
-     * in iso-8859-1 */
-    tmp = ConvertInput("This is a comment with special chars: <\xE4\xF6\xFC>",
-                       MY_ENCODING);
-    rc = xmlTextWriterWriteComment(writer, tmp);
+    /* Write a comment as child of EXAMPLE. */
+    rc = xmlTextWriterWriteComment(writer, BAD_CAST "This is a comment");
     if (rc < 0) {
         printf("testXmlwriterDoc: Error at xmlTextWriterWriteComment\n");
         return;
     }
-    if (tmp != NULL) xmlFree(tmp);
 
     /* Start an element named "ORDER" as child of EXAMPLE. */
     rc = xmlTextWriterStartElement(writer, BAD_CAST "ORDER");
@@ -682,16 +647,12 @@ testXmlwriterDoc(void)
     }
 
     /* Write a comment as child of ORDER */
-    tmp = ConvertInput("<\xE4\xF6\xFC>", MY_ENCODING);
-    rc = xmlTextWriterWriteFormatComment(writer,
-		 "This is another comment with special chars: %s",
-		                         tmp);
+    rc = xmlTextWriterWriteComment(writer, BAD_CAST "This is another comment");
     if (rc < 0) {
         printf
             ("testXmlwriterDoc: Error at xmlTextWriterWriteFormatComment\n");
         return;
     }
-    if (tmp != NULL) xmlFree(tmp);
 
     /* Start an element named "HEADER" as child of ORDER. */
     rc = xmlTextWriterStartElement(writer, BAD_CAST "HEADER");
@@ -719,22 +680,20 @@ testXmlwriterDoc(void)
     }
 
     /* Write an element named "NAME_1" as child of HEADER. */
-    tmp = ConvertInput("M\xFCller", MY_ENCODING);
-    rc = xmlTextWriterWriteElement(writer, BAD_CAST "NAME_1", tmp);
+    rc = xmlTextWriterWriteElement(writer, BAD_CAST "NAME_1",
+                                   BAD_CAST "Mueller");
     if (rc < 0) {
         printf("testXmlwriterDoc: Error at xmlTextWriterWriteElement\n");
         return;
     }
-    if (tmp != NULL) xmlFree(tmp);
 
     /* Write an element named "NAME_2" as child of HEADER. */
-    tmp = ConvertInput("J\xF6rg", MY_ENCODING);
-    rc = xmlTextWriterWriteElement(writer, BAD_CAST "NAME_2", tmp);
+    rc = xmlTextWriterWriteElement(writer, BAD_CAST "NAME_2",
+                                   BAD_CAST "Joerg");
     if (rc < 0) {
         printf("testXmlwriterDoc: Error at xmlTextWriterWriteElement\n");
         return;
     }
-    if (tmp != NULL) xmlFree(tmp);
 
     /* Close the element named HEADER. */
     rc = xmlTextWriterEndElement(writer);
@@ -869,7 +828,6 @@ testXmlwriterTree(void)
     xmlTextWriterPtr writer;
     xmlDocPtr doc;
     xmlNodePtr node;
-    xmlChar *tmp;
 
     /* Create a new XML DOM tree, to which the XML document will be
      * written */
@@ -907,18 +865,12 @@ testXmlwriterTree(void)
         return;
     }
 
-    /* Write a comment as child of EXAMPLE.
-     * Please observe, that the input to the xmlTextWriter functions
-     * HAS to be in UTF-8, even if the output XML is encoded
-     * in iso-8859-1 */
-    tmp = ConvertInput("This is a comment with special chars: <\xE4\xF6\xFC>",
-                       MY_ENCODING);
-    rc = xmlTextWriterWriteComment(writer, tmp);
+    /* Write a comment as child of EXAMPLE. */
+    rc = xmlTextWriterWriteComment(writer, BAD_CAST "This is a comment");
     if (rc < 0) {
         printf("testXmlwriterTree: Error at xmlTextWriterWriteComment\n");
         return;
     }
-    if (tmp != NULL) xmlFree(tmp);
 
     /* Start an element named "ORDER" as child of EXAMPLE. */
     rc = xmlTextWriterStartElement(writer, BAD_CAST "ORDER");
@@ -946,16 +898,12 @@ testXmlwriterTree(void)
     }
 
     /* Write a comment as child of ORDER */
-    tmp = ConvertInput("<\xE4\xF6\xFC>", MY_ENCODING);
-    rc = xmlTextWriterWriteFormatComment(writer,
-			 "This is another comment with special chars: %s",
-					  tmp);
+    rc = xmlTextWriterWriteComment(writer, BAD_CAST "This is another comment");
     if (rc < 0) {
         printf
             ("testXmlwriterTree: Error at xmlTextWriterWriteFormatComment\n");
         return;
     }
-    if (tmp != NULL) xmlFree(tmp);
 
     /* Start an element named "HEADER" as child of ORDER. */
     rc = xmlTextWriterStartElement(writer, BAD_CAST "HEADER");
@@ -983,22 +931,20 @@ testXmlwriterTree(void)
     }
 
     /* Write an element named "NAME_1" as child of HEADER. */
-    tmp = ConvertInput("M\xFCller", MY_ENCODING);
-    rc = xmlTextWriterWriteElement(writer, BAD_CAST "NAME_1", tmp);
+    rc = xmlTextWriterWriteElement(writer, BAD_CAST "NAME_1",
+                                   BAD_CAST "Mueller");
     if (rc < 0) {
         printf("testXmlwriterTree: Error at xmlTextWriterWriteElement\n");
         return;
     }
-    if (tmp != NULL) xmlFree(tmp);
 
     /* Write an element named "NAME_2" as child of HEADER. */
-    tmp = ConvertInput("J\xF6rg", MY_ENCODING);
-    rc = xmlTextWriterWriteElement(writer, BAD_CAST "NAME_2", tmp);
+    rc = xmlTextWriterWriteElement(writer, BAD_CAST "NAME_2",
+                                   BAD_CAST "Joerg");
     if (rc < 0) {
         printf("testXmlwriterTree: Error at xmlTextWriterWriteElement\n");
         return;
     }
-    if (tmp != NULL) xmlFree(tmp);
 
     /* Close the element named HEADER. */
     rc = xmlTextWriterEndElement(writer);
@@ -1118,65 +1064,6 @@ testXmlwriterTree(void)
     xmlFreeTextWriter(writer);
 
     xmlFreeDoc(doc);
-}
-
-/**
- * ConvertInput:
- * @in: string in a given encoding
- * @encoding: the encoding used
- *
- * Converts @in into UTF-8 for processing with libxml2 APIs
- *
- * Returns the converted UTF-8 string, or NULL in case of error.
- */
-static xmlChar *
-ConvertInput(const char *in, const char *encoding)
-{
-    xmlChar *out;
-    int ret;
-    int size;
-    int out_size;
-    int temp;
-    xmlCharEncodingHandlerPtr handler;
-
-    if (in == 0)
-        return 0;
-
-    handler = xmlFindCharEncodingHandler(encoding);
-
-    if (!handler) {
-        printf("ConvertInput: no encoding handler found for '%s'\n",
-               encoding ? encoding : "");
-        return 0;
-    }
-
-    size = (int) strlen(in) + 1;
-    out_size = size * 2 - 1;
-    out = (unsigned char *) xmlMalloc((size_t) out_size);
-
-    if (out != 0) {
-        temp = size - 1;
-        ret = handler->input(out, &out_size, (const xmlChar *) in, &temp);
-        if ((ret < 0) || (temp - size + 1)) {
-            if (ret < 0) {
-                printf("ConvertInput: conversion wasn't successful.\n");
-            } else {
-                printf
-                    ("ConvertInput: conversion wasn't successful. converted: %i octets.\n",
-                     temp);
-            }
-
-            xmlFree(out);
-            out = 0;
-        } else {
-            out = (unsigned char *) xmlRealloc(out, out_size + 1);
-            out[out_size] = 0;  /*null terminating out */
-        }
-    } else {
-        printf("ConvertInput: no mem\n");
-    }
-
-    return out;
 }
 
 #else

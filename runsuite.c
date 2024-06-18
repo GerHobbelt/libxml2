@@ -314,7 +314,8 @@ xsdIncorrectTestCase(xmlNodePtr cur) {
     }
     xmlBufferSetAllocationScheme(buf, XML_BUFFER_ALLOC_DOUBLEIT);
     xmlNodeDump(buf, test->doc, test, 0, 0);
-    pctxt = xmlRelaxNGNewMemParserCtxt((const char *)buf->content, buf->use);
+    pctxt = xmlRelaxNGNewMemParserCtxt(
+            (const char *) xmlBufferContent(buf), xmlBufferLength(buf));
     xmlRelaxNGSetParserErrors(pctxt, testErrorHandler, testErrorHandler,
             pctxt);
     xmlRelaxNGSetResourceLoader(pctxt, testResourceLoader, NULL);
@@ -361,7 +362,7 @@ installResources(xmlNodePtr tst, const xmlChar *base) {
 	    xmlBufferEmpty(buf);
 	    xmlNodeDump(buf, test->doc, test, 0, 0);
 	    name = getString(tst, "string(@name)");
-	    content = xmlStrdup(buf->content);
+	    content = xmlStrdup(xmlBufferContent(buf));
 	    if ((name != NULL) && (content != NULL)) {
 	        res = composeDir(base, name);
 		xmlFree(name);
@@ -449,7 +450,8 @@ xsdTestCase(xmlNodePtr tst) {
     }
     xmlBufferSetAllocationScheme(buf, XML_BUFFER_ALLOC_DOUBLEIT);
     xmlNodeDump(buf, test->doc, test, 0, 0);
-    pctxt = xmlRelaxNGNewMemParserCtxt((const char *)buf->content, buf->use);
+    pctxt = xmlRelaxNGNewMemParserCtxt(
+            (const char *) xmlBufferContent(buf), xmlBufferLength(buf));
     xmlRelaxNGSetParserErrors(pctxt, testErrorHandler, testErrorHandler,
             pctxt);
     xmlRelaxNGSetResourceLoader(pctxt, testResourceLoader, NULL);
@@ -484,8 +486,8 @@ xsdTestCase(xmlNodePtr tst) {
 	     * We are ready to run the test
 	     */
 	    mem = xmlMemUsed();
-            doc = xmlReadMemory((const char *)buf->content, buf->use,
-	                        "test", NULL, 0);
+            doc = xmlReadMemory((const char *) xmlBufferContent(buf),
+                                xmlBufferLength(buf), "test", NULL, 0);
 	    if (doc == NULL) {
 		test_log("Failed to parse valid instance line %ld\n",
 			xmlGetLineNo(tmp));
@@ -537,8 +539,8 @@ xsdTestCase(xmlNodePtr tst) {
 	     * We are ready to run the test
 	     */
 	    mem = xmlMemUsed();
-            doc = xmlReadMemory((const char *)buf->content, buf->use,
-	                        "test", NULL, 0);
+            doc = xmlReadMemory((const char *) xmlBufferContent(buf),
+                                xmlBufferLength(buf), "test", NULL, 0);
 	    if (doc == NULL) {
 		test_log("Failed to parse valid instance line %ld\n",
 			xmlGetLineNo(tmp));
