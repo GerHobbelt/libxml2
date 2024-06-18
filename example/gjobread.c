@@ -179,7 +179,7 @@ typedef struct gjob {
 
 
 static gJobPtr
-parseGjobFile(const char *filename ATTRIBUTE_UNUSED) {
+parseGjobFile(const char *filename) {
     xmlDocPtr doc;
     gJobPtr ret;
     jobPtr curjob;

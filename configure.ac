@@ -411,7 +411,7 @@ if test "$with_tls" = "yes"; then
     AC_COMPILE_IFELSE([
         AC_LANG_SOURCE([__declspec(thread) int v;]) ], [
         AC_DEFINE([XML_THREAD_LOCAL], [__declspec(thread)], [TLS specifier]) ], [
-    WARN_NO_TLS=1 ])])])
+    ])])])
 fi
 
 dnl Checking whether __attribute__((destructor)) is accepted by the compiler
@@ -751,6 +751,10 @@ if test "$with_modules" != "no" ; then
                 AC_DEFINE([HAVE_SHLLOAD], [], [Have shl_load based dso])])])
         LIBS=$_libs
     fi
+
+    if test "$WITH_MODULES" = "0"; then
+        AC_MSG_ERROR([dlopen or equivalent not found])
+    fi
 fi
 
 AC_SUBST(WITH_MODULES)
@@ -788,6 +792,10 @@ else
             LIBS=$_libs
             ;;
     esac
+
+    if test "$WITH_THREADS" = "0"; then
+        AC_MSG_ERROR([libpthread not found])
+    fi
 
     case $host_os in
         *linux*)
@@ -896,6 +904,10 @@ if test "$with_zlib" != "no" && test "$with_zlib" != ""; then
         LIBS=$_libs
     fi
 
+    if test "$WITH_ZLIB" = "0"; then
+        AC_MSG_ERROR([zlib not found])
+    fi
+
     XML_PRIVATE_CFLAGS="${XML_PRIVATE_CFLAGS} ${Z_CFLAGS}"
     XML_PRIVATE_LIBS="${XML_PRIVATE_LIBS} ${Z_LIBS}"
 fi
@@ -946,6 +958,10 @@ if test "$with_lzma" != "no" && test "$with_lzma" != ""; then
         LIBS=$_libs
     fi
 
+    if test "$WITH_LZMA" = "0"; then
+        AC_MSG_ERROR([liblzma not found])
+    fi
+
     XML_PRIVATE_CFLAGS="${XML_PRIVATE_CFLAGS} ${LZMA_CFLAGS}"
     XML_PRIVATE_LIBS="${XML_PRIVATE_LIBS} ${LZMA_LIBS}"
 fi
@@ -985,6 +1001,11 @@ else
             AC_MSG_RESULT([no])
         ])
     ])
+
+    if test "$WITH_ICONV" = "0"; then
+        AC_MSG_ERROR([libiconv not found])
+    fi
+
     if test "$WITH_ICONV" = "1" && test "$ICONV_DIR" != ""; then
         ICONV_CFLAGS="-I$ICONV_DIR/include"
         ICONV_LIBS="-L$ICONV_DIR/lib $ICONV_LIBS"
@@ -1044,6 +1065,10 @@ if test "$with_icu" != "no" && test "$with_icu" != "" ; then
             CPPFLAGS=$_cppflags
             LIBS=$_libs
         fi
+    fi
+
+    if test "$WITH_ICU" = "0"; then
+        AC_MSG_ERROR([ICU not found])
     fi
 
     XML_PRIVATE_CFLAGS="${XML_PRIVATE_CFLAGS} ${ICU_CFLAGS}"
@@ -1112,11 +1137,3 @@ AC_CONFIG_FILES([Makefile include/Makefile include/libxml/Makefile include/priva
 AC_CONFIG_FILES([python/setup.py], [chmod +x python/setup.py])
 AC_CONFIG_FILES([xml2-config], [chmod +x xml2-config])
 AC_OUTPUT
-
-if test "$WARN_NO_TLS" != ""; then
-    echo "================================================================"
-    echo "WARNING: Your C compiler appears to not support thread-local"
-    echo "storage. Future versions of libxml2 will require this feature"
-    echo "for multi-threading."
-    echo "================================================================"
-fi
