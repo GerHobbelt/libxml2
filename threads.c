@@ -95,7 +95,8 @@ xmlNewMutex(void)
 {
     xmlMutexPtr tok;
 
-    if ((tok = malloc(sizeof(xmlMutex))) == NULL)
+    tok = malloc(sizeof(xmlMutex));
+    if (tok == NULL)
         return (NULL);
     xmlInitMutex(tok);
     return (tok);
@@ -191,7 +192,8 @@ xmlNewRMutex(void)
 {
     xmlRMutexPtr tok;
 
-    if ((tok = malloc(sizeof(xmlRMutex))) == NULL)
+    tok = malloc(sizeof(xmlRMutex));
+    if (tok == NULL)
         return (NULL);
 #ifdef HAVE_POSIX_THREADS
     pthread_mutex_init(&tok->lock, NULL);

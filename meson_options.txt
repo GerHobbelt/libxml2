@@ -57,8 +57,7 @@ option('debuging',
 )
 
 option('history',
-  type: 'boolean',
-  value: false,
+  type: 'feature',
   description: 'History support for shell'
 )
 
@@ -144,8 +143,7 @@ option('reader',
 )
 
 option('readline',
-  type: 'boolean',
-  value: true,
+  type: 'feature',
   description: 'use readline in DIR (for shell history)'
 )
 

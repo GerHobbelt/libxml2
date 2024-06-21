@@ -58,7 +58,6 @@ cc = meson.get_compiler('c')
 want_c14n = get_option('c14n')
 want_catalog = get_option('catalog')
 want_debug = get_option('debuging')
-want_history = get_option('history')
 want_html = get_option('html')
 want_http = get_option('http')
 want_ipv6 = get_option('ipv6')
@@ -69,7 +68,6 @@ want_pattern = get_option('pattern')
 want_push = get_option('push')
 want_python = get_option('python')
 want_reader = get_option('reader')
-want_readline = get_option('readline')
 want_regexps = get_option('regexps')
 want_sax1 = get_option('sax1')
 want_schemas = get_option('schemas')
@@ -160,7 +158,6 @@ if get_option('minimum')
     want_c14n = false
     want_catalog = false
     want_debug = false
-    want_history = false
     want_html = false
     want_http = false
     want_ipv6 = false
@@ -170,7 +167,6 @@ if get_option('minimum')
     want_push = false
     want_python = false
     want_reader = false
-    want_readline = false
     want_regexps = false
     want_sax1 = false
     want_schemas = false
@@ -245,7 +241,6 @@ endforeach
 #
 # [X] config.h.in
 # [X] include/libxml/xmlversion.h.in
-# [N] libxml-2.0-uninstalled.pc.in
 # [X] libxml-2.0.pc.in
 # [X] libxml2-config.cmake.in
 # [X] python/setup.py.in
@@ -410,35 +405,23 @@ want_thread_alloc = threads_dep.found()
 
 ### xmllint shell history
 xmllint_deps = []
-if want_readline == true
-    termlib_lib = ['ncurses', 'curses', 'termcap', 'terminfo', 'termlib']
-
-    foreach tl : termlib_lib
-        termlib_dep = cc.find_library(tl, required: false)
-        if (
-            termlib_dep.found()
-            and cc.has_function('tputs', dependencies: termlib_dep)
-        )
-            xmllint_deps += termlib_dep
-            config_h.set10('HAVE_LIB' + tl.underscorify().to_upper(), true)
-            break
-        endif
-    endforeach
-
-    readline_dep = dependency('readline', required: false)
-    if readline_dep.found()
-        xmllint_deps += readline_dep
-        config_h.set10('HAVE_LIBREADLINE', true)
-    endif
-
-    if want_history == true
-        history_dep = dependency('history', required: false)
-        if history_dep.found()
-            xmllint_deps += history_dep
-            config_h.set10('HAVE_LIBHISTORY', true)
-        endif
-    endif
+if not get_option('minimum')
+    readline_dep = dependency('readline', required: get_option('readline'))
+else
+    readline_dep = dependency('', required: false)
 endif
+
+config_h.set('HAVE_LIBREADLINE', readline_dep.found())
+xmllint_deps += readline_dep
+
+if not get_option('minimum') and readline_dep.found()
+    history_dep = dependency('history', required: get_option('history'))
+else
+    history_dep = dependency('', required: false)
+endif
+
+config_h.set('HAVE_LIBHISTORY', history_dep.found())
+xmllint_deps += history_dep
 
 ### crypto
 if sys_windows == true
@@ -745,6 +728,7 @@ pkgmod.generate(
     description: 'libXML library version2.',
     filebase: 'libxml-2.0',
     name: 'libXML',
+    subdirs:  [meson.project_name()],
     variables: 'modules=' + dl_dep.found().to_string('1', '0'),
 )
 
@@ -777,7 +761,7 @@ summary(
         'c14n': want_c14n,
         'catalog': want_catalog,
         'debug': want_debug,
-        'history': want_history,
+        'history': history_dep.found(),
         'html': want_html,
         'http': want_http,
         'iconv': iconv_dep.found(),
@@ -792,7 +776,7 @@ summary(
         'push': want_push,
         'python': want_python,
         'reader': want_reader,
-        'readline': want_readline,
+        'readline': readline_dep.found(),
         'regexps': want_regexps,
         'sax1': want_sax1,
         'schemas': want_schemas,
