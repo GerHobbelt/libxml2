@@ -4561,7 +4561,6 @@ free_obj:
 	    xmlXPathFreeNodeSet(obj->nodesetval);
 	xmlFree(obj);
     }
-    return;
 }
 
 
@@ -7468,7 +7467,6 @@ xmlXPathIdFunction(xmlXPathParserContextPtr ctxt, int nargs) {
         xmlXPathPErrMemory(ctxt);
     xmlFree(tokens);
     valuePush(ctxt, xmlXPathCacheWrapNodeSet(ctxt, ret));
-    return;
 }
 
 /**
