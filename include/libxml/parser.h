@@ -85,9 +85,9 @@ struct _xmlParserInput {
     /* unused */
     int length XML_DEPRECATED_MEMBER;
     /* Current line */
-    int line XML_DEPRECATED_MEMBER;
+    int line;
     /* Current column */
-    int col XML_DEPRECATED_MEMBER;
+    int col;
     /* How many xmlChars already consumed */
     unsigned long consumed XML_DEPRECATED_MEMBER;
     /* function to deallocate the base */
@@ -213,21 +213,20 @@ struct _xmlParserCtxt {
     xmlDocPtr myDoc;
     /* is the document well formed */
     int wellFormed;
-
     /* shall we replace entities ? */
     int replaceEntities XML_DEPRECATED_MEMBER;
     /* the XML version string */
-    const xmlChar *version XML_DEPRECATED_MEMBER;
+    const xmlChar *version;
     /* the declared encoding, if any */
-    const xmlChar *encoding XML_DEPRECATED_MEMBER;
+    const xmlChar *encoding;
     /* standalone document */
-    int standalone XML_DEPRECATED_MEMBER;
+    int standalone;
 
     /* an HTML(1) document
      * 3 is HTML after <head>
      * 10 is HTML after <body>
      */
-    int html XML_DEPRECATED_MEMBER;
+    int html;
 
     /* Input stream stack */
 
@@ -404,7 +403,7 @@ struct _xmlParserCtxt {
     /*
      * the complete error information for the last error.
      */
-    xmlError lastError;
+    xmlError lastError XML_DEPRECATED_MEMBER;
     /* the parser mode */
     xmlParserMode parseMode XML_DEPRECATED_MEMBER;
     /* unused */
