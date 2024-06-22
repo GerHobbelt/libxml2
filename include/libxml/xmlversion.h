@@ -15,21 +15,21 @@
  *
  * the version string like "1.2.3"
  */
-#define LIBXML_DOTTED_VERSION "2.13.0"
+#define LIBXML_DOTTED_VERSION "2.13.1"
 
 /**
  * LIBXML_VERSION:
  *
  * the version number: 1.2.3 value is 10203
  */
-#define LIBXML_VERSION 21300
+#define LIBXML_VERSION 21301
 
 /**
  * LIBXML_VERSION_STRING:
  *
  * the version number string, 1.2.3 value is "10203"
  */
-#define LIBXML_VERSION_STRING "21300"
+#define LIBXML_VERSION_STRING "21301"
 
 /**
  * LIBXML_VERSION_EXTRA:
@@ -44,7 +44,7 @@
  * Macro to check that the libxml version in use is compatible with
  * the version the software has been compiled against
  */
-#define LIBXML_TEST_VERSION xmlCheckVersion(21300);
+#define LIBXML_TEST_VERSION xmlCheckVersion(21301);
 
 /**
  * LIBXML_THREAD_ENABLED:
@@ -67,11 +67,9 @@
 /**
  * LIBXML_TREE_ENABLED:
  *
- * Whether the DOM like tree manipulation API support is configured in
+ * Always enabled since 2.14.0
  */
-#if 1
 #define LIBXML_TREE_ENABLED
-#endif
 
 /**
  * LIBXML_OUTPUT_ENABLED:
@@ -125,15 +123,6 @@
  */
 #if 1
 #define LIBXML_SAX1_ENABLED
-#endif
-
-/**
- * LIBXML_FTP_ENABLED:
- *
- * Whether the FTP support is configured in
- */
-#if 0
-#define LIBXML_FTP_ENABLED
 #endif
 
 /**
@@ -209,15 +198,6 @@
 #endif
 
 /**
- * LIBXML_XPTR_LOCS_ENABLED:
- *
- * Whether support for XPointer locations is configured in
- */
-#if 0
-#define LIBXML_XPTR_LOCS_ENABLED
-#endif
-
-/**
  * LIBXML_XINCLUDE_ENABLED:
  *
  * Whether XInclude is configured in
@@ -260,15 +240,6 @@
  */
 #if 1
 #define LIBXML_DEBUG_ENABLED
-#endif
-
-/**
- * DEBUG_MEMORY_LOCATION:
- *
- * Whether the memory debugging is configured in
- */
-#if 0
-#define DEBUG_MEMORY_LOCATION
 #endif
 
 /**

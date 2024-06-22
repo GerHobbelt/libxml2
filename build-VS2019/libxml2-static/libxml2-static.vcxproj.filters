@@ -147,9 +147,6 @@
     <ClCompile Include="..\..\relaxng.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\SAX.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\SAX2.c">
       <Filter>Source Files</Filter>
     </ClCompile>

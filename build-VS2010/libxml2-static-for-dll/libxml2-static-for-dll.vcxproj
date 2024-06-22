@@ -113,7 +113,6 @@
     <ClCompile Include="..\..\parserInternals.c" />
     <ClCompile Include="..\..\pattern.c" />
     <ClCompile Include="..\..\relaxng.c" />
-    <ClCompile Include="..\..\SAX.c" />
     <ClCompile Include="..\..\SAX2.c" />
     <ClCompile Include="..\..\schematron.c" />
     <ClCompile Include="..\..\threads.c" />
