@@ -522,6 +522,11 @@ xmlSchemaCleanupTypesInternal(void) {
 int
 xmlSchemaInitTypes(void)
 {
+#if !defined(NAN) || !defined(INFINITY)
+    /* MSVC doesn't allow division by zero in constant expressions. */
+    double zero = 0.0;
+#endif
+
     if (xmlSchemaTypesInitialized != 0)
         return (0);
 
@@ -530,8 +535,6 @@ xmlSchemaInitTypes(void)
     xmlSchemaPINF = INFINITY;
     xmlSchemaNINF = -INFINITY;
 #else
-    /* MSVC doesn't allow division by zero in constant expressions. */
-    double zero = 0.0;
     xmlSchemaNAN = 0.0 / zero;
     xmlSchemaPINF = 1.0 / zero;
     xmlSchemaNINF = -xmlSchemaPINF;
