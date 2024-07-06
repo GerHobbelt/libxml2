@@ -937,15 +937,29 @@ xmlLoadFileContent(const char *filename)
 {
     int fd;
     int len;
-    long size;
+#if defined(_MSC_VER)
+    unsigned size; /* Follow non-posix compliant read() requirement. */
+#else
+    size_t size;
+#endif
 
+#if defined(_MSC_VER) && _MSC_VER >= 1500
+    struct _stat64 info;
+#else
     struct stat info;
+#endif
     xmlChar *content;
 
     if (filename == NULL)
         return (NULL);
 
-    if (stat(filename, &info) < 0)
+    if (
+#if defined(_MSC_VER) && _MSC_VER >= 1500
+        _stat64(filename, &info)
+#else
+        stat(filename, &info)
+#endif
+        < 0)
         return (NULL);
 
     fd = open(filename, O_RDONLY);
@@ -953,6 +967,15 @@ xmlLoadFileContent(const char *filename)
     {
         return (NULL);
     }
+    if (sizeof(info.st_size) > sizeof(size) &&
+#ifdef _MSC_VER
+            info.st_size > UINT_MAX /* Follow non-posix compliant read() limitation. */
+#else
+            info.st_size > SIZE_MAX
+#endif
+        )
+        xmlGenericError(xmlGenericErrorContext,
+            "File size (%lld) too big", (long long) info.st_size);
     size = info.st_size;
     content = xmlMalloc(size + 10);
     if (content == NULL) {
