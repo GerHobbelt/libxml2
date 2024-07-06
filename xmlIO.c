@@ -364,8 +364,8 @@ xmlNormalizeWindowsPath(const xmlChar *path)
 int
 xmlCheckFilename(const char *path)
 {
-#if defined(_WIN32)
-    struct _stat stat_buffer;
+#if defined(_MSC_VER) && _MSC_VER >= 1500
+    struct _stat64 stat_buffer;
 #else
     struct stat stat_buffer;
 #endif
@@ -389,7 +389,11 @@ xmlCheckFilename(const char *path)
         wpath = __xmlIOWin32UTF8ToWChar(path);
         if (wpath == NULL)
             return(0);
+#if defined(_MSC_VER) && _MSC_VER >= 1500
+        res = _wstat64(wpath, &stat_buffer);
+#else
         res = _wstat(wpath, &stat_buffer);
+#endif
         xmlFree(wpath);
     }
 #else
