@@ -8,7 +8,6 @@ extern "C" {
 #endif
 
 extern int xml_gio_bread_example_main(int argc, const char** argv);
-extern int xml_nanoftp_main(int argc, const char** argv);
 extern int xml_nanohttp_main(int argc, const char** argv);
 extern int xml_runsuite_tests_main(int argc, const char** argv);
 extern int xml_runtest_main(int argc, const char** argv);
@@ -49,7 +48,6 @@ extern int xml_tree2_example_main(int argc, const char** argv);
 extern int xml_xpath1_example_main(int argc, const char** argv);
 extern int xml_xpath2_example_main(int argc, const char** argv);
 
-extern int xml_testthreads_main(void);
 extern int xml_testchar_main(void);
 extern int xml_testparser_main(void);
 
