@@ -22,7 +22,7 @@
   #endif
 #endif
 
-#if defined(_WIN32) || defined(WIN32)
+#if (defined(_WIN32) || defined(WIN32)) && !defined(BUILD_MONOLITHIC)
 /*
  * [i_a] Windows NT/XP/Vista/2003 compatibility definitions and functions
  * This is needed to compile libxml2 for Windows using MSVC2003/2005.
