@@ -211,6 +211,7 @@ XMLPUBFUN xmlParserInputBufferPtr
 XMLPUBFUN xmlParserInputBufferPtr
 	xmlParserInputBufferCreateFilename	(const char *URI,
                                                  xmlCharEncoding enc);
+XML_DEPRECATED
 XMLPUBFUN xmlParserInputBufferPtr
 	xmlParserInputBufferCreateFile		(FILE *file,
                                                  xmlCharEncoding enc);
@@ -228,12 +229,15 @@ XMLPUBFUN xmlParserInputBufferPtr
 						 xmlInputCloseCallback  ioclose,
 						 void *ioctx,
 	                                         xmlCharEncoding enc);
+XML_DEPRECATED
 XMLPUBFUN int
 	xmlParserInputBufferRead		(xmlParserInputBufferPtr in,
 						 int len);
+XML_DEPRECATED
 XMLPUBFUN int
 	xmlParserInputBufferGrow		(xmlParserInputBufferPtr in,
 						 int len);
+XML_DEPRECATED
 XMLPUBFUN int
 	xmlParserInputBufferPush		(xmlParserInputBufferPtr in,
 						 int len,

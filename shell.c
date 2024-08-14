@@ -12,6 +12,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef _WIN32
+  #include <io.h>
+#else
+  #include <unistd.h>
+#endif
+
 #ifdef HAVE_LIBREADLINE
 #include <readline/readline.h>
 #ifdef HAVE_LIBHISTORY
@@ -30,6 +36,10 @@
 #endif
 
 #include "private/shell.h"
+
+#ifndef STDIN_FILENO
+  #define STDIN_FILENO 0
+#endif
 
 /*
  * TODO: Improvement/cleanups for the XML shell
@@ -774,13 +784,6 @@ xmllintShellWrite(xmllintShellCtxtPtr ctxt, char *filename, xmlNodePtr node,
     if ((filename == NULL) || (filename[0] == 0)) {
         return (-1);
     }
-#ifdef W_OK
-    if (access((char *) filename, W_OK)) {
-        fprintf(ctxt->output,
-                        "Cannot write to %s\n", filename);
-        return (-1);
-    }
-#endif
     switch (node->type) {
         case XML_DOCUMENT_NODE:
             if (xmlSaveFile((char *) filename, ctxt->doc) < -1) {
@@ -807,7 +810,7 @@ xmllintShellWrite(xmllintShellCtxtPtr ctxt, char *filename, xmlNodePtr node,
         default:{
                 FILE *f;
 
-                f = fopen((char *) filename, "w");
+                f = fopen((char *) filename, "wb");
                 if (f == NULL) {
                     fprintf(ctxt->output,
                                     "Failed to write to %s\n", filename);
@@ -843,13 +846,6 @@ xmllintShellSave(xmllintShellCtxtPtr ctxt, char *filename,
         filename = ctxt->filename;
     if (filename == NULL)
         return (-1);
-#ifdef W_OK
-    if (access((char *) filename, W_OK)) {
-        fprintf(ctxt->output,
-                        "Cannot save to %s\n", filename);
-        return (-1);
-    }
-#endif
     switch (ctxt->doc->type) {
         case XML_DOCUMENT_NODE:
             if (xmlSaveFile((char *) filename, ctxt->doc) < 0) {
@@ -1061,37 +1057,39 @@ xmllintShellPwd(xmllintShellCtxtPtr ctxt ATTRIBUTE_UNUSED, char *buffer,
  */
 static char *
 xmllintShellReadline(char *prompt) {
-#ifdef HAVE_LIBREADLINE
-    char *line_read;
-
-    /* Get a line from the user. */
-    line_read = readline (prompt);
-
-#ifdef HAVE_LIBHISTORY
-    /* If the line has any text in it, save it on the history. */
-    if (line_read && *line_read)
-       add_history (line_read);
-#endif
-
-    return (line_read);
-#else
-    char line_read[501];
+    char buf[501];
     char *ret;
     int len;
+
+#ifdef HAVE_LIBREADLINE
+    if (isatty(STDIN_FILENO)) {
+        char *line_read;
+
+        /* Get a line from the user. */
+        line_read = readline (prompt);
+
+#ifdef HAVE_LIBHISTORY
+        /* If the line has any text in it, save it on the history. */
+        if (line_read && *line_read)
+           add_history (line_read);
+#endif
+
+        return (line_read);
+    }
+#endif
 
     if (prompt != NULL)
        fprintf(stdout, "%s", prompt);
     fflush(stdout);
-    if (!fgets(line_read, 500, stdin))
+    if (!fgets(buf, 500, stdin))
         return(NULL);
-    line_read[500] = 0;
-    len = strlen(line_read);
+    buf[500] = 0;
+    len = strlen(buf);
     ret = (char *) malloc(len + 1);
     if (ret != NULL) {
-       memcpy (ret, line_read, len + 1);
+       memcpy (ret, buf, len + 1);
     }
     return(ret);
-#endif
 }
 
 /**

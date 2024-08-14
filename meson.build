@@ -1,17 +1,17 @@
 project(
     'libxml2',
     'c',
-    version: '2.13.0',
+    version: files('VERSION'),
     license: 'MIT',
     default_options: ['buildtype=debug', 'warning_level=3'],
     meson_version: '>= 0.61',
 )
 
 v_array = meson.project_version().split('.')
-v_maj = v_array[0]
-v_min = v_array[1]
-v_mic = v_array[2]
-v_nbr = v_maj.to_int() * 10000 + v_min.to_int() * 100 + v_mic.to_int()
+v_maj = v_array[0].to_int()
+v_min = v_array[1].to_int()
+v_mic = v_array[2].to_int()
+v_nbr = v_maj * 10000 + v_min * 100 + v_mic
 v_extra = ''
 r = run_command('git', 'describe', check: false)
 if (r.returncode() == 0)
@@ -76,13 +76,10 @@ want_html = want_minimum ? feature.enabled() : feature.allowed()
 feature = get_option('iconv')
 want_iconv = want_minimum ? feature.enabled() : feature.allowed()
 
-feature = get_option('ipv6')
-want_ipv6 = want_minimum ? feature.enabled() : feature.allowed()
-
 feature = get_option('iso8859x')
 want_iso8859x = want_minimum ? feature.enabled() : feature.allowed()
 
-feature = get_option('iso8859x')
+feature = get_option('python')
 want_python = want_minimum ? feature.enabled() : feature.allowed()
 
 feature = get_option('modules')
@@ -236,44 +233,26 @@ config_h.set_quoted('LOCALEDIR', dir_locale)
 
 # header files
 xml_check_headers = [
-    'stdint.h',
-    'fcntl.h',
-    'unistd.h',
-    'sys/stat.h',
-    'sys/mman.h',
-    'sys/socket.h',
-    'netinet/in.h',
-    'arpa/inet.h',
-    'netdb.h',
-    'sys/select.h',
-    'poll.h',
-    'sys/time.h',
-    'sys/timeb.h',
-    'dl.h',
-    'dlfcn.h',
-    'glob.h',
+    [ 'stdint.h', true ],
+    [ 'glob.h', true ],
+    [ 'poll.h', want_http ],
 ]
 
 foreach header : xml_check_headers
-    if cc.has_header(header)
-        config_h.set10('HAVE_' + header.underscorify().to_upper(), true)
+    if header[1] and cc.has_header(header[0])
+        config_h.set10('HAVE_' + header[0].underscorify().to_upper(), true)
     endif
 endforeach
 
 # library functions
 xml_check_functions = [
     # fct             | header
-    ['gettimeofday', 'sys/time.h'],
-    ['ftime', 'sys/timeb.h'],
-    ['stat', 'sys/stat.h'],
-    ['mmap', 'sys/mman.h'],
-    ['munmap', 'sys/mman.h'],
+    ['getentropy', 'sys/random.h', 'HAVE_DECL_GETENTROPY'],
+    ['mmap', 'sys/mman.h', 'HAVE_DECL_MMAP'],
 ]
 
 foreach function : xml_check_functions
-    if cc.has_header_symbol(function[1], function[0])
-        config_h.set10('HAVE_' + function[0].to_upper(), true)
-    endif
+    config_h.set10(function[2], cc.has_header_symbol(function[1], function[0]))
 endforeach
 
 # library
@@ -304,8 +283,7 @@ endif
 
 ### __attribute__((destructor))
 if cc.has_function_attribute('destructor')
-    config_h.set10('HAVE_ATTRIBUTE_DESTRUCTOR', true)
-    config_h.set('ATTRIBUTE_DESTRUCTOR', '__attribute__((destructor))')
+    config_h.set10('HAVE_FUNC_ATTRIBUTE_DESTRUCTOR', true)
 endif
 
 ### DSO support
@@ -332,7 +310,6 @@ endif
 ### threads
 if want_threads
     threads_dep = dependency('threads')
-    config_h.set10('HAVE_PTHREAD_H', true)
     xml_deps += threads_dep
 else
     threads_dep = dependency('', required: false)
@@ -380,23 +357,6 @@ if want_http == true
                 endif
             endif
         endif
-    endif
-
-    ### socket length
-    if sys_windows
-        netheader = 'winsock2.h'
-    else
-        netheader = 'sys/socket.h'
-    endif
-    foreach t : ['socklen_t', 'size_t', 'int']
-        if cc.compiles('#include <@0@.h> int main(){getsockopt(1,1,1,0,(@1@*)0);}'.format(netheader, t), dependencies: net_dep)
-            cdata.set('XML_SOCKLEN_T', t)
-            break
-        endif
-    endforeach
-
-    if want_ipv6 == true
-        config_h.set('SUPPORT_IP6', cc.has_header_symbol(netheader, 'AF_INET6', required: get_option('ipv6')))
     endif
 endif
 
@@ -491,6 +451,7 @@ foreach file : xml_opt_src
     endif
 endforeach
 
+v_min_compat = 0
 xml_lib = library(
     'xml2',
     files(xml_src),
@@ -499,6 +460,7 @@ xml_lib = library(
     include_directories: config_dir,
     install: true,
     version: meson.project_version(),
+    soversion: v_maj + v_min_compat,
 )
 
 dep_inc = include_directories('include')
@@ -618,7 +580,6 @@ summary(
         'http': want_http,
         'iconv': want_iconv,
         'icu': want_icu,
-        'ipv6': want_ipv6,
         'iso8859x': want_iso8859x,
         'legacy': want_legacy,
         'lzma': want_lzma,

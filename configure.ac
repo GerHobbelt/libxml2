@@ -1,22 +1,25 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ([2.63])
 
-m4_define([MAJOR_VERSION], 2)
-m4_define([MINOR_VERSION], 14)
-m4_define([MICRO_VERSION], 0)
+m4_define([version_macro], m4_normalize(m4_include([VERSION])))
 
-AC_INIT([libxml2],[MAJOR_VERSION.MINOR_VERSION.MICRO_VERSION])
+AC_INIT([libxml2],[version_macro])
 AC_CONFIG_SRCDIR([entities.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CANONICAL_HOST
 
-LIBXML_MAJOR_VERSION=MAJOR_VERSION
-LIBXML_MINOR_VERSION=MINOR_VERSION
-LIBXML_MICRO_VERSION=MICRO_VERSION
+LIBXML_VERSION=version_macro
+LIBXML_MAJOR_VERSION=`echo $LIBXML_VERSION | cut -d . -f 1`
+LIBXML_MINOR_VERSION=`echo $LIBXML_VERSION | cut -d . -f 2`
+LIBXML_MICRO_VERSION=`echo $LIBXML_VERSION | cut -d . -f 3`
 LIBXML_MICRO_VERSION_SUFFIX=
-LIBXML_VERSION=$LIBXML_MAJOR_VERSION.$LIBXML_MINOR_VERSION.$LIBXML_MICRO_VERSION$LIBXML_MICRO_VERSION_SUFFIX
-LIBXML_VERSION_INFO=`expr $LIBXML_MAJOR_VERSION + $LIBXML_MINOR_VERSION`:$LIBXML_MICRO_VERSION:$LIBXML_MINOR_VERSION
+
+# The oldest minor version we are compatible with.
+LIBXML_MINOR_COMPAT=0
+LIBXML_CURRENT=`expr $LIBXML_MAJOR_VERSION + $LIBXML_MINOR_VERSION`
+LIBXML_AGE=`expr $LIBXML_MINOR_VERSION - $LIBXML_MINOR_COMPAT`
+LIBXML_VERSION_INFO=$LIBXML_CURRENT:$LIBXML_MICRO_VERSION:$LIBXML_AGE
 
 LIBXML_VERSION_NUMBER=`expr $LIBXML_MAJOR_VERSION \* 10000 + $LIBXML_MINOR_VERSION \* 100 + $LIBXML_MICRO_VERSION`
 
@@ -49,7 +52,6 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MKDIR_P
 AC_PATH_PROG(TAR, tar, /bin/tar)
-AC_PATH_PROG(PERL, perl, /usr/bin/perl)
 AC_PATH_PROG(WGET, wget, /usr/bin/wget)
 AC_PATH_PROG(XSLTPROC, xsltproc, /usr/bin/xsltproc)
 PKG_PROG_PKG_CONFIG
@@ -276,37 +278,38 @@ else
     fi
 fi
 
+dnl
+dnl Extra flags
+dnl
+XML_LIBDIR='-L${libdir}'
+XML_INCLUDEDIR='-I${includedir}/libxml2'
+XML_CFLAGS=""
+XML_STATIC_CFLAGS=""
+XML_PC_CFLAGS_PRIVATE=""
+
 XML_PRIVATE_LIBS=
 XML_PRIVATE_CFLAGS=
 XML_PC_LIBS=
 XML_PC_REQUIRES=
 
+AX_GCC_FUNC_ATTRIBUTE([destructor])
+
 dnl
 dnl Checks for header files.
 dnl
 AC_CHECK_HEADERS([stdint.h])
-AC_CHECK_HEADERS([fcntl.h unistd.h sys/stat.h])
-AC_CHECK_HEADERS([sys/mman.h])
-AC_CHECK_HEADERS([sys/time.h sys/timeb.h])
-AC_CHECK_HEADERS([sys/random.h])
-AC_CHECK_HEADERS([dl.h dlfcn.h])
 AC_CHECK_HEADERS([glob.h])
 AM_CONDITIONAL(WITH_GLOB, test "$ac_cv_header_glob_h" = "yes")
 
 dnl Checks for library functions.
-AC_CHECK_FUNCS([getentropy gettimeofday ftime stat mmap munmap])
-
-AH_VERBATIM([HAVE_MUNMAP_AFTER],[/* mmap() is no good without munmap() */
-#if defined(HAVE_MMAP) && !defined(HAVE_MUNMAP)
-#  undef /**/ HAVE_MMAP
-#endif])
+AC_CHECK_DECLS([mmap], [], [], [#include <sys/mman.h>])
+AC_CHECK_DECLS([getentropy], [], [], [#include <sys/random.h>])
 
 dnl
 dnl Checks for inet libraries
 dnl
 if test "$with_http" = "yes"; then
-    AC_CHECK_HEADERS([sys/socket.h netinet/in.h arpa/inet.h netdb.h])
-    AC_CHECK_HEADERS([sys/select.h poll.h])
+    AC_CHECK_HEADERS([poll.h])
 
     case "$host" in
         *-*-mingw*)
@@ -328,73 +331,9 @@ if test "$with_http" = "yes"; then
             ;;
     esac
 
-    dnl Determine what socket length (socklen_t) data type is
-    AC_MSG_CHECKING([for type of socket length (socklen_t)])
-    AC_TRY_COMPILE2([
-    #include <stddef.h>
-    #ifdef _WIN32
-      #include <ws2tcpip.h>
-    #else
-      #include <sys/socket.h>
-    #endif],[
-    (void)getsockopt (1, 1, 1, NULL, (socklen_t *)NULL)],[
-      AC_MSG_RESULT(socklen_t *)
-      XML_SOCKLEN_T=socklen_t],[
-      AC_TRY_COMPILE2([
-    #include <stddef.h>
-    #include <sys/socket.h>],[
-    (void)getsockopt (1, 1, 1, NULL, (size_t *)NULL)],[
-        AC_MSG_RESULT(size_t *)
-        XML_SOCKLEN_T=size_t],[
-        AC_TRY_COMPILE2([
-    #include <stddef.h>
-    #include <sys/socket.h>],[
-    (void)getsockopt (1, 1, 1, NULL, (int *)NULL)],[
-          AC_MSG_RESULT(int *)
-          XML_SOCKLEN_T=int],[
-          AC_MSG_WARN(could not determine)
-          XML_SOCKLEN_T="int"])])])
-    AC_DEFINE_UNQUOTED(XML_SOCKLEN_T, $XML_SOCKLEN_T, [Determine what socket length (socklen_t) data type is])
-
-    dnl
-    dnl Checking for availability of IPv6
-    dnl
-    AC_ARG_ENABLE(ipv6, [  --enable-ipv6[[=yes/no]]  enables compilation of IPv6 code [[default=yes]]],, enable_ipv6=yes)
-    if test "$with_minimum" = "yes"
-    then
-        enable_ipv6=no
-    fi
-    if test $enable_ipv6 = yes; then
-        AC_MSG_CHECKING([whether to enable IPv6])
-        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-            #ifdef _WIN32
-              #include <winsock2.h>
-            #else
-              #include <sys/socket.h>
-              #ifdef HAVE_NETDB_H
-                #include <netdb.h>
-              #endif
-            #endif
-            ]], [[
-            struct sockaddr_storage ss;
-            socket(AF_INET6, SOCK_STREAM, 0);
-            getaddrinfo(0, 0, 0, 0);
-            ]])], [
-            AC_DEFINE([SUPPORT_IP6], [], [Support for IPv6])
-            AC_MSG_RESULT([yes])], [
-            AC_MSG_RESULT([no])]
-        )
-    fi
+    XML_PRIVATE_LIBS="${XML_PRIVATE_LIBS} ${NET_LIBS}"
+    XML_PC_LIBS="${XML_PC_LIBS} ${NET_LIBS}"
 fi
-
-dnl
-dnl Extra flags
-dnl
-XML_LIBDIR='-L${libdir}'
-XML_INCLUDEDIR='-I${includedir}/libxml2'
-XML_CFLAGS=""
-XML_STATIC_CFLAGS=""
-XML_PC_CFLAGS_PRIVATE=""
 
 dnl Thread-local storage
 if test "$with_tls" = "yes"; then
@@ -409,16 +348,6 @@ if test "$with_tls" = "yes"; then
         AC_DEFINE([XML_THREAD_LOCAL], [__declspec(thread)], [TLS specifier]) ], [
     ])])])
 fi
-
-dnl Checking whether __attribute__((destructor)) is accepted by the compiler
-AC_MSG_CHECKING([whether __attribute__((destructor)) is accepted])
-AC_TRY_COMPILE2([
-void __attribute__((destructor))
-f(void) {}], [], [
-  AC_MSG_RESULT(yes)
-  AC_DEFINE([HAVE_ATTRIBUTE_DESTRUCTOR], [1],[Define if __attribute__((destructor)) is accepted])
-  AC_DEFINE([ATTRIBUTE_DESTRUCTOR], [__attribute__((destructor))],[A form that will not confuse apibuild.py])],[
-  AC_MSG_RESULT(no)])
 
 dnl
 dnl Linker version scripts for symbol versioning
@@ -750,6 +679,9 @@ if test "$with_modules" != "no" ; then
     if test "$WITH_MODULES" = "0"; then
         AC_MSG_ERROR([dlopen or equivalent not found])
     fi
+
+    XML_PRIVATE_LIBS="${XML_PRIVATE_LIBS} ${MODULE_LIBS}"
+    XML_PC_LIBS="${XML_PC_LIBS} ${MODULE_LIBS}"
 fi
 
 AC_SUBST(WITH_MODULES)
@@ -779,9 +711,7 @@ else
                     WITH_THREADS="1"
                     if test "$ac_cv_search_pthread_create" != "none required"; then
                         THREAD_LIBS=$ac_cv_search_pthread_create
-                    fi
-                    AC_DEFINE([HAVE_PTHREAD_H], [],
-                              [Define if <pthread.h> is there])]))
+                    fi]))
             LIBS=$_libs
             ;;
     esac
@@ -789,6 +719,9 @@ else
     if test "$WITH_THREADS" = "0"; then
         AC_MSG_ERROR([libpthread not found])
     fi
+
+    XML_PRIVATE_LIBS="${XML_PRIVATE_LIBS} ${THREAD_LIBS}"
+    XML_PC_LIBS="${XML_PC_LIBS} ${THREAD_LIBS}"
 fi
 if test "$with_thread_alloc" = "yes" && test "$WITH_THREADS" = "1" ; then
     WITH_THREAD_ALLOC=1
@@ -809,7 +742,7 @@ if test "$with_readline" != "no" && test "$with_readline" != ""; then
         RDL_DIR=$with_readline
     fi
 
-    if test "$RDL_DIR" == ""; then
+    if test "$RDL_DIR" = ""; then
         PKG_CHECK_MODULES([RDL], [readline], [ WITH_READLINE=1 ], [:])
     fi
 
@@ -837,7 +770,7 @@ if test "$with_readline" != "no" && test "$with_readline" != ""; then
               [Define if readline library is available])
 
     if test "$with_history" = "yes"; then
-        if test "$RDL_DIR" == ""; then
+        if test "$RDL_DIR" = ""; then
             PKG_CHECK_MODULES([HISTORY], [history], [
                 WITH_HISTORY=1
                 RDL_CFLAGS="$HISTORY_CFLAGS $RDL_CFLAGS"
@@ -1029,11 +962,13 @@ else
     if test "$WITH_ICONV" = "1" && test "$ICONV_DIR" != ""; then
         ICONV_CFLAGS="-I$ICONV_DIR/include"
         ICONV_LIBS="-L$ICONV_DIR/lib $ICONV_LIBS"
-	# Export this since our headers include iconv.h
-	XML_INCLUDEDIR="$XML_INCLUDEDIR -I$ICONV_DIR/include"
     fi
     CPPFLAGS=$_cppflags
     LIBS=$_libs
+
+    XML_PRIVATE_CFLAGS="${XML_PRIVATE_CFLAGS} ${ICONV_CFLAGS}"
+    XML_PRIVATE_LIBS="${XML_PRIVATE_LIBS} ${ICONV_LIBS}"
+    XML_PC_LIBS="${XML_PC_LIBS} ${ICONV_LIBS}"
 fi
 AC_SUBST(WITH_ICONV)
 AC_SUBST(ICONV_CFLAGS)
@@ -1102,14 +1037,14 @@ dnl
 case "$host" in
     *-*-mingw*)
         CRYPTO_LIBS="-lbcrypt"
+        XML_PRIVATE_LIBS="${XML_PRIVATE_LIBS} ${CRYPTO_LIBS}"
+        XML_PC_LIBS="${XML_PC_LIBS} ${CRYPTO_LIBS}"
         ;;
 esac
 
 XML_LIBS="-lxml2"
-NON_PC_LIBS="${THREAD_LIBS} ${ICONV_LIBS} ${LIBM} ${NET_LIBS} ${CRYPTO_LIBS} ${MODULE_LIBS}"
-XML_PC_LIBS="${XML_PC_LIBS} ${NON_PC_LIBS}"
-XML_PRIVATE_LIBS="${XML_PRIVATE_LIBS} ${NON_PC_LIBS}"
-XML_PRIVATE_CFLAGS="${XML_PRIVATE_CFLAGS} ${ICONV_CFLAGS}"
+XML_PC_LIBS="${XML_PC_LIBS} ${LIBM}"
+XML_PRIVATE_LIBS="${XML_PRIVATE_LIBS} ${LIBM}"
 
 dnl When static-only:
 dnl * Duplicate xml-config static --libs into --dynamic.

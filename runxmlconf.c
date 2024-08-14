@@ -560,7 +560,7 @@ int main(int argc, const char** argv) {
     int ret = 0;
     int old_errors, old_tests, old_leaks;
 
-    logfile = fopen(LOGFILE, "w");
+    logfile = fopen(LOGFILE, "wb");
     if (logfile == NULL) {
         fprintf(stderr,
 	        "Could not open the log file, running in verbose mode\n");

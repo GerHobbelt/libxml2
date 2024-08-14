@@ -25,7 +25,6 @@
 /testrecurse
 
 # Tests
-/dba100000.xml
 /missing.lst
 /runsuite.log
 /runxmlconf.log

@@ -71,7 +71,7 @@ XMLPUBVAR const unsigned int xmlParserMaxDepth;
  * use XML_PARSE_HUGE option to override it.
  * Introduced in 2.9.0
  */
-#define XML_MAX_DICTIONARY_LIMIT 10000000
+#define XML_MAX_DICTIONARY_LIMIT 100000000
 
 /**
  * XML_MAX_LOOKUP_LIMIT:
@@ -298,9 +298,7 @@ XMLPUBFUN const xmlChar *xmlStringText(void);
 XMLPUBFUN const xmlChar *xmlStringTextNoenc(void);
 XMLPUBFUN const xmlChar *xmlStringComment(void);
 
-/*
- * Function to finish the work of the macros where needed.
- */
+XML_DEPRECATED
 XMLPUBFUN int                   xmlIsLetter     (int c);
 
 /**
@@ -357,30 +355,6 @@ XMLPUBFUN xmlParserInputPtr
 						 const char *filename);
 XMLPUBFUN xmlParserInputPtr
 			xmlNewInputStream	(xmlParserCtxtPtr ctxt);
-
-/**
- * New input API
- */
-
-#define XML_INPUT_BUF_STATIC		(1 << 1)
-#define XML_INPUT_BUF_ZERO_TERMINATED	(1 << 2)
-#define XML_INPUT_UNZIP                 (1 << 3)
-#define XML_INPUT_NETWORK               (1 << 4)
-
-XMLPUBFUN int
-xmlInputCreateUrl(const char *url, int flags, xmlParserInputPtr *out);
-XMLPUBFUN xmlParserInputPtr
-xmlInputCreateMemory(const char *url, const void *mem, size_t size,
-                     int flags);
-XMLPUBFUN xmlParserInputPtr
-xmlInputCreateString(const char *url, const char *str, int flags);
-XMLPUBFUN xmlParserInputPtr
-xmlInputCreateFd(const char *url, int fd, int flags);
-XMLPUBFUN xmlParserInputPtr
-xmlInputCreateIO(const char *url, xmlInputReadCallback ioRead,
-                 xmlInputCloseCallback ioClose, void *ioCtxt, int flags);
-XMLPUBFUN int
-xmlInputSetEncoding(xmlParserInputPtr input, const char *encoding);
 
 /**
  * Namespaces.
@@ -623,6 +597,7 @@ XMLPUBFUN int			xmlCurrentChar		(xmlParserCtxtPtr ctxt,
 						 int *len);
 XMLPUBFUN int		xmlCopyCharMultiByte	(xmlChar *out,
 						 int val);
+XML_DEPRECATED
 XMLPUBFUN int			xmlCopyChar		(int len,
 						 xmlChar *out,
 						 int val);

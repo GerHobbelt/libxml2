@@ -27292,7 +27292,7 @@ xmlSchemaSAXHandleStartElementNs(void *ctx,
 	    * we are forced to work around it.
 	    */
 	    valueLen = attributes[j+4] - attributes[j+3];
-	    value = xmlMallocAtomic(valueLen + 1);
+	    value = xmlMalloc(valueLen + 1);
 	    if (value == NULL) {
 		xmlSchemaVErrMemory(vctxt);
 		goto internal_error;
@@ -28806,7 +28806,11 @@ xmlSchemaValidateStream(xmlSchemaValidCtxtPtr ctxt,
         ret = -1;
 	goto done;
     }
-    inputPush(pctxt, inputStream);
+    if (inputPush(pctxt, inputStream) < 0) {
+        xmlFreeInputStream(inputStream);
+        ret = -1;
+        goto done;
+    }
 
     ctxt->enc = enc;
 

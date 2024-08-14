@@ -134,14 +134,14 @@ testResourceLoader(void *vctxt ATTRIBUTE_UNUSED, const char *URL,
 
     for (i = 0; i < nb_entities; i++) {
         if (!strcmp(testEntitiesName[i], URL)) {
-	    *out = xmlInputCreateString(testEntitiesName[i],
+	    *out = xmlNewInputFromString(testEntitiesName[i],
                                         testEntitiesValue[i],
                                         XML_INPUT_BUF_STATIC);
 	    return(XML_ERR_OK);
 	}
     }
 
-    return(xmlInputCreateUrl(URL, 0, out));
+    return(xmlNewInputFromUrl(URL, 0, out));
 }
 
 /*
@@ -1026,7 +1026,7 @@ int main(int argc, const char** argv) {
     int ret = 0;
     int old_errors, old_tests, old_leaks, expected_errors;
 
-    logfile = fopen(LOGFILE, "w");
+    logfile = fopen(LOGFILE, "wb");
     if (logfile == NULL) {
         fprintf(stderr,
 	        "Could not open the log file, running in verbose mode\n");

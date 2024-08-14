@@ -17,32 +17,23 @@
 #include <errno.h>
 #include <limits.h>
 
-#ifdef HAVE_SYS_TIME_H
-#include <sys/time.h>
-#endif
-#ifdef HAVE_SYS_TIMEB_H
-#include <sys/timeb.h>
-#endif
-#ifdef HAVE_SYS_STAT_H
-#include <sys/stat.h>
-#endif
-#ifdef HAVE_FCNTL_H
 #include <fcntl.h>
+#include <sys/stat.h>
+
+#ifdef _WIN32
+  #include <io.h>
+  #include <sys/timeb.h>
+#else
+  #include <sys/time.h>
+  #include <unistd.h>
 #endif
-#ifdef HAVE_IO_H
-#include <io.h>
-#endif
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#elif defined (_WIN32)
-#include <io.h>
-#endif
-#ifdef HAVE_SYS_MMAN_H
-#include <sys/mman.h>
-/* seems needed for Solaris */
-#ifndef MAP_FAILED
-#define MAP_FAILED ((void *) -1)
-#endif
+
+#if HAVE_DECL_MMAP
+  #include <sys/mman.h>
+  /* seems needed for Solaris */
+  #ifndef MAP_FAILED
+    #define MAP_FAILED ((void *) -1)
+  #endif
 #endif
 
 #include <libxml/xmlmemory.h>
@@ -152,7 +143,7 @@ static int htmlout = 0;
 static int push = 0;
 static int pushsize = 4096;
 #endif /* LIBXML_PUSH_ENABLED */
-#ifdef HAVE_MMAP
+#if HAVE_DECL_MMAP
 static int memory = 0;
 #endif
 static int testIO = 0;
@@ -246,7 +237,7 @@ xmllintResourceLoader(void *ctxt ATTRIBUTE_UNUSED, const char *URL,
     if (defaultResourceLoader != NULL)
         code = defaultResourceLoader(NULL, URL, ID, type, flags, out);
     else
-        code = xmlInputCreateUrl(URL, flags, out);
+        code = xmlNewInputFromUrl(URL, flags, out);
     if (code != XML_IO_ENOENT) {
         if ((load_trace) && (code == XML_ERR_OK)) {
             fprintf(ERR_STREAM, "Loaded URL=\"%s\" ID=\"%s\"\n",
@@ -266,7 +257,7 @@ xmllintResourceLoader(void *ctxt ATTRIBUTE_UNUSED, const char *URL,
                 code = defaultResourceLoader(NULL, (const char *) newURL, ID,
                                              type, flags, out);
             else
-                code = xmlInputCreateUrl((const char *) newURL, flags, out);
+                code = xmlNewInputFromUrl((const char *) newURL, flags, out);
             if (code != XML_IO_ENOENT) {
                 if ((load_trace) && (code == XML_ERR_OK)) {
                     fprintf(ERR_STREAM, "Loaded URL=\"%s\" ID=\"%s\"\n",
@@ -349,99 +340,29 @@ myStrdupFunc(const char *str)
  *									*
  ************************************************************************/
 
-#ifndef HAVE_GETTIMEOFDAY
-#ifdef HAVE_SYS_TIMEB_H
-#ifdef HAVE_SYS_TIME_H
-#ifdef HAVE_FTIME
+typedef struct {
+   int sec;
+   int usec;
+} xmlTime;
 
-static int
-my_gettimeofday(struct timeval *tvp, void *tzp)
-{
-	struct timeb timebuffer;
+static xmlTime begin, end;
 
-	ftime(&timebuffer);
-	if (tvp) {
-		tvp->tv_sec = timebuffer.time;
-		tvp->tv_usec = timebuffer.millitm * 1000L;
-	}
-	return (0);
+static void
+getTime(xmlTime *time) {
+#ifdef _WIN32
+    struct timeb timebuffer;
+
+    ftime(&timebuffer);
+    time->sec = timebuffer.time;
+    time->usec = timebuffer.millitm * 1000L;
+#else /* _WIN32 */
+    struct timeval tv;
+
+    gettimeofday(&tv, NULL);
+    time->sec = tv.tv_sec;
+    time->usec = tv.tv_usec;
+#endif /* _WIN32 */
 }
-#define HAVE_GETTIMEOFDAY 1
-#define gettimeofday my_gettimeofday
-
-#endif /* HAVE_FTIME */
-#endif /* HAVE_SYS_TIME_H */
-#endif /* HAVE_SYS_TIMEB_H */
-#endif /* !HAVE_GETTIMEOFDAY */
-
-
-/* [i_a] */
-#ifndef HAVE_GETTIMEOFDAY
-#if defined (WIN32) || defined (_WIN32)
-
-/* adapted from code ripped from Curl mailing list & PostgreSQL sources */
-
-#include <time.h>
-#include <windows.h>
-
-struct timezone
-{
-	int  tz_minuteswest; /* minutes W of Greenwich */
-	int  tz_dsttime;     /* type of dst correction */
-};
-
-/* FILETIME of Jan 1 1970 00:00:00. */
-#define EPOCH    116444736000000000LL
-
-static int gettimeofday(struct timeval *tv, struct timezone *tzp)
-{
-  union
-  {
-    LONGLONG ns100;             /*time since 1 Jan 1601 in 100ns units */
-    FILETIME ft;
-  } now;
-
-  if (!tv)
-  {
-    errno = EINVAL;
-    return -1;
-  }
-
-#if 0
-  {
-    SYSTEMTIME system_time;
-
-    GetSystemTime(&system_time);
-    SystemTimeToFileTime(&system_time, &now.ft);
-  }
-#else
-  GetSystemTimeAsFileTime(&now.ft);
-#endif
-  tv->tv_usec = (long)((now.ns100 / 10LL) % 1000000LL);
-  tv->tv_sec = (long)((now.ns100 - EPOCH) / 10000000LL);
-
-#if 0
-  // Get the timezone, if they want it
-  if (tzp != NULL)
-  {
-    _tzset();
-    tzp->tz_minuteswest = _timezone;
-    tzp->tz_dsttime = _daylight;
-  }
-#else
-  assert(tzp == NULL);          /* shouldn't've been used */
-#endif
-  return 0;
-}
-
-#define HAVE_GETTIMEOFDAY 1
-
-#endif
-#endif
-
-
-#if defined(HAVE_GETTIMEOFDAY)
-static struct timeval begin, end;
 
 /*
  * startTimer: call where you want to start timing
@@ -449,7 +370,7 @@ static struct timeval begin, end;
 static void
 startTimer(void)
 {
-    gettimeofday(&begin, NULL);
+    getTime(&begin);
 }
 
 /*
@@ -463,10 +384,10 @@ endTimer(const char *fmt, ...)
     long msec;
     va_list ap;
 
-    gettimeofday(&end, NULL);
-    msec = end.tv_sec - begin.tv_sec;
+    getTime(&end);
+    msec = end.sec - begin.sec;
     msec *= 1000;
-    msec += (end.tv_usec - begin.tv_usec) / 1000;
+    msec += (end.usec - begin.usec) / 1000;
 
     va_start(ap, fmt);
     vfprintf(ERR_STREAM, fmt, ap);
@@ -474,37 +395,7 @@ endTimer(const char *fmt, ...)
 
     fprintf(ERR_STREAM, " took %ld ms\n", msec);
 }
-#else
-/*
- * No gettimeofday function, so we have to make do with calling clock.
- * This is obviously less accurate, but there's little we can do about
- * that.
- */
-#ifndef CLOCKS_PER_SEC
-#define CLOCKS_PER_SEC 100
-#endif
 
-static clock_t begin, end;
-static void
-startTimer(void)
-{
-    begin = clock();
-}
-static void LIBXML_ATTR_FORMAT(1,2)
-endTimer(const char *fmt, ...)
-{
-    long msec;
-    va_list ap;
-
-    end = clock();
-    msec = ((end - begin) * 1000) / CLOCKS_PER_SEC;
-
-    va_start(ap, fmt);
-    vfprintf(ERR_STREAM, fmt, ap);
-    va_end(ap);
-    fprintf(ERR_STREAM, " took %ld ms\n", msec);
-}
-#endif
 /************************************************************************
  *									*
  *			HTML output					*
@@ -549,9 +440,19 @@ xmlHTMLBufCat(void *data ATTRIBUTE_UNUSED, const char *fmt, ...) {
     }
 }
 
+/**
+ * xmlHTMLError:
+ * @ctx:  an XML parser context
+ * @msg:  the message to display/transmit
+ * @...:  extra parameters for the message display
+ *
+ * Display and format an error messages, gives file, line, position and
+ * extra parameters.
+ */
 static void
-xmlHTMLPrintError(void *ctx, const char *level, const char *msg, va_list ap) {
-    xmlParserCtxtPtr ctxt = (xmlParserCtxtPtr) ctx;
+xmlHTMLError(void *vctxt, const xmlError *error)
+{
+    xmlParserCtxtPtr ctxt = (xmlParserCtxtPtr) vctxt;
     xmlParserInputPtr input;
     xmlGenericErrorFunc oldError;
     void *oldErrorCtxt;
@@ -570,9 +471,12 @@ xmlHTMLPrintError(void *ctx, const char *level, const char *msg, va_list ap) {
     xmlParserPrintFileInfo(input);
     xmlHTMLEncodeSend();
 
-    fprintf(ERR_STREAM, "<b>%s</b>: ", level);
+    fprintf(ERR_STREAM, "<b>%s%s</b>: ",
+            (error->domain == XML_FROM_VALID) ||
+            (error->domain == XML_FROM_DTD) ? "validity " : "",
+            error->level == XML_ERR_WARNING ? "warning" : "error");
 
-    vsnprintf(buffer, sizeof(buffer), msg, ap);
+    snprintf(buffer, sizeof(buffer), "%s", error->message);
     xmlHTMLEncodeSend();
 
     fprintf(ERR_STREAM, "</p>\n");
@@ -587,84 +491,6 @@ xmlHTMLPrintError(void *ctx, const char *level, const char *msg, va_list ap) {
     }
 
     xmlSetGenericErrorFunc(oldErrorCtxt, oldError);
-}
-
-/**
- * xmlHTMLError:
- * @ctx:  an XML parser context
- * @msg:  the message to display/transmit
- * @...:  extra parameters for the message display
- *
- * Display and format an error messages, gives file, line, position and
- * extra parameters.
- */
-static void LIBXML_ATTR_FORMAT(2,3)
-xmlHTMLError(void *ctx, const char *msg, ...)
-{
-    va_list args;
-
-    va_start(args, msg);
-    xmlHTMLPrintError(ctx, "error", msg, args);
-    va_end(args);
-}
-
-/**
- * xmlHTMLWarning:
- * @ctx:  an XML parser context
- * @msg:  the message to display/transmit
- * @...:  extra parameters for the message display
- *
- * Display and format a warning messages, gives file, line, position and
- * extra parameters.
- */
-static void LIBXML_ATTR_FORMAT(2,3)
-xmlHTMLWarning(void *ctx, const char *msg, ...)
-{
-    va_list args;
-
-    va_start(args, msg);
-    xmlHTMLPrintError(ctx, "warning", msg, args);
-    va_end(args);
-}
-
-/**
- * xmlHTMLValidityError:
- * @ctx:  an XML parser context
- * @msg:  the message to display/transmit
- * @...:  extra parameters for the message display
- *
- * Display and format an validity error messages, gives file,
- * line, position and extra parameters.
- */
-static void LIBXML_ATTR_FORMAT(2,3)
-xmlHTMLValidityError(void *ctx, const char *msg, ...)
-{
-    va_list args;
-
-    va_start(args, msg);
-    xmlHTMLPrintError(ctx, "validity error", msg, args);
-    va_end(args);
-
-    progresult = XMLLINT_ERR_VALID;
-}
-
-/**
- * xmlHTMLValidityWarning:
- * @ctx:  an XML parser context
- * @msg:  the message to display/transmit
- * @...:  extra parameters for the message display
- *
- * Display and format a validity warning messages, gives file, line,
- * position and extra parameters.
- */
-static void LIBXML_ATTR_FORMAT(2,3)
-xmlHTMLValidityWarning(void *ctx, const char *msg, ...)
-{
-    va_list args;
-
-    va_start(args, msg);
-    xmlHTMLPrintError(ctx, "validity warning", msg, args);
-    va_end(args);
 }
 
 /************************************************************************
@@ -1658,7 +1484,7 @@ static void processNode(xmlTextReaderPtr reader) {
 static void streamFile(const char *filename) {
     xmlTextReaderPtr reader;
     int ret;
-#ifdef HAVE_MMAP
+#if HAVE_DECL_MMAP
     int fd = -1;
     struct stat info;
     const char *base = NULL;
@@ -1807,7 +1633,7 @@ static void streamFile(const char *filename) {
 	patstream = NULL;
     }
 #endif
-#ifdef HAVE_MMAP
+#if HAVE_DECL_MMAP
     if (memory) {
 	munmap((char *) base, info.st_size);
 	close(fd);
@@ -2083,7 +1909,7 @@ parseFile(const char *filename, xmlParserCtxtPtr rectxt) {
     }
 #endif /* LIBXML_PUSH_ENABLED */
 
-#ifdef HAVE_MMAP
+#if HAVE_DECL_MMAP
     if ((html) && (memory)) {
 	int fd;
 	struct stat info;
@@ -2158,12 +1984,8 @@ parseFile(const char *filename, xmlParserCtxtPtr rectxt) {
         if (maxAmpl > 0)
             xmlCtxtSetMaxAmplification(ctxt, maxAmpl);
 
-        if (htmlout) {
-            ctxt->sax->error = xmlHTMLError;
-            ctxt->sax->warning = xmlHTMLWarning;
-            ctxt->vctxt.error = xmlHTMLValidityError;
-            ctxt->vctxt.warning = xmlHTMLValidityWarning;
-        }
+        if (htmlout)
+            xmlCtxtSetErrorHandler(ctxt, xmlHTMLError, ctxt);
 
         while ((res = fread(chars, 1, pushsize, f)) > 0) {
             xmlParseChunk(ctxt, chars, res, 0);
@@ -2190,12 +2012,8 @@ parseFile(const char *filename, xmlParserCtxtPtr rectxt) {
         if (maxAmpl > 0)
             xmlCtxtSetMaxAmplification(ctxt, maxAmpl);
 
-        if (htmlout) {
-            ctxt->sax->error = xmlHTMLError;
-            ctxt->sax->warning = xmlHTMLWarning;
-            ctxt->vctxt.error = xmlHTMLValidityError;
-            ctxt->vctxt.warning = xmlHTMLValidityWarning;
-        }
+        if (htmlout)
+            xmlCtxtSetErrorHandler(ctxt, xmlHTMLError, ctxt);
 
         if (testIO) {
             FILE *f;
@@ -2213,7 +2031,7 @@ parseFile(const char *filename, xmlParserCtxtPtr rectxt) {
 
             doc = xmlCtxtReadIO(ctxt, myRead, myClose, f, filename, NULL,
                                 options);
-#ifdef HAVE_MMAP
+#if HAVE_DECL_MMAP
         } else if (memory) {
             int fd;
             struct stat info;
@@ -2489,7 +2307,7 @@ parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 		}
 	    } else
 #endif
-#ifdef HAVE_MMAP
+#if HAVE_DECL_MMAP
 	    if (memory) {
 		xmlChar *result;
 		int len;
@@ -2517,7 +2335,7 @@ parseAndPrintFile(const char *filename, xmlParserCtxtPtr rectxt) {
 		}
 
 	    } else
-#endif /* HAVE_MMAP */
+#endif /* HAVE_DECL_MMAP */
 	    if (compress) {
 		xmlSaveFile(output ? output : "-", doc);
 	    } else {
@@ -2877,7 +2695,7 @@ static void usage(FILE *f, const char *name) {
     fprintf(f, "\t--push : use the push mode of the parser\n");
     fprintf(f, "\t--pushsmall : use the push mode of the parser using tiny increments\n");
 #endif /* LIBXML_PUSH_ENABLED */
-#ifdef HAVE_MMAP
+#if HAVE_DECL_MMAP
     fprintf(f, "\t--memory : parse from memory\n");
 #endif
     fprintf(f, "\t--maxmem nbbytes : limits memory allocation to nbbytes bytes\n");
@@ -3069,7 +2887,7 @@ xmllintMain(int argc, const char **argv, xmlResourceLoader loader) {
     push = 0;
     pushsize = 4096;
 #endif /* LIBXML_PUSH_ENABLED */
-#ifdef HAVE_MMAP
+#if HAVE_DECL_MMAP
     memory = 0;
 #endif
     testIO = 0;
@@ -3101,6 +2919,12 @@ xmllintMain(int argc, const char **argv, xmlResourceLoader loader) {
     options = XML_PARSE_COMPACT | XML_PARSE_BIG_LINES;
     maxAmpl = 0;
 #endif /* XMLLINT_FUZZ */
+
+#ifdef _WIN32
+    _setmode(_fileno(stdin), _O_BINARY);
+    _setmode(_fileno(stdout), _O_BINARY);
+    _setmode(_fileno(stderr), _O_BINARY);
+#endif
 
     if (argc <= 1) {
 	usage(ERR_STREAM, argv[0]);
@@ -3248,7 +3072,7 @@ xmllintMain(int argc, const char **argv, xmlResourceLoader loader) {
             pushsize = 10;
         }
 #endif /* LIBXML_PUSH_ENABLED */
-#ifdef HAVE_MMAP
+#if HAVE_DECL_MMAP
 	else if ((!strcmp(argv[i], "-memory")) ||
 	         (!strcmp(argv[i], "--memory")))
 	    memory++;

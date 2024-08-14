@@ -123,14 +123,14 @@ static void
 xmlWriterErrMsg(xmlTextWriterPtr ctxt, xmlParserErrors error,
                const char *msg)
 {
-    if (ctxt != NULL) {
-	__xmlRaiseError(NULL, NULL, NULL, ctxt->ctxt,
-	            NULL, XML_FROM_WRITER, error, XML_ERR_FATAL,
-		    NULL, 0, NULL, NULL, NULL, 0, 0, "%s", msg);
-    } else {
-	__xmlRaiseError(NULL, NULL, NULL, NULL, NULL, XML_FROM_WRITER, error,
-                    XML_ERR_FATAL, NULL, 0, NULL, NULL, NULL, 0, 0, "%s", msg);
-    }
+    xmlParserCtxtPtr pctxt = NULL;
+
+    if (ctxt != NULL)
+        pctxt = ctxt->ctxt;
+
+    xmlRaiseError(NULL, NULL, NULL, pctxt,
+                  NULL, XML_FROM_WRITER, error, XML_ERR_FATAL,
+                  NULL, 0, NULL, NULL, NULL, 0, 0, "%s", msg);
 }
 
 /**
@@ -146,14 +146,14 @@ static void LIBXML_ATTR_FORMAT(3,0)
 xmlWriterErrMsgInt(xmlTextWriterPtr ctxt, xmlParserErrors error,
                const char *msg, int val)
 {
-    if (ctxt != NULL) {
-	__xmlRaiseError(NULL, NULL, NULL, ctxt->ctxt,
-	            NULL, XML_FROM_WRITER, error, XML_ERR_FATAL,
-		    NULL, 0, NULL, NULL, NULL, val, 0, msg, val);
-    } else {
-	__xmlRaiseError(NULL, NULL, NULL, NULL, NULL, XML_FROM_WRITER, error,
-                    XML_ERR_FATAL, NULL, 0, NULL, NULL, NULL, val, 0, msg, val);
-    }
+    xmlParserCtxtPtr pctxt = NULL;
+
+    if (ctxt != NULL)
+        pctxt = ctxt->ctxt;
+
+    xmlRaiseError(NULL, NULL, NULL, pctxt,
+	          NULL, XML_FROM_WRITER, error, XML_ERR_FATAL,
+		  NULL, 0, NULL, NULL, NULL, val, 0, msg, val);
 }
 
 /**
@@ -535,7 +535,7 @@ xmlTextWriterStartDocument(xmlTextWriterPtr writer, const char *version,
     writer->out->encoder = encoder;
     if (encoder != NULL) {
 	if (writer->out->conv == NULL) {
-	    writer->out->conv = xmlBufCreateSize(4000);
+	    writer->out->conv = xmlBufCreate(4000);
 	}
         xmlCharEncOutput(writer->out, 1);
         if ((writer->doc != NULL) && (writer->doc->encoding == NULL))
@@ -1484,10 +1484,9 @@ xmlTextWriterWriteString(xmlTextWriterPtr writer, const xmlChar * content)
             switch (p->state) {
                 case XML_TEXTWRITER_NAME:
                 case XML_TEXTWRITER_TEXT:
-#if 0
-                    buf = NULL;
-		    xmlOutputBufferWriteEscape(writer->out, content, NULL);
-#endif
+                    /*
+                     * TODO: Use xmlSerializeText
+                     */
                     buf = xmlEncodeSpecialChars(NULL, content);
                     break;
                 case XML_TEXTWRITER_ATTRIBUTE:
