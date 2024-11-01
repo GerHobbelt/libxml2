@@ -44,7 +44,7 @@
  * Macro to check that the libxml version in use is compatible with
  * the version the software has been compiled against
  */
-#define LIBXML_TEST_VERSION xmlCheckVersion(21400);
+#define LIBXML_TEST_VERSION() xmlCheckVersion(21400)
 
 /**
  * LIBXML_THREAD_ENABLED:
@@ -220,7 +220,7 @@
  *
  * Whether icu support is available
  */
-#if 0
+#if 1
 #define LIBXML_ICU_ENABLED
 #endif
 
@@ -308,6 +308,7 @@
  * Whether the Zlib support is compiled in
  */
 #if 1
+#define LIBXML_ZLIB_NG_ENABLED
 #define LIBXML_ZLIB_ENABLED
 #endif
 
