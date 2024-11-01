@@ -103,7 +103,6 @@
     <ClCompile Include="..\..\chvalid.c" />
     <ClCompile Include="..\..\debugXML.c" />
     <ClCompile Include="..\..\dict.c" />
-    <ClCompile Include="..\..\DOCBparser.c" />
     <ClCompile Include="..\..\encoding.c" />
     <ClCompile Include="..\..\entities.c" />
     <ClCompile Include="..\..\error.c" />
@@ -113,13 +112,11 @@
     <ClCompile Include="..\..\HTMLtree.c" />
     <ClCompile Include="..\..\legacy.c" />
     <ClCompile Include="..\..\list.c" />
-    <ClCompile Include="..\..\nanoftp.c" />
     <ClCompile Include="..\..\nanohttp.c" />
     <ClCompile Include="..\..\parser.c" />
     <ClCompile Include="..\..\parserInternals.c" />
     <ClCompile Include="..\..\pattern.c" />
     <ClCompile Include="..\..\relaxng.c" />
-    <ClCompile Include="..\..\SAX.c" />
     <ClCompile Include="..\..\SAX2.c" />
     <ClCompile Include="..\..\schematron.c" />
     <ClCompile Include="..\..\threads.c" />
@@ -141,17 +138,14 @@
     <ClCompile Include="..\..\xmlwriter.c" />
     <ClCompile Include="..\..\xpath.c" />
     <ClCompile Include="..\..\xpointer.c" />
+    <ClCompile Include="..\..\xzlib.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\buf.h" />
-    <ClInclude Include="..\..\elfgcchack.h" />
-    <ClInclude Include="..\..\enc.h" />
     <ClInclude Include="..\..\include\libxml\c14n.h" />
     <ClInclude Include="..\..\include\libxml\catalog.h" />
     <ClInclude Include="..\..\include\libxml\chvalid.h" />
     <ClInclude Include="..\..\include\libxml\debugXML.h" />
     <ClInclude Include="..\..\include\libxml\dict.h" />
-    <ClInclude Include="..\..\include\libxml\DOCBparser.h" />
     <ClInclude Include="..\..\include\libxml\encoding.h" />
     <ClInclude Include="..\..\include\libxml\entities.h" />
     <ClInclude Include="..\..\include\libxml\globals.h" />
@@ -193,15 +187,28 @@
     <ClInclude Include="..\..\include\libxml\xpath.h" />
     <ClInclude Include="..\..\include\libxml\xpathInternals.h" />
     <ClInclude Include="..\..\include\libxml\xpointer.h" />
+    <ClInclude Include="..\..\include\private\buf.h" />
+    <ClInclude Include="..\..\include\private\dict.h" />
+    <ClInclude Include="..\..\include\private\enc.h" />
+    <ClInclude Include="..\..\include\private\entities.h" />
+    <ClInclude Include="..\..\include\private\error.h" />
+    <ClInclude Include="..\..\include\private\globals.h" />
+    <ClInclude Include="..\..\include\private\html.h" />
+    <ClInclude Include="..\..\include\private\io.h" />
+    <ClInclude Include="..\..\include\private\memory.h" />
+    <ClInclude Include="..\..\include\private\parser.h" />
+    <ClInclude Include="..\..\include\private\regexp.h" />
+    <ClInclude Include="..\..\include\private\save.h" />
+    <ClInclude Include="..\..\include\private\string.h" />
+    <ClInclude Include="..\..\include\private\threads.h" />
+    <ClInclude Include="..\..\include\private\tree.h" />
+    <ClInclude Include="..\..\include\private\xinclude.h" />
+    <ClInclude Include="..\..\include\private\xpath.h" />
+    <ClInclude Include="..\..\include\private\xzlib.h" />
     <ClInclude Include="..\..\include\wsockcompat.h" />
     <ClInclude Include="..\..\libxml.h" />
-    <ClInclude Include="..\..\save.h" />
     <ClInclude Include="..\..\timsort.h" />
-    <ClInclude Include="..\..\trio.h" />
-    <ClInclude Include="..\..\triodef.h" />
-    <ClInclude Include="..\..\trionan.h" />
     <ClInclude Include="..\..\win32\config.h" />
-    <ClInclude Include="..\..\xzlib.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\win32\libxml2.rc" />

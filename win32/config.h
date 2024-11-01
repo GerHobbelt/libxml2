@@ -7,8 +7,11 @@
 #define HAVE_ERRNO_H
 #define SEND_ARG2_CAST
 #define GETHOSTBYNAME_ARG_CAST
-#if _MSC_VER >= 1600
-#define HAVE_STDINT_H
+#define HAVE_IO_H
+#define HAVE_DIRECT_H
+
+#if defined(__MINGW32__) || (defined(_MSC_VER) && _MSC_VER >= 1600)
+  #define HAVE_STDINT_H
 #endif
 
 #if defined(_WIN32_WCE)
@@ -93,15 +96,23 @@ static int isnan (double d) {
 #endif /* _MSC_VER */
 
 #if defined(_MSC_VER)
-#define mkdir(p,m) _mkdir(p)
-#if _MSC_VER < 1900
-#define snprintf _snprintf
-#endif
-#if _MSC_VER < 1500
-#define vsnprintf(b,c,f,a) _vsnprintf(b,c,f,a)
-#endif
+  #define mkdir(p,m) _mkdir(p)
+  #if _MSC_VER < 1900
+    #define snprintf _snprintf
+  #endif
+  #if _MSC_VER >= 1600 && _MSC_VER < 1900
+    #define vsnprintf(b,c,f,a) _vsnprintf(b,c,f,a)
+  #endif
 #elif defined(__MINGW32__)
-#define mkdir(p,m) _mkdir(p)
+  #define mkdir(p,m) _mkdir(p)
+#endif
+
+#if defined(_MSC_VER) && _MSC_VER >= 1600
+  #define open _open
+  #define close _close
+  #define read _read
+  #define write _write
+  #define getcwd _getcwd
 #endif
 
 /* Threading API to use should be specified here for compatibility reasons.

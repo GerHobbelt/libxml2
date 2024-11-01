@@ -84,6 +84,10 @@
 #include <libxml/catalog.h>
 #endif
 
+#ifndef SYSCONFDIR
+  #define SYSCONFDIR "/etc"
+#endif
+
 #include <libxml/monolithic_examples.h>
 
 /*
