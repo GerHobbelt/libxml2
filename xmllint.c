@@ -340,8 +340,14 @@ myStrdupFunc(const char *str)
  *									*
  ************************************************************************/
 
+#ifdef _WIN32
+typedef __time64_t xmlSeconds;
+#else
+typedef time_t xmlSeconds;
+#endif
+
 typedef struct {
-   int sec;
+   xmlSeconds sec;
    int usec;
 } xmlTime;
 
@@ -350,11 +356,11 @@ static xmlTime begin, end;
 static void
 getTime(xmlTime *time) {
 #ifdef _WIN32
-    struct timeb timebuffer;
+    struct __timeb64 timebuffer;
 
-    ftime(&timebuffer);
+    _ftime64(&timebuffer);
     time->sec = timebuffer.time;
-    time->usec = timebuffer.millitm * 1000L;
+    time->usec = timebuffer.millitm * 1000;
 #else /* _WIN32 */
     struct timeval tv;
 
@@ -381,7 +387,7 @@ startTimer(void)
 static void LIBXML_ATTR_FORMAT(1,2)
 endTimer(const char *fmt, ...)
 {
-    long msec;
+    xmlSeconds msec;
     va_list ap;
 
     getTime(&end);
@@ -393,7 +399,7 @@ endTimer(const char *fmt, ...)
     vfprintf(ERR_STREAM, fmt, ap);
     va_end(ap);
 
-    fprintf(ERR_STREAM, " took %ld ms\n", msec);
+    fprintf(ERR_STREAM, " took %ld ms\n", (long) msec);
 }
 
 /************************************************************************
