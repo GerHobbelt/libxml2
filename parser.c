@@ -84,6 +84,10 @@
   #define STDIN_FILENO 0
 #endif
 
+#ifndef SIZE_MAX
+  #define SIZE_MAX ((size_t) -1)
+#endif
+
 struct _xmlStartTag {
     const xmlChar *prefix;
     const xmlChar *URI;
@@ -1888,30 +1892,39 @@ xmlParserNsPop(xmlParserCtxtPtr ctxt, int nr)
 }
 
 static int
-xmlCtxtGrowAttrs(xmlParserCtxtPtr ctxt, int nr) {
+xmlCtxtGrowAttrs(xmlParserCtxtPtr ctxt) {
     const xmlChar **atts;
     unsigned *attallocs;
-    int maxatts;
+    int maxatts = ctxt->maxatts;
 
-    if (nr + 5 > ctxt->maxatts) {
-	maxatts = ctxt->maxatts == 0 ? 55 : (nr + 5) * 2;
-	atts = (const xmlChar **) xmlMalloc(
-				     maxatts * sizeof(const xmlChar *));
-	if (atts == NULL) goto mem_error;
-	attallocs = xmlRealloc(ctxt->attallocs,
-                               (maxatts / 5) * sizeof(attallocs[0]));
-	if (attallocs == NULL) {
-            xmlFree(atts);
+    if (maxatts == 0) {
+        maxatts = 50;
+    } else {
+        if ((maxatts > INT_MAX / 2 - 5) ||
+            ((size_t) maxatts > SIZE_MAX / 2 / sizeof(const xmlChar *)))
             goto mem_error;
-        }
-        if (ctxt->maxatts > 0)
-            memcpy(atts, ctxt->atts, ctxt->maxatts * sizeof(const xmlChar *));
-        xmlFree(ctxt->atts);
-	ctxt->atts = atts;
-	ctxt->attallocs = attallocs;
-	ctxt->maxatts = maxatts;
+	maxatts *= 2;
     }
-    return(ctxt->maxatts);
+
+    atts = xmlMalloc(maxatts * sizeof(const xmlChar *));
+    if (atts == NULL)
+        goto mem_error;
+    attallocs = xmlRealloc(ctxt->attallocs,
+                           (maxatts / 5) * sizeof(attallocs[0]));
+    if (attallocs == NULL) {
+        xmlFree(atts);
+        goto mem_error;
+    }
+    if (ctxt->maxatts > 0)
+        memcpy(atts, ctxt->atts, ctxt->maxatts * sizeof(const xmlChar *));
+    xmlFree(ctxt->atts);
+
+    ctxt->atts = atts;
+    ctxt->attallocs = attallocs;
+    ctxt->maxatts = maxatts;
+
+    return(maxatts);
+
 mem_error:
     xmlErrMemory(ctxt);
     return(-1);
@@ -8928,6 +8941,35 @@ xmlAttrHashInsert(xmlParserCtxtPtr ctxt, unsigned size, const xmlChar *name,
     return(INT_MAX);
 }
 
+static int
+xmlAttrHashInsertQName(xmlParserCtxtPtr ctxt, unsigned size,
+                       const xmlChar *name, const xmlChar *prefix,
+                       unsigned hashValue, int aindex) {
+    xmlAttrHashBucket *table = ctxt->attrHash;
+    xmlAttrHashBucket *bucket;
+    unsigned hindex;
+
+    hindex = hashValue & (size - 1);
+    bucket = &table[hindex];
+
+    while (bucket->index >= 0) {
+        const xmlChar **atts = &ctxt->atts[bucket->index];
+
+        if ((name == atts[0]) && (prefix == atts[1]))
+            return(bucket->index);
+
+        hindex++;
+        bucket++;
+        if (hindex >= size) {
+            hindex = 0;
+            bucket = table;
+        }
+    }
+
+    bucket->index = aindex;
+
+    return(INT_MAX);
+}
 /**
  * xmlParseStartTag2:
  * @ctxt:  an XML parser context
@@ -8976,6 +9018,8 @@ xmlParseStartTag2(xmlParserCtxtPtr ctxt, const xmlChar **pref,
     int nratts, nbatts, nbdef;
     int i, j, nbNs, nbTotalDef, attval, nsIndex, maxAtts;
     int alloc = 0;
+    int numNsErr = 0;
+    int numDupErr = 0;
 
     if (RAW != '<') return(NULL);
     NEXT1;
@@ -9172,7 +9216,7 @@ xmlParseStartTag2(xmlParserCtxtPtr ctxt, const xmlChar **pref,
              * of xmlChar pointers.
              */
             if ((atts == NULL) || (nbatts + 5 > maxatts)) {
-                if (xmlCtxtGrowAttrs(ctxt, nbatts + 5) < 0) {
+                if (xmlCtxtGrowAttrs(ctxt) < 0) {
                     goto next_attr;
                 }
                 maxatts = ctxt->maxatts;
@@ -9354,10 +9398,12 @@ next_attr:
             if (res < INT_MAX) {
                 if (aprefix == atts[res+1]) {
                     xmlErrAttributeDup(ctxt, aprefix, attname);
+                    numDupErr += 1;
                 } else {
                     xmlNsErr(ctxt, XML_NS_ERR_ATTRIBUTE_REDEFINED,
                              "Namespaced Attribute %s in '%s' redefined\n",
                              attname, nsuri, NULL);
+                    numNsErr += 1;
                 }
             }
         }
@@ -9432,7 +9478,7 @@ next_attr:
                 xmlParserEntityCheck(ctxt, attr->expandedSize);
 
                 if ((atts == NULL) || (nbatts + 5 > maxatts)) {
-                    if (xmlCtxtGrowAttrs(ctxt, nbatts + 5) < 0) {
+                    if (xmlCtxtGrowAttrs(ctxt) < 0) {
                         localname = NULL;
                         goto done;
                     }
@@ -9454,6 +9500,43 @@ next_attr:
                 nbdef++;
 	    }
 	}
+    }
+
+    /*
+     * Using a single hash table for nsUri/localName pairs cannot
+     * detect duplicate QNames reliably. The following example will
+     * only result in two namespace errors.
+     *
+     * <doc xmlns:a="a" xmlns:b="a">
+     *   <elem a:a="" b:a="" b:a=""/>
+     * </doc>
+     *
+     * If we saw more than one namespace error but no duplicate QNames
+     * were found, we have to scan for duplicate QNames.
+     */
+    if ((numDupErr == 0) && (numNsErr > 1)) {
+        memset(ctxt->attrHash, -1,
+               attrHashSize * sizeof(ctxt->attrHash[0]));
+
+        for (i = 0, j = 0; j < nratts; i += 5, j++) {
+            unsigned hashValue, nameHashValue, prefixHashValue;
+            int res;
+
+            aprefix = atts[i+1];
+            if (aprefix == NULL)
+                continue;
+
+            attname = atts[i];
+            /* Hash values always have bit 31 set, see dict.c */
+            nameHashValue = ctxt->attallocs[j] | 0x80000000;
+            prefixHashValue = xmlDictComputeHash(ctxt->dict, aprefix);
+
+            hashValue = xmlDictCombineHash(nameHashValue, prefixHashValue);
+            res = xmlAttrHashInsertQName(ctxt, attrHashSize, attname,
+                                         aprefix, hashValue, i);
+            if (res < INT_MAX)
+                xmlErrAttributeDup(ctxt, aprefix, attname);
+        }
     }
 
     /*
@@ -12044,6 +12127,15 @@ xmlCtxtParseEntity(xmlParserCtxtPtr ctxt, xmlEntityPtr ent) {
 
         while (list != NULL) {
             list->parent = (xmlNodePtr) ent;
+
+            /*
+             * Downstream code like the nginx xslt module can set
+             * ctxt->myDoc->extSubset to a separate DTD, so the entity
+             * might have a different or a NULL document.
+             */
+            if (list->doc != ent->doc)
+                xmlSetTreeDoc(list, ent->doc);
+
             if (list->next == NULL)
                 ent->last = list;
             list = list->next;
