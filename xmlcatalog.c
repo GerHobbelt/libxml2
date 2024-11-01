@@ -428,6 +428,13 @@ int main(int argc, const char** argv) {
 	    if ((ret < 0) && (create)) {
 		xmlCatalogAdd(BAD_CAST "catalog", BAD_CAST argv[i], NULL);
 	    }
+
+            /*
+             * Catalogs are loaded lazily. Make sure that dumping works
+             * by the issuing a dummy request that forces the catalog to
+             * be loaded.
+             */
+            xmlCatalogResolvePublic(BAD_CAST "");
 	}
 	break;
     }

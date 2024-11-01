@@ -9373,7 +9373,7 @@ next_attr:
 	    for (i = 0; i < defaults->nbAttrs; i++) {
                 xmlDefAttr *attr = &defaults->attrs[i];
                 const xmlChar *nsuri = NULL;
-                unsigned hashValue, uriHashValue;
+                unsigned hashValue, uriHashValue = 0;
                 int res;
 
 	        attname = attr->name.name;
