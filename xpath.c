@@ -19,6 +19,14 @@
 #pragma convert("ISO8859-1")
 #endif
 
+#ifdef _WIN32
+// hotfix for link-time collision when large application uses both libexpat and libxml2: collision on double-defined system symbol (function): __ucrt_int_to_float
+// collision happens in debug builds when the compiler decides the `inline` directive for that one does not apply, at least not today.
+//
+// See system's processthreadapi.h for the definition of the offending inline function: Microsoft didn't include a `static` modifier there and that's what was killing us.
+#  define __ucrt_int_to_float __ucrt_int_to_float_4xml2
+#endif
+
 #define IN_LIBXML
 #include "libxml.h"
 
