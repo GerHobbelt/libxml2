@@ -1463,8 +1463,11 @@ node_found:
         if (xmlXIncludeProcessNode(reader->xincctxt, reader->node) < 0) {
             int err = xmlXIncludeGetLastError(reader->xincctxt);
 
-            if (err == XML_ERR_NO_MEMORY)
-                xmlTextReaderErrMemory(reader);
+            if (xmlIsCatastrophicError(XML_ERR_FATAL, err)) {
+                xmlFatalErr(reader->ctxt, err, NULL);
+                reader->mode = XML_TEXTREADER_MODE_ERROR;
+                reader->state = XML_TEXTREADER_ERROR;
+            }
             return(-1);
         }
     }
@@ -5011,6 +5014,8 @@ xmlTextReaderSetup(xmlTextReaderPtr reader,
 void
 xmlTextReaderSetMaxAmplification(xmlTextReaderPtr reader, unsigned maxAmpl)
 {
+    if (reader == NULL)
+        return;
     xmlCtxtSetMaxAmplification(reader->ctxt, maxAmpl);
 }
 
@@ -5025,7 +5030,7 @@ xmlTextReaderSetMaxAmplification(xmlTextReaderPtr reader, unsigned maxAmpl)
 const xmlError *
 xmlTextReaderGetLastError(xmlTextReaderPtr reader)
 {
-    if (reader == NULL)
+    if ((reader == NULL) || (reader->ctxt == NULL))
         return(NULL);
     return(&reader->ctxt->lastError);
 }
