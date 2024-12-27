@@ -37,16 +37,6 @@
 #include "config.h"
 #endif
 #include <libxml/xmlversion.h>
-
-/*
- * Due to some Autotools limitations, this variable must be passed as
- * compiler flag. Define a default value if the macro wasn't set by the
- * build system.
- */
-#ifndef SYSCONFDIR
-  #define SYSCONFDIR "/etc"
-#endif
-
 #include <libxml/xmlstring.h>
 
 #if !defined(_WIN32) && \

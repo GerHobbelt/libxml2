@@ -3427,7 +3427,8 @@ static int urip_rlen;
  */
 static int
 uripMatch(const char * URI) {
-    if ((URI == NULL) || (!strcmp(URI, "file://" SYSCONFDIR "/xml/catalog")))
+    if ((URI == NULL) ||
+        (!strcmp(URI, "file://" XML_SYSCONFDIR "/xml/catalog")))
         return(0);
     /* Verify we received the escaped URL */
     if (strcmp(urip_rcvsURLs[urip_current], URI))
@@ -3446,7 +3447,8 @@ uripMatch(const char * URI) {
  */
 static void *
 uripOpen(const char * URI) {
-    if ((URI == NULL) || (!strcmp(URI, "file://" SYSCONFDIR "/xml/catalog")))
+    if ((URI == NULL) ||
+        (!strcmp(URI, "file://" XML_SYSCONFDIR "/xml/catalog")))
         return(NULL);
     /* Verify we received the escaped URL */
     if (strcmp(urip_rcvsURLs[urip_current], URI))

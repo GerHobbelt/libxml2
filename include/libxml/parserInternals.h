@@ -296,6 +296,7 @@ XMLPUBVAR const unsigned int xmlParserMaxDepth;
 // [i_a] MSVC2010 in pedantic mode gives a warning for const globals which are not initialized; fixed to make sure these work across DLL/DLO boundaries, even for modern optimizing compilers.
 XMLPUBFUN const xmlChar *xmlStringText(void);
 XMLPUBFUN const xmlChar *xmlStringTextNoenc(void);
+XML_DEPRECATED
 XMLPUBFUN const xmlChar *xmlStringComment(void);
 
 XML_DEPRECATED
@@ -312,6 +313,7 @@ XMLPUBFUN xmlParserCtxtPtr
 XMLPUBFUN xmlParserCtxtPtr
 			xmlCreateMemoryParserCtxt(const char *buffer,
 						 int size);
+XML_DEPRECATED
 XMLPUBFUN xmlParserCtxtPtr
 			xmlCreateEntityParserCtxt(const xmlChar *URL,
 						 const xmlChar *ID,
@@ -344,8 +346,15 @@ XMLPUBFUN xmlParserInputPtr
 			xmlNewEntityInputStream	(xmlParserCtxtPtr ctxt,
 						 xmlEntityPtr entity);
 XMLPUBFUN int
+			xmlCtxtPushInput	(xmlParserCtxtPtr ctxt,
+						 xmlParserInputPtr input);
+XMLPUBFUN xmlParserInputPtr
+			xmlCtxtPopInput		(xmlParserCtxtPtr ctxt);
+XML_DEPRECATED
+XMLPUBFUN int
 			xmlPushInput		(xmlParserCtxtPtr ctxt,
 						 xmlParserInputPtr input);
+XML_DEPRECATED
 XMLPUBFUN xmlChar
 			xmlPopInput		(xmlParserCtxtPtr ctxt);
 XMLPUBFUN void
@@ -511,6 +520,7 @@ XMLPUBFUN void
 XML_DEPRECATED
 XMLPUBFUN void
 			xmlParseMisc		(xmlParserCtxtPtr ctxt);
+XML_DEPRECATED
 XMLPUBFUN void
 			xmlParseExternalSubset	(xmlParserCtxtPtr ctxt,
 						 const xmlChar *ExternalID,
@@ -597,6 +607,7 @@ XMLPUBFUN int			xmlCheckLanguageID	(const xmlChar *lang);
 XML_DEPRECATED
 XMLPUBFUN int			xmlCurrentChar		(xmlParserCtxtPtr ctxt,
 						 int *len);
+XML_DEPRECATED
 XMLPUBFUN int		xmlCopyCharMultiByte	(xmlChar *out,
 						 int val);
 XML_DEPRECATED
