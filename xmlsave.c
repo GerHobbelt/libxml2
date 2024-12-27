@@ -83,8 +83,10 @@ xmlSaveErr(xmlOutputBufferPtr out, int code, xmlNodePtr node,
     const char *msg = NULL;
     int res;
 
-    /* Don't overwrite memory errors */
-    if ((out != NULL) && (out->error == XML_ERR_NO_MEMORY))
+    /* Don't overwrite catastrophic errors */
+    if ((out != NULL) &&
+        (out->error != XML_ERR_OK) &&
+        (xmlIsCatastrophicError(XML_ERR_FATAL, out->error)))
         return;
 
     if (code == XML_ERR_NO_MEMORY) {
@@ -2197,8 +2199,14 @@ xmlSaveFinish(xmlSaveCtxtPtr ctxt)
 
     if (ctxt == NULL)
         return(XML_ERR_INTERNAL_ERROR);
-    xmlSaveFlush(ctxt);
-    ret = ctxt->buf->error;
+
+    ret = xmlOutputBufferClose(ctxt->buf);
+    ctxt->buf = NULL;
+    if (ret < 0)
+        ret = -ret;
+    else
+        ret = XML_ERR_OK;
+
     xmlFreeSaveCtxt(ctxt);
     return(ret);
 }
