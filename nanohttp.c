@@ -26,7 +26,9 @@
 
 #include <io.h>
 #include <wsockcompat.h>
+#ifndef XML_SOCKLEN_T
 #define XML_SOCKLEN_T int
+#endif
 
 #else /* _WIN32 */
 
