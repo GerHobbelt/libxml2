@@ -3,7 +3,11 @@ project(
     'c',
     version: files('VERSION'),
     license: 'MIT',
-    default_options: ['buildtype=debug', 'warning_level=3'],
+    default_options: [
+        'c_std=c11,c99,c89',
+        'buildtype=debug',
+        'warning_level=3',
+    ],
     meson_version: '>= 0.61',
 )
 
@@ -51,6 +55,29 @@ endif
 
 # binaries
 cc = meson.get_compiler('c')
+
+# global compiler flags
+
+global_args = [
+    '-D_XOPEN_SOURCE=600',
+
+    # Enabled by warning_level=3
+    # '-pedantic',
+    # '-Wall',
+    # '-Wextra',
+
+    '-Wshadow',
+    '-Wpointer-arith',
+    '-Wcast-align',
+    '-Wwrite-strings',
+    '-Wstrict-prototypes',
+    '-Wmissing-prototypes',
+    '-Wno-long-long',
+    '-Wno-format-extra-args',
+    '-Wno-array-bounds',
+]
+
+add_global_arguments(global_args, language: 'c')
 
 # options
 
@@ -552,6 +579,7 @@ config_cmake.set('LIBXML_MAJOR_VERSION', v_maj)
 config_cmake.set('LIBXML_MINOR_VERSION', v_min)
 config_cmake.set('LIBXML_MICRO_VERSION', v_mic)
 config_cmake.set('VERSION', meson.project_version())
+config_cmake.set('WITH_HTTP', want_http.to_int().to_string())
 config_cmake.set('WITH_ICONV', want_iconv.to_int().to_string())
 config_cmake.set('WITH_ICU', want_icu.to_int().to_string())
 config_cmake.set('WITH_LZMA', want_lzma.to_int().to_string())
