@@ -55,6 +55,7 @@
 #include "private/buf.h"
 #include "private/error.h"
 #include "private/memory.h"
+#include "private/parser.h"
 #include "private/xpath.h"
 
 /* Disabled for now */
