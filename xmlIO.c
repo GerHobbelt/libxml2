@@ -1115,7 +1115,7 @@ xmlInputDefaultOpen(xmlParserInputBufferPtr buf, const char *filename,
              */
             if ((lseek(fd, 0, SEEK_CUR) < 0) ||
                 (zng_gzdirect(gzStream) == 0)) {
-                gzrewind(gzStream);
+                zng_gzrewind(gzStream);
                 buf->context = gzStream;
                 buf->readcallback = xmlGzfileRead;
                 buf->closecallback = xmlGzfileClose;
