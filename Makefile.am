@@ -12,7 +12,7 @@ endif
 
 DIST_SUBDIRS = include . doc example fuzz python xstc
 
-AM_CPPFLAGS = -I$(top_builddir)/include -I$(srcdir)/include -DSYSCONFDIR='"$(sysconfdir)"'
+AM_CPPFLAGS = -I$(top_builddir)/include -I$(srcdir)/include -DXML_SYSCONFDIR='"$(sysconfdir)"'
 
 check_PROGRAMS = \
 	runsuite \
