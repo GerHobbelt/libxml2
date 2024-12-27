@@ -1482,7 +1482,7 @@ xmlOutputBufferPtr
 __xmlOutputBufferCreateFilename(const char *URI,
                               xmlCharEncodingHandlerPtr encoder,
                               int compression) {
-    xmlOutputBufferPtr ret;
+    xmlOutputBufferPtr ret = NULL;
     xmlURIPtr puri;
     int i = 0;
     char *unescaped = NULL;
@@ -1490,7 +1490,7 @@ __xmlOutputBufferCreateFilename(const char *URI,
     xmlInitParser();
 
     if (URI == NULL)
-        return(NULL);
+        goto error;
 
     puri = xmlParseURI(URI);
     if (puri != NULL) {
@@ -1501,8 +1501,7 @@ __xmlOutputBufferCreateFilename(const char *URI,
             unescaped = xmlURIUnescapeString(URI, 0, NULL);
             if (unescaped == NULL) {
                 xmlFreeURI(puri);
-                xmlCharEncCloseFunc(encoder);
-                return(NULL);
+                goto error;
             }
             URI = unescaped;
         }
@@ -1513,10 +1512,9 @@ __xmlOutputBufferCreateFilename(const char *URI,
      * Allocate the Output buffer front-end.
      */
     ret = xmlAllocOutputBuffer(encoder);
-    if (ret == NULL) {
-        xmlFree(unescaped);
-        return(NULL);
-    }
+    encoder = NULL;
+    if (ret == NULL)
+        goto error;
 
     /*
      * Try to find one of the output accept method accepting that scheme
@@ -1547,7 +1545,10 @@ __xmlOutputBufferCreateFilename(const char *URI,
 	ret = NULL;
     }
 
+error:
     xmlFree(unescaped);
+    if (encoder != NULL)
+        xmlCharEncCloseFunc(encoder);
     return(ret);
 }
 
@@ -1628,7 +1629,10 @@ xmlOutputBufferPtr
 xmlOutputBufferCreateFile(FILE *file, xmlCharEncodingHandlerPtr encoder) {
     xmlOutputBufferPtr ret;
 
-    if (file == NULL) return(NULL);
+    if (file == NULL) {
+        xmlCharEncCloseFunc(encoder);
+        return(NULL);
+    }
 
     ret = xmlAllocOutputBuffer(encoder);
     if (ret != NULL) {
@@ -1656,7 +1660,10 @@ xmlOutputBufferCreateBuffer(xmlBufferPtr buffer,
                             xmlCharEncodingHandlerPtr encoder) {
     xmlOutputBufferPtr ret;
 
-    if (buffer == NULL) return(NULL);
+    if (buffer == NULL) {
+        xmlCharEncCloseFunc(encoder);
+        return(NULL);
+    }
 
     ret = xmlOutputBufferCreateIO(xmlBufferWrite, NULL, (void *) buffer,
                                   encoder);
@@ -1921,7 +1928,10 @@ xmlOutputBufferPtr
 xmlOutputBufferCreateFd(int fd, xmlCharEncodingHandlerPtr encoder) {
     xmlOutputBufferPtr ret;
 
-    if (fd < 0) return(NULL);
+    if (fd < 0) {
+        xmlCharEncCloseFunc(encoder);
+        return(NULL);
+    }
 
     ret = xmlAllocOutputBuffer(encoder);
     if (ret != NULL) {
