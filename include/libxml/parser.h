@@ -1183,6 +1183,18 @@ XMLPUBFUN xmlDocPtr
 #endif /* LIBXML_SAX1_ENABLED */
 
 #ifdef LIBXML_VALID_ENABLED
+XMLPUBFUN xmlDtdPtr
+		xmlCtxtParseDtd		(xmlParserCtxtPtr ctxt,
+					 xmlParserInputPtr input,
+					 const xmlChar *ExternalID,
+					 const xmlChar *SystemID);
+XMLPUBFUN int
+		xmlCtxtValidateDocument	(xmlParserCtxtPtr ctxt,
+					 xmlDocPtr doc);
+XMLPUBFUN int
+		xmlCtxtValidateDtd	(xmlParserCtxtPtr ctxt,
+					 xmlDocPtr doc,
+					 xmlDtdPtr dtd);
 XML_DEPRECATED
 XMLPUBFUN xmlDtdPtr
 		xmlSAXParseDTD		(xmlSAXHandlerPtr sax,
