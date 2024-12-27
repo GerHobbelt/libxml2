@@ -225,12 +225,6 @@ endforeach
 
 ## config.h
 config_h = configuration_data()
-config_h.set_quoted('PACKAGE_NAME', meson.project_name())
-config_h.set_quoted('PACKAGE_VERSION', meson.project_version())
-config_h.set_quoted('PACKAGE_BIN_DIR', dir_bin)
-config_h.set_quoted('PACKAGE_LIB_DIR', dir_lib)
-config_h.set_quoted('PACKAGE_DATA_DIR', dir_data)
-config_h.set_quoted('LOCALEDIR', dir_locale)
 config_h.set_quoted('XML_SYSCONFDIR',
                     get_option('prefix') / get_option('sysconfdir'))
 
@@ -433,7 +427,6 @@ xml_opt_src = [
     [want_reader, ['xmlreader.c']],
     [want_regexps, ['xmlregexp.c', 'xmlunicode.c']],
     [want_schemas, ['relaxng.c', 'xmlschemas.c', 'xmlschemastypes.c']],
-    [want_schemas and not want_xpath, ['xpath.c']],
     [want_schematron, ['schematron.c']],
     [want_writer, ['xmlwriter.c']],
     [want_xinclude, ['xinclude.c']],
