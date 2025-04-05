@@ -545,9 +545,16 @@ xmlSchemaInitTypes(void)
     xmlSchemaPINF = INFINITY;
     xmlSchemaNINF = -INFINITY;
 #else
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4723) // potential divide by 0
+#endif
     xmlSchemaNAN = 0.0 / zero;
     xmlSchemaPINF = 1.0 / zero;
     xmlSchemaNINF = -xmlSchemaPINF;
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 #endif
 
     xmlSchemaTypesBank = xmlHashCreate(40);
