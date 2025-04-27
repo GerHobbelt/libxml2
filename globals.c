@@ -73,6 +73,52 @@ static xmlMutex xmlThrDefMutex;
  * pointer.
  */
 
+#ifdef LIBXML_THREAD_ENABLED
+
+#ifdef HAVE_WIN32_THREADS
+  #if defined(LIBXML_STATIC) && !defined(LIBXML_STATIC_FOR_DLL)
+    #define USE_WAIT_DTOR
+  #else
+    #define USE_DLL_MAIN
+  #endif
+#endif
+
+/*
+ * On Darwin, thread-local storage destructors seem to be run before
+ * pthread thread-specific data destructors. This causes ASan to
+ * report a use-after-free.
+ *
+ * On Windows, we can't use TLS in static builds. The RegisterWait
+ * callback would run after TLS was deallocated.
+ */
+#if defined(XML_THREAD_LOCAL) && \
+    !defined(__APPLE__) && \
+    !defined(USE_WAIT_DTOR)
+#define USE_TLS
+#endif
+
+#ifdef HAVE_POSIX_THREADS
+
+/*
+ * On POSIX, we need thread-specific data even with thread-local storage
+ * to destroy indirect references from global state (xmlLastError) at
+ * thread exit.
+ */
+static pthread_key_t globalkey;
+
+#elif defined HAVE_WIN32_THREADS
+
+#ifndef USE_TLS
+static DWORD globalkey = TLS_OUT_OF_INDEXES;
+#endif
+
+#endif /* HAVE_WIN32_THREADS */
+
+static void
+xmlFreeGlobalState(void *state);
+
+#endif /* LIBXML_THREAD_ENABLED */
+
 struct _xmlGlobalState {
 #ifdef USE_TLS
     int initialized;
@@ -126,51 +172,9 @@ typedef xmlGlobalState *xmlGlobalStatePtr;
 
 #ifdef LIBXML_THREAD_ENABLED
 
-/*
- * On Darwin, thread-local storage destructors seem to be run before
- * pthread thread-specific data destructors. This causes ASan to
- * report a use-after-free.
- *
- * On Windows, we can't use TLS in static builds. The RegisterWait
- * callback would run after TLS was deallocated.
- */
-#if defined(XML_THREAD_LOCAL) && \
-    !defined(__APPLE__) && \
-    !defined(USE_WAIT_DTOR)
-#define USE_TLS
-#endif
-
-#ifdef HAVE_WIN32_THREADS
-  #if defined(LIBXML_STATIC) && !defined(LIBXML_STATIC_FOR_DLL)
-    #define USE_WAIT_DTOR
-  #else
-    #define USE_DLL_MAIN
-  #endif
-#endif
-
 #ifdef USE_TLS
 static XML_THREAD_LOCAL xmlGlobalState globalState;
 #endif
-
-#ifdef HAVE_POSIX_THREADS
-
-/*
- * On POSIX, we need thread-specific data even with thread-local storage
- * to destroy indirect references from global state (xmlLastError) at
- * thread exit.
- */
-static pthread_key_t globalkey;
-
-#elif defined HAVE_WIN32_THREADS
-
-#ifndef USE_TLS
-static DWORD globalkey = TLS_OUT_OF_INDEXES;
-#endif
-
-#endif /* HAVE_WIN32_THREADS */
-
-static void
-xmlFreeGlobalState(void *state);
 
 #else /* LIBXML_THREAD_ENABLED */
 
@@ -241,34 +245,9 @@ xmlReallocFunc xmlRealloc = lcl_xmlReallocFunc;
  */
 xmlStrdupFunc xmlMemStrdup = lcl_xmlStrdupFunc;
 
-/**
- * xmlBufferAllocScheme:
- *
- * DEPRECATED: Don't use.
- *
- * Global setting, default allocation policy for buffers, default is
- * XML_BUFFER_ALLOC_EXACT
- */
-const xmlBufferAllocationScheme xmlBufferAllocScheme = XML_BUFFER_ALLOC_EXACT;
-/**
- * xmlDefaultBufferSize:
- *
- * DEPRECATED: Don't use.
- *
- * Global setting, default buffer size. Default value is BASE_BUFFER_SIZE
- */
-const int xmlDefaultBufferSize = BASE_BUFFER_SIZE;
-
 /*
  * Parser defaults
  */
-
-/**
- * xmlParserDebugEntities:
- *
- * DEPRECATED, always 0.
- */
-const int xmlParserDebugEntities = 0;
 
 static int xmlDoValidityCheckingDefaultValueThrDef = 0;
 static int xmlGetWarningsDefaultValueThrDef = 1;
@@ -478,74 +457,6 @@ void xmlCleanupGlobalsInternal(void) {
     xmlCleanupMutex(&xmlThrDefMutex);
 }
 
-static void
-xmlInitGlobalState(xmlGlobalStatePtr gs) {
-    gs->localRngState[0] = xmlGlobalRandom();
-    gs->localRngState[1] = xmlGlobalRandom();
-
-    memset(&gs->lastError, 0, sizeof(xmlError));
-
-#ifdef LIBXML_THREAD_ALLOC_ENABLED
-    /* XML_GLOBALS_ALLOC */
-    gs->gs_xmlFree = free;
-    gs->gs_xmlMalloc = malloc;
-    gs->gs_xmlMallocAtomic = malloc;
-    gs->gs_xmlRealloc = realloc;
-    gs->gs_xmlMemStrdup = xmlPosixStrdup;
-#endif
-
-    xmlMutexLock(&xmlThrDefMutex);
-
-    /* XML_GLOBALS_PARSER */
-    gs->doValidityCheckingDefaultValue =
-         xmlDoValidityCheckingDefaultValueThrDef;
-    gs->getWarningsDefaultValue = xmlGetWarningsDefaultValueThrDef;
-    gs->keepBlanksDefaultValue = xmlKeepBlanksDefaultValueThrDef;
-    gs->lineNumbersDefaultValue = xmlLineNumbersDefaultValueThrDef;
-    gs->loadExtDtdDefaultValue = xmlLoadExtDtdDefaultValueThrDef;
-    gs->pedanticParserDefaultValue = xmlPedanticParserDefaultValueThrDef;
-    gs->substituteEntitiesDefaultValue =
-        xmlSubstituteEntitiesDefaultValueThrDef;
-#ifdef LIBXML_OUTPUT_ENABLED
-    gs->indentTreeOutput = xmlIndentTreeOutputThrDef;
-    gs->treeIndentString = xmlTreeIndentStringThrDef;
-    gs->saveNoEmptyTags = xmlSaveNoEmptyTagsThrDef;
-#endif
-
-    /* XML_GLOBALS_ERROR */
-    gs->genericError = xmlGenericErrorThrDef;
-    gs->structuredError = xmlStructuredErrorThrDef;
-    gs->genericErrorContext = xmlGenericErrorContextThrDef;
-    gs->structuredErrorContext = xmlStructuredErrorContextThrDef;
-
-    /* XML_GLOBALS_TREE */
-    gs->registerNodeDefaultValue = xmlRegisterNodeDefaultValueThrDef;
-    gs->deregisterNodeDefaultValue = xmlDeregisterNodeDefaultValueThrDef;
-
-    /* XML_GLOBALS_IO */
-    gs->parserInputBufferCreateFilenameValue =
-        xmlParserInputBufferCreateFilenameValueThrDef;
-    gs->outputBufferCreateFilenameValue =
-        xmlOutputBufferCreateFilenameValueThrDef;
-
-    xmlMutexUnlock(&xmlThrDefMutex);
-
-#ifdef USE_TLS
-    gs->initialized = 1;
-#endif
-
-#ifdef HAVE_POSIX_THREADS
-    pthread_setspecific(globalkey, gs);
-#elif defined HAVE_WIN32_THREADS
-#ifndef USE_TLS
-    TlsSetValue(globalkey, gs);
-#endif
-#ifdef USE_WAIT_DTOR
-    xmlRegisterGlobalStateDtor(gs);
-#endif
-#endif
-}
-
 #ifdef LIBXML_THREAD_ENABLED
 
 static void
@@ -671,6 +582,74 @@ xmlGetThreadLocalStorage(int allowFailure ATTRIBUTE_UNUSED) {
 }
 
 #endif /* LIBXML_THREAD_ENABLED */
+
+static void
+xmlInitGlobalState(xmlGlobalStatePtr gs) {
+    gs->localRngState[0] = xmlGlobalRandom();
+    gs->localRngState[1] = xmlGlobalRandom();
+
+    memset(&gs->lastError, 0, sizeof(xmlError));
+
+#ifdef LIBXML_THREAD_ALLOC_ENABLED
+    /* XML_GLOBALS_ALLOC */
+    gs->gs_xmlFree = free;
+    gs->gs_xmlMalloc = malloc;
+    gs->gs_xmlMallocAtomic = malloc;
+    gs->gs_xmlRealloc = realloc;
+    gs->gs_xmlMemStrdup = xmlPosixStrdup;
+#endif
+
+    xmlMutexLock(&xmlThrDefMutex);
+
+    /* XML_GLOBALS_PARSER */
+    gs->doValidityCheckingDefaultValue =
+         xmlDoValidityCheckingDefaultValueThrDef;
+    gs->getWarningsDefaultValue = xmlGetWarningsDefaultValueThrDef;
+    gs->keepBlanksDefaultValue = xmlKeepBlanksDefaultValueThrDef;
+    gs->lineNumbersDefaultValue = xmlLineNumbersDefaultValueThrDef;
+    gs->loadExtDtdDefaultValue = xmlLoadExtDtdDefaultValueThrDef;
+    gs->pedanticParserDefaultValue = xmlPedanticParserDefaultValueThrDef;
+    gs->substituteEntitiesDefaultValue =
+        xmlSubstituteEntitiesDefaultValueThrDef;
+#ifdef LIBXML_OUTPUT_ENABLED
+    gs->indentTreeOutput = xmlIndentTreeOutputThrDef;
+    gs->treeIndentString = xmlTreeIndentStringThrDef;
+    gs->saveNoEmptyTags = xmlSaveNoEmptyTagsThrDef;
+#endif
+
+    /* XML_GLOBALS_ERROR */
+    gs->genericError = xmlGenericErrorThrDef;
+    gs->structuredError = xmlStructuredErrorThrDef;
+    gs->genericErrorContext = xmlGenericErrorContextThrDef;
+    gs->structuredErrorContext = xmlStructuredErrorContextThrDef;
+
+    /* XML_GLOBALS_TREE */
+    gs->registerNodeDefaultValue = xmlRegisterNodeDefaultValueThrDef;
+    gs->deregisterNodeDefaultValue = xmlDeregisterNodeDefaultValueThrDef;
+
+    /* XML_GLOBALS_IO */
+    gs->parserInputBufferCreateFilenameValue =
+        xmlParserInputBufferCreateFilenameValueThrDef;
+    gs->outputBufferCreateFilenameValue =
+        xmlOutputBufferCreateFilenameValueThrDef;
+
+    xmlMutexUnlock(&xmlThrDefMutex);
+
+#ifdef USE_TLS
+    gs->initialized = 1;
+#endif
+
+#ifdef HAVE_POSIX_THREADS
+    pthread_setspecific(globalkey, gs);
+#elif defined HAVE_WIN32_THREADS
+#ifndef USE_TLS
+    TlsSetValue(globalkey, gs);
+#endif
+#ifdef USE_WAIT_DTOR
+    xmlRegisterGlobalStateDtor(gs);
+#endif
+#endif
+}
 
 const xmlError *
 __xmlLastError(void) {
@@ -899,16 +878,6 @@ xmlThrDefSetStructuredErrorFunc(void *ctx, xmlStructuredErrorFunc handler) {
     xmlMutexUnlock(&xmlThrDefMutex);
 }
 
-xmlBufferAllocationScheme
-xmlThrDefBufferAllocScheme(xmlBufferAllocationScheme v ATTRIBUTE_UNUSED) {
-    return xmlBufferAllocScheme;
-}
-
-int
-xmlThrDefDefaultBufferSize(int v ATTRIBUTE_UNUSED) {
-    return xmlDefaultBufferSize;
-}
-
 int xmlThrDefDoValidityCheckingDefaultValue(int v) {
     int ret;
     xmlMutexLock(&xmlThrDefMutex);
@@ -981,10 +950,6 @@ int xmlThrDefLoadExtDtdDefaultValue(int v) {
     xmlLoadExtDtdDefaultValueThrDef = v;
     xmlMutexUnlock(&xmlThrDefMutex);
     return ret;
-}
-
-int xmlThrDefParserDebugEntities(int v ATTRIBUTE_UNUSED) {
-    return(xmlParserDebugEntities);
 }
 
 int xmlThrDefPedanticParserDefaultValue(int v) {

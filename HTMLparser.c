@@ -2768,6 +2768,9 @@ htmlParseData(htmlParserCtxtPtr ctxt, htmlAsciiMask mask,
                 if ((input->flags & XML_INPUT_HAS_ENCODING) == 0) {
                     xmlChar * guess;
 
+                    if (in > chunk)
+                        goto next_chunk;
+
 #ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
                     guess = NULL;
 #else
@@ -2781,6 +2784,7 @@ htmlParseData(htmlParserCtxtPtr ctxt, htmlAsciiMask mask,
                     }
                     input->flags |= XML_INPUT_HAS_ENCODING;
 
+                    eof = PARSER_PROGRESSIVE(ctxt);
                     goto restart;
                 }
 
@@ -2969,7 +2973,7 @@ htmlCharDataSAXCallback(htmlParserCtxtPtr ctxt, const xmlChar *buf,
 
         if ((mode == 0) &&
             (!ctxt->keepBlanks) &&
-            (areBlanks(ctxt, buf, size))) {
+            (areBlanks(ctxt, buf, size) > 0)) {
             if (ctxt->sax->ignorableWhitespace != NULL)
                 ctxt->sax->ignorableWhitespace(ctxt->userData, buf, size);
         } else {
@@ -3312,6 +3316,7 @@ htmlParseCharData(htmlParserCtxtPtr ctxt, int partial) {
                     }
                     input->flags |= XML_INPUT_HAS_ENCODING;
 
+                    eof = PARSER_PROGRESSIVE(ctxt);
                     goto restart;
                 }
 
@@ -5922,13 +5927,7 @@ htmlCtxtParseDocument(htmlParserCtxtPtr ctxt, xmlParserInputPtr input)
     ctxt->html = INSERT_INITIAL;
     htmlParseDocument(ctxt);
 
-    if (ctxt->errNo != XML_ERR_NO_MEMORY) {
-        ret = ctxt->myDoc;
-    } else {
-        ret = NULL;
-        xmlFreeDoc(ctxt->myDoc);
-    }
-    ctxt->myDoc = NULL;
+    ret = xmlCtxtGetDocument(ctxt);
 
     /* assert(ctxt->inputNr == 1); */
     while (ctxt->inputNr > 0)

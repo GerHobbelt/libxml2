@@ -94,7 +94,7 @@ struct _xmlParserInput {
     /* Current column */
     int col;
     /* How many xmlChars already consumed */
-    unsigned long consumed XML_DEPRECATED_MEMBER;
+    unsigned long consumed;
     /* function to deallocate the base */
     xmlParserInputDeallocate free XML_DEPRECATED_MEMBER;
     /* unused */
@@ -193,6 +193,24 @@ typedef struct _xmlStartTag xmlStartTag;
 typedef struct _xmlParserNsData xmlParserNsData;
 typedef struct _xmlAttrHashBucket xmlAttrHashBucket;
 
+/**
+ * xmlResourceLoader:
+ * @ctxt:  parser context
+ * @url:  URL to load
+ * @publicId:  publid ID from DTD (optional)
+ * @type:  resource type
+ * @flags:  flags
+ * @out:  result pointer
+ *
+ * Callback for custom resource loaders.
+ *
+ * @flags can contain XML_INPUT_UNZIP and XML_INPUT_NETWORK.
+ *
+ * On success, @out should be set to a new parser input object and
+ * XML_ERR_OK should be returned.
+ *
+ * Returns an xmlParserError code.
+ */
 typedef int
 (*xmlResourceLoader)(void *ctxt, const char *url, const char *publicId,
                      xmlResourceType type, int flags, xmlParserInputPtr *out);
@@ -340,7 +358,7 @@ struct _xmlParserCtxt {
     void *_private;
 
     /* should the external subset be loaded */
-    int loadsubset XML_DEPRECATED_MEMBER;
+    int loadsubset;
     /* set line number in element content */
     int linenumbers XML_DEPRECATED_MEMBER;
     /* document's own catalog */
@@ -974,8 +992,6 @@ XMLPUBVAR const char *const xmlParserVersion;
 
 /** DOC_DISABLE */
 XML_DEPRECATED
-XMLPUBVAR const int xmlParserDebugEntities;
-XML_DEPRECATED
 XMLPUBVAR const xmlSAXLocator xmlDefaultSAXLocator;
 #ifdef LIBXML_SAX1_ENABLED
 XML_DEPRECATED
@@ -1095,9 +1111,6 @@ XMLPUBFUN int
 XML_DEPRECATED
 XMLPUBFUN int
                 xmlThrDefLoadExtDtdDefaultValue(int v);
-XML_DEPRECATED
-XMLPUBFUN int
-                xmlThrDefParserDebugEntities(int v);
 
 #ifdef LIBXML_SAX1_ENABLED
 /*
@@ -1410,6 +1423,19 @@ XMLPUBFUN xmlDictPtr
 XMLPUBFUN void
 		xmlCtxtSetDict		(xmlParserCtxtPtr ctxt,
 					 xmlDictPtr);
+XMLPUBFUN xmlSAXHandler *
+		xmlCtxtGetSaxHandler	(xmlParserCtxtPtr ctxt);
+XMLPUBFUN int
+		xmlCtxtSetSaxHandler	(xmlParserCtxtPtr ctxt,
+					 const xmlSAXHandler *sax);
+XMLPUBFUN xmlDocPtr
+		xmlCtxtGetDocument	(xmlParserCtxtPtr ctxt);
+XMLPUBFUN int
+		xmlCtxtIsHtml		(xmlParserCtxtPtr ctxt);
+XMLPUBFUN int
+		xmlCtxtIsStopped	(xmlParserCtxtPtr ctxt);
+XMLPUBFUN xmlValidCtxtPtr
+		xmlCtxtGetValidCtxt	(xmlParserCtxtPtr ctxt);
 XMLPUBFUN const xmlChar *
 		xmlCtxtGetVersion	(xmlParserCtxtPtr ctxt);
 XMLPUBFUN const xmlChar *

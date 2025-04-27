@@ -161,18 +161,6 @@ xmlParseEntityRefInternal(xmlParserCtxtPtr ctxt);
  */
 #define XML_ENT_FIXED_COST 20
 
-/**
- * xmlParserMaxDepth:
- *
- * arbitrary depth limit for the XML documents that we allow to
- * process. This is not a limitation of the parser but a safety
- * boundary feature. It can be disabled with the XML_PARSE_HUGE
- * parser option.
- */
-const unsigned int xmlParserMaxDepth = 256;
-
-
-
 #define XML_PARSER_BIG_BUFFER_SIZE 300
 #define XML_PARSER_BUFFER_SIZE 100
 #define SAX_COMPAT_MODE BAD_CAST "SAX compatibility mode document"
@@ -13828,17 +13816,9 @@ xmlCtxtParseDocument(xmlParserCtxtPtr ctxt, xmlParserInputPtr input)
 
     xmlParseDocument(ctxt);
 
-    if ((ctxt->wellFormed) ||
-        ((ctxt->recovery) && (!xmlCtxtIsCatastrophicError(ctxt)))) {
-        ret = ctxt->myDoc;
-    } else {
-        if (ctxt->errNo == XML_ERR_OK)
-            xmlFatalErrMsg(ctxt, XML_ERR_INTERNAL_ERROR, "unknown error\n");
-
-        ret = NULL;
-	xmlFreeDoc(ctxt->myDoc);
-    }
-    ctxt->myDoc = NULL;
+    ret = xmlCtxtGetDocument(ctxt);
+    if ((ret == NULL) && (ctxt->errNo == XML_ERR_OK))
+        xmlFatalErrMsg(ctxt, XML_ERR_INTERNAL_ERROR, "unknown error\n");
 
     /* assert(ctxt->inputNr == 1); */
     while (ctxt->inputNr > 0)
