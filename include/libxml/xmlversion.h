@@ -44,7 +44,7 @@
  * Macro to check that the libxml version in use is compatible with
  * the version the software has been compiled against
  */
-#define LIBXML_TEST_VERSION xmlCheckVersion(21500)
+#define LIBXML_TEST_VERSION() xmlCheckVersion(21500)
 
 /**
  * LIBXML_THREAD_ENABLED:
