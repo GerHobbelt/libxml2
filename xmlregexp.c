@@ -37,6 +37,8 @@
 #define SIZE_MAX ((size_t) -1)
 #endif
 
+/* #define DEBUG_REGEXP */
+
 #define MAX_PUSH 10000000
 
 #ifdef ERROR
@@ -930,6 +932,7 @@ xmlRegFreeParserCtxt(xmlRegParserCtxtPtr ctxt) {
  *									*
  ************************************************************************/
 
+#ifdef DEBUG_REGEXP
 static void
 xmlRegPrintAtomType(FILE *output, xmlRegAtomType type) {
     switch (type) {
@@ -1094,11 +1097,24 @@ xmlRegPrintAtom(FILE *output, xmlRegAtomPtr atom) {
 	fprintf(output, "%d entries\n", atom->nbRanges);
 	for (i = 0; i < atom->nbRanges;i++)
 	    xmlRegPrintRange(output, atom->ranges[i]);
-    } else if (atom->type == XML_REGEXP_SUBREG) {
-	fprintf(output, "start %d end %d\n", atom->start->no, atom->stop->no);
     } else {
 	fprintf(output, "\n");
     }
+}
+
+static void
+xmlRegPrintAtomCompact(FILE* output, xmlRegexpPtr regexp, int atom)
+{
+    if (output == NULL || regexp == NULL || atom < 0 || 
+        atom >= regexp->nbstrings) {
+        return;
+    }
+    fprintf(output, " atom: ");
+
+    xmlRegPrintAtomType(output, XML_REGEXP_STRING);
+    xmlRegPrintQuantType(output, XML_REGEXP_QUANT_ONCE);
+    fprintf(output, "'%s' ", (char *) regexp->stringMap[atom]);
+    fprintf(output, "\n");
 }
 
 static void
@@ -1136,6 +1152,59 @@ xmlRegPrintTrans(FILE *output, xmlRegTransPtr trans) {
 }
 
 static void
+xmlRegPrintTransCompact(
+    FILE* output,
+    xmlRegexpPtr regexp,
+    int state,
+    int atom
+)
+{
+    int target;
+    if (output == NULL || regexp == NULL || regexp->compact == NULL || 
+        state < 0 || atom < 0) {
+        return;
+    }
+    target = regexp->compact[state * (regexp->nbstrings + 1) + atom + 1];
+    fprintf(output, "  trans: ");
+
+    /* TODO maybe skip 'removed' transitions, because they actually never existed */
+    if (target < 0) {
+        fprintf(output, "removed\n");
+        return;
+    }
+
+    /* We will ignore most of the attributes used in xmlRegPrintTrans,
+     * since the compact form is much simpler and uses only a part of the 
+     * features provided by the libxml2 regexp libary 
+     * (no rollbacks, counters etc.) */
+
+    /* Compared to the standard representation, an automata written using the
+     * compact form will ALWAYS be deterministic! 
+     * From    xmlRegPrintTrans:
+         if (trans->nd != 0) {
+            ...
+      * trans->nd will always be 0! */
+
+    /* In automata represented in compact form, the transitions will not use
+     * counters. 
+     * From    xmlRegPrintTrans:
+         if (trans->counter >= 0) {
+            ...
+     * regexp->counters == NULL, so trans->counter < 0 */
+
+    /* In compact form, we won't use */
+
+    /* An automata in the compact representation will always use string 
+     * atoms. 
+     * From    xmlRegPrintTrans:
+         if (trans->atom->type == XML_REGEXP_CHARVAL)
+             ...
+     * trans->atom != NULL && trans->atom->type == XML_REGEXP_STRING */
+
+    fprintf(output, "atom %d, to %d\n", atom, target);
+}
+
+static void
 xmlRegPrintState(FILE *output, xmlRegStatePtr state) {
     int i;
 
@@ -1154,6 +1223,123 @@ xmlRegPrintState(FILE *output, xmlRegStatePtr state) {
 	xmlRegPrintTrans(output, &(state->trans[i]));
     }
 }
+
+static void
+xmlRegPrintStateCompact(FILE* output, xmlRegexpPtr regexp, int state)
+{
+    int nbTrans = 0;
+    int i;
+    int target;
+    xmlRegStateType stateType;
+
+    if (output == NULL || regexp == NULL || regexp->compact == NULL ||
+        state < 0) {
+        return;
+    }
+    
+    fprintf(output, " state: ");
+
+    stateType = regexp->compact[state * (regexp->nbstrings + 1)];
+    if (stateType == XML_REGEXP_START_STATE) {
+        fprintf(output, " START ");
+    }
+    
+    if (stateType == XML_REGEXP_FINAL_STATE) {
+        fprintf(output, " FINAL ");
+    }
+
+    /* Print all atoms. */
+    for (i = 0; i < regexp->nbstrings; i++) {
+        xmlRegPrintAtomCompact(output, regexp, i);
+    }
+
+    /* Count all the transitions from the compact representation. */
+    for (i = 0; i < regexp->nbstrings; i++) {
+        target = regexp->compact[state * (regexp->nbstrings + 1) + i + 1];
+        if (target > 0 && target <= regexp->nbstates && 
+            regexp->compact[(target - 1) * (regexp->nbstrings + 1)] == 
+            XML_REGEXP_SINK_STATE) {
+                nbTrans++;
+            }
+    }
+
+    fprintf(output, "%d, %d transitions:\n", state, nbTrans);
+    
+    /* Print all transitions */
+    for (i = 0; i < regexp->nbstrings; i++) {
+        xmlRegPrintTransCompact(output, regexp, state, i);
+    }
+}
+
+/*
+ * xmlRegPrintCompact
+ * @output an output stream
+ * @regexp the regexp instance
+ * 
+ * Print the compact representation of a regexp, in the same fashion as the
+ * public xmlRegexpPrint function.
+ */
+static void
+xmlRegPrintCompact(FILE* output, xmlRegexpPtr regexp)
+{
+    int i;
+    if (output == NULL || regexp == NULL || regexp->compact == NULL) {
+        return;
+    }
+    
+    fprintf(output, "'%s' ", regexp->string);
+
+    fprintf(output, "%d atoms:\n", regexp->nbstrings);
+    fprintf(output, "\n");
+    for (i = 0; i < regexp->nbstrings; i++) {
+        fprintf(output, " %02d ", i);
+        xmlRegPrintAtomCompact(output, regexp, i);
+    }
+
+    fprintf(output, "%d states:", regexp->nbstates);
+    fprintf(output, "\n");
+    for (i = 0; i < regexp->nbstates; i++) {
+        xmlRegPrintStateCompact(output, regexp, i);
+    }
+
+    fprintf(output, "%d counters:\n", 0);
+}
+
+static void
+xmlRegexpPrintInternal(FILE *output, xmlRegexpPtr regexp) {
+    int i;
+
+    if (output == NULL)
+        return;
+    fprintf(output, " regexp: ");
+    if (regexp == NULL) {
+	fprintf(output, "NULL\n");
+	return;
+    }
+	if (regexp->compact) {
+		xmlRegPrintCompact(output, regexp);
+		return;
+	}
+
+    fprintf(output, "'%s' ", regexp->string);
+    fprintf(output, "\n");
+    fprintf(output, "%d atoms:\n", regexp->nbAtoms);
+    for (i = 0;i < regexp->nbAtoms; i++) {
+	fprintf(output, " %02d ", i);
+	xmlRegPrintAtom(output, regexp->atoms[i]);
+    }
+    fprintf(output, "%d states:", regexp->nbStates);
+    fprintf(output, "\n");
+    for (i = 0;i < regexp->nbStates; i++) {
+	xmlRegPrintState(output, regexp->states[i]);
+    }
+    fprintf(output, "%d counters:\n", regexp->nbCounters);
+    for (i = 0;i < regexp->nbCounters; i++) {
+	fprintf(output, " %d: min %d max %d\n", i, regexp->counters[i].min,
+		                                regexp->counters[i].max);
+    }
+}
+#endif /* DEBUG_REGEXP */
 
 /************************************************************************
  *									*
@@ -1615,6 +1801,9 @@ xmlFAGenerateTransitions(xmlRegParserCtxtPtr ctxt, xmlRegStatePtr from,
 	    default:
 		break;
 	}
+        atom->start = NULL;
+        atom->start0 = NULL;
+        atom->stop = NULL;
 	if (xmlRegAtomPush(ctxt, atom) < 0)
 	    return(-1);
 	return(0);
@@ -5269,36 +5458,13 @@ xmlFAParseRegExp(xmlRegParserCtxtPtr ctxt, int top) {
  * @output: the file for the output debug
  * @regexp: the compiled regexp
  *
- * Print the content of the compiled regular expression
+ * DEPRECATED: Don't use.
+ *
+ * No-op since 2.14.0.
  */
 void
-xmlRegexpPrint(FILE *output, xmlRegexpPtr regexp) {
-    int i;
-
-    if (output == NULL)
-        return;
-    fprintf(output, " regexp: ");
-    if (regexp == NULL) {
-	fprintf(output, "NULL\n");
-	return;
-    }
-    fprintf(output, "'%s' ", regexp->string);
-    fprintf(output, "\n");
-    fprintf(output, "%d atoms:\n", regexp->nbAtoms);
-    for (i = 0;i < regexp->nbAtoms; i++) {
-	fprintf(output, " %02d ", i);
-	xmlRegPrintAtom(output, regexp->atoms[i]);
-    }
-    fprintf(output, "%d states:", regexp->nbStates);
-    fprintf(output, "\n");
-    for (i = 0;i < regexp->nbStates; i++) {
-	xmlRegPrintState(output, regexp->states[i]);
-    }
-    fprintf(output, "%d counters:\n", regexp->nbCounters);
-    for (i = 0;i < regexp->nbCounters; i++) {
-	fprintf(output, " %d: min %d max %d\n", i, regexp->counters[i].min,
-		                                regexp->counters[i].max);
-    }
+xmlRegexpPrint(FILE *output ATTRIBUTE_UNUSED,
+               xmlRegexpPtr regexp ATTRIBUTE_UNUSED) {
 }
 
 /**

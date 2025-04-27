@@ -19,9 +19,11 @@
 #ifdef LIBXML_CATALOG_ENABLED
 #include <libxml/catalog.h>
 #endif
+#ifdef LIBXML_RELAXNG_ENABLED
+#include <libxml/relaxng.h>
+#endif
 #ifdef LIBXML_SCHEMAS_ENABLED
 #include <libxml/xmlschemastypes.h>
-#include <libxml/relaxng.h>
 #endif
 
 #if defined(SOLARIS)
@@ -497,6 +499,8 @@ xmlCleanupParser(void) {
 #endif
 #ifdef LIBXML_SCHEMAS_ENABLED
     xmlSchemaCleanupTypes();
+#endif
+#ifdef LIBXML_RELAXNG_ENABLED
     xmlRelaxNGCleanupTypes();
 #endif
 

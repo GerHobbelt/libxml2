@@ -146,7 +146,7 @@ int main(int argc, const char** argv) {
 #ifdef LIBXML_CATALOG_ENABLED
     xmlInitializeCatalog();
 #endif
-#ifdef LIBXML_SCHEMAS_ENABLED
+#ifdef LIBXML_RELAXNG_ENABLED
     xmlRelaxNGInitTypes();
 #endif
 
@@ -856,6 +856,8 @@ static void desret_xmlSchemaParserCtxtPtr(xmlSchemaParserCtxtPtr val) {
 }
 static void desret_xmlSchemaTypePtr(xmlSchemaTypePtr val ATTRIBUTE_UNUSED) {
 }
+#endif
+#ifdef LIBXML_RELAXNG_ENABLED
 static void desret_xmlRelaxNGParserCtxtPtr(xmlRelaxNGParserCtxtPtr val) {
     xmlRelaxNGFreeParserCtxt(val);
 }
@@ -17537,7 +17539,7 @@ static int
 test_xmlRelaxNGDump(void) {
     int test_ret = 0;
 
-#if defined(LIBXML_SCHEMAS_ENABLED) && defined(LIBXML_OUTPUT_ENABLED)
+#if defined(LIBXML_RELAXNG_ENABLED) && defined(LIBXML_OUTPUT_ENABLED)
     int mem_base;
     FILE * output; /* the file output */
     int n_output;
@@ -17576,7 +17578,7 @@ static int
 test_xmlRelaxNGDumpTree(void) {
     int test_ret = 0;
 
-#if defined(LIBXML_SCHEMAS_ENABLED) && defined(LIBXML_OUTPUT_ENABLED)
+#if defined(LIBXML_RELAXNG_ENABLED) && defined(LIBXML_OUTPUT_ENABLED)
     int mem_base;
     FILE * output; /* the file output */
     int n_output;
@@ -17610,21 +17612,21 @@ test_xmlRelaxNGDumpTree(void) {
     return(test_ret);
 }
 
-#ifdef LIBXML_SCHEMAS_ENABLED
+#ifdef LIBXML_RELAXNG_ENABLED
 
 #define gen_nb_xmlRelaxNGParserCtxtPtr 1
 #define gen_xmlRelaxNGParserCtxtPtr(no, nr) NULL
 #define des_xmlRelaxNGParserCtxtPtr(no, val, nr)
 #endif
 
-#ifdef LIBXML_SCHEMAS_ENABLED
+#ifdef LIBXML_RELAXNG_ENABLED
 
 #define gen_nb_xmlRelaxNGValidityErrorFunc_ptr 1
 #define gen_xmlRelaxNGValidityErrorFunc_ptr(no, nr) NULL
 #define des_xmlRelaxNGValidityErrorFunc_ptr(no, val, nr)
 #endif
 
-#ifdef LIBXML_SCHEMAS_ENABLED
+#ifdef LIBXML_RELAXNG_ENABLED
 
 #define gen_nb_xmlRelaxNGValidityWarningFunc_ptr 1
 #define gen_xmlRelaxNGValidityWarningFunc_ptr(no, nr) NULL
@@ -17636,7 +17638,7 @@ static int
 test_xmlRelaxNGGetParserErrors(void) {
     int test_ret = 0;
 
-#if defined(LIBXML_SCHEMAS_ENABLED)
+#if defined(LIBXML_RELAXNG_ENABLED)
     int mem_base;
     int ret_val;
     xmlRelaxNGParserCtxtPtr ctxt; /* a Relax-NG validation context */
@@ -17686,7 +17688,7 @@ test_xmlRelaxNGGetParserErrors(void) {
     return(test_ret);
 }
 
-#ifdef LIBXML_SCHEMAS_ENABLED
+#ifdef LIBXML_RELAXNG_ENABLED
 
 #define gen_nb_xmlRelaxNGValidCtxtPtr 1
 #define gen_xmlRelaxNGValidCtxtPtr(no, nr) NULL
@@ -17698,7 +17700,7 @@ static int
 test_xmlRelaxNGGetValidErrors(void) {
     int test_ret = 0;
 
-#if defined(LIBXML_SCHEMAS_ENABLED)
+#if defined(LIBXML_RELAXNG_ENABLED)
     int mem_base;
     int ret_val;
     xmlRelaxNGValidCtxtPtr ctxt; /* a Relax-NG validation context */
@@ -17753,7 +17755,7 @@ static int
 test_xmlRelaxNGInitTypes(void) {
     int test_ret = 0;
 
-#if defined(LIBXML_SCHEMAS_ENABLED)
+#if defined(LIBXML_RELAXNG_ENABLED)
     int mem_base;
     int ret_val;
 
@@ -17780,7 +17782,7 @@ static int
 test_xmlRelaxNGNewDocParserCtxt(void) {
     int test_ret = 0;
 
-#if defined(LIBXML_SCHEMAS_ENABLED)
+#if defined(LIBXML_RELAXNG_ENABLED)
     int mem_base;
     xmlRelaxNGParserCtxtPtr ret_val;
     xmlDocPtr doc; /* a preparsed document tree */
@@ -17814,7 +17816,7 @@ static int
 test_xmlRelaxNGNewMemParserCtxt(void) {
     int test_ret = 0;
 
-#if defined(LIBXML_SCHEMAS_ENABLED)
+#if defined(LIBXML_RELAXNG_ENABLED)
     int mem_base;
     xmlRelaxNGParserCtxtPtr ret_val;
     const char * buffer; /* a pointer to a char array containing the schemas */
@@ -17858,7 +17860,7 @@ static int
 test_xmlRelaxNGNewParserCtxt(void) {
     int test_ret = 0;
 
-#if defined(LIBXML_SCHEMAS_ENABLED)
+#if defined(LIBXML_RELAXNG_ENABLED)
     int mem_base;
     xmlRelaxNGParserCtxtPtr ret_val;
     const char * URL; /* the location of the schema */
@@ -17962,7 +17964,7 @@ static int
 test_xmlRelaxNGValidateDoc(void) {
     int test_ret = 0;
 
-#if defined(LIBXML_SCHEMAS_ENABLED)
+#if defined(LIBXML_RELAXNG_ENABLED)
     int mem_base;
     int ret_val;
     xmlRelaxNGValidCtxtPtr ctxt; /* a Relax-NG validation context */
@@ -18003,7 +18005,7 @@ static int
 test_xmlRelaxNGValidateFullElement(void) {
     int test_ret = 0;
 
-#if defined(LIBXML_SCHEMAS_ENABLED)
+#if defined(LIBXML_RELAXNG_ENABLED)
     int mem_base;
     int ret_val;
     xmlRelaxNGValidCtxtPtr ctxt; /* the validation context */
@@ -18051,7 +18053,7 @@ static int
 test_xmlRelaxNGValidatePopElement(void) {
     int test_ret = 0;
 
-#if defined(LIBXML_SCHEMAS_ENABLED)
+#if defined(LIBXML_RELAXNG_ENABLED)
     int mem_base;
     int ret_val;
     xmlRelaxNGValidCtxtPtr ctxt; /* the RelaxNG validation context */
@@ -18099,7 +18101,7 @@ static int
 test_xmlRelaxNGValidatePushCData(void) {
     int test_ret = 0;
 
-#if defined(LIBXML_SCHEMAS_ENABLED)
+#if defined(LIBXML_RELAXNG_ENABLED)
     int mem_base;
     int ret_val;
     xmlRelaxNGValidCtxtPtr ctxt; /* the RelaxNG validation context */
@@ -18150,7 +18152,7 @@ static int
 test_xmlRelaxNGValidatePushElement(void) {
     int test_ret = 0;
 
-#if defined(LIBXML_SCHEMAS_ENABLED)
+#if defined(LIBXML_RELAXNG_ENABLED)
     int mem_base;
     int ret_val;
     xmlRelaxNGValidCtxtPtr ctxt; /* the validation context */
@@ -18198,7 +18200,7 @@ static int
 test_xmlRelaxParserSetFlag(void) {
     int test_ret = 0;
 
-#if defined(LIBXML_SCHEMAS_ENABLED)
+#if defined(LIBXML_RELAXNG_ENABLED)
     int mem_base;
     int ret_val;
     xmlRelaxNGParserCtxtPtr ctxt; /* a RelaxNG parser context */
@@ -33082,7 +33084,7 @@ static int
 test_xmlTextReaderRelaxNGSetSchema(void) {
     int test_ret = 0;
 
-#if defined(LIBXML_READER_ENABLED) && defined(LIBXML_SCHEMAS_ENABLED)
+#if defined(LIBXML_READER_ENABLED) && defined(LIBXML_RELAXNG_ENABLED)
     int mem_base;
     int ret_val;
     xmlTextReaderPtr reader; /* the xmlTextReaderPtr used */
@@ -33123,7 +33125,7 @@ static int
 test_xmlTextReaderRelaxNGValidate(void) {
     int test_ret = 0;
 
-#if defined(LIBXML_READER_ENABLED) && defined(LIBXML_SCHEMAS_ENABLED)
+#if defined(LIBXML_READER_ENABLED) && defined(LIBXML_RELAXNG_ENABLED)
     int mem_base;
     int ret_val;
     xmlTextReaderPtr reader; /* the xmlTextReaderPtr used */
@@ -33164,7 +33166,7 @@ static int
 test_xmlTextReaderRelaxNGValidateCtxt(void) {
     int test_ret = 0;
 
-#if defined(LIBXML_READER_ENABLED) && defined(LIBXML_SCHEMAS_ENABLED)
+#if defined(LIBXML_READER_ENABLED) && defined(LIBXML_RELAXNG_ENABLED)
     int mem_base;
     int ret_val;
     xmlTextReaderPtr reader; /* the xmlTextReaderPtr used */
