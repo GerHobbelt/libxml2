@@ -16,23 +16,12 @@ if py.found() == true
             'libxml2-py.h',
             'libxml2-export.c',
             'libxml2-py.c',
-            'libxml2class.py',
-            'libxml2class.txt',
+            'libxml2.py',
         ],
         command: [py, '@INPUT@', meson.current_build_dir()],
     )
     pygenerated_dep = declare_dependency(
         sources : [pygenerated[0]],
-    )
-
-    libxml2_py = custom_target(
-        'libxml2.py',
-        input: [files('libxml.py'), pygenerated[3]],
-        output: 'libxml2.py',
-        command: [find_program('cat'), '@INPUT@'],
-        capture: true,
-        install: true,
-        install_dir: py.get_install_dir(),
     )
 
     libxml2mod_src = [
@@ -106,6 +95,7 @@ if py.found() == true
         'tstURI.py',
         'tstmem.py',
         'tstxpath.py',
+        'unicode.py',
         'validDTD.py',
         'validRNG.py',
         'validSchemas.py',

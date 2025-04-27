@@ -1266,6 +1266,8 @@ htmlCompareTags(const void *key, const void *member) {
  * htmlTagLookup:
  * @tag:  The tag name in lowercase
  *
+ * DEPRECATED: Only supports HTML 4.
+ *
  * Lookup the HTML tag in the ElementTable
  *
  * Returns the related htmlElemDescPtr or NULL if not found.
@@ -1582,6 +1584,8 @@ htmlStartCharData(htmlParserCtxtPtr ctxt) {
 /**
  * htmlIsScriptAttribute:
  * @name:  an attribute name
+ *
+ * DEPRECATED: Only supports HTML 4.
  *
  * Check if an attribute is of content type Script
  *
@@ -1907,6 +1911,8 @@ static const htmlEntityDesc  html40EntitiesTable[] = {
  * htmlEntityLookup:
  * @name: the entity name
  *
+ * DEPRECATED: Only supports HTML 4.
+ *
  * Lookup the given entity in EntitiesTable
  *
  * TODO: the linear scan is really ugly, an hash table is really needed.
@@ -1938,6 +1944,8 @@ htmlCompareEntityDesc(const void *vkey, const void *vdesc) {
  * htmlEntityValueLookup:
  * @value: the entity's unicode value
  *
+ * DEPRECATED: Only supports HTML 4.
+ *
  * Lookup the given entity in EntitiesTable
  *
  * TODO: the linear scan is really ugly, an hash table is really needed.
@@ -1962,6 +1970,8 @@ htmlEntityValueLookup(unsigned int value) {
  * @outlen:  the length of @out
  * @in:  a pointer to an array of UTF-8 chars
  * @inlen:  the length of @in
+ *
+ * DEPRECATED: Internal function, don't use.
  *
  * Take a block of UTF-8 chars in and try to convert it to an ASCII
  * plus HTML entities block of chars out.
@@ -2063,6 +2073,8 @@ done:
  * @in:  a pointer to an array of UTF-8 chars
  * @inlen:  the length of @in
  * @quoteChar: the quote character to escape (' or ") or zero.
+ *
+ * DEPRECATED: Only supports HTML 4.
  *
  * Take a block of UTF-8 chars in and try to convert it to an ASCII
  * plus HTML entities block of chars out.
@@ -5779,7 +5791,10 @@ htmlCtxtSetOptionsInternal(xmlParserCtxtPtr ctxt, int options, int keepMask)
  * Make the tokenizer emit a SAX callback for each token. This results
  * in unbalanced invocations of startElement and endElement.
  *
- * For now, this is only usable with custom SAX callbacks.
+ * For now, this is only usable to tokenize HTML5 with custom SAX
+ * callbacks. A tree builder isn't implemented yet.
+ *
+ * Available since 2.14.0.
  *
  * HTML_PARSE_NODEFDTD
  *
@@ -5823,8 +5838,7 @@ htmlCtxtSetOptionsInternal(xmlParserCtxtPtr ctxt, int options, int keepMask)
  *
  * Relax some internal limits.
  *
- * Available since 2.14.0. Use XML_PARSE_HUGE works with older
- * versions.
+ * Available since 2.14.0. Use XML_PARSE_HUGE with older versions.
  *
  * Maximum size of text nodes, tags, comments, CDATA sections
  *
@@ -5845,7 +5859,7 @@ htmlCtxtSetOptionsInternal(xmlParserCtxtPtr ctxt, int options, int keepMask)
  *
  * Ignore the encoding in the HTML declaration. This option is
  * mostly unneeded these days. The only effect is to enforce
- * UTF-8 decoding of ASCII-like data.
+ * ISO-8859-1 decoding of ASCII-like data.
  *
  * HTML_PARSE_BIG_LINES
  *

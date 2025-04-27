@@ -301,20 +301,25 @@ deprecated_funcs = {
     'htmlInitAutoClose': True,
     'htmlIsAutoClosed': True,
     'htmlIsBooleanAttr': True,
+    'htmlIsScriptAttribute': True,
     'htmlParseCharRef': True,
     'htmlParseElement': True,
+    'xmlAddEncodingAlias': True,
     'xmlByteConsumed': True,
     'xmlCheckFilename': True,
     'xmlCheckLanguageID': True,
     'xmlCleanupCharEncodingHandlers': True,
+    'xmlCleanupEncodingAliases': True,
     'xmlCleanupGlobals': True,
     'xmlCopyChar': True,
     'xmlCopyCharMultiByte': True,
     'xmlCreateEntityParserCtxt': True,
     'xmlDefaultSAXHandlerInit': True,
+    'xmlDelEncodingAlias': True,
     'xmlDictCleanup': True,
     'xmlFileMatch': True,
     'xmlGetCompressMode': True,
+    'xmlGetEncodingAlias': True,
     'xmlInitCharEncodingHandlers': True,
     'xmlInitGlobals': True,
     'xmlInitializeDict': True,
@@ -678,7 +683,7 @@ def buildStubs():
             parser.feed(data)
             parser.close()
         except IOError as msg:
-            print(file, ":", msg)
+            print("Failed to open libxml2-api.xml:", msg)
             sys.exit(1)
 
     n = len(list(functions.keys()))
@@ -692,7 +697,7 @@ def buildStubs():
         parser.feed(data)
         parser.close()
     except IOError as msg:
-        print(file, ":", msg)
+        print("Failed to open libxml2-python-api.xml:", msg)
 
 
     print("Found %d functions in libxml2-python-api.xml" % (
@@ -1086,12 +1091,19 @@ def buildWrappers():
         func = nameFixup(name, "None", file, file)
         info = (0, func, name, ret, args, file)
         function_classes['None'].append(info)
-   
-    classes = open(os.path.join(dstPref, "libxml2class.py"), "w")
-    txt = open(os.path.join(dstPref, "libxml2class.txt"), "w")
-    txt.write("          Generated Classes for libxml2-python\n\n")
 
-    txt.write("#\n# Global functions of the module\n#\n\n")
+    libxml_content = ""
+    try:
+        with open(os.path.join(srcPref, "libxml.py"), "r") as libxml_file:
+            libxml_content = libxml_file.read()
+    except IOError as msg:
+        print("Error reading libxml.py:", msg)
+        sys.exit(1)
+
+    classes = open(os.path.join(dstPref, "libxml2.py"), "w")
+
+    classes.write(libxml_content)
+
     if "None" in function_classes:
         flist = function_classes["None"]
         flist = sorted(flist, key=cmp_to_key(functionCompare))
@@ -1100,10 +1112,8 @@ def buildWrappers():
             (index, func, name, ret, args, file) = info
             if file != oldfile:
                 classes.write("#\n# Functions from module %s\n#\n\n" % file)
-                txt.write("\n# functions from module %s\n" % file)
                 oldfile = file
             classes.write("def %s(" % func)
-            txt.write("%s()\n" % func)
             n = 0
             for arg in args:
                 if n != 0:
@@ -1179,14 +1189,11 @@ def buildWrappers():
                     classes.write("    return ret\n")
             classes.write("\n")
 
-    txt.write("\n\n#\n# Set of classes of the module\n#\n\n")
     for classname in classes_list:
         if classname == "None":
             pass
         else:
             if classname in classes_ancestor:
-                txt.write("\n\nClass %s(%s)\n" % (classname,
-                          classes_ancestor[classname]))
                 classes.write("class %s(%s):\n" % (classname,
                               classes_ancestor[classname]))
                 classes.write("    def __init__(self, _obj=None):\n")
@@ -1210,7 +1217,6 @@ def buildWrappers():
                     classes.write("        return \"%s\" %% (self.name, int(pos_id (self)))\n\n" % (
                                   format))
             else:
-                txt.write("Class %s()\n" % (classname))
                 classes.write("class %s:\n" % (classname))
                 classes.write("    def __init__(self, _obj=None):\n")
                 if classname in reference_keepers:
@@ -1241,16 +1247,13 @@ def buildWrappers():
                 if file != oldfile:
                     if file == "python_accessor":
                         classes.write("    # accessors for %s\n" % (classname))
-                        txt.write("    # accessors\n")
                     else:
                         classes.write("    #\n")
                         classes.write("    # %s functions from module %s\n" % (
                                       classname, file))
-                        txt.write("\n    # functions from module %s\n" % file)
                         classes.write("    #\n\n")
                 oldfile = file
                 classes.write("    def %s(self" % func)
-                txt.write("    %s()\n" % func)
                 n = 0
                 for arg in args:
                     if n != index:
@@ -1375,7 +1378,6 @@ def buildWrappers():
             classes.write("%s = %s\n" % (name,value))
         classes.write("\n")
 
-    txt.close()
     classes.close()
 
 buildStubs()
