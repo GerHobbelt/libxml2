@@ -678,34 +678,22 @@ typedef void (*xmlDeregisterNodeFunc) (xmlNodePtr node);
  * Variables.
  */
 
+/** DOC_DISABLE */
 XML_DEPRECATED
 XMLPUBVAR const xmlBufferAllocationScheme xmlBufferAllocScheme;
 XML_DEPRECATED
 XMLPUBVAR const int xmlDefaultBufferSize;
 
-#ifdef LIBXML_THREAD_ENABLED
-/* backward compatibility */
 XML_DEPRECATED
-XMLPUBFUN const xmlBufferAllocationScheme *__xmlBufferAllocScheme(void);
+XMLPUBFUN xmlRegisterNodeFunc *__xmlRegisterNodeDefaultValue(void);
 XML_DEPRECATED
-XMLPUBFUN const int *__xmlDefaultBufferSize(void);
-#endif
+XMLPUBFUN xmlDeregisterNodeFunc *__xmlDeregisterNodeDefaultValue(void);
 
-/** DOC_DISABLE */
-#define XML_GLOBALS_TREE \
-  XML_OP(xmlRegisterNodeDefaultValue, xmlRegisterNodeFunc, XML_DEPRECATED) \
-  XML_OP(xmlDeregisterNodeDefaultValue, xmlDeregisterNodeFunc, \
-         XML_DEPRECATED)
-
-#define XML_OP XML_DECLARE_GLOBAL
-XML_GLOBALS_TREE
-#undef XML_OP
-
-#if defined(LIBXML_THREAD_ENABLED) && !defined(XML_GLOBALS_NO_REDEFINITION)
+#ifndef XML_GLOBALS_NO_REDEFINITION
   #define xmlRegisterNodeDefaultValue \
-    XML_GLOBAL_MACRO(xmlRegisterNodeDefaultValue)
+    (*__xmlRegisterNodeDefaultValue())
   #define xmlDeregisterNodeDefaultValue \
-    XML_GLOBAL_MACRO(xmlDeregisterNodeDefaultValue)
+    (*__xmlDeregisterNodeDefaultValue())
 #endif
 /** DOC_ENABLE */
 
