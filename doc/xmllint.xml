@@ -69,7 +69,6 @@
             <arg choice="plain"><option>--quiet</option></arg>
             <arg choice="plain"><option>--shell</option></arg>
             <arg choice="plain"><option>--xpath "<replaceable class="option">XPath_expression</replaceable>"</option></arg>
-            <arg choice="plain"><option>--debugent</option></arg>
             <arg choice="plain"><option>--copy</option></arg>
             <arg choice="plain"><option>--recover</option></arg>
             <arg choice="plain"><option>--huge</option></arg>
@@ -83,8 +82,6 @@
             <arg choice="plain"><option>--nonet</option></arg>
             <arg choice="plain"><option>--path "<replaceable class="option">PATH(S)</replaceable>"</option></arg>
             <arg choice="plain"><option>--load-trace</option></arg>
-            <arg choice="plain"><option>--htmlout</option></arg>
-            <arg choice="plain"><option>--nowrap</option></arg>
             <arg choice="plain"><option>--valid</option></arg>
             <arg choice="plain"><option>--postvalid</option></arg>
             <arg choice="plain"><option>--dtdvalid <replaceable class="option">URL</replaceable></option></arg>
@@ -108,7 +105,6 @@
             <arg choice="plain"><option>--encode <replaceable class="option">ENCODING</replaceable></option></arg>
             <arg choice="plain"><option>--dropdtd</option></arg>
             <arg choice="plain"><option>--nsclean</option></arg>
-            <arg choice="plain"><option>--testIO</option></arg>
             <arg choice="plain"><option>--catalogs</option></arg>
             <arg choice="plain"><option>--nocatalogs</option></arg>
             <arg choice="plain"><option>--auto</option></arg>
@@ -267,18 +263,6 @@
         </varlistentry>
 
         <varlistentry>
-            <term><option>--htmlout</option></term>
-            <listitem>
-                <para>
-                    Output results as an <acronym>HTML</acronym> file. This
-                    causes &xmllint; to output the necessary <acronym>HTML</acronym>
-                    tags surrounding the result tree output so the results can be
-                    displayed/viewed in a browser.
-                </para>
-            </listitem>
-        </varlistentry>
-
-        <varlistentry>
             <term><option>--huge</option></term>
             <listitem>
                 <para>Ignore some hardcoded parser limits.</para>
@@ -387,13 +371,6 @@
             <term><option>--nowarning</option></term>
             <listitem>
                 <para>Do not emit warnings from the parser and/or validator.</para>
-            </listitem>
-        </varlistentry>
-
-        <varlistentry>
-            <term><option>--nowrap</option></term>
-            <listitem>
-                <para>Do not output <acronym>HTML</acronym> doc wrapper.</para>
             </listitem>
         </varlistentry>
 
@@ -603,13 +580,6 @@
         </varlistentry>
 
         <varlistentry>
-            <term><option>--debugent</option></term>
-            <listitem>
-                <para>Debug the entities defined in the document.</para>
-            </listitem>
-        </varlistentry>
-
-        <varlistentry>
             <term><option>--insert</option></term>
             <listitem>
                 <para>Test for valid insertions.</para>
@@ -719,13 +689,6 @@
             <term><option>--sax1</option></term>
             <listitem>
                 <para>Use deprecated SAX1 interface (only for debugging).</para>
-            </listitem>
-        </varlistentry>
-
-        <varlistentry>
-            <term><option>--testIO</option></term>
-            <listitem>
-                <para>Test user input/output support.</para>
             </listitem>
         </varlistentry>
 
