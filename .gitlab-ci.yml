@@ -1,3 +1,9 @@
+include:
+  - component: "gitlab.gnome.org/GNOME/citemplates/release-service@master"
+    inputs:
+      dist-job-name: "dist"
+      tarball-artifact-path: "${TARBALL_ARTIFACT_PATH}"
+
 .test:
   image: registry.gitlab.gnome.org/gnome/libxml2
   variables:
@@ -294,9 +300,12 @@ dist:
   image: registry.gitlab.gnome.org/gnome/libxml2
   script:
     - sh .gitlab-ci/dist.sh
+    - echo "TARBALL_ARTIFACT_PATH=$(ls libxml2-dist/*.tar.xz)" >> build.env
   artifacts:
     paths:
       - libxml2-dist/*.tar.xz
+    reports:
+      dotenv: build.env
 
 pages:
   script:

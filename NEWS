@@ -1,6 +1,9 @@
 NEWS file for libxml2
 
-v2.14.0: not released yet
+v2.15.0: not released yet
+
+
+v2.14.0: Mar 27 2025
 
 ### Major changes
 
@@ -23,11 +26,14 @@ Support for RELAX NG can now be disabled with a new configuration
 option independently of XML Schemas support. It is still enabled by
 default.
 
+The "legacy" configuration option won't enable support for HTTP and
+LZMA anymore. These features will be removed in the next release.
+
 Parts of the xmllint executable were refactored, allowing the
 combination of more options. OOM errors should be reported reliably now.
 
-Several improvements were made to the build systems. Meson support is
-mostly complete.
+Several improvements were made to the build systems. Meson is fully
+supported now.
 
 Parts of the buffering code were reworked and simplified.
 
@@ -53,7 +59,7 @@ XML_PARSE_CATALOG_PI were added.
 
 An API function to install a custom character encoding converter is
 now available. This makes it possible to use ICU for encoding conversion
-even if libxml2 was complied without ICU support, see example/icu.c.
+even if libxml2 was compiled without ICU support, see example/icu.c.
 
 ### Deprecations
 
@@ -88,18 +94,22 @@ The hack to detect single-threaded programs under glibc was removed.
 
 ### Planned removals
 
-Support for HTTP is planned to be removed in the 2.15 release.
+Support for HTTP and LZMA compression is planned to be removed in the
+2.15 release.
 
-The following features are considered for removal in the long term:
+The following features are considered for removal:
 
+- Modules API (xmlmodule.h)
 - Schematron support
-- RELAX NG support
-- Support for compressed file I/O
+- Support for zlib compressed file I/O
 - Legacy Windows build system in win32
+
+RELAX NG support is still in a bad state and a long-term removal
+candidate.
 
 ### Thanks
 
-Thanks to the following contributors for their commits:
+Thanks to the following contributors:
 
 - Andrew Potter
 - Benjamin Gilbert
@@ -127,6 +137,15 @@ Thanks to the following contributors for their commits:
 - triallax
 - Yegor Yefremov
 - Zak Ridouh
+
+
+v2.13.7: Mar 27 2025
+
+### Regressions
+
+- tree: Fix xmlTextMerge with NULL args
+- io: Fix `compressed` flag for uncompressed stdin
+- parser: Fix parsing of DTD content
 
 
 v2.13.6: Feb 18 2025

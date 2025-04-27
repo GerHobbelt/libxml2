@@ -1144,7 +1144,6 @@ endDocumentDebug(void *ctx)
     fprintf(stdout, "SAX.endDocument()\n");
 }
 
-#ifdef LIBXML_SAX1_ENABLED
 /**
  * startElementDebug:
  * @ctxt:  An XML parser context
@@ -1189,7 +1188,6 @@ endElementDebug(void *ctx, const xmlChar *name)
 	return;
     fprintf(stdout, "SAX.endElement(%s)\n", (char *) name);
 }
-#endif /* LIBXML_SAX1_ENABLED */
 
 /**
  * charactersDebug:
@@ -1539,8 +1537,8 @@ static const xmlSAXHandler debugSAX2Handler = {
     setDocumentLocatorDebug,
     startDocumentDebug,
     endDocumentDebug,
-    NULL,
-    NULL,
+    startElementDebug, /* for HTML */
+    endElementDebug,
     referenceDebug,
     charactersDebug,
     ignorableWhitespaceDebug,
