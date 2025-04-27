@@ -10,7 +10,9 @@ The git repository is hosted on GNOME's GitLab server:
 <https://gitlab.gnome.org/GNOME/libxml2>
 
 Bugs should be reported at
-<https://gitlab.gnome.org/GNOME/libxml2/-/issues>
+<https://gitlab.gnome.org/GNOME/libxml2/-/issues>.
+Please report *security issues* to our bug tracker as well. Make sure to
+mark the issue as *confidential*.
 
 Documentation is available at
 <https://gitlab.gnome.org/GNOME/libxml2/-/wikis>
@@ -111,9 +113,8 @@ Common CMake options include:
     -D CMAKE_BUILD_TYPE=Release         # specify build type
     -D CMAKE_INSTALL_PREFIX=/usr/local  # specify the install path
     -D LIBXML2_WITH_ICONV=OFF           # disable iconv
-    -D LIBXML2_WITH_LZMA=OFF            # disable liblzma
     -D LIBXML2_WITH_PYTHON=OFF          # disable Python
-    -D LIBXML2_WITH_ZLIB=OFF            # disable libz
+    -D LIBXML2_WITH_ZLIB=ON             # enable zlib
 
 You can also open the libxml source directory with its CMakeLists.txt
 directly in various IDEs such as CLion, QtCreator, or Visual Studio.

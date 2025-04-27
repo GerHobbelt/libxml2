@@ -76,8 +76,8 @@ global_args = [
     '-Wno-format-extra-args',
     '-Wno-array-bounds',
 ]
-
-add_global_arguments(global_args, language: 'c')
+global_args = cc.get_supported_arguments(global_args)
+add_project_arguments(global_args, language: 'c')
 
 # options
 
@@ -396,7 +396,7 @@ endif
 # icu
 if want_icu
     icu_dep = dependency('icu-uc')
-    defs = icu_dep.get_variable(pkgconfig: 'DEFS', cmake: 'ICU_INCLUDE_DIRS')
+    defs = icu_dep.get_variable(pkgconfig: 'DEFS', cmake: 'ICU_INCLUDE_DIRS', default_value: '')
     if cc.has_argument(defs)
         libxml2_cflags += defs
     endif

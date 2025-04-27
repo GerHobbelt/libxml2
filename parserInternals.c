@@ -47,6 +47,10 @@
 #include "private/memory.h"
 #include "private/parser.h"
 
+#ifndef SIZE_MAX
+  #define SIZE_MAX ((size_t) -1)
+#endif
+
 #define XML_MAX_ERRORS 100
 
 /*
@@ -1340,7 +1344,16 @@ xmlInputSetEncodingHandler(xmlParserInputPtr input,
         input->consumed += processed;
         in->rawconsumed = processed;
 
-        nbchars = 4000 /* MINLEN */;
+        /*
+         * If we're push-parsing, we must convert the whole buffer.
+         *
+         * If we're pull-parsing, we could be parsing from a huge
+         * memory buffer which we don't want to convert completely.
+         */
+        if (input->flags & XML_INPUT_PROGRESSIVE)
+            nbchars = SIZE_MAX;
+        else
+            nbchars = 4000 /* MINLEN */;
         res = xmlCharEncInput(in, &nbchars);
         if (res < 0)
             code = in->error;
@@ -1914,7 +1927,7 @@ xmlCtxtNewInputFromString(xmlParserCtxtPtr ctxt, const char *url,
  * xmlNewInputFromFd:
  * @url:  base URL (optional)
  * @fd:  file descriptor
- * @flags:  unused, pass 0
+ * @flags:  input flags
  *
  * Creates a new parser input to read from a zero-terminated string.
  *
@@ -1923,20 +1936,29 @@ xmlCtxtNewInputFromString(xmlParserCtxtPtr ctxt, const char *url,
  *
  * @fd is closed after parsing has finished.
  *
+ * Supported @flags are XML_INPUT_UNZIP to decompress data
+ * automatically. This feature is deprecated and will be removed
+ * in a future release.
+ *
  * Available since 2.14.0.
  *
  * Returns a new parser input or NULL if a memory allocation failed.
  */
 xmlParserInputPtr
-xmlNewInputFromFd(const char *url, int fd, int flags ATTRIBUTE_UNUSED) {
+xmlNewInputFromFd(const char *url, int fd, int flags) {
     xmlParserInputBufferPtr buf;
 
     if (fd < 0)
 	return(NULL);
 
-    buf = xmlParserInputBufferCreateFd(fd, XML_CHAR_ENCODING_NONE);
+    buf = xmlAllocParserInputBuffer(XML_CHAR_ENCODING_NONE);
     if (buf == NULL)
         return(NULL);
+
+    if (xmlInputFromFd(buf, fd, flags) < 0) {
+        xmlFreeParserInputBuffer(buf);
+        return(NULL);
+    }
 
     return(xmlNewInputInternal(buf, url));
 }
@@ -1958,6 +1980,9 @@ xmlCtxtNewInputFromFd(xmlParserCtxtPtr ctxt, const char *url,
 
     if ((ctxt == NULL) || (fd < 0))
 	return(NULL);
+
+    if (ctxt->options & XML_PARSE_UNZIP)
+        flags |= XML_INPUT_UNZIP;
 
     input = xmlNewInputFromFd(url, fd, flags);
     if (input == NULL) {
@@ -2448,7 +2473,7 @@ xmlNewInputFromFile(xmlParserCtxtPtr ctxt, const char *filename) {
     if ((ctxt == NULL) || (filename == NULL))
         return(NULL);
 
-    if ((ctxt->options & XML_PARSE_NO_UNZIP) == 0)
+    if (ctxt->options & XML_PARSE_UNZIP)
         flags |= XML_INPUT_UNZIP;
     if ((ctxt->options & XML_PARSE_NONET) == 0)
         flags |= XML_INPUT_NETWORK;
@@ -2620,7 +2645,7 @@ xmlLoadResource(xmlParserCtxtPtr ctxt, const char *url, const char *publicId,
             url = resource;
 #endif
 
-        if ((ctxt->options & XML_PARSE_NO_UNZIP) == 0)
+        if (ctxt->options & XML_PARSE_UNZIP)
             flags |= XML_INPUT_UNZIP;
         if ((ctxt->options & XML_PARSE_NONET) == 0)
             flags |= XML_INPUT_NETWORK;

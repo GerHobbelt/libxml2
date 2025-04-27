@@ -1044,6 +1044,106 @@ xmlIODefaultMatch(const char *filename ATTRIBUTE_UNUSED) {
     return(1);
 }
 
+int
+xmlInputFromFd(xmlParserInputBufferPtr buf, int fd, int flags) {
+    xmlFdIOCtxt *fdctxt;
+    int copy;
+
+    (void) flags;
+
+#ifdef LIBXML_LZMA_ENABLED
+    if (flags & XML_INPUT_UNZIP) {
+        xzFile xzStream;
+        off_t pos;
+
+        pos = lseek(fd, 0, SEEK_CUR);
+
+        copy = dup(fd);
+        if (copy == -1)
+            return(xmlIOErr(errno));
+
+        xzStream = __libxml2_xzdopen("?", copy, "rb");
+
+        if (xzStream == NULL) {
+            close(copy);
+        } else {
+            if ((__libxml2_xzcompressed(xzStream) > 0) ||
+                /* Try to rewind if not gzip compressed */
+                (pos < 0) ||
+                (lseek(fd, pos, SEEK_SET) < 0)) {
+                /*
+                 * If a file isn't seekable, we pipe uncompressed
+                 * input through xzlib.
+                 */
+                buf->context = xzStream;
+                buf->readcallback = xmlXzfileRead;
+                buf->closecallback = xmlXzfileClose;
+                buf->compressed = 1;
+
+                return(XML_ERR_OK);
+            }
+
+            xmlXzfileClose(xzStream);
+        }
+    }
+#endif /* LIBXML_LZMA_ENABLED */
+
+#ifdef LIBXML_ZLIB_ENABLED
+    if (flags & XML_INPUT_UNZIP) {
+        gzFile gzStream;
+        off_t pos;
+
+        pos = lseek(fd, 0, SEEK_CUR);
+
+        copy = dup(fd);
+        if (copy == -1)
+            return(xmlIOErr(errno));
+
+        gzStream = zng_gzdopen(copy, "rb");
+
+        if (gzStream == NULL) {
+            close(copy);
+        } else {
+            if ((zng_gzdirect(gzStream) == 0) ||
+                /* Try to rewind if not gzip compressed */
+                (pos < 0) ||
+                (lseek(fd, pos, SEEK_SET) < 0)) {
+                /*
+                 * If a file isn't seekable, we pipe uncompressed
+                 * input through zlib.
+                 */
+				zng_gzrewind(gzStream);
+                buf->context = gzStream;
+                buf->readcallback = xmlGzfileRead;
+                buf->closecallback = xmlGzfileClose;
+                buf->compressed = 1;
+
+                return(XML_ERR_OK);
+            }
+
+            xmlGzfileClose(gzStream);
+        }
+    }
+#endif /* LIBXML_ZLIB_ENABLED */
+
+    copy = dup(fd);
+    if (copy == -1)
+        return(xmlIOErr(errno));
+
+    fdctxt = xmlMalloc(sizeof(*fdctxt));
+    if (fdctxt == NULL) {
+        close(copy);
+        return(XML_ERR_NO_MEMORY);
+    }
+    fdctxt->fd = copy;
+
+    buf->context = fdctxt;
+    buf->readcallback = xmlFdRead;
+    buf->closecallback = xmlFdClose;
+
+    return(XML_ERR_OK);
+}
+
 /**
  * xmlInputDefaultOpen:
  * @buf:  input buffer to be filled
@@ -1055,12 +1155,8 @@ xmlIODefaultMatch(const char *filename ATTRIBUTE_UNUSED) {
 static int
 xmlInputDefaultOpen(xmlParserInputBufferPtr buf, const char *filename,
                     int flags) {
-    xmlFdIOCtxt *fdctxt;
     int ret;
     int fd;
-
-    /* Avoid unused variable warning */
-    (void) flags;
 
 #ifdef LIBXML_HTTP_ENABLED
     if (xmlIOHTTPMatch(filename)) {
@@ -1080,88 +1176,15 @@ xmlInputDefaultOpen(xmlParserInputBufferPtr buf, const char *filename,
     if (!xmlFileMatch(filename))
         return(XML_IO_ENOENT);
 
-#ifdef LIBXML_LZMA_ENABLED
-    if (flags & XML_INPUT_UNZIP) {
-        xzFile xzStream;
-
-        ret = xmlFdOpen(filename, 0, &fd);
-        if (ret != XML_ERR_OK)
-            return(ret);
-
-        xzStream = __libxml2_xzdopen(filename, fd, "rb");
-
-        if (xzStream == NULL) {
-            close(fd);
-        } else {
-            /*
-             * Non-regular files like pipes can't be reopened.
-             * If a file isn't seekable, we pipe uncompressed
-             * input through xzlib.
-             */
-            if ((lseek(fd, 0, SEEK_CUR) < 0) ||
-                (__libxml2_xzcompressed(xzStream) > 0)) {
-                buf->context = xzStream;
-                buf->readcallback = xmlXzfileRead;
-                buf->closecallback = xmlXzfileClose;
-                buf->compressed = 1;
-
-                return(XML_ERR_OK);
-            }
-
-            xmlXzfileClose(xzStream);
-        }
-    }
-#endif /* LIBXML_LZMA_ENABLED */
-
-#ifdef LIBXML_ZLIB_ENABLED
-    if (flags & XML_INPUT_UNZIP) {
-        gzFile gzStream;
-
-        ret = xmlFdOpen(filename, 0, &fd);
-        if (ret != XML_ERR_OK)
-            return(ret);
-
-        gzStream = zng_gzdopen(fd, "rb");
-
-        if (gzStream == NULL) {
-            close(fd);
-        } else {
-            /*
-             * Non-regular files like pipes can't be reopened.
-             * If a file isn't seekable, we pipe uncompressed
-             * input through zlib.
-             */
-            if ((lseek(fd, 0, SEEK_CUR) < 0) ||
-                (zng_gzdirect(gzStream) == 0)) {
-                zng_gzrewind(gzStream);
-                buf->context = gzStream;
-                buf->readcallback = xmlGzfileRead;
-                buf->closecallback = xmlGzfileClose;
-                buf->compressed = 1;
-
-                return(XML_ERR_OK);
-            }
-
-            xmlGzfileClose(gzStream);
-        }
-    }
-#endif /* LIBXML_ZLIB_ENABLED */
-
     ret = xmlFdOpen(filename, 0, &fd);
     if (ret != XML_ERR_OK)
         return(ret);
 
-    fdctxt = xmlMalloc(sizeof(*fdctxt));
-    if (fdctxt == NULL) {
-        close(fd);
-        return(XML_ERR_NO_MEMORY);
-    }
-    fdctxt->fd = fd;
+    ret = xmlInputFromFd(buf, fd, flags);
 
-    buf->context = fdctxt;
-    buf->readcallback = xmlFdRead;
-    buf->closecallback = xmlFdClose;
-    return(XML_ERR_OK);
+    close(fd);
+
+    return(ret);
 }
 
 #ifdef LIBXML_OUTPUT_ENABLED
@@ -1502,11 +1525,25 @@ __xmlParserInputBufferCreateFilename(const char *URI, xmlCharEncoding enc) {
 xmlParserInputBufferPtr
 xmlParserInputBufferCreateFilename(const char *URI, xmlCharEncoding enc) {
     xmlParserInputBufferPtr ret;
+    int code;
 
     if (xmlParserInputBufferCreateFilenameValue != NULL)
         return(xmlParserInputBufferCreateFilenameValue(URI, enc));
 
-    xmlParserInputBufferCreateUrl(URI, enc, 0, &ret);
+    code = xmlParserInputBufferCreateUrl(URI, enc, 0, &ret);
+
+    /*
+     * xmlParserInputBufferCreateFilename has no way to return
+     * the kind of error although it really is crucial.
+     * All we can do is to set the global error.
+     */
+    if ((code != XML_ERR_OK) && (code != XML_IO_ENOENT)) {
+        if (xmlRaiseError(NULL, NULL, NULL, NULL, NULL, XML_FROM_IO, code,
+                          XML_ERR_ERROR, URI, 0, NULL, NULL, NULL, 0, 0,
+                          "Failed to open file\n") < 0)
+            xmlRaiseMemoryError(NULL, NULL, NULL, XML_FROM_IO, NULL);
+    }
+
     return(ret);
 }
 

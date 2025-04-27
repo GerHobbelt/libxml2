@@ -1,5 +1,5 @@
 /*
- * xml.c: a libFuzzer target to test several XML parser interfaces.
+ * lint.c: a libFuzzer target to test the xmllint executable.
  *
  * See Copyright for the status of this software.
  */
@@ -29,8 +29,6 @@
  * --output: Writes to disk
  *
  * --path: Requires cooperation with resource loader
- *
- * --repeat: Could be limited to 2 when fuzzing
  *
  * --relaxng:
  * --schema:
@@ -79,6 +77,7 @@ static const char *const switches[] = {
     "--pushsmall",
     "--quiet",
     "--recover",
+    "--repeat",
     "--sax1",
     "--testIO",
     "--timing",
