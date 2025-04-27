@@ -217,7 +217,6 @@ xmlXPathSFComputeHash(const xmlChar *name) {
 }
 
 #ifdef _MSC_VER
-#pragma warning(push)
 #if defined(NAN) && defined(INFINITY)
 #pragma warning(disable: 4056) // overflow in floating-point constant arithmetic
 #pragma warning(disable: 4756) // overflow in constant arithmetic
