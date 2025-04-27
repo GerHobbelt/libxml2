@@ -55,7 +55,6 @@
 #include "private/buf.h"
 #include "private/error.h"
 #include "private/memory.h"
-#include "private/parser.h"
 #include "private/xpath.h"
 
 /* Disabled for now */
@@ -4959,8 +4958,8 @@ xmlXPathNewContext(xmlDocPtr doc) {
     ret->nsHash = NULL;
     ret->user = NULL;
 
-    ret->contextSize = 1;
-    ret->proximityPosition = 1;
+    ret->contextSize = -1;
+    ret->proximityPosition = -1;
 
 #ifdef XP_DEFAULT_CACHE_ON
     if (xmlXPathContextSetCache(ret, 1, -1, 0) == -1) {

@@ -477,7 +477,7 @@ testHtmlPushWithEncoding(void) {
         err = 1;
     }
 
-    node = xmlDocGetRootElement(doc)->children->children->children;
+    node = xmlDocGetRootElement(doc)->children->children;
     if (!xmlStrEqual(node->content, BAD_CAST "-\xC3\xA4-")) {
         fprintf(stderr, "testHtmlPushWithEncoding failed\n");
         err = 1;
