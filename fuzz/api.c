@@ -35,7 +35,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define XML_DEPRECATED
+#ifndef XML_DEPRECATED
+  #define XML_DEPRECATED
+#endif
 
 #include <libxml/catalog.h>
 #include <libxml/HTMLtree.h>
@@ -3590,5 +3592,17 @@ LLVMFuzzerTestOneInput(const char *data, size_t size) {
     xmlFuzzDataCleanup();
     xmlResetLastError();
     return(0);
+}
+
+size_t
+LLVMFuzzerCustomMutator(char *data, size_t size, size_t maxSize,
+                        unsigned seed) {
+    static const xmlFuzzChunkDesc chunks[] = {
+        { 4, XML_FUZZ_PROB_ONE / 10 }, /* failurePos */
+        { 0, 0 }
+    };
+
+    return xmlFuzzMutateChunks(chunks, data, size, maxSize, seed,
+                               LLVMFuzzerMutate);
 }
 

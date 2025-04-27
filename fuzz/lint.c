@@ -131,6 +131,11 @@ LLVMFuzzerTestOneInput(const char *data, size_t size) {
     unsigned uval;
     int ival;
 
+    if (xmlMemUsed() != 0) {
+        fprintf(stderr, "Undetected leak in previous iteration\n");
+        abort();
+    }
+
     vars.argv = malloc((numSwitches + 5 + 6 * 2) * sizeof(vars.argv[0]));
     vars.argi = 0;
     pushArg("xmllint"),
@@ -233,3 +238,19 @@ exit:
     free(vars.argv);
     return(0);
 }
+
+size_t
+LLVMFuzzerCustomMutator(char *data, size_t size, size_t maxSize,
+                        unsigned seed) {
+    static const xmlFuzzChunkDesc chunks[] = {
+        { 8, XML_FUZZ_PROB_ONE / 10  }, /* switches */
+        { 4, XML_FUZZ_PROB_ONE / 10  }, /* maxmem */
+        { 1, XML_FUZZ_PROB_ONE / 100 }, /* maxAmpl */
+        { 1, XML_FUZZ_PROB_ONE / 100 }, /* pretty */
+        { 0, 0 }
+    };
+
+    return xmlFuzzMutateChunks(chunks, data, size, maxSize, seed,
+                               LLVMFuzzerMutate);
+}
+

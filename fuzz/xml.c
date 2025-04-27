@@ -47,8 +47,7 @@ LLVMFuzzerTestOneInput(const char *data, size_t size) {
     /*
      * Disable options that are known to cause timeouts
      */
-    opts &= ~XML_PARSE_XINCLUDE &
-            ~XML_PARSE_DTDVALID &
+    opts &= ~XML_PARSE_DTDVALID &
             ~XML_PARSE_SAX1;
     failurePos = xmlFuzzReadInt(4) % (size + 100);
 
@@ -246,5 +245,19 @@ exit:
     xmlFuzzDataCleanup();
     xmlResetLastError();
     return(0);
+}
+
+size_t
+LLVMFuzzerCustomMutator(char *data, size_t size, size_t maxSize,
+                        unsigned seed) {
+    static const xmlFuzzChunkDesc chunks[] = {
+        { 4, XML_FUZZ_PROB_ONE / 10 }, /* opts */
+        { 4, XML_FUZZ_PROB_ONE / 10 }, /* failurePos */
+        { 4, XML_FUZZ_PROB_ONE / 10 }, /* maxChunkSize */
+        { 0, 0 }
+    };
+
+    return xmlFuzzMutateChunks(chunks, data, size, maxSize, seed,
+                               LLVMFuzzerMutate);
 }
 

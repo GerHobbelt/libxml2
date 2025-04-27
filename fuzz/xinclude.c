@@ -35,7 +35,8 @@ LLVMFuzzerTestOneInput(const char *data, size_t size) {
 
     xmlFuzzDataInit(data, size);
     opts = (int) xmlFuzzReadInt(4);
-    opts |= XML_PARSE_XINCLUDE;
+    opts &= ~XML_PARSE_DTDVALID &
+            ~XML_PARSE_SAX1;
     failurePos = xmlFuzzReadInt(4) % (size + 100);
 
     xmlFuzzReadEntities();
@@ -87,5 +88,18 @@ exit:
     xmlFuzzDataCleanup();
     xmlResetLastError();
     return(0);
+}
+
+size_t
+LLVMFuzzerCustomMutator(char *data, size_t size, size_t maxSize,
+                        unsigned seed) {
+    static const xmlFuzzChunkDesc chunks[] = {
+        { 4, XML_FUZZ_PROB_ONE / 10 }, /* opts */
+        { 4, XML_FUZZ_PROB_ONE / 10 }, /* failurePos */
+        { 0, 0 }
+    };
+
+    return xmlFuzzMutateChunks(chunks, data, size, maxSize, seed,
+                               LLVMFuzzerMutate);
 }
 
