@@ -1835,6 +1835,8 @@ htmlTokenizerTest(const char *filename, const char *result,
         config.startTag = BAD_CAST startTag;
         config.inCharacters = 0;
         ctxt->_private = &config;
+        /* Skip charset auto-detection */
+        ctxt->instate = XML_PARSER_XML_DECL;
         htmlCtxtUseOptions(ctxt, options | HTML_PARSE_HTML5);
         htmlParseChunk(ctxt, data, size, 1);
         htmlFreeParserCtxt(ctxt);

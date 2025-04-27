@@ -2979,13 +2979,6 @@ static int areBlanks(xmlParserCtxtPtr ctxt, const xmlChar *str, int len,
     xmlNodePtr lastChild;
 
     /*
-     * Don't spend time trying to differentiate them, the same callback is
-     * used !
-     */
-    if (ctxt->sax->ignorableWhitespace == ctxt->sax->characters)
-	return(0);
-
-    /*
      * Check for xml:space value.
      */
     if ((ctxt->space == NULL) || (*(ctxt->space) == 1) ||
@@ -3028,6 +3021,10 @@ static int areBlanks(xmlParserCtxtPtr ctxt, const xmlChar *str, int len,
 
     /*
      * Otherwise, heuristic :-\
+     *
+     * When push parsing, we could be at the end of a chunk.
+     * This makes the look-ahead and consequently the NOBLANKS
+     * option unreliable.
      */
     if ((RAW != '<') && (RAW != 0xD)) return(0);
     if ((ctxt->node->children == NULL) &&
@@ -4861,6 +4858,34 @@ static const unsigned char test_char_data[256] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
+static void
+xmlCharacters(xmlParserCtxtPtr ctxt, const xmlChar *buf, int size) {
+    if ((ctxt->sax == NULL) || (ctxt->disableSAX))
+        return;
+
+    /*
+     * Calling areBlanks with only parts of a text node
+     * is fundamentally broken, making the NOBLANKS option
+     * essentially unusable.
+     */
+    if ((!ctxt->keepBlanks) &&
+        (ctxt->sax->ignorableWhitespace != ctxt->sax->characters) &&
+        (areBlanks(ctxt, buf, size, 1))) {
+        if (ctxt->sax->ignorableWhitespace != NULL)
+            ctxt->sax->ignorableWhitespace(ctxt->userData, buf, size);
+    } else {
+        if (ctxt->sax->characters != NULL)
+            ctxt->sax->characters(ctxt->userData, buf, size);
+
+        /*
+         * The old code used to update this value for "complex" data
+         * even if keepBlanks was true. This was probably a bug.
+         */
+        if ((!ctxt->keepBlanks) && (*ctxt->space == -1))
+            *ctxt->space = -2;
+    }
+}
+
 /**
  * xmlParseCharDataInternal:
  * @ctxt:  an XML parser context
@@ -4906,27 +4931,7 @@ get_more_space:
                 const xmlChar *tmp = ctxt->input->cur;
                 ctxt->input->cur = in;
 
-                if ((ctxt->sax != NULL) &&
-                    (ctxt->disableSAX == 0) &&
-                    (ctxt->sax->ignorableWhitespace !=
-                     ctxt->sax->characters)) {
-                    if (areBlanks(ctxt, tmp, nbchar, 1)) {
-                        if (ctxt->sax->ignorableWhitespace != NULL)
-                            ctxt->sax->ignorableWhitespace(ctxt->userData,
-                                                   tmp, nbchar);
-                    } else {
-                        if (ctxt->sax->characters != NULL)
-                            ctxt->sax->characters(ctxt->userData,
-                                                  tmp, nbchar);
-                        if (*ctxt->space == -1)
-                            *ctxt->space = -2;
-                    }
-                } else if ((ctxt->sax != NULL) &&
-                           (ctxt->disableSAX == 0) &&
-                           (ctxt->sax->characters != NULL)) {
-                    ctxt->sax->characters(ctxt->userData,
-                                          tmp, nbchar);
-                }
+                xmlCharacters(ctxt, tmp, nbchar);
             }
             return;
         }
@@ -4951,41 +4956,21 @@ get_more:
                 ctxt->input->cur = in + 1;
                 return;
             }
-            in++;
-            ctxt->input->col++;
-            goto get_more;
+            if ((!partial) || (ctxt->input->end - in >= 2)) {
+                in++;
+                ctxt->input->col++;
+                goto get_more;
+            }
         }
         nbchar = in - ctxt->input->cur;
         if (nbchar > 0) {
-            if ((ctxt->sax != NULL) &&
-                (ctxt->disableSAX == 0) &&
-                (ctxt->sax->ignorableWhitespace !=
-                 ctxt->sax->characters) &&
-                (IS_BLANK_CH(*ctxt->input->cur))) {
-                const xmlChar *tmp = ctxt->input->cur;
-                ctxt->input->cur = in;
+            const xmlChar *tmp = ctxt->input->cur;
+            ctxt->input->cur = in;
 
-                if (areBlanks(ctxt, tmp, nbchar, 0)) {
-                    if (ctxt->sax->ignorableWhitespace != NULL)
-                        ctxt->sax->ignorableWhitespace(ctxt->userData,
-                                                       tmp, nbchar);
-                } else {
-                    if (ctxt->sax->characters != NULL)
-                        ctxt->sax->characters(ctxt->userData,
-                                              tmp, nbchar);
-                    if (*ctxt->space == -1)
-                        *ctxt->space = -2;
-                }
-                line = ctxt->input->line;
-                col = ctxt->input->col;
-            } else if ((ctxt->sax != NULL) &&
-                       (ctxt->disableSAX == 0)) {
-                if (ctxt->sax->characters != NULL)
-                    ctxt->sax->characters(ctxt->userData,
-                                          ctxt->input->cur, nbchar);
-                line = ctxt->input->line;
-                col = ctxt->input->col;
-            }
+            xmlCharacters(ctxt, tmp, nbchar);
+
+            line = ctxt->input->line;
+            col = ctxt->input->col;
         }
         ctxt->input->cur = in;
         if (*in == 0xD) {
@@ -5002,6 +4987,9 @@ get_more:
             return;
         }
         if (*in == '&') {
+            return;
+        }
+        if ((partial) && (*in == ']') && (ctxt->input->end - in < 2)) {
             return;
         }
         SHRINK;
@@ -5034,6 +5022,8 @@ xmlParseCharDataComplex(xmlParserCtxtPtr ctxt, int partial) {
     cur = xmlCurrentCharRecover(ctxt, &l);
     while ((cur != '<') && /* checked */
            (cur != '&') &&
+           ((!partial) || (cur != ']') ||
+            (ctxt->input->end - ctxt->input->cur >= 2)) &&
 	   (IS_CHAR(cur))) {
 	if ((cur == ']') && (NXT(1) == ']') && (NXT(2) == '>')) {
 	    xmlFatalErr(ctxt, XML_ERR_MISPLACED_CDATA_END, NULL);
@@ -5044,23 +5034,7 @@ xmlParseCharDataComplex(xmlParserCtxtPtr ctxt, int partial) {
 	if (nbchar >= XML_PARSER_BIG_BUFFER_SIZE) {
 	    buf[nbchar] = 0;
 
-	    /*
-	     * OK the segment is to be consumed as chars.
-	     */
-	    if ((ctxt->sax != NULL) && (!ctxt->disableSAX)) {
-		if (areBlanks(ctxt, buf, nbchar, 0)) {
-		    if (ctxt->sax->ignorableWhitespace != NULL)
-			ctxt->sax->ignorableWhitespace(ctxt->userData,
-			                               buf, nbchar);
-		} else {
-		    if (ctxt->sax->characters != NULL)
-			ctxt->sax->characters(ctxt->userData, buf, nbchar);
-		    if ((ctxt->sax->characters !=
-		         ctxt->sax->ignorableWhitespace) &&
-			(*ctxt->space == -1))
-			*ctxt->space = -2;
-		}
-	    }
+            xmlCharacters(ctxt, buf, nbchar);
 	    nbchar = 0;
             SHRINK;
 	}
@@ -5068,21 +5042,8 @@ xmlParseCharDataComplex(xmlParserCtxtPtr ctxt, int partial) {
     }
     if (nbchar != 0) {
         buf[nbchar] = 0;
-	/*
-	 * OK the segment is to be consumed as chars.
-	 */
-	if ((ctxt->sax != NULL) && (!ctxt->disableSAX)) {
-	    if (areBlanks(ctxt, buf, nbchar, 0)) {
-		if (ctxt->sax->ignorableWhitespace != NULL)
-		    ctxt->sax->ignorableWhitespace(ctxt->userData, buf, nbchar);
-	    } else {
-		if (ctxt->sax->characters != NULL)
-		    ctxt->sax->characters(ctxt->userData, buf, nbchar);
-		if ((ctxt->sax->characters != ctxt->sax->ignorableWhitespace) &&
-		    (*ctxt->space == -1))
-		    *ctxt->space = -2;
-	    }
-	}
+
+        xmlCharacters(ctxt, buf, nbchar);
     }
     /*
      * cur == 0 can mean
@@ -5098,7 +5059,7 @@ xmlParseCharDataComplex(xmlParserCtxtPtr ctxt, int partial) {
                         "Incomplete UTF-8 sequence starting with %02X\n", CUR);
                 NEXTL(1);
             }
-        } else if ((cur != '<') && (cur != '&')) {
+        } else if ((cur != '<') && (cur != '&') && (cur != ']')) {
             /* Generate the error and skip the offending character */
             xmlFatalErrMsgInt(ctxt, XML_ERR_INVALID_CHAR,
                               "PCDATA invalid Char value %d\n", cur);
@@ -7598,7 +7559,7 @@ xmlParseReference(xmlParserCtxtPtr ctxt) {
             int len = xmlStrlen(cur->content);
 
             if ((cur->type == XML_TEXT_NODE) ||
-                (ctxt->sax->cdataBlock == NULL)) {
+                (ctxt->options & XML_PARSE_NOCDATA)) {
                 if (ctxt->sax->characters != NULL)
                     ctxt->sax->characters(ctxt, cur->content, len);
             } else {
@@ -7621,7 +7582,7 @@ xmlParseReference(xmlParserCtxtPtr ctxt) {
                 int len = xmlStrlen(cur->content);
 
                 if ((cur->type == XML_TEXT_NODE) ||
-                    (ctxt->sax->cdataBlock == NULL)) {
+                    (ctxt->options & XML_PARSE_NOCDATA)) {
                     if (ctxt->sax->characters != NULL)
                         ctxt->sax->characters(ctxt, cur->content, len);
                 } else {
@@ -9859,10 +9820,13 @@ xmlParseCDSect(xmlParserCtxtPtr ctxt) {
      * OK the buffer is to be consumed as cdata.
      */
     if ((ctxt->sax != NULL) && (!ctxt->disableSAX)) {
-	if (ctxt->sax->cdataBlock != NULL)
-	    ctxt->sax->cdataBlock(ctxt->userData, buf, len);
-	else if (ctxt->sax->characters != NULL)
-	    ctxt->sax->characters(ctxt->userData, buf, len);
+        if (ctxt->options & XML_PARSE_NOCDATA) {
+            if (ctxt->sax->characters != NULL)
+                ctxt->sax->characters(ctxt->userData, buf, len);
+        } else {
+            if (ctxt->sax->cdataBlock != NULL)
+                ctxt->sax->cdataBlock(ctxt->userData, buf, len);
+        }
     }
 
 out:
@@ -11615,10 +11579,13 @@ done:
  * The last chunk, which will often be empty, must be marked with
  * the @terminate flag. With the default SAX callbacks, the resulting
  * document will be available in ctxt->myDoc. This pointer will not
- * be freed by the library.
+ * be freed when calling xmlFreeParserCtxt and must be freed by the
+ * caller. If the document isn't well-formed, it will still be returned
+ * in ctxt->myDoc.
  *
- * If the document isn't well-formed, ctxt->myDoc is set to NULL.
- * The push parser doesn't support recovery mode.
+ * As an exception, xmlCtxtResetPush will free the document in
+ * ctxt->myDoc. So ctxt->myDoc should be set to NULL after extracting
+ * the document.
  *
  * Returns an xmlParserErrors code (0 on success).
  */
@@ -11740,6 +11707,9 @@ xmlParseChunk(xmlParserCtxtPtr ctxt, const char *chunk, int size,
  * See xmlParseChunk.
  *
  * Passing an initial chunk is useless and deprecated.
+ *
+ * The push parser doesn't support recovery mode or the
+ * XML_PARSE_NOBLANKS option.
  *
  * @filename is used as base URI to fetch external entities and for
  * error reports.
@@ -13608,15 +13578,6 @@ xmlCtxtSetOptionsInternal(xmlParserCtxtPtr ctxt, int options, int keepMask)
     ctxt->keepBlanks = (options & XML_PARSE_NOBLANKS) ? 0 : 1;
     ctxt->dictNames = (options & XML_PARSE_NODICT) ? 0 : 1;
 
-    /*
-     * Changing SAX callbacks is a bad idea. This should be fixed.
-     */
-    if (options & XML_PARSE_NOBLANKS) {
-        ctxt->sax->ignorableWhitespace = xmlSAX2IgnorableWhitespace;
-    }
-    if (options & XML_PARSE_NOCDATA) {
-        ctxt->sax->cdataBlock = NULL;
-    }
     if (options & XML_PARSE_HUGE) {
         if (ctxt->dict != NULL)
             xmlDictSetLimit(ctxt->dict, 0);
@@ -13643,6 +13604,8 @@ xmlCtxtSetOptionsInternal(xmlParserCtxtPtr ctxt, int options, int keepMask)
  * Enable "recovery" mode which allows non-wellformed documents.
  * How this mode behaves exactly is unspecified and may change
  * without further notice. Use of this feature is DISCOURAGED.
+ *
+ * Not supported by the push parser.
  *
  * XML_PARSE_NOENT
  *
@@ -13696,12 +13659,12 @@ xmlCtxtSetOptionsInternal(xmlParserCtxtPtr ctxt, int options, int keepMask)
  *
  * XML_PARSE_NOBLANKS
  *
- * Remove some text nodes containing only whitespace from the
- * result document. Which nodes are removed depends on DTD
- * element declarations or a conservative heuristic. The
- * reindenting feature of the serialization code relies on this
- * option to be set when parsing. Use of this option is
+ * Remove some whitespace from the result document. Where to
+ * remove whitespace depends on DTD element declarations or a
+ * broken heuristic with unfixable bugs. Use of this option is
  * DISCOURAGED.
+ *
+ * Not supported by the push parser.
  *
  * XML_PARSE_SAX1
  *
