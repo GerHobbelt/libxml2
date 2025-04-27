@@ -54,10 +54,11 @@ static struct {
  * A custom resource loader that writes all external DTDs or entities to a
  * single file in the format expected by xmlFuzzResourceLoader.
  */
-static int
+static xmlParserErrors
 fuzzResourceRecorder(void *data ATTRIBUTE_UNUSED, const char *URL,
                      const char *ID ATTRIBUTE_UNUSED,
-                     xmlResourceType type ATTRIBUTE_UNUSED, int flags,
+                     xmlResourceType type ATTRIBUTE_UNUSED,
+                     xmlParserInputFlags flags,
                      xmlParserInputPtr *out) {
     xmlParserInputPtr in;
     static const int chunkSize = 16384;

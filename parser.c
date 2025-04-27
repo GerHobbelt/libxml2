@@ -4779,18 +4779,23 @@ static const unsigned char test_char_data[256] = {
 
 static void
 xmlCharacters(xmlParserCtxtPtr ctxt, const xmlChar *buf, int size) {
+    int checkBlanks;
+
     if ((ctxt->sax == NULL) || (ctxt->disableSAX))
         return;
+
+    checkBlanks = (!ctxt->keepBlanks) ||
+                  (ctxt->sax->ignorableWhitespace != ctxt->sax->characters);
 
     /*
      * Calling areBlanks with only parts of a text node
      * is fundamentally broken, making the NOBLANKS option
      * essentially unusable.
      */
-    if ((!ctxt->keepBlanks) &&
-        (ctxt->sax->ignorableWhitespace != ctxt->sax->characters) &&
+    if ((checkBlanks) &&
         (areBlanks(ctxt, buf, size, 1))) {
-        if (ctxt->sax->ignorableWhitespace != NULL)
+        if ((ctxt->sax->ignorableWhitespace != NULL) &&
+            (ctxt->keepBlanks))
             ctxt->sax->ignorableWhitespace(ctxt->userData, buf, size);
     } else {
         if (ctxt->sax->characters != NULL)
@@ -4798,9 +4803,9 @@ xmlCharacters(xmlParserCtxtPtr ctxt, const xmlChar *buf, int size) {
 
         /*
          * The old code used to update this value for "complex" data
-         * even if keepBlanks was true. This was probably a bug.
+         * even if checkBlanks was false. This was probably a bug.
          */
-        if ((!ctxt->keepBlanks) && (*ctxt->space == -1))
+        if ((checkBlanks) && (*ctxt->space == -1))
             *ctxt->space = -2;
     }
 }
@@ -7295,9 +7300,7 @@ xmlParseExternalSubset(xmlParserCtxtPtr ctxt, const xmlChar *ExternalID,
     while (ctxt->inputNr > oldInputNr)
         xmlPopPE(ctxt);
 
-    if (RAW != 0) {
-	xmlFatalErr(ctxt, XML_ERR_EXT_SUBSET_NOT_FINISHED, NULL);
-    }
+    xmlParserCheckEOF(ctxt, XML_ERR_EXT_SUBSET_NOT_FINISHED);
 }
 
 /**
@@ -9870,8 +9873,7 @@ xmlParseContent(xmlParserCtxtPtr ctxt) {
 
     xmlParseContentInternal(ctxt);
 
-    if (ctxt->input->cur < ctxt->input->end)
-	xmlFatalErr(ctxt, XML_ERR_NOT_WELL_BALANCED, NULL);
+    xmlParserCheckEOF(ctxt, XML_ERR_NOT_WELL_BALANCED);
 }
 
 /**
@@ -10732,16 +10734,7 @@ xmlParseDocument(xmlParserCtxtPtr ctxt) {
 	 */
 	xmlParseMisc(ctxt);
 
-        if (ctxt->input->cur < ctxt->input->end) {
-            if (ctxt->wellFormed)
-	        xmlFatalErr(ctxt, XML_ERR_DOCUMENT_END, NULL);
-        } else if ((ctxt->input->buf != NULL) &&
-                   (ctxt->input->buf->encoder != NULL) &&
-                   (ctxt->input->buf->error == 0) &&
-                   (!xmlBufIsEmpty(ctxt->input->buf->raw))) {
-            xmlFatalErrMsg(ctxt, XML_ERR_INVALID_CHAR,
-                           "Truncated multi-byte sequence at EOF\n");
-        }
+        xmlParserCheckEOF(ctxt, XML_ERR_DOCUMENT_END);
     }
 
     ctxt->instate = XML_PARSER_EOF;
@@ -11591,11 +11584,8 @@ xmlParseChunk(xmlParserCtxtPtr ctxt, const char *chunk, int size,
                 xmlFatalErrMsg(ctxt, XML_ERR_DOCUMENT_EMPTY,
                                "Start tag expected, '<' not found\n");
             }
-        } else if ((ctxt->input->buf->encoder != NULL) &&
-                   (ctxt->input->buf->error == 0) &&
-                   (!xmlBufIsEmpty(ctxt->input->buf->raw))) {
-            xmlFatalErrMsg(ctxt, XML_ERR_INVALID_CHAR,
-                           "Truncated multi-byte sequence at EOF\n");
+        } else {
+            xmlParserCheckEOF(ctxt, XML_ERR_DOCUMENT_END);
         }
 	if (ctxt->instate != XML_PARSER_EOF) {
             ctxt->instate = XML_PARSER_EOF;
@@ -13817,8 +13807,6 @@ xmlCtxtParseDocument(xmlParserCtxtPtr ctxt, xmlParserInputPtr input)
     xmlParseDocument(ctxt);
 
     ret = xmlCtxtGetDocument(ctxt);
-    if ((ret == NULL) && (ctxt->errNo == XML_ERR_OK))
-        xmlFatalErrMsg(ctxt, XML_ERR_INTERNAL_ERROR, "unknown error\n");
 
     /* assert(ctxt->inputNr == 1); */
     while (ctxt->inputNr > 0)

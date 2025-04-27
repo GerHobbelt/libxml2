@@ -40,10 +40,12 @@ extern "C" {
  */
 #define XML_DEFAULT_VERSION	"1.0"
 
-#define XML_STATUS_NOT_WELL_FORMED          (1 << 0)
-#define XML_STATUS_NOT_NS_WELL_FORMED       (1 << 1)
-#define XML_STATUS_DTD_VALIDATION_FAILED    (1 << 2)
-#define XML_STATUS_CATASTROPHIC_ERROR       (1 << 3)
+typedef enum {
+    XML_STATUS_NOT_WELL_FORMED          = (1 << 0),
+    XML_STATUS_NOT_NS_WELL_FORMED       = (1 << 1),
+    XML_STATUS_DTD_VALIDATION_FAILED    = (1 << 2),
+    XML_STATUS_CATASTROPHIC_ERROR       = (1 << 3)
+} xmlParserStatus;
 
 typedef enum {
     XML_RESOURCE_UNKNOWN = 0,
@@ -54,6 +56,13 @@ typedef enum {
     XML_RESOURCE_XINCLUDE,
     XML_RESOURCE_XINCLUDE_TEXT
 } xmlResourceType;
+
+typedef enum {
+    XML_INPUT_BUF_STATIC            = (1 << 1),
+    XML_INPUT_BUF_ZERO_TERMINATED   = (1 << 2),
+    XML_INPUT_UNZIP                 = (1 << 3),
+    XML_INPUT_NETWORK               = (1 << 4)
+} xmlParserInputFlags;
 
 /**
  * xmlParserInput:
@@ -209,11 +218,12 @@ typedef struct _xmlAttrHashBucket xmlAttrHashBucket;
  * On success, @out should be set to a new parser input object and
  * XML_ERR_OK should be returned.
  *
- * Returns an xmlParserError code.
+ * Returns an xmlParserErrors code.
  */
-typedef int
+typedef xmlParserErrors
 (*xmlResourceLoader)(void *ctxt, const char *url, const char *publicId,
-                     xmlResourceType type, int flags, xmlParserInputPtr *out);
+                     xmlResourceType type, xmlParserInputFlags flags,
+                     xmlParserInputPtr *out);
 
 /**
  * xmlParserCtxt:
@@ -879,18 +889,23 @@ typedef void (*endElementNsSAX2Func)   (void *ctx,
 
 
 struct _xmlSAXHandler {
-    internalSubsetSAXFunc internalSubset;
-    isStandaloneSAXFunc isStandalone;
-    hasInternalSubsetSAXFunc hasInternalSubset;
-    hasExternalSubsetSAXFunc hasExternalSubset;
-    resolveEntitySAXFunc resolveEntity;
-    getEntitySAXFunc getEntity;
-    entityDeclSAXFunc entityDecl;
-    notationDeclSAXFunc notationDecl;
-    attributeDeclSAXFunc attributeDecl;
-    elementDeclSAXFunc elementDecl;
-    unparsedEntityDeclSAXFunc unparsedEntityDecl;
-    setDocumentLocatorSAXFunc setDocumentLocator;
+    /*
+     * For DTD-related handlers, it's recommended to either use the
+     * original libxml2 handler or set them to NULL if DTDs can be
+     * ignored.
+     */
+    internalSubsetSAXFunc internalSubset; /* DTD */
+    isStandaloneSAXFunc isStandalone; /* unused */
+    hasInternalSubsetSAXFunc hasInternalSubset; /* DTD */
+    hasExternalSubsetSAXFunc hasExternalSubset; /* DTD */
+    resolveEntitySAXFunc resolveEntity; /* DTD */
+    getEntitySAXFunc getEntity; /* DTD */
+    entityDeclSAXFunc entityDecl; /* DTD */
+    notationDeclSAXFunc notationDecl; /* DTD */
+    attributeDeclSAXFunc attributeDecl; /* DTD */
+    elementDeclSAXFunc elementDecl; /* DTD */
+    unparsedEntityDeclSAXFunc unparsedEntityDecl; /* DTD */
+    setDocumentLocatorSAXFunc setDocumentLocator; /* deprecated */
     startDocumentSAXFunc startDocument;
     endDocumentSAXFunc endDocument;
     /*
@@ -910,15 +925,20 @@ struct _xmlSAXHandler {
     endElementSAXFunc endElement;
     referenceSAXFunc reference;
     charactersSAXFunc characters;
+    /*
+     * `ignorableWhitespace` should always be set to the same value
+     * as `characters`. Otherwise, the parser will try to detect
+     * whitespace which is unreliable.
+     */
     ignorableWhitespaceSAXFunc ignorableWhitespace;
     processingInstructionSAXFunc processingInstruction;
     commentSAXFunc comment;
     warningSAXFunc warning;
     errorSAXFunc error;
-    fatalErrorSAXFunc fatalError; /* unused error() get all the errors */
-    getParameterEntitySAXFunc getParameterEntity;
+    fatalErrorSAXFunc fatalError; /* unused, `error` gets all the errors */
+    getParameterEntitySAXFunc getParameterEntity; /* DTD */
     cdataBlockSAXFunc cdataBlock;
-    externalSubsetSAXFunc externalSubset;
+    externalSubsetSAXFunc externalSubset; /* DTD */
     /*
      * `initialized` should always be set to XML_SAX2_MAGIC to enable the
      * modern SAX2 interface.
@@ -930,6 +950,10 @@ struct _xmlSAXHandler {
     void *_private;
     startElementNsSAX2Func startElementNs;
     endElementNsSAX2Func endElementNs;
+    /*
+     * Takes precedence over `error` or `warning`, but modern code
+     * should use xmlCtxtSetErrorHandler.
+     */
     xmlStructuredErrorFunc serror;
 };
 
@@ -1442,7 +1466,7 @@ XMLPUBFUN const xmlChar *
 		xmlCtxtGetDeclaredEncoding(xmlParserCtxtPtr ctxt);
 XMLPUBFUN int
 		xmlCtxtGetStandalone	(xmlParserCtxtPtr ctxt);
-XMLPUBFUN int
+XMLPUBFUN xmlParserStatus
 		xmlCtxtGetStatus	(xmlParserCtxtPtr ctxt);
 XMLPUBFUN void
 		xmlCtxtSetErrorHandler	(xmlParserCtxtPtr ctxt,
@@ -1531,24 +1555,22 @@ XMLPUBFUN xmlDocPtr
  * New input API
  */
 
-#define XML_INPUT_BUF_STATIC		(1 << 1)
-#define XML_INPUT_BUF_ZERO_TERMINATED	(1 << 2)
-#define XML_INPUT_UNZIP                 (1 << 3)
-#define XML_INPUT_NETWORK               (1 << 4)
-
-XMLPUBFUN int
-xmlNewInputFromUrl(const char *url, int flags, xmlParserInputPtr *out);
+XMLPUBFUN xmlParserErrors
+xmlNewInputFromUrl(const char *url, xmlParserInputFlags flags,
+                   xmlParserInputPtr *out);
 XMLPUBFUN xmlParserInputPtr
 xmlNewInputFromMemory(const char *url, const void *mem, size_t size,
-                      int flags);
+                      xmlParserInputFlags flags);
 XMLPUBFUN xmlParserInputPtr
-xmlNewInputFromString(const char *url, const char *str, int flags);
+xmlNewInputFromString(const char *url, const char *str,
+                      xmlParserInputFlags flags);
 XMLPUBFUN xmlParserInputPtr
-xmlNewInputFromFd(const char *url, int fd, int flags);
+xmlNewInputFromFd(const char *url, int fd, xmlParserInputFlags flags);
 XMLPUBFUN xmlParserInputPtr
 xmlNewInputFromIO(const char *url, xmlInputReadCallback ioRead,
-                  xmlInputCloseCallback ioClose, void *ioCtxt, int flags);
-XMLPUBFUN int
+                  xmlInputCloseCallback ioClose, void *ioCtxt,
+                  xmlParserInputFlags flags);
+XMLPUBFUN xmlParserErrors
 xmlInputSetEncodingHandler(xmlParserInputPtr input,
                            xmlCharEncodingHandlerPtr handler);
 

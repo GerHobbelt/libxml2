@@ -135,9 +135,10 @@ xmlFuzzSecondaryUrl(void);
 const char *
 xmlFuzzSecondaryEntity(size_t *size);
 
-int
+xmlParserErrors
 xmlFuzzResourceLoader(void *data, const char *URL, const char *ID,
-                      xmlResourceType type, int flags, xmlParserInputPtr *out);
+                      xmlResourceType type, xmlParserInputFlags flags,
+                      xmlParserInputPtr *out);
 
 char *
 xmlSlurpFile(const char *path, size_t *size);

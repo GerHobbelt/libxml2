@@ -82,8 +82,10 @@ add_project_arguments(global_args, language: 'c')
 # options
 
 # disabled by default
+want_http = get_option('http').enabled()
 want_icu = get_option('icu').enabled()
 want_legacy = get_option('legacy').enabled()
+want_lzma = get_option('lzma').enabled()
 want_thread_alloc = get_option('thread-alloc').enabled()
 want_tls = get_option('tls').enabled()
 
@@ -125,12 +127,6 @@ feature = get_option('xinclude')
 want_xinclude = want_minimum ? feature.enabled() : feature.allowed()
 
 # default depends on legacy option
-
-feature = get_option('http')
-want_http = want_legacy ? feature.allowed() : feature.enabled()
-
-feature = get_option('lzma')
-want_lzma = want_legacy ? feature.allowed() : feature.enabled()
 
 feature = get_option('zlib')
 want_zlib = want_legacy ? feature.allowed() : feature.enabled()
@@ -254,7 +250,7 @@ endforeach
 # [X] libxml-2.0.pc.in
 # [X] libxml2-config.cmake.in
 # [X] python/setup.py.in
-# [N] xml2-config.in
+# [X] xml2-config.in
 
 ## config.h
 config_h = configuration_data()
@@ -500,7 +496,7 @@ meson.override_dependency('libxml-2.0', xml_dep)
 
 ## xmllint tool
 
-executable(
+xmllint = executable(
     'xmllint',
     files('xmllint.c', 'shell.c', 'lintmain.c'),
     dependencies: [xml_dep, xmllint_deps],
@@ -511,7 +507,7 @@ executable(
 ## xmlcatalog tool
 
 if want_catalog and want_output
-    executable(
+    xmlcatalog = executable(
         'xmlcatalog',
         files('xmlcatalog.c'),
         dependencies: [xml_dep, xmllint_deps],
@@ -558,6 +554,21 @@ foreach check, deps : checks
     endif
 endforeach
 
+sh = find_program('sh', required: false)
+
+if sh.found()
+    if want_debug
+        test('xmllint shell', sh,
+             args: [ 'test/scripts/test.sh', xmllint.full_path() ],
+             workdir: meson.current_source_dir())
+    endif
+    if want_catalog and want_output
+        test('xmlcatalog shell', sh,
+             args: [ 'test/catalogs/test.sh', xmlcatalog.full_path() ],
+             workdir: meson.current_source_dir())
+    endif
+endif
+
 subdir('example')
 subdir('doc')
 
@@ -598,6 +609,15 @@ configure_file(
     output: 'libxml2-config.cmake',
     configuration: config_cmake,
     install_dir: dir_lib / 'cmake' / meson.project_name(),
+)
+
+## xml2-config script
+
+install_data(
+    'xml2-config-meson',
+    install_dir: dir_bin,
+    install_mode: 'rwxr-xr-x',
+    rename: 'xml2-config',
 )
 
 # summary

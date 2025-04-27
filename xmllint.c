@@ -256,12 +256,12 @@ parsePath(xmllintState *lint, const xmlChar *path) {
     }
 }
 
-static int
+static xmlParserErrors
 xmllintResourceLoader(void *ctxt, const char *URL,
-                      const char *ID, xmlResourceType type, int flags,
-		      xmlParserInputPtr *out) {
+                      const char *ID, xmlResourceType type,
+                      xmlParserInputFlags flags, xmlParserInputPtr *out) {
     xmllintState *lint = ctxt;
-    int code;
+    xmlParserErrors code;
     int i;
     const char *lastsegment = URL;
     const char *iter = URL;
@@ -3504,12 +3504,12 @@ xmllintMain(int argc, const char **argv, FILE *errStream,
                     ctxt = htmlCreatePushParserCtxt(NULL, NULL, NULL, 0,
                                                     filename,
                                                     XML_CHAR_ENCODING_NONE);
-                    htmlCtxtUseOptions(ctxt, lint->options);
                 } else
 #endif /* LIBXML_PUSH_ENABLED */
                 {
                     ctxt = htmlNewParserCtxt();
                 }
+                htmlCtxtUseOptions(ctxt, lint->options);
             } else
 #endif /* LIBXML_HTML_ENABLED */
             {
@@ -3517,12 +3517,12 @@ xmllintMain(int argc, const char **argv, FILE *errStream,
                 if (lint->push) {
                     ctxt = xmlCreatePushParserCtxt(NULL, NULL, NULL, 0,
                                                    filename);
-                    xmlCtxtUseOptions(ctxt, lint->options);
                 } else
 #endif /* LIBXML_PUSH_ENABLED */
                 {
                     ctxt = xmlNewParserCtxt();
                 }
+                xmlCtxtUseOptions(ctxt, lint->options);
             }
             if (ctxt == NULL) {
                 lint->progresult = XMLLINT_ERR_MEM;

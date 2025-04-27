@@ -30,9 +30,9 @@ typedef struct {
     UChar      pivot_buf[ICU_PIVOT_BUF_SIZE];
 } myConvCtxt;
 
-static int
-icuConvert(unsigned char *out, int *outlen,
-           const unsigned char *in, int *inlen, void *vctxt) {
+static xmlCharEncError
+icuConvert(void *vctxt, unsigned char *out, int *outlen,
+           const unsigned char *in, int *inlen, int flush) {
     myConvCtxt *cd = vctxt;
     const char *ucv_in = (const char *) in;
     char *ucv_out = (char *) out;
@@ -47,14 +47,10 @@ icuConvert(unsigned char *out, int *outlen,
     }
 
     /*
-     * Note that the ICU API is stateful. It can always consume a certain
-     * amount of input even if the output buffer would overflow. The
-     * remaining input must be processed by calling ucnv_convertEx with a
-     * possibly empty input buffer.
-     *
-     * ucnv_convertEx is always called with reset and flush set to 0,
-     * so we don't mess up the state. This should never generate
-     * U_TRUNCATED_CHAR_FOUND errors.
+     * The ICU API can consume input, including partial sequences,
+     * even if the output buffer would overflow. The remaining input
+     * must be processed by calling ucnv_convertEx with a possibly
+     * empty input buffer.
      */
     if (cd->isInput) {
         source = cd->uconv;
@@ -67,7 +63,8 @@ icuConvert(unsigned char *out, int *outlen,
     ucnv_convertEx(target, source, &ucv_out, ucv_out + *outlen,
                    &ucv_in, ucv_in + *inlen, cd->pivot_buf,
                    &cd->pivot_source, &cd->pivot_target,
-                   cd->pivot_buf + ICU_PIVOT_BUF_SIZE, 0, 0, &err);
+                   cd->pivot_buf + ICU_PIVOT_BUF_SIZE,
+                   /* reset */ 0, flush, &err);
 
     *inlen = ucv_in - (const char*) in;
     *outlen = ucv_out - (char *) out;
@@ -77,8 +74,8 @@ icuConvert(unsigned char *out, int *outlen,
     } else {
         switch (err) {
             case U_TRUNCATED_CHAR_FOUND:
-                /* Shouldn't happen without flush */
-                ret = XML_ENC_ERR_SUCCESS;
+                /* Should only happen with flush */
+                ret = XML_ENC_ERR_INPUT;
                 break;
 
             case U_BUFFER_OVERFLOW_ERROR:
@@ -105,7 +102,7 @@ icuConvert(unsigned char *out, int *outlen,
     return ret;
 }
 
-static int
+static xmlParserErrors
 icuOpen(const char* name, int isInput, myConvCtxt **out)
 {
     UErrorCode status;
@@ -173,23 +170,30 @@ icuConvCtxtDtor(void *vctxt) {
     icuClose(vctxt);
 }
 
-static int
-icuConvImpl(void *vctxt, const char *name, int output,
-            xmlCharEncodingHandler **out) {
+static xmlParserErrors
+icuConvImpl(void *vctxt, const char *name, xmlCharEncFlags flags,
+            xmlCharEncodingHandler **result) {
+    xmlCharEncConvFunc inFunc = NULL, outFunc = NULL;
     myConvCtxt *inputCtxt = NULL;
     myConvCtxt *outputCtxt = NULL;
-    int ret;
+    xmlParserErrors ret;
 
-    ret = icuOpen(name, 1, &inputCtxt);
-    if (ret != 0)
-        goto error;
-    ret = icuOpen(name, 0, &outputCtxt);
-    if (ret != 0)
-        goto error;
+    if (flags & XML_ENC_INPUT) {
+        ret = icuOpen(name, 1, &inputCtxt);
+        if (ret != 0)
+            goto error;
+        inFunc = icuConvert;
+    }
 
-    return xmlCharEncNewCustomHandler(name, icuConvert, icuConvert,
-                                      icuConvCtxtDtor, inputCtxt, outputCtxt,
-                                      out);
+    if (flags & XML_ENC_OUTPUT) {
+        ret = icuOpen(name, 0, &outputCtxt);
+        if (ret != 0)
+            goto error;
+        outFunc = icuConvert;
+    }
+
+    return xmlCharEncNewCustomHandler(name, inFunc, outFunc, icuConvCtxtDtor,
+                                      inputCtxt, outputCtxt, result);
 
 error:
     if (inputCtxt != NULL)
