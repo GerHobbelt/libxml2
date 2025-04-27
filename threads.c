@@ -162,6 +162,12 @@ xmlMutexUnlock(xmlMutexPtr tok)
 #endif
 }
 
+/**
+ * xmlInitRMutex:
+ * @tok:  mutex
+ *
+ * Initialize the mutex.
+ */
 void
 xmlInitRMutex(xmlRMutexPtr tok) {
     (void) tok;
@@ -198,6 +204,12 @@ xmlNewRMutex(void)
     return (tok);
 }
 
+/**
+ * xmlCleanupRMutex:
+ * @tok:  mutex
+ *
+ * Cleanup the mutex.
+ */
 void
 xmlCleanupRMutex(xmlRMutexPtr tok) {
     (void) tok;
