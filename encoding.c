@@ -1117,6 +1117,14 @@ xmlIconvConvert(unsigned char *out, int *outlen,
          */
         if (errno == EINVAL)
             return(XML_ENC_ERR_SUCCESS);
+#ifdef __APPLE__
+        /*
+         * Apple's new libiconv can return EOPNOTSUPP under
+         * unknown circumstances (detected when fuzzing).
+         */
+        if (errno == EOPNOTSUPP)
+            return(XML_ENC_ERR_INPUT);
+#endif
         return(XML_ENC_ERR_INTERNAL);
     }
     return(XML_ENC_ERR_SUCCESS);
@@ -1131,6 +1139,32 @@ xmlIconvFree(void *vctxt) {
 
     xmlFree(ctxt);
 }
+
+#if defined(FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION) && \
+    defined(__GLIBC__)
+#include "private/parser.h"
+
+static int
+xmlEncodingMatch(const char *name1, const char *name2) {
+    /*
+     * Fuzzy match for encoding names
+     */
+    while (1) {
+        while ((*name1 != 0) && (!IS_ASCII_LETTER(*name1)))
+            name1 += 1;
+        while ((*name2 != 0) && (!IS_ASCII_LETTER(*name2)))
+            name2 += 1;
+        if ((*name1 == 0) || (*name2 == 0))
+            break;
+        if ((*name1 | 0x20) != (*name2 | 0x20))
+            return(0);
+        name1 += 1;
+        name2 += 1;
+    }
+
+    return((*name1 == 0) && (*name2 == 0));
+}
+#endif /* FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION */
 
 static int
 xmlCharEncIconv(void *vctxt, const char *name, xmlCharEncConverter *conv) {
@@ -1171,6 +1205,21 @@ xmlCharEncIconv(void *vctxt, const char *name, xmlCharEncConverter *conv) {
         ret = XML_ERR_UNSUPPORTED_ENCODING;
         goto error;
     }
+
+#if defined(FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION) && \
+    defined(__GLIBC__)
+    /*
+     * This glibc bug can lead to unpredictable results with the
+     * push parser.
+     *
+     * https://sourceware.org/bugzilla/show_bug.cgi?id=32633
+     */
+    if ((xmlEncodingMatch(name, "TSCII")) ||
+        (xmlEncodingMatch(name, "BIG5-HKSCS"))) {
+        ret = XML_ERR_UNSUPPORTED_ENCODING;
+        goto error;
+    }
+#endif
 
     inputCtxt = xmlMalloc(sizeof(xmlIconvCtxt));
     if (inputCtxt == NULL) {

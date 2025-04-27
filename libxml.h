@@ -41,6 +41,12 @@
 #include <libxml/xmlversion.h>
 #include <libxml/xmlstring.h>
 
+#if defined(__has_attribute)
+#define XML_HAS_ATTRIBUTE(x) __has_attribute(x)
+#else
+#define XML_HAS_ATTRIBUTE(x) 0
+#endif
+
 #if __STDC_VERSION__ >= 199901L
   #define XML_INLINE inline
 #elif defined(_MSC_VER)
@@ -83,8 +89,7 @@
   #define ATTRIBUTE_DESTRUCTOR __attribute__((destructor))
 #endif
 
-#if (defined(__clang__) && __clang_major__ >= 18) || \
-    (defined(__GNUC__) && __GNUC__ >= 15)
+#if XML_HAS_ATTRIBUTE(__counted_by__)
   #define ATTRIBUTE_COUNTED_BY(c) __attribute__((__counted_by__(c)))
 #else
   #define ATTRIBUTE_COUNTED_BY(c)

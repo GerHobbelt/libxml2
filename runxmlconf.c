@@ -35,11 +35,7 @@
 static FILE *logfile = NULL;
 static int verbose = 0;
 
-#ifdef LIBXML_REGEXP_ENABLED
-  #define NB_EXPECTED_ERRORS 15
-#else
-  #define NB_EXPECTED_ERRORS 16
-#endif
+#define NB_EXPECTED_ERRORS 15
 
 
 const char *skipped_tests[] = {
