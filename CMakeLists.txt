@@ -16,7 +16,6 @@ include(CheckCSourceCompiles)
 include(CheckFunctionExists)
 include(CheckIncludeFiles)
 include(CheckLibraryExists)
-include(CheckLinkerFlag)
 include(CheckStructHasMember)
 include(CheckSymbolExists)
 include(CMakeDependentOption)
@@ -61,11 +60,11 @@ cmake_dependent_option(
     LIBXML2_WITH_READER "Add the xmlReader parsing interface" ON
     "LIBXML2_WITH_PUSH" OFF)
 cmake_dependent_option(
-    LIBXML2_WITH_RELAXNG "Add Relax-NG support" ON
-    "LIBXML2_WITH_REGEXPS;LIBXML2_WITH_SCHEMAS" OFF)
-cmake_dependent_option(
     LIBXML2_WITH_SCHEMAS "Add XML Schemas 1.0 support" ON
     "LIBXML2_WITH_PATTERN;LIBXML2_WITH_REGEXPS" OFF)
+cmake_dependent_option(
+    LIBXML2_WITH_RELAXNG "Add Relax-NG support" ON
+    "LIBXML2_WITH_REGEXPS;LIBXML2_WITH_SCHEMAS" OFF)
 cmake_dependent_option(
     LIBXML2_WITH_SCHEMATRON "Add Schematron support" ON
     "LIBXML2_WITH_PATTERN;LIBXML2_WITH_XPATH" OFF)
@@ -86,7 +85,7 @@ if(LIBXML2_WITH_PYTHON)
         CACHE PATH "Python bindings install directory")
 endif()
 
-foreach(VARIABLE IN ITEMS WITH_C14N WITH_CATALOG WITH_DEBUG WITH_HTML WITH_HTTP WITH_ICONV WITH_ICU WITH_ISO8859X WITH_LEGACY WITH_LZMA WITH_MODULES WITH_OUTPUT WITH_PATTERN WITH_PUSH WITH_READER WITH_REGEXPS WITH_RELAXNG WITH_SAX1 WITH_SCHEMAS WITH_SCHEMATRON WITH_THREADS WITH_THREAD_ALLOC WITH_VALID WITH_WRITER WITH_XINCLUDE WITH_XPATH WITH_XPTR WITH_ZLIB)
+foreach(VARIABLE IN ITEMS WITH_C14N WITH_CATALOG WITH_DEBUG WITH_HTML WITH_HTTP WITH_ICONV WITH_ICU WITH_ISO8859X WITH_LZMA WITH_MODULES WITH_OUTPUT WITH_PATTERN WITH_PUSH WITH_READER WITH_REGEXPS WITH_RELAXNG WITH_SAX1 WITH_SCHEMAS WITH_SCHEMATRON WITH_THREADS WITH_THREAD_ALLOC WITH_VALID WITH_WRITER WITH_XINCLUDE WITH_XPATH WITH_XPTR WITH_ZLIB)
     if(LIBXML2_${VARIABLE})
         set(${VARIABLE} 1)
     else()
@@ -259,9 +258,6 @@ endif()
 if(LIBXML2_WITH_HTTP)
     list(APPEND LIBXML2_SRCS nanohttp.c)
 endif()
-if(LIBXML2_WITH_LEGACY)
-    list(APPEND LIBXML2_SRCS legacy.c)
-endif()
 if(LIBXML2_WITH_LZMA)
     list(APPEND LIBXML2_SRCS xzlib.c)
 endif()
@@ -406,14 +402,6 @@ if(CMAKE_C_COMPILER_ID MATCHES "Clang" OR CMAKE_C_COMPILER_ID STREQUAL "GNU")
 -Wpointer-arith -Wcast-align -Wwrite-strings \
 -Wstrict-prototypes -Wmissing-prototypes \
 -Wno-long-long -Wno-format-extra-args -Wno-array-bounds")
-
-    if(LIBXML2_WITH_LEGACY AND BUILD_SHARED_LIBS AND UNIX AND NOT APPLE)
-        check_linker_flag(C "LINKER:--undefined-version" FLAG_UNDEFINED_VERSION)
-        if (FLAG_UNDEFINED_VERSION)
-            target_link_options(LibXml2 PRIVATE "LINKER:--undefined-version")
-        endif()
-        target_link_options(LibXml2 PRIVATE "LINKER:--version-script=${CMAKE_CURRENT_SOURCE_DIR}/libxml2.syms")
-    endif()
 endif()
 
 set(LIBXML_MINOR_COMPAT 0)

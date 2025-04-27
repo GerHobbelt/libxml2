@@ -36,9 +36,6 @@ libxml2_la_LIBADD = $(XML_PRIVATE_LIBS)
 
 libxml2_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined \
 		     -version-info $(LIBXML_VERSION_INFO)
-if USE_VERSION_SCRIPT
-libxml2_la_LDFLAGS += $(VERSION_SCRIPT_FLAGS)$(srcdir)/libxml2.syms
-endif
 
 libxml2_la_SOURCES = buf.c chvalid.c dict.c entities.c encoding.c error.c \
 		     globals.c hash.c list.c parser.c parserInternals.c \
@@ -67,9 +64,6 @@ libxml2_la_SOURCES += HTMLparser.c HTMLtree.c
 endif
 if WITH_HTTP_SOURCES
 libxml2_la_SOURCES += nanohttp.c
-endif
-if WITH_LEGACY_SOURCES
-libxml2_la_SOURCES += legacy.c
 endif
 if WITH_LZMA_SOURCES
 libxml2_la_SOURCES += xzlib.c
@@ -216,7 +210,7 @@ EXTRA_DIST = Copyright libxml2-config.cmake.in autogen.sh \
 	     html5ent.inc iso8859x.inc \
 	     tools/gentest.py \
 	     tools/genChRanges.py tools/genEscape.py tools/genUnicode.py \
-	     libxml2.syms timsort.h \
+	     timsort.h \
 	     README.zOS README.md \
 	     CMakeLists.txt config.h.cmake.in libxml2-config.cmake.cmake.in \
 	     meson.build meson_options.txt

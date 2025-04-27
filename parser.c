@@ -587,11 +587,7 @@ xmlHasFeature(xmlFeature feature)
             return(0);
 #endif
         case XML_WITH_LEGACY:
-#ifdef LIBXML_LEGACY_ENABLED
-            return(1);
-#else
             return(0);
-#endif
         case XML_WITH_C14N:
 #ifdef LIBXML_C14N_ENABLED
             return(1);
@@ -2049,33 +2045,6 @@ xmlCtxtPopInput(xmlParserCtxtPtr ctxt)
 }
 
 /**
- * inputPush:
- * @ctxt:  an XML parser context
- * @value:  the parser input
- *
- * Pushes a new parser input on top of the input stack
- *
- * Returns -1 in case of error, the index in the stack otherwise
- */
-int
-inputPush(xmlParserCtxtPtr ctxt, xmlParserInputPtr value)
-{
-    return(xmlCtxtPushInput(ctxt, value));
-}
-/**
- * inputPop:
- * @ctxt: an XML parser context
- *
- * Pops the top parser input from the input stack
- *
- * Returns the input just removed
- */
-xmlParserInputPtr
-inputPop(xmlParserCtxtPtr ctxt)
-{
-    return(xmlCtxtPopInput(ctxt));
-}
-/**
  * nodePush:
  * @ctxt:  an XML parser context
  * @value:  the element node
@@ -2236,46 +2205,6 @@ nameNsPop(xmlParserCtxtPtr ctxt)
 #endif /* LIBXML_PUSH_ENABLED */
 
 /**
- * namePush:
- * @ctxt:  an XML parser context
- * @value:  the element name
- *
- * DEPRECATED: Internal function, do not use.
- *
- * Pushes a new element name on top of the name stack
- *
- * Returns -1 in case of error, the index in the stack otherwise
- */
-int
-namePush(xmlParserCtxtPtr ctxt, const xmlChar * value)
-{
-    if (ctxt == NULL) return (-1);
-
-    if (ctxt->nameNr >= ctxt->nameMax) {
-        const xmlChar **tmp;
-        int newSize;
-
-        newSize = xmlGrowCapacity(ctxt->nameMax, sizeof(tmp[0]),
-                                  10, XML_MAX_ITEMS);
-        if (newSize < 0)
-            goto mem_error;
-
-        tmp = xmlRealloc(ctxt->nameTab, newSize * sizeof(tmp[0]));
-        if (tmp == NULL)
-	    goto mem_error;
-	ctxt->nameTab = tmp;
-
-        ctxt->nameMax = newSize;
-    }
-    ctxt->nameTab[ctxt->nameNr] = value;
-    ctxt->name = value;
-    return (ctxt->nameNr++);
-mem_error:
-    xmlErrMemory(ctxt);
-    return (-1);
-}
-
-/**
  * namePop:
  * @ctxt: an XML parser context
  *
@@ -2285,7 +2214,7 @@ mem_error:
  *
  * Returns the name just removed
  */
-const xmlChar *
+static const xmlChar *
 namePop(xmlParserCtxtPtr ctxt)
 {
     const xmlChar *ret;

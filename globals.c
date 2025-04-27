@@ -255,7 +255,7 @@ const int xmlParserDebugEntities = 0;
  * Global setting, indicate that the parser should work in validating mode.
  * Disabled by default.
  */
-#if !defined(LIBXML_THREAD_ENABLED) || defined(LIBXML_LEGACY_ENABLED)
+#if !defined(LIBXML_THREAD_ENABLED)
 int xmlDoValidityCheckingDefaultValue = 0;
 #endif
 static int xmlDoValidityCheckingDefaultValueThrDef = 0;
@@ -267,7 +267,7 @@ static int xmlDoValidityCheckingDefaultValueThrDef = 0;
  * Global setting, indicate that the DTD validation should provide warnings.
  * Activated by default.
  */
-#if !defined(LIBXML_THREAD_ENABLED) || defined(LIBXML_LEGACY_ENABLED)
+#if !defined(LIBXML_THREAD_ENABLED)
 int xmlGetWarningsDefaultValue = 1;
 #endif
 static int xmlGetWarningsDefaultValueThrDef = 1;
@@ -280,7 +280,7 @@ static int xmlGetWarningsDefaultValueThrDef = 1;
  * validating.
  * Disabled by default.
  */
-#if !defined(LIBXML_THREAD_ENABLED) || defined(LIBXML_LEGACY_ENABLED)
+#if !defined(LIBXML_THREAD_ENABLED)
 int xmlLoadExtDtdDefaultValue = 0;
 #endif
 static int xmlLoadExtDtdDefaultValueThrDef = 0;
@@ -292,7 +292,7 @@ static int xmlLoadExtDtdDefaultValueThrDef = 0;
  * Global setting, indicate that the parser be pedantic
  * Disabled by default.
  */
-#if !defined(LIBXML_THREAD_ENABLED) || defined(LIBXML_LEGACY_ENABLED)
+#if !defined(LIBXML_THREAD_ENABLED)
 int xmlPedanticParserDefaultValue = 0;
 #endif
 static int xmlPedanticParserDefaultValueThrDef = 0;
@@ -306,7 +306,7 @@ static int xmlPedanticParserDefaultValueThrDef = 0;
  * Disabled by default since this may not be safe for old classes of
  * application.
  */
-#if !defined(LIBXML_THREAD_ENABLED) || defined(LIBXML_LEGACY_ENABLED)
+#if !defined(LIBXML_THREAD_ENABLED)
 int xmlLineNumbersDefaultValue = 0;
 #endif
 static int xmlLineNumbersDefaultValueThrDef = 0;
@@ -321,7 +321,7 @@ static int xmlLineNumbersDefaultValueThrDef = 0;
  * conformant to the XML Recommendation, however the option is kept
  * for some applications since this was libxml1 default behaviour.
  */
-#if !defined(LIBXML_THREAD_ENABLED) || defined(LIBXML_LEGACY_ENABLED)
+#if !defined(LIBXML_THREAD_ENABLED)
 int xmlKeepBlanksDefaultValue = 1;
 #endif
 static int xmlKeepBlanksDefaultValueThrDef = 1;
@@ -336,7 +336,7 @@ static int xmlKeepBlanksDefaultValueThrDef = 1;
  * the XPath data model requires entities replacement and the XPath
  * engine does not handle entities references transparently.
  */
-#if !defined(LIBXML_THREAD_ENABLED) || defined(LIBXML_LEGACY_ENABLED)
+#if !defined(LIBXML_THREAD_ENABLED)
 int xmlSubstituteEntitiesDefaultValue = 0;
 #endif
 static int xmlSubstituteEntitiesDefaultValueThrDef = 0;
@@ -346,7 +346,7 @@ static int xmlSubstituteEntitiesDefaultValueThrDef = 0;
  *
  * DEPRECATED: Don't use
  */
-#if !defined(LIBXML_THREAD_ENABLED) || defined(LIBXML_LEGACY_ENABLED)
+#if !defined(LIBXML_THREAD_ENABLED)
 xmlRegisterNodeFunc xmlRegisterNodeDefaultValue = NULL;
 #endif
 static xmlRegisterNodeFunc xmlRegisterNodeDefaultValueThrDef = NULL;
@@ -356,7 +356,7 @@ static xmlRegisterNodeFunc xmlRegisterNodeDefaultValueThrDef = NULL;
  *
  * DEPRECATED: Don't use
  */
-#if !defined(LIBXML_THREAD_ENABLED) || defined(LIBXML_LEGACY_ENABLED)
+#if !defined(LIBXML_THREAD_ENABLED)
 xmlDeregisterNodeFunc xmlDeregisterNodeDefaultValue = NULL;
 #endif
 static xmlDeregisterNodeFunc xmlDeregisterNodeDefaultValueThrDef = NULL;
@@ -366,7 +366,7 @@ static xmlDeregisterNodeFunc xmlDeregisterNodeDefaultValueThrDef = NULL;
  *
  * DEPRECATED: Don't use
  */
-#if !defined(LIBXML_THREAD_ENABLED) || defined(LIBXML_LEGACY_ENABLED)
+#if !defined(LIBXML_THREAD_ENABLED)
 xmlParserInputBufferCreateFilenameFunc
 xmlParserInputBufferCreateFilenameValue = NULL;
 #endif
@@ -378,7 +378,7 @@ xmlParserInputBufferCreateFilenameValueThrDef = NULL;
  *
  * DEPRECATED: Don't use
  */
-#if !defined(LIBXML_THREAD_ENABLED) || defined(LIBXML_LEGACY_ENABLED)
+#if !defined(LIBXML_THREAD_ENABLED)
 xmlOutputBufferCreateFilenameFunc xmlOutputBufferCreateFilenameValue = NULL;
 #endif
 static xmlOutputBufferCreateFilenameFunc
@@ -391,7 +391,7 @@ xmlOutputBufferCreateFilenameValueThrDef = NULL;
  *
  * Global setting: function used for generic error callbacks
  */
-#if !defined(LIBXML_THREAD_ENABLED) || defined(LIBXML_LEGACY_ENABLED)
+#if !defined(LIBXML_THREAD_ENABLED)
 xmlGenericErrorFunc xmlGenericError = xmlGenericErrorDefaultFunc;
 #endif
 static xmlGenericErrorFunc xmlGenericErrorThrDef = xmlGenericErrorDefaultFunc;
@@ -402,7 +402,7 @@ static xmlGenericErrorFunc xmlGenericErrorThrDef = xmlGenericErrorDefaultFunc;
  *
  * Global setting: function used for structured error callbacks
  */
-#if !defined(LIBXML_THREAD_ENABLED) || defined(LIBXML_LEGACY_ENABLED)
+#if !defined(LIBXML_THREAD_ENABLED)
 xmlStructuredErrorFunc xmlStructuredError = NULL;
 #endif
 static xmlStructuredErrorFunc xmlStructuredErrorThrDef = NULL;
@@ -413,7 +413,7 @@ static xmlStructuredErrorFunc xmlStructuredErrorThrDef = NULL;
  *
  * Global setting passed to generic error callbacks
  */
-#if !defined(LIBXML_THREAD_ENABLED) || defined(LIBXML_LEGACY_ENABLED)
+#if !defined(LIBXML_THREAD_ENABLED)
 void *xmlGenericErrorContext = NULL;
 #endif
 static void *xmlGenericErrorContextThrDef = NULL;
@@ -424,11 +424,11 @@ static void *xmlGenericErrorContextThrDef = NULL;
  *
  * Global setting passed to structured error callbacks
  */
-#if !defined(LIBXML_THREAD_ENABLED) || defined(LIBXML_LEGACY_ENABLED)
+#if !defined(LIBXML_THREAD_ENABLED)
 void *xmlStructuredErrorContext = NULL;
 #endif
 static void *xmlStructuredErrorContextThrDef = NULL;
-#if !defined(LIBXML_THREAD_ENABLED) || defined(LIBXML_LEGACY_ENABLED)
+#if !defined(LIBXML_THREAD_ENABLED)
 xmlError xmlLastError;
 #endif
 
@@ -444,7 +444,7 @@ xmlError xmlLastError;
  * Global setting, asking the serializer to indent the output tree by default
  * Enabled by default
  */
-#if !defined(LIBXML_THREAD_ENABLED) || defined(LIBXML_LEGACY_ENABLED)
+#if !defined(LIBXML_THREAD_ENABLED)
 int xmlIndentTreeOutput = 1;
 #endif
 static int xmlIndentTreeOutputThrDef = 1;
@@ -457,7 +457,7 @@ static int xmlIndentTreeOutputThrDef = 1;
  * The string used to do one-level indent. By default is equal to
  * "  " (two spaces)
  */
-#if !defined(LIBXML_THREAD_ENABLED) || defined(LIBXML_LEGACY_ENABLED)
+#if !defined(LIBXML_THREAD_ENABLED)
 const char *xmlTreeIndentString = "  ";
 #endif
 static const char *xmlTreeIndentStringThrDef = "  ";
@@ -472,7 +472,7 @@ static const char *xmlTreeIndentStringThrDef = "  ";
  * once parsed.
  * Disabled by default
  */
-#if !defined(LIBXML_THREAD_ENABLED) || defined(LIBXML_LEGACY_ENABLED)
+#if !defined(LIBXML_THREAD_ENABLED)
 int xmlSaveNoEmptyTags = 0;
 #endif
 static int xmlSaveNoEmptyTagsThrDef = 0;
