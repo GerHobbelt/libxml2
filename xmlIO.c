@@ -445,6 +445,10 @@ xmlConvertUriToPath(const char *uri, char **out) {
     return(0);
 }
 
+typedef struct {
+    int fd;
+} xmlFdIOCtxt;
+
 /**
  * xmlFdOpen:
  * @filename:  the URI for matching
@@ -524,7 +528,8 @@ xmlFdOpen(const char *filename, int write, int *out) {
  */
 static int
 xmlFdRead(void *context, char *buffer, int len) {
-    int fd = (int) (ptrdiff_t) context;
+    xmlFdIOCtxt *fdctxt = context;
+    int fd = fdctxt->fd;
     int ret = 0;
     int bytes;
 
@@ -562,7 +567,8 @@ xmlFdRead(void *context, char *buffer, int len) {
  */
 static int
 xmlFdWrite(void *context, const char *buffer, int len) {
-    int fd = (int) (ptrdiff_t) context;
+    xmlFdIOCtxt *fdctxt = context;
+    int fd = fdctxt->fd;
     int ret = 0;
     int bytes;
 
@@ -579,6 +585,12 @@ xmlFdWrite(void *context, const char *buffer, int len) {
 }
 #endif /* LIBXML_OUTPUT_ENABLED */
 
+static int
+xmlFdFree(void *context) {
+    xmlFree(context);
+    return(XML_ERR_OK);
+}
+
 /**
  * xmlFdClose:
  * @context:  the I/O context
@@ -589,9 +601,14 @@ xmlFdWrite(void *context, const char *buffer, int len) {
  */
 static int
 xmlFdClose (void * context) {
+    xmlFdIOCtxt *fdctxt = context;
+    int fd = fdctxt->fd;
     int ret;
 
-    ret = close((int) (ptrdiff_t) context);
+    ret = close(fd);
+
+    xmlFree(fdctxt);
+
     if (ret < 0)
         return(xmlIOErr(errno));
 
@@ -1038,6 +1055,7 @@ xmlIODefaultMatch(const char *filename ATTRIBUTE_UNUSED) {
 static int
 xmlInputDefaultOpen(xmlParserInputBufferPtr buf, const char *filename,
                     int flags) {
+    xmlFdIOCtxt *fdctxt;
     int ret;
     int fd;
 
@@ -1133,7 +1151,14 @@ xmlInputDefaultOpen(xmlParserInputBufferPtr buf, const char *filename,
     if (ret != XML_ERR_OK)
         return(ret);
 
-    buf->context = (void *) (ptrdiff_t) fd;
+    fdctxt = xmlMalloc(sizeof(*fdctxt));
+    if (fdctxt == NULL) {
+        close(fd);
+        return(XML_ERR_NO_MEMORY);
+    }
+    fdctxt->fd = fd;
+
+    buf->context = fdctxt;
     buf->readcallback = xmlFdRead;
     buf->closecallback = xmlFdClose;
     return(XML_ERR_OK);
@@ -1152,6 +1177,7 @@ xmlInputDefaultOpen(xmlParserInputBufferPtr buf, const char *filename,
 static int
 xmlOutputDefaultOpen(xmlOutputBufferPtr buf, const char *filename,
                      int compression) {
+    xmlFdIOCtxt *fdctxt;
     int fd;
 
     (void) compression;
@@ -1190,7 +1216,14 @@ xmlOutputDefaultOpen(xmlOutputBufferPtr buf, const char *filename,
     }
 #endif /* LIBXML_ZLIB_ENABLED */
 
-    buf->context = (void *) (ptrdiff_t) fd;
+    fdctxt = xmlMalloc(sizeof(*fdctxt));
+    if (fdctxt == NULL) {
+        close(fd);
+        return(XML_ERR_NO_MEMORY);
+    }
+    fdctxt->fd = fd;
+
+    buf->context = fdctxt;
     buf->writecallback = xmlFdWrite;
     buf->closecallback = xmlFdClose;
     return(XML_ERR_OK);
@@ -1730,8 +1763,17 @@ xmlParserInputBufferCreateFd(int fd, xmlCharEncoding enc) {
 
     ret = xmlAllocParserInputBuffer(enc);
     if (ret != NULL) {
-        ret->context = (void *) (ptrdiff_t) fd;
+        xmlFdIOCtxt *fdctxt;
+
+        fdctxt = xmlMalloc(sizeof(*fdctxt));
+        if (fdctxt == NULL) {
+            return(NULL);
+        }
+        fdctxt->fd = fd;
+
+        ret->context = fdctxt;
 	ret->readcallback = xmlFdRead;
+        ret->closecallback = xmlFdFree;
     }
 
     return(ret);
@@ -1935,9 +1977,17 @@ xmlOutputBufferCreateFd(int fd, xmlCharEncodingHandlerPtr encoder) {
 
     ret = xmlAllocOutputBuffer(encoder);
     if (ret != NULL) {
-        ret->context = (void *) (ptrdiff_t) fd;
+        xmlFdIOCtxt *fdctxt;
+
+        fdctxt = xmlMalloc(sizeof(*fdctxt));
+        if (fdctxt == NULL) {
+            return(NULL);
+        }
+        fdctxt->fd = fd;
+
+        ret->context = fdctxt;
 	ret->writecallback = xmlFdWrite;
-	ret->closecallback = NULL;
+        ret->closecallback = xmlFdFree;
     }
 
     return(ret);
