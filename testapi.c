@@ -36,8 +36,13 @@ ignoreError(void *userData ATTRIBUTE_UNUSED,
             const xmlError *error ATTRIBUTE_UNUSED) {
 }
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main      xml_testapi_main
+#endif
+
 int
-main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
+main(void) {
     xmlInitParser();
     xmlSetStructuredErrorFunc(NULL, ignoreError);
 
