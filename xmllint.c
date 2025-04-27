@@ -3290,7 +3290,7 @@ xmllintMain(int argc, const char **argv, FILE *errStream,
         xmlMemSetup(myFreeFunc, myMallocFunc, myReallocFunc, myStrdupFunc);
     }
 
-    LIBXML_TEST_VERSION
+    LIBXML_TEST_VERSION();
 
 #ifdef LIBXML_CATALOG_ENABLED
     if (lint->nocatalogs == 0) {
@@ -3581,16 +3581,3 @@ error:
 
     return(lint->progresult);
 }
-
-
-#ifndef XMLLINT_FUZZ
-
-#if defined(BUILD_MONOLITHIC)
-#define main(cnt, arr)      xml_xmllint_main(cnt, arr)
-#endif
-
-int main(int argc, const char** argv) {
-    return(xmllintMain(argc, argv, NULL));
-}
-#endif
-
