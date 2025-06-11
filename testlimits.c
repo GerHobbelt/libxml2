@@ -467,7 +467,7 @@ externalSubsetCallback(void *ctx ATTRIBUTE_UNUSED,
  * @param ctxt  An XML parser context
  * @param publicId  The public ID of the entity
  * @param systemId  The system ID of the entity
- * @returns the xmlParserInputPtr if inlined or NULL for DOM behaviour.
+ * @returns the xmlParserInput if inlined or NULL for DOM behaviour.
  */
 static xmlParserInputPtr
 resolveEntityCallback(void *ctx ATTRIBUTE_UNUSED,
@@ -483,7 +483,7 @@ resolveEntityCallback(void *ctx ATTRIBUTE_UNUSED,
  *
  * @param ctxt  An XML parser context
  * @param name  The entity name
- * @returns the xmlParserInputPtr if inlined or NULL for DOM behaviour.
+ * @returns the xmlParserInput if inlined or NULL for DOM behaviour.
  */
 static xmlEntityPtr
 getEntityCallback(void *ctx ATTRIBUTE_UNUSED,
@@ -498,7 +498,7 @@ getEntityCallback(void *ctx ATTRIBUTE_UNUSED,
  *
  * @param ctxt  An XML parser context
  * @param name  The entity name
- * @returns the xmlParserInputPtr
+ * @returns the xmlParserInput
  */
 static xmlEntityPtr
 getParameterEntityCallback(void *ctx ATTRIBUTE_UNUSED,

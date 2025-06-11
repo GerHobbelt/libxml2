@@ -21,8 +21,10 @@ extern "C" {
 /*
  * Backward compatibility
  */
+/** @cond ignore */
 #define UTF8Toisolat1 xmlUTF8ToIsolat1
 #define isolat1ToUTF8 xmlIsolat1ToUTF8
+/** @endcond */
 
 /**
  * Encoding conversion errors
@@ -107,7 +109,9 @@ typedef enum {
     /** ISO-8859-15, available since 2.14 */
     XML_CHAR_ENCODING_8859_15=	29,
     /** ISO-8859-16, available since 2.14 */
-    XML_CHAR_ENCODING_8859_16=	30
+    XML_CHAR_ENCODING_8859_16=	30,
+    /** windows-1252, available since 2.15 */
+    XML_CHAR_ENCODING_WINDOWS_1252 = 31
 } xmlCharEncoding;
 
 /**
@@ -117,7 +121,9 @@ typedef enum {
     /** Create converter for input (conversion to UTF-8) */
     XML_ENC_INPUT = (1 << 0),
     /** Create converter for output (conversion from UTF-8) */
-    XML_ENC_OUTPUT = (1 << 1)
+    XML_ENC_OUTPUT = (1 << 1),
+    /** Use HTML5 mappings */
+    XML_ENC_HTML = (1 << 2)
 } xmlCharEncFlags;
 
 /**
@@ -182,13 +188,13 @@ typedef xmlCharEncError
 typedef void
 (*xmlCharEncConvCtxtDtor)(void *vctxt);
 
-/*
- * Block defining the handlers for non UTF-8 encodings.
+typedef struct _xmlCharEncodingHandler xmlCharEncodingHandler;
+typedef xmlCharEncodingHandler *xmlCharEncodingHandlerPtr;
+/**
+ * A character encoding conversion handler for non UTF-8 encodings.
  *
  * This structure will be made private.
  */
-typedef struct _xmlCharEncodingHandler xmlCharEncodingHandler;
-typedef xmlCharEncodingHandler *xmlCharEncodingHandlerPtr;
 struct _xmlCharEncodingHandler {
     char *name XML_DEPRECATED_MEMBER;
     union {
@@ -233,26 +239,26 @@ XMLPUBFUN void
 	xmlCleanupCharEncodingHandlers	(void);
 XML_DEPRECATED
 XMLPUBFUN void
-	xmlRegisterCharEncodingHandler	(xmlCharEncodingHandlerPtr handler);
+	xmlRegisterCharEncodingHandler	(xmlCharEncodingHandler *handler);
 XMLPUBFUN xmlParserErrors
 	xmlLookupCharEncodingHandler	(xmlCharEncoding enc,
-					 xmlCharEncodingHandlerPtr *out);
+					 xmlCharEncodingHandler **out);
 XMLPUBFUN xmlParserErrors
 	xmlOpenCharEncodingHandler	(const char *name,
 					 int output,
-					 xmlCharEncodingHandlerPtr *out);
+					 xmlCharEncodingHandler **out);
 XMLPUBFUN xmlParserErrors
 	xmlCreateCharEncodingHandler	(const char *name,
 					 xmlCharEncFlags flags,
 					 xmlCharEncConvImpl impl,
 					 void *implCtxt,
-					 xmlCharEncodingHandlerPtr *out);
-XMLPUBFUN xmlCharEncodingHandlerPtr
+					 xmlCharEncodingHandler **out);
+XMLPUBFUN xmlCharEncodingHandler *
 	xmlGetCharEncodingHandler	(xmlCharEncoding enc);
-XMLPUBFUN xmlCharEncodingHandlerPtr
+XMLPUBFUN xmlCharEncodingHandler *
 	xmlFindCharEncodingHandler	(const char *name);
 XML_DEPRECATED
-XMLPUBFUN xmlCharEncodingHandlerPtr
+XMLPUBFUN xmlCharEncodingHandler *
 	xmlNewCharEncodingHandler	(const char *name,
 					 xmlCharEncodingInputFunc input,
 					 xmlCharEncodingOutputFunc output);

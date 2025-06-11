@@ -750,7 +750,7 @@ externalSubsetDebug(void *ctx ATTRIBUTE_UNUSED, const xmlChar *name,
  * @param ctxt  An XML parser context
  * @param publicId  The public ID of the entity
  * @param systemId  The system ID of the entity
- * @returns the xmlParserInputPtr if inlined or NULL for DOM behaviour.
+ * @returns the xmlParserInput if inlined or NULL for DOM behaviour.
  */
 static xmlParserInputPtr
 resolveEntityDebug(void *ctx ATTRIBUTE_UNUSED, const xmlChar *publicId, const xmlChar *systemId)
@@ -783,7 +783,7 @@ resolveEntityDebug(void *ctx ATTRIBUTE_UNUSED, const xmlChar *publicId, const xm
  *
  * @param ctxt  An XML parser context
  * @param name  The entity name
- * @returns the xmlParserInputPtr if inlined or NULL for DOM behaviour.
+ * @returns the xmlParserInput if inlined or NULL for DOM behaviour.
  */
 static xmlEntityPtr
 getEntityDebug(void *ctx, const xmlChar *name)
@@ -803,7 +803,7 @@ getEntityDebug(void *ctx, const xmlChar *name)
  *
  * @param ctxt  An XML parser context
  * @param name  The entity name
- * @returns the xmlParserInputPtr
+ * @returns the xmlParserInput
  */
 static xmlEntityPtr
 getParameterEntityDebug(void *ctx, const xmlChar *name)

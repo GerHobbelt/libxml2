@@ -583,7 +583,7 @@ xmlValidBuildAContentModel(xmlElementContentPtr content,
  * @returns 1 in case of success, 0 in case of error
  */
 int
-xmlValidBuildContentModel(xmlValidCtxtPtr ctxt, xmlElementPtr elem) {
+xmlValidBuildContentModel(xmlValidCtxt *ctxt, xmlElement *elem) {
     int ret = 0;
 
     if ((ctxt == NULL) || (elem == NULL))
@@ -650,7 +650,7 @@ done:
  * @returns the new validation context or NULL if a memory
  * allocation failed.
  */
-xmlValidCtxtPtr xmlNewValidCtxt(void) {
+xmlValidCtxt *xmlNewValidCtxt(void) {
     xmlValidCtxtPtr ret;
 
     ret = xmlMalloc(sizeof (xmlValidCtxt));
@@ -668,7 +668,7 @@ xmlValidCtxtPtr xmlNewValidCtxt(void) {
  * @param cur  the validation context to free
  */
 void
-xmlFreeValidCtxt(xmlValidCtxtPtr cur) {
+xmlFreeValidCtxt(xmlValidCtxt *cur) {
     if (cur == NULL)
         return;
     if (cur->vstateTab != NULL)
@@ -691,8 +691,8 @@ xmlFreeValidCtxt(xmlValidCtxtPtr cur) {
  * @returns the new element content structure or NULL on
  * error.
  */
-xmlElementContentPtr
-xmlNewDocElementContent(xmlDocPtr doc, const xmlChar *name,
+xmlElementContent *
+xmlNewDocElementContent(xmlDoc *doc, const xmlChar *name,
                         xmlElementContentType type) {
     xmlElementContentPtr ret;
     xmlDictPtr dict = NULL;
@@ -771,7 +771,7 @@ error:
  * @returns the new element content structure or NULL on
  * error.
  */
-xmlElementContentPtr
+xmlElementContent *
 xmlNewElementContent(const xmlChar *name, xmlElementContentType type) {
     return(xmlNewDocElementContent(NULL, name, type));
 }
@@ -783,10 +783,10 @@ xmlNewElementContent(const xmlChar *name, xmlElementContentType type) {
  *
  * @param doc  the document owning the element declaration
  * @param cur  An element content pointer.
- * @returns the new xmlElementContentPtr or NULL in case of error.
+ * @returns the new xmlElementContent or NULL in case of error.
  */
-xmlElementContentPtr
-xmlCopyDocElementContent(xmlDocPtr doc, xmlElementContentPtr cur) {
+xmlElementContent *
+xmlCopyDocElementContent(xmlDoc *doc, xmlElementContent *cur) {
     xmlElementContentPtr ret = NULL, prev = NULL, tmp;
     xmlDictPtr dict = NULL;
 
@@ -877,10 +877,10 @@ error:
  * @deprecated Internal function, don't use.
  *
  * @param cur  An element content pointer.
- * @returns the new xmlElementContentPtr or NULL in case of error.
+ * @returns the new xmlElementContent or NULL in case of error.
  */
-xmlElementContentPtr
-xmlCopyElementContent(xmlElementContentPtr cur) {
+xmlElementContent *
+xmlCopyElementContent(xmlElementContent *cur) {
     return(xmlCopyDocElementContent(NULL, cur));
 }
 
@@ -893,7 +893,7 @@ xmlCopyElementContent(xmlElementContentPtr cur) {
  * @param cur  the element content tree to free
  */
 void
-xmlFreeDocElementContent(xmlDocPtr doc, xmlElementContentPtr cur) {
+xmlFreeDocElementContent(xmlDoc *doc, xmlElementContent *cur) {
     xmlDictPtr dict = NULL;
     size_t depth = 0;
 
@@ -960,7 +960,7 @@ xmlFreeDocElementContent(xmlDocPtr doc, xmlElementContentPtr cur) {
  * @param cur  the element content tree to free
  */
 void
-xmlFreeElementContent(xmlElementContentPtr cur) {
+xmlFreeElementContent(xmlElementContent *cur) {
     xmlFreeDocElementContent(NULL, cur);
 }
 
@@ -976,7 +976,7 @@ xmlFreeElementContent(xmlElementContentPtr cur) {
  */
 void
 xmlSprintfElementContent(char *buf ATTRIBUTE_UNUSED,
-	                 xmlElementContentPtr content ATTRIBUTE_UNUSED,
+	                 xmlElementContent *content ATTRIBUTE_UNUSED,
 			 int englob ATTRIBUTE_UNUSED) {
 }
 #endif /* LIBXML_OUTPUT_ENABLED */
@@ -993,7 +993,7 @@ xmlSprintfElementContent(char *buf ATTRIBUTE_UNUSED,
  * @param englob  1 if one must print the englobing parenthesis, 0 otherwise
  */
 void
-xmlSnprintfElementContent(char *buf, int size, xmlElementContentPtr content, int englob) {
+xmlSnprintfElementContent(char *buf, int size, xmlElementContent *content, int englob) {
     int len;
 
     if (content == NULL) return;
@@ -1124,11 +1124,11 @@ xmlFreeElement(xmlElementPtr elem) {
  * @param content  the element content tree or NULL
  * @returns the entity or NULL on error.
  */
-xmlElementPtr
-xmlAddElementDecl(xmlValidCtxtPtr ctxt,
-                  xmlDtdPtr dtd, const xmlChar *name,
+xmlElement *
+xmlAddElementDecl(xmlValidCtxt *ctxt,
+                  xmlDtd *dtd, const xmlChar *name,
                   xmlElementTypeVal type,
-		  xmlElementContentPtr content) {
+		  xmlElementContent *content) {
     xmlElementPtr ret;
     xmlElementTablePtr table;
     xmlAttributePtr oldAttributes = NULL;
@@ -1333,7 +1333,7 @@ xmlFreeElementTableEntry(void *elem, const xmlChar *name ATTRIBUTE_UNUSED) {
  * @param table  An element table
  */
 void
-xmlFreeElementTable(xmlElementTablePtr table) {
+xmlFreeElementTable(xmlElementTable *table) {
     xmlHashFree(table, xmlFreeElementTableEntry);
 }
 
@@ -1342,7 +1342,7 @@ xmlFreeElementTable(xmlElementTablePtr table) {
  *
  * @param payload  an element
  * @param name  unused
- * @returns the new xmlElementPtr or NULL in case of error.
+ * @returns the new xmlElement or NULL in case of error.
  */
 static void *
 xmlCopyElement(void *payload, const xmlChar *name ATTRIBUTE_UNUSED) {
@@ -1385,10 +1385,10 @@ error:
  * @deprecated Internal function, don't use.
  *
  * @param table  An element table
- * @returns the new xmlElementTablePtr or NULL in case of error.
+ * @returns the new xmlElementTable or NULL in case of error.
  */
-xmlElementTablePtr
-xmlCopyElementTable(xmlElementTablePtr table) {
+xmlElementTable *
+xmlCopyElementTable(xmlElementTable *table) {
     return(xmlHashCopySafe(table, xmlCopyElement, xmlFreeElementTableEntry));
 }
 
@@ -1403,7 +1403,7 @@ xmlCopyElementTable(xmlElementTablePtr table) {
  * @param elem  An element table
  */
 void
-xmlDumpElementDecl(xmlBufferPtr buf, xmlElementPtr elem) {
+xmlDumpElementDecl(xmlBuffer *buf, xmlElement *elem) {
     xmlSaveCtxtPtr save;
 
     if ((buf == NULL) || (elem == NULL))
@@ -1439,7 +1439,7 @@ xmlDumpElementDeclScan(void *elem, void *save,
  * @param table  An element table
  */
 void
-xmlDumpElementTable(xmlBufferPtr buf, xmlElementTablePtr table) {
+xmlDumpElementTable(xmlBuffer *buf, xmlElementTable *table) {
     xmlSaveCtxtPtr save;
 
     if ((buf == NULL) || (table == NULL))
@@ -1458,10 +1458,10 @@ xmlDumpElementTable(xmlBufferPtr buf, xmlElementTablePtr table) {
  * @deprecated Internal function, don't use.
  *
  * @param name  the enumeration name or NULL
- * @returns the xmlEnumerationPtr just created or NULL in case
+ * @returns the xmlEnumeration just created or NULL in case
  * of error.
  */
-xmlEnumerationPtr
+xmlEnumeration *
 xmlCreateEnumeration(const xmlChar *name) {
     xmlEnumerationPtr ret;
 
@@ -1487,7 +1487,7 @@ xmlCreateEnumeration(const xmlChar *name) {
  * @param cur  the tree to free.
  */
 void
-xmlFreeEnumeration(xmlEnumerationPtr cur) {
+xmlFreeEnumeration(xmlEnumeration *cur) {
     while (cur != NULL) {
         xmlEnumerationPtr next = cur->next;
 
@@ -1504,11 +1504,11 @@ xmlFreeEnumeration(xmlEnumerationPtr cur) {
  * @deprecated Internal function, don't use.
  *
  * @param cur  the tree to copy.
- * @returns the xmlEnumerationPtr just created or NULL in case
+ * @returns the xmlEnumeration just created or NULL in case
  * of error.
  */
-xmlEnumerationPtr
-xmlCopyEnumeration(xmlEnumerationPtr cur) {
+xmlEnumeration *
+xmlCopyEnumeration(xmlEnumeration *cur) {
     xmlEnumerationPtr ret = NULL;
     xmlEnumerationPtr last = NULL;
 
@@ -1621,12 +1621,12 @@ xmlFreeAttribute(xmlAttributePtr attr) {
  * @param tree  if it's an enumeration, the associated list
  * @returns the attribute decl or NULL on error.
  */
-xmlAttributePtr
-xmlAddAttributeDecl(xmlValidCtxtPtr ctxt,
-                    xmlDtdPtr dtd, const xmlChar *elem,
+xmlAttribute *
+xmlAddAttributeDecl(xmlValidCtxt *ctxt,
+                    xmlDtd *dtd, const xmlChar *elem,
                     const xmlChar *name, const xmlChar *ns,
 		    xmlAttributeType type, xmlAttributeDefault def,
-		    const xmlChar *defaultValue, xmlEnumerationPtr tree) {
+		    const xmlChar *defaultValue, xmlEnumeration *tree) {
     xmlAttributePtr ret = NULL;
     xmlAttributeTablePtr table;
     xmlElementPtr elemDef;
@@ -1862,7 +1862,7 @@ xmlFreeAttributeTableEntry(void *attr, const xmlChar *name ATTRIBUTE_UNUSED) {
  * @param table  An attribute table
  */
 void
-xmlFreeAttributeTable(xmlAttributeTablePtr table) {
+xmlFreeAttributeTable(xmlAttributeTable *table) {
     xmlHashFree(table, xmlFreeAttributeTableEntry);
 }
 
@@ -1871,7 +1871,7 @@ xmlFreeAttributeTable(xmlAttributeTablePtr table) {
  *
  * @param payload  an attribute declaration
  * @param name  unused
- * @returns the new xmlAttributePtr or NULL in case of error.
+ * @returns the new xmlAttribute or NULL in case of error.
  */
 static void *
 xmlCopyAttribute(void *payload, const xmlChar *name ATTRIBUTE_UNUSED) {
@@ -1923,10 +1923,10 @@ error:
  * @deprecated Internal function, don't use.
  *
  * @param table  An attribute table
- * @returns the new xmlAttributeTablePtr or NULL in case of error.
+ * @returns the new xmlAttributeTable or NULL in case of error.
  */
-xmlAttributeTablePtr
-xmlCopyAttributeTable(xmlAttributeTablePtr table) {
+xmlAttributeTable *
+xmlCopyAttributeTable(xmlAttributeTable *table) {
     return(xmlHashCopySafe(table, xmlCopyAttribute,
                            xmlFreeAttributeTableEntry));
 }
@@ -1942,7 +1942,7 @@ xmlCopyAttributeTable(xmlAttributeTablePtr table) {
  * @param attr  An attribute declaration
  */
 void
-xmlDumpAttributeDecl(xmlBufferPtr buf, xmlAttributePtr attr) {
+xmlDumpAttributeDecl(xmlBuffer *buf, xmlAttribute *attr) {
     xmlSaveCtxtPtr save;
 
     if ((buf == NULL) || (attr == NULL))
@@ -1978,7 +1978,7 @@ xmlDumpAttributeDeclScan(void *attr, void *save,
  * @param table  an attribute table
  */
 void
-xmlDumpAttributeTable(xmlBufferPtr buf, xmlAttributeTablePtr table) {
+xmlDumpAttributeTable(xmlBuffer *buf, xmlAttributeTable *table) {
     xmlSaveCtxtPtr save;
 
     if ((buf == NULL) || (table == NULL))
@@ -2026,8 +2026,8 @@ xmlFreeNotation(xmlNotationPtr nota) {
  * @param SystemID  the system identifier or NULL
  * @returns the notation or NULL on error.
  */
-xmlNotationPtr
-xmlAddNotationDecl(xmlValidCtxtPtr ctxt, xmlDtdPtr dtd,
+xmlNotation *
+xmlAddNotationDecl(xmlValidCtxt *ctxt, xmlDtd *dtd,
 	           const xmlChar *name,
                    const xmlChar *PublicID, const xmlChar *SystemID) {
     xmlNotationPtr ret = NULL;
@@ -2117,7 +2117,7 @@ xmlFreeNotationTableEntry(void *nota, const xmlChar *name ATTRIBUTE_UNUSED) {
  * @param table  An notation table
  */
 void
-xmlFreeNotationTable(xmlNotationTablePtr table) {
+xmlFreeNotationTable(xmlNotationTable *table) {
     xmlHashFree(table, xmlFreeNotationTableEntry);
 }
 
@@ -2126,7 +2126,7 @@ xmlFreeNotationTable(xmlNotationTablePtr table) {
  *
  * @param payload  a notation
  * @param name  unused
- * @returns the new xmlNotationPtr or NULL in case of error.
+ * @returns the new xmlNotation or NULL in case of error.
  */
 static void *
 xmlCopyNotation(void *payload, const xmlChar *name ATTRIBUTE_UNUSED) {
@@ -2165,10 +2165,10 @@ error:
  * @deprecated Internal function, don't use.
  *
  * @param table  A notation table
- * @returns the new xmlNotationTablePtr or NULL in case of error.
+ * @returns the new xmlNotationTable or NULL in case of error.
  */
-xmlNotationTablePtr
-xmlCopyNotationTable(xmlNotationTablePtr table) {
+xmlNotationTable *
+xmlCopyNotationTable(xmlNotationTable *table) {
     return(xmlHashCopySafe(table, xmlCopyNotation, xmlFreeNotationTableEntry));
 }
 
@@ -2183,7 +2183,7 @@ xmlCopyNotationTable(xmlNotationTablePtr table) {
  * @param nota  A notation declaration
  */
 void
-xmlDumpNotationDecl(xmlBufferPtr buf, xmlNotationPtr nota) {
+xmlDumpNotationDecl(xmlBuffer *buf, xmlNotation *nota) {
     xmlSaveCtxtPtr save;
 
     if ((buf == NULL) || (nota == NULL))
@@ -2205,7 +2205,7 @@ xmlDumpNotationDecl(xmlBufferPtr buf, xmlNotationPtr nota) {
  * @param table  A notation table
  */
 void
-xmlDumpNotationTable(xmlBufferPtr buf, xmlNotationTablePtr table) {
+xmlDumpNotationTable(xmlBuffer *buf, xmlNotationTable *table) {
     xmlSaveCtxtPtr save;
 
     if ((buf == NULL) || (table == NULL))
@@ -2361,7 +2361,7 @@ xmlAddIDInternal(xmlAttrPtr attr, const xmlChar *value, xmlIDPtr *idPtr) {
  * allocation fails.
  */
 int
-xmlAddIDSafe(xmlAttrPtr attr, const xmlChar *value) {
+xmlAddIDSafe(xmlAttr *attr, const xmlChar *value) {
     return(xmlAddIDInternal(attr, value, NULL));
 }
 
@@ -2372,11 +2372,11 @@ xmlAddIDSafe(xmlAttrPtr attr, const xmlChar *value) {
  * @param doc  pointer to the document, must equal `attr->doc`
  * @param value  the attribute (ID) value
  * @param attr  the attribute holding the ID
- * @returns the new xmlIDPtr or NULL on error.
+ * @returns the new xmlID or NULL on error.
  */
-xmlIDPtr
-xmlAddID(xmlValidCtxtPtr ctxt, xmlDocPtr doc, const xmlChar *value,
-         xmlAttrPtr attr) {
+xmlID *
+xmlAddID(xmlValidCtxt *ctxt, xmlDoc *doc, const xmlChar *value,
+         xmlAttr *attr) {
     xmlIDPtr id;
     int res;
 
@@ -2413,7 +2413,7 @@ xmlFreeIDTableEntry(void *id, const xmlChar *name ATTRIBUTE_UNUSED) {
  * @param table  An id table
  */
 void
-xmlFreeIDTable(xmlIDTablePtr table) {
+xmlFreeIDTable(xmlIDTable *table) {
     xmlHashFree(table, xmlFreeIDTableEntry);
 }
 
@@ -2430,7 +2430,7 @@ xmlFreeIDTable(xmlIDTablePtr table) {
  * allocation failed.
  */
 int
-xmlIsID(xmlDocPtr doc, xmlNodePtr elem, xmlAttrPtr attr) {
+xmlIsID(xmlDoc *doc, xmlNode *elem, xmlAttr *attr) {
     if ((attr == NULL) || (attr->name == NULL))
         return(0);
 
@@ -2498,7 +2498,7 @@ xmlIsID(xmlDocPtr doc, xmlNodePtr elem, xmlAttrPtr attr) {
  * @returns -1 if the lookup failed and 0 otherwise.
  */
 int
-xmlRemoveID(xmlDocPtr doc, xmlAttrPtr attr) {
+xmlRemoveID(xmlDoc *doc, xmlAttr *attr) {
     xmlIDTablePtr table;
 
     if (doc == NULL) return(-1);
@@ -2522,8 +2522,8 @@ xmlRemoveID(xmlDocPtr doc, xmlAttrPtr attr) {
  * @param ID  the ID value
  * @returns the attribute or NULL if not found.
  */
-xmlAttrPtr
-xmlGetID(xmlDocPtr doc, const xmlChar *ID) {
+xmlAttr *
+xmlGetID(xmlDoc *doc, const xmlChar *ID) {
     xmlIDTablePtr table;
     xmlIDPtr id;
 
@@ -2645,11 +2645,11 @@ xmlDummyCompare(const void *data0 ATTRIBUTE_UNUSED,
  * @param doc  pointer to the document
  * @param value  the value name
  * @param attr  the attribute holding the Ref
- * @returns the new xmlRefPtr or NULL o error.
+ * @returns the new xmlRef or NULL o error.
  */
-xmlRefPtr
-xmlAddRef(xmlValidCtxtPtr ctxt, xmlDocPtr doc, const xmlChar *value,
-    xmlAttrPtr attr) {
+xmlRef *
+xmlAddRef(xmlValidCtxt *ctxt, xmlDoc *doc, const xmlChar *value,
+    xmlAttr *attr) {
     xmlRefPtr ret = NULL;
     xmlRefTablePtr table;
     xmlListPtr ref_list;
@@ -2744,7 +2744,7 @@ failed:
  * @param table  a ref table
  */
 void
-xmlFreeRefTable(xmlRefTablePtr table) {
+xmlFreeRefTable(xmlRefTable *table) {
     xmlHashFree(table, xmlFreeRefTableEntry);
 }
 
@@ -2762,7 +2762,7 @@ xmlFreeRefTable(xmlRefTablePtr table) {
  * @returns 0 or 1 depending on the lookup result.
  */
 int
-xmlIsRef(xmlDocPtr doc, xmlNodePtr elem, xmlAttrPtr attr) {
+xmlIsRef(xmlDoc *doc, xmlNode *elem, xmlAttr *attr) {
     if (attr == NULL)
         return(0);
     if (doc == NULL) {
@@ -2806,7 +2806,7 @@ xmlIsRef(xmlDocPtr doc, xmlNodePtr elem, xmlAttrPtr attr) {
  * @returns -1 if the lookup failed and 0 otherwise.
  */
 int
-xmlRemoveRef(xmlDocPtr doc, xmlAttrPtr attr) {
+xmlRemoveRef(xmlDoc *doc, xmlAttr *attr) {
     xmlListPtr ref_list;
     xmlRefTablePtr table;
     xmlChar *ID;
@@ -2862,8 +2862,8 @@ xmlRemoveRef(xmlDocPtr doc, xmlAttrPtr attr) {
  * @param ID  the ID value
  * @returns the list of nodes matching the ID or NULL on error.
  */
-xmlListPtr
-xmlGetRefs(xmlDocPtr doc, const xmlChar *ID) {
+xmlList *
+xmlGetRefs(xmlDoc *doc, const xmlChar *ID) {
     xmlRefTablePtr table;
 
     if (doc == NULL) {
@@ -2894,11 +2894,11 @@ xmlGetRefs(xmlDocPtr doc, const xmlChar *ID) {
  *
  * @param dtd  a pointer to the DtD to search
  * @param name  the element name
- * @returns the xmlElementPtr or NULL if not found.
+ * @returns the xmlElement or NULL if not found.
  */
 
-xmlElementPtr
-xmlGetDtdElementDesc(xmlDtdPtr dtd, const xmlChar *name) {
+xmlElement *
+xmlGetDtdElementDesc(xmlDtd *dtd, const xmlChar *name) {
     xmlElementTablePtr table;
     xmlElementPtr cur;
     const xmlChar *localname;
@@ -2927,7 +2927,7 @@ xmlGetDtdElementDesc(xmlDtdPtr dtd, const xmlChar *name) {
  * @param ctxt  a validation context
  * @param dtd  a pointer to the DtD to search
  * @param name  the element name
- * @returns the xmlElementPtr or NULL if not found.
+ * @returns the xmlElement or NULL if not found.
  */
 
 static xmlElementPtr
@@ -2997,11 +2997,11 @@ mem_error:
  * @param dtd  a pointer to the DtD to search
  * @param name  the element name
  * @param prefix  the element namespace prefix
- * @returns the xmlElementPtr or NULL if not found.
+ * @returns the xmlElement or NULL if not found.
  */
 
-xmlElementPtr
-xmlGetDtdQElementDesc(xmlDtdPtr dtd, const xmlChar *name,
+xmlElement *
+xmlGetDtdQElementDesc(xmlDtd *dtd, const xmlChar *name,
 	              const xmlChar *prefix) {
     xmlElementTablePtr table;
 
@@ -3019,11 +3019,11 @@ xmlGetDtdQElementDesc(xmlDtdPtr dtd, const xmlChar *name,
  * @param dtd  a pointer to the DtD to search
  * @param elem  the element name
  * @param name  the attribute name
- * @returns the xmlAttributePtr or NULL if not found.
+ * @returns the xmlAttribute or NULL if not found.
  */
 
-xmlAttributePtr
-xmlGetDtdAttrDesc(xmlDtdPtr dtd, const xmlChar *elem, const xmlChar *name) {
+xmlAttribute *
+xmlGetDtdAttrDesc(xmlDtd *dtd, const xmlChar *elem, const xmlChar *name) {
     xmlAttributeTablePtr table;
     xmlAttributePtr cur;
     const xmlChar *localname;
@@ -3054,11 +3054,11 @@ xmlGetDtdAttrDesc(xmlDtdPtr dtd, const xmlChar *elem, const xmlChar *name) {
  * @param elem  the element name
  * @param name  the attribute name
  * @param prefix  the attribute namespace prefix
- * @returns the xmlAttributePtr or NULL if not found.
+ * @returns the xmlAttribute or NULL if not found.
  */
 
-xmlAttributePtr
-xmlGetDtdQAttrDesc(xmlDtdPtr dtd, const xmlChar *elem, const xmlChar *name,
+xmlAttribute *
+xmlGetDtdQAttrDesc(xmlDtd *dtd, const xmlChar *elem, const xmlChar *name,
 	          const xmlChar *prefix) {
     xmlAttributeTablePtr table;
 
@@ -3074,11 +3074,11 @@ xmlGetDtdQAttrDesc(xmlDtdPtr dtd, const xmlChar *elem, const xmlChar *name,
  *
  * @param dtd  a pointer to the DtD to search
  * @param name  the notation name
- * @returns the xmlNotationPtr or NULL if not found.
+ * @returns the xmlNotation or NULL if not found.
  */
 
-xmlNotationPtr
-xmlGetDtdNotationDesc(xmlDtdPtr dtd, const xmlChar *name) {
+xmlNotation *
+xmlGetDtdNotationDesc(xmlDtd *dtd, const xmlChar *name) {
     xmlNotationTablePtr table;
 
     if (dtd == NULL) return(NULL);
@@ -3102,7 +3102,7 @@ xmlGetDtdNotationDesc(xmlDtdPtr dtd, const xmlChar *name) {
  */
 
 int
-xmlValidateNotationUse(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
+xmlValidateNotationUse(xmlValidCtxt *ctxt, xmlDoc *doc,
                        const xmlChar *notationName) {
     xmlNotationPtr notaDecl;
     if ((doc == NULL) || (doc->intSubset == NULL) ||
@@ -3133,7 +3133,7 @@ xmlValidateNotationUse(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
  */
 
 int
-xmlIsMixedElement(xmlDocPtr doc, const xmlChar *name) {
+xmlIsMixedElement(xmlDoc *doc, const xmlChar *name) {
     xmlElementPtr elemDecl;
 
     if ((doc == NULL) || (doc->intSubset == NULL)) return(-1);
@@ -3501,8 +3501,8 @@ xmlValidateNmtokensValue(const xmlChar *value) {
  */
 
 int
-xmlValidateNotationDecl(xmlValidCtxtPtr ctxt ATTRIBUTE_UNUSED, xmlDocPtr doc ATTRIBUTE_UNUSED,
-                         xmlNotationPtr nota ATTRIBUTE_UNUSED) {
+xmlValidateNotationDecl(xmlValidCtxt *ctxt ATTRIBUTE_UNUSED, xmlDoc *doc ATTRIBUTE_UNUSED,
+                         xmlNotation *nota ATTRIBUTE_UNUSED) {
     int ret = 1;
 
     return(ret);
@@ -3714,8 +3714,8 @@ xmlValidateAttributeValue2(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
  */
 
 xmlChar *
-xmlValidCtxtNormalizeAttributeValue(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
-	     xmlNodePtr elem, const xmlChar *name, const xmlChar *value) {
+xmlValidCtxtNormalizeAttributeValue(xmlValidCtxt *ctxt, xmlDoc *doc,
+	     xmlNode *elem, const xmlChar *name, const xmlChar *value) {
     xmlChar *ret;
     xmlAttributePtr attrDecl = NULL;
     const xmlChar *localName;
@@ -3807,7 +3807,7 @@ done:
  */
 
 xmlChar *
-xmlValidNormalizeAttributeValue(xmlDocPtr doc, xmlNodePtr elem,
+xmlValidNormalizeAttributeValue(xmlDoc *doc, xmlNode *elem,
 			        const xmlChar *name, const xmlChar *value) {
     xmlChar *ret;
     xmlAttributePtr attrDecl = NULL;
@@ -3871,8 +3871,8 @@ xmlValidateAttributeIdCallback(void *payload, void *data,
  */
 
 int
-xmlValidateAttributeDecl(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
-                         xmlAttributePtr attr) {
+xmlValidateAttributeDecl(xmlValidCtxt *ctxt, xmlDoc *doc,
+                         xmlAttribute *attr) {
     int ret = 1;
     int val;
     CHECK_DTD;
@@ -3999,8 +3999,8 @@ xmlValidateAttributeDecl(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
  */
 
 int
-xmlValidateElementDecl(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
-                       xmlElementPtr elem) {
+xmlValidateElementDecl(xmlValidCtxt *ctxt, xmlDoc *doc,
+                       xmlElement *elem) {
     int ret = 1;
     xmlElementPtr tst;
     const xmlChar *localName;
@@ -4132,8 +4132,8 @@ xmlValidateElementDecl(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
  */
 
 int
-xmlValidateOneAttribute(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
-                        xmlNodePtr elem, xmlAttrPtr attr, const xmlChar *value)
+xmlValidateOneAttribute(xmlValidCtxt *ctxt, xmlDoc *doc,
+                        xmlNode *elem, xmlAttr *attr, const xmlChar *value)
 {
     xmlAttributePtr attrDecl =  NULL;
     const xmlChar *aprefix;
@@ -4302,8 +4302,8 @@ xmlValidateOneAttribute(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
  */
 
 int
-xmlValidateOneNamespace(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
-xmlNodePtr elem, const xmlChar *prefix, xmlNsPtr ns, const xmlChar *value) {
+xmlValidateOneNamespace(xmlValidCtxt *ctxt, xmlDoc *doc,
+xmlNode *elem, const xmlChar *prefix, xmlNs *ns, const xmlChar *value) {
     /* xmlElementPtr elemDecl; */
     xmlAttributePtr attrDecl =  NULL;
     int val;
@@ -5445,8 +5445,8 @@ xmlValidGetElemDecl(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
  * @returns 1 if no validation problem was found or 0 otherwise.
  */
 int
-xmlValidatePushElement(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
-                       xmlNodePtr elem, const xmlChar *qname) {
+xmlValidatePushElement(xmlValidCtxt *ctxt, xmlDoc *doc,
+                       xmlNode *elem, const xmlChar *qname) {
     int ret = 1;
     xmlElementPtr eDecl;
     int extsubset = 0;
@@ -5542,7 +5542,7 @@ xmlValidatePushElement(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
  * @returns 1 if no validation problem was found or 0 otherwise.
  */
 int
-xmlValidatePushCData(xmlValidCtxtPtr ctxt, const xmlChar *data, int len) {
+xmlValidatePushCData(xmlValidCtxt *ctxt, const xmlChar *data, int len) {
     int ret = 1;
 
     if (ctxt == NULL)
@@ -5614,8 +5614,8 @@ done:
  * @returns 1 if no validation problem was found or 0 otherwise.
  */
 int
-xmlValidatePopElement(xmlValidCtxtPtr ctxt, xmlDocPtr doc ATTRIBUTE_UNUSED,
-                      xmlNodePtr elem ATTRIBUTE_UNUSED,
+xmlValidatePopElement(xmlValidCtxt *ctxt, xmlDoc *doc ATTRIBUTE_UNUSED,
+                      xmlNode *elem ATTRIBUTE_UNUSED,
 		      const xmlChar *qname ATTRIBUTE_UNUSED) {
     int ret = 1;
 
@@ -5681,8 +5681,8 @@ xmlValidatePopElement(xmlValidCtxtPtr ctxt, xmlDocPtr doc ATTRIBUTE_UNUSED,
  */
 
 int
-xmlValidateOneElement(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
-                      xmlNodePtr elem) {
+xmlValidateOneElement(xmlValidCtxt *ctxt, xmlDoc *doc,
+                      xmlNode *elem) {
     xmlElementPtr elemDecl = NULL;
     xmlElementContentPtr cont;
     xmlAttributePtr attr;
@@ -6008,7 +6008,7 @@ found:
  */
 
 int
-xmlValidateRoot(xmlValidCtxtPtr ctxt, xmlDocPtr doc) {
+xmlValidateRoot(xmlValidCtxt *ctxt, xmlDoc *doc) {
     xmlNodePtr root;
     int ret;
 
@@ -6070,7 +6070,7 @@ name_ok:
  */
 
 int
-xmlValidateElement(xmlValidCtxtPtr ctxt, xmlDocPtr doc, xmlNodePtr root) {
+xmlValidateElement(xmlValidCtxt *ctxt, xmlDoc *doc, xmlNode *root) {
     xmlNodePtr elem;
     xmlAttrPtr attr;
     xmlNsPtr ns;
@@ -6265,7 +6265,7 @@ xmlValidateCheckRefCallback(void *payload, void *data, const xmlChar *name) {
  */
 
 int
-xmlValidateDocumentFinal(xmlValidCtxtPtr ctxt, xmlDocPtr doc) {
+xmlValidateDocumentFinal(xmlValidCtxt *ctxt, xmlDoc *doc) {
     xmlRefTablePtr table;
     xmlParserCtxtPtr pctxt = NULL;
     xmlParserInputPtr oldInput = NULL;
@@ -6322,7 +6322,7 @@ xmlValidateDocumentFinal(xmlValidCtxtPtr ctxt, xmlDocPtr doc) {
  */
 
 int
-xmlValidateDtd(xmlValidCtxtPtr ctxt, xmlDocPtr doc, xmlDtdPtr dtd) {
+xmlValidateDtd(xmlValidCtxt *ctxt, xmlDoc *doc, xmlDtd *dtd) {
     int ret;
     xmlDtdPtr oldExt, oldInt;
     xmlNodePtr root;
@@ -6379,7 +6379,7 @@ xmlValidateDtd(xmlValidCtxtPtr ctxt, xmlDocPtr doc, xmlDtdPtr dtd) {
  * @returns 1 if valid or 0 otherwise.
  */
 int
-xmlCtxtValidateDtd(xmlParserCtxtPtr ctxt, xmlDocPtr doc, xmlDtdPtr dtd) {
+xmlCtxtValidateDtd(xmlParserCtxt *ctxt, xmlDoc *doc, xmlDtd *dtd) {
     if ((ctxt == NULL) || (ctxt->html))
         return(0);
 
@@ -6515,7 +6515,7 @@ xmlValidateAttributeCallback(void *payload, void *data,
  */
 
 int
-xmlValidateDtdFinal(xmlValidCtxtPtr ctxt, xmlDocPtr doc) {
+xmlValidateDtdFinal(xmlValidCtxt *ctxt, xmlDoc *doc) {
     xmlDtdPtr dtd;
     xmlAttributeTablePtr table;
     xmlEntitiesTablePtr entities;
@@ -6653,7 +6653,7 @@ xmlValidateDocumentInternal(xmlParserCtxtPtr ctxt, xmlValidCtxtPtr vctxt,
  * @returns 1 if valid or 0 otherwise.
  */
 int
-xmlValidateDocument(xmlValidCtxtPtr vctxt, xmlDocPtr doc) {
+xmlValidateDocument(xmlValidCtxt *vctxt, xmlDoc *doc) {
     return(xmlValidateDocumentInternal(NULL, vctxt, doc));
 }
 
@@ -6672,7 +6672,7 @@ xmlValidateDocument(xmlValidCtxtPtr vctxt, xmlDocPtr doc) {
  * @returns 1 if valid or 0 otherwise.
  */
 int
-xmlCtxtValidateDocument(xmlParserCtxtPtr ctxt, xmlDocPtr doc) {
+xmlCtxtValidateDocument(xmlParserCtxt *ctxt, xmlDoc *doc) {
     if ((ctxt == NULL) || (ctxt->html))
         return(0);
 

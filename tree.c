@@ -679,8 +679,8 @@ try_complex:
  * @returns a new namespace pointer or NULL if arguments are invalid,
  * the prefix is already in use or a memory allocation failed.
  */
-xmlNsPtr
-xmlNewNs(xmlNodePtr node, const xmlChar *href, const xmlChar *prefix) {
+xmlNs *
+xmlNewNs(xmlNode *node, const xmlChar *href, const xmlChar *prefix) {
     xmlNsPtr cur;
 
     if ((node != NULL) && (node->type != XML_ELEMENT_NODE))
@@ -743,7 +743,7 @@ error:
  * @param ns  a namespace pointer (optional)
  */
 void
-xmlSetNs(xmlNodePtr node, xmlNsPtr ns) {
+xmlSetNs(xmlNode *node, xmlNs *ns) {
     if (node == NULL) {
 	return;
     }
@@ -758,7 +758,7 @@ xmlSetNs(xmlNodePtr node, xmlNsPtr ns) {
  * @param cur  the namespace pointer
  */
 void
-xmlFreeNs(xmlNsPtr cur) {
+xmlFreeNs(xmlNs *cur) {
     if (cur == NULL) {
 	return;
     }
@@ -773,7 +773,7 @@ xmlFreeNs(xmlNsPtr cur) {
  * @param cur  the first namespace pointer
  */
 void
-xmlFreeNsList(xmlNsPtr cur) {
+xmlFreeNsList(xmlNs *cur) {
     xmlNsPtr next;
     if (cur == NULL) {
 	return;
@@ -801,8 +801,8 @@ xmlFreeNsList(xmlNsPtr cur) {
  * @returns a pointer to the new DTD object or NULL if arguments are
  * invalid or a memory allocation failed.
  */
-xmlDtdPtr
-xmlNewDtd(xmlDocPtr doc, const xmlChar *name,
+xmlDtd *
+xmlNewDtd(xmlDoc *doc, const xmlChar *name,
                     const xmlChar *ExternalID, const xmlChar *SystemID) {
     xmlDtdPtr cur;
 
@@ -853,7 +853,7 @@ error:
  * @param doc  the document pointer
  * @returns a pointer to the DTD object or NULL if not found.
  */
-xmlDtdPtr
+xmlDtd *
 xmlGetIntSubset(const xmlDoc *doc) {
     xmlNodePtr cur;
 
@@ -883,8 +883,8 @@ xmlGetIntSubset(const xmlDoc *doc) {
  * @returns a pointer to the new or existing DTD object or NULL if
  * arguments are invalid or a memory allocation failed.
  */
-xmlDtdPtr
-xmlCreateIntSubset(xmlDocPtr doc, const xmlChar *name,
+xmlDtd *
+xmlCreateIntSubset(xmlDoc *doc, const xmlChar *name,
                    const xmlChar *ExternalID, const xmlChar *SystemID) {
     xmlDtdPtr cur;
 
@@ -983,7 +983,7 @@ error:
  * @param cur  the DTD structure to free up
  */
 void
-xmlFreeDtd(xmlDtdPtr cur) {
+xmlFreeDtd(xmlDtd *cur) {
     xmlDictPtr dict = NULL;
 
     if (cur == NULL) {
@@ -1037,7 +1037,7 @@ xmlFreeDtd(xmlDtdPtr cur) {
  * @param version  XML version string like `"1.0"` (optional)
  * @returns a new document or NULL if a memory allocation failed.
  */
-xmlDocPtr
+xmlDoc *
 xmlNewDoc(const xmlChar *version) {
     xmlDocPtr cur;
 
@@ -1081,7 +1081,7 @@ xmlNewDoc(const xmlChar *version) {
  * @param cur  pointer to the document
  */
 void
-xmlFreeDoc(xmlDocPtr cur) {
+xmlFreeDoc(xmlDoc *cur) {
     xmlDtdPtr extSubset, intSubset;
     xmlDictPtr dict = NULL;
 
@@ -1407,7 +1407,7 @@ out:
  * @returns 0 on success, -1 if a memory allocation failed.
  */
 int
-xmlNodeParseContent(xmlNodePtr node, const xmlChar *content, int len) {
+xmlNodeParseContent(xmlNode *node, const xmlChar *content, int len) {
     return(xmlNodeParseContentInternal(node->doc, node, content, len, NULL));
 }
 
@@ -1422,7 +1422,7 @@ xmlNodeParseContent(xmlNodePtr node, const xmlChar *content, int len) {
  * @returns a pointer to the first child or NULL if the value if empty
  * or a memory allocation failed.
  */
-xmlNodePtr
+xmlNode *
 xmlStringLenGetNodeList(const xmlDoc *doc, const xmlChar *value, int len) {
     xmlNodePtr ret;
 
@@ -1447,7 +1447,7 @@ xmlStringLenGetNodeList(const xmlDoc *doc, const xmlChar *value, int len) {
  * @returns a pointer to the first child or NULL if the value if empty
  * or a memory allocation failed.
  */
-xmlNodePtr
+xmlNode *
 xmlStringGetNodeList(const xmlDoc *doc, const xmlChar *value) {
     xmlNodePtr ret;
 
@@ -1458,7 +1458,7 @@ xmlStringGetNodeList(const xmlDoc *doc, const xmlChar *value) {
 /**
  * @param node  a node list
  * @param escape  whether to escape characters and keep entity refs
- * @param flags  escape flags 
+ * @param flags  escape flags
  * @returns a pointer to the string.
  */
 xmlChar *
@@ -1538,7 +1538,7 @@ error:
  * @returns a string or NULL if a memory allocation failed.
  */
 xmlChar *
-xmlNodeListGetString(xmlDocPtr doc, const xmlNode *list, int inLine)
+xmlNodeListGetString(xmlDoc *doc, const xmlNode *list, int inLine)
 {
     int flags = 0;
     int escape = 0;
@@ -1709,8 +1709,8 @@ error:
  * @returns a pointer to the attribute or NULL if arguments are invalid
  * or a memory allocation failed.
  */
-xmlAttrPtr
-xmlNewProp(xmlNodePtr node, const xmlChar *name, const xmlChar *value) {
+xmlAttr *
+xmlNewProp(xmlNode *node, const xmlChar *name, const xmlChar *value) {
 
     if (name == NULL) {
 	return(NULL);
@@ -1735,8 +1735,8 @@ xmlNewProp(xmlNodePtr node, const xmlChar *name, const xmlChar *value) {
  * @returns a pointer to the attribute or NULL if arguments are invalid
  * or a memory allocation failed.
  */
-xmlAttrPtr
-xmlNewNsProp(xmlNodePtr node, xmlNsPtr ns, const xmlChar *name,
+xmlAttr *
+xmlNewNsProp(xmlNode *node, xmlNs *ns, const xmlChar *name,
            const xmlChar *value) {
 
     if (name == NULL) {
@@ -1760,8 +1760,8 @@ xmlNewNsProp(xmlNodePtr node, xmlNsPtr ns, const xmlChar *name,
  * @returns a pointer to the attribute or NULL if arguments are invalid
  * or a memory allocation failed.
  */
-xmlAttrPtr
-xmlNewNsPropEatName(xmlNodePtr node, xmlNsPtr ns, xmlChar *name,
+xmlAttr *
+xmlNewNsPropEatName(xmlNode *node, xmlNs *ns, xmlChar *name,
            const xmlChar *value) {
 
     if (name == NULL) {
@@ -1785,8 +1785,8 @@ xmlNewNsPropEatName(xmlNodePtr node, xmlNsPtr ns, xmlChar *name,
  * @returns a pointer to the attribute or NULL if arguments are invalid
  * or a memory allocation failed.
  */
-xmlAttrPtr
-xmlNewDocProp(xmlDocPtr doc, const xmlChar *name, const xmlChar *value) {
+xmlAttr *
+xmlNewDocProp(xmlDoc *doc, const xmlChar *name, const xmlChar *value) {
     xmlAttrPtr cur;
 
     if (name == NULL) {
@@ -1829,7 +1829,7 @@ error:
  * @param cur  the first attribute in the list
  */
 void
-xmlFreePropList(xmlAttrPtr cur) {
+xmlFreePropList(xmlAttr *cur) {
     xmlAttrPtr next;
     if (cur == NULL) return;
     while (cur != NULL) {
@@ -1845,7 +1845,7 @@ xmlFreePropList(xmlAttrPtr cur) {
  * @param cur  an attribute
  */
 void
-xmlFreeProp(xmlAttrPtr cur) {
+xmlFreeProp(xmlAttr *cur) {
     xmlDictPtr dict = NULL;
     if (cur == NULL) return;
 
@@ -1875,7 +1875,7 @@ xmlFreeProp(xmlAttrPtr cur) {
  * arguments are invalid.
  */
 int
-xmlRemoveProp(xmlAttrPtr cur) {
+xmlRemoveProp(xmlAttr *cur) {
     xmlAttrPtr tmp;
     if (cur == NULL) {
 	return(-1);
@@ -1913,8 +1913,8 @@ xmlRemoveProp(xmlAttrPtr cur) {
  * @returns a pointer to the new node object or NULL if arguments are
  * invalid or a memory allocation failed.
  */
-xmlNodePtr
-xmlNewDocPI(xmlDocPtr doc, const xmlChar *name, const xmlChar *content) {
+xmlNode *
+xmlNewDocPI(xmlDoc *doc, const xmlChar *name, const xmlChar *content) {
     xmlNodePtr cur;
 
     if (name == NULL) {
@@ -1962,7 +1962,7 @@ error:
  * @returns a pointer to the new node object or NULL if arguments are
  * invalid or a memory allocation failed.
  */
-xmlNodePtr
+xmlNode *
 xmlNewPI(const xmlChar *name, const xmlChar *content) {
     return(xmlNewDocPI(NULL, name, content));
 }
@@ -1977,8 +1977,8 @@ xmlNewPI(const xmlChar *name, const xmlChar *content) {
  * @returns a pointer to the new node object or NULL if arguments are
  * invalid or a memory allocation failed.
  */
-xmlNodePtr
-xmlNewNode(xmlNsPtr ns, const xmlChar *name) {
+xmlNode *
+xmlNewNode(xmlNs *ns, const xmlChar *name) {
     return(xmlNewDocNode(NULL, ns, name, NULL));
 }
 
@@ -1996,8 +1996,8 @@ xmlNewNode(xmlNsPtr ns, const xmlChar *name) {
  * @returns a pointer to the new node object or NULL if arguments are
  * invalid or a memory allocation failed.
  */
-xmlNodePtr
-xmlNewNodeEatName(xmlNsPtr ns, xmlChar *name) {
+xmlNode *
+xmlNewNodeEatName(xmlNs *ns, xmlChar *name) {
     return(xmlNewDocNodeEatName(NULL, ns, name, NULL));
 }
 
@@ -2054,8 +2054,8 @@ xmlNewElem(xmlDocPtr doc, xmlNsPtr ns, const xmlChar *name,
  * @returns a pointer to the new node object or NULL if arguments are
  * invalid or a memory allocation failed.
  */
-xmlNodePtr
-xmlNewDocNode(xmlDocPtr doc, xmlNsPtr ns,
+xmlNode *
+xmlNewDocNode(xmlDoc *doc, xmlNs *ns,
               const xmlChar *name, const xmlChar *content) {
     xmlNodePtr cur;
     xmlChar *copy;
@@ -2098,8 +2098,8 @@ xmlNewDocNode(xmlDocPtr doc, xmlNsPtr ns,
  * @returns a pointer to the new node object or NULL if arguments are
  * invalid or a memory allocation failed.
  */
-xmlNodePtr
-xmlNewDocNodeEatName(xmlDocPtr doc, xmlNsPtr ns,
+xmlNode *
+xmlNewDocNodeEatName(xmlDoc *doc, xmlNs *ns,
                      xmlChar *name, const xmlChar *content) {
     xmlNodePtr cur;
 
@@ -2131,8 +2131,8 @@ xmlNewDocNodeEatName(xmlDocPtr doc, xmlNsPtr ns,
  * @returns a pointer to the new node object or NULL if arguments are
  * invalid or a memory allocation failed.
  */
-xmlNodePtr
-xmlNewDocRawNode(xmlDocPtr doc, xmlNsPtr ns,
+xmlNode *
+xmlNewDocRawNode(xmlDoc *doc, xmlNs *ns,
                  const xmlChar *name, const xmlChar *content) {
     xmlNodePtr cur;
 
@@ -2163,8 +2163,8 @@ xmlNewDocRawNode(xmlDocPtr doc, xmlNsPtr ns,
  * @returns a pointer to the new node object or NULL if a memory
  * allocation failed.
  */
-xmlNodePtr
-xmlNewDocFragment(xmlDocPtr doc) {
+xmlNode *
+xmlNewDocFragment(xmlDoc *doc) {
     xmlNodePtr cur;
 
     /*
@@ -2192,7 +2192,7 @@ xmlNewDocFragment(xmlDocPtr doc) {
  * @returns a pointer to the new node object or NULL if a memory
  * allocation failed.
  */
-xmlNodePtr
+xmlNode *
 xmlNewText(const xmlChar *content) {
     xmlNodePtr cur;
 
@@ -2237,8 +2237,8 @@ error:
  * @returns a pointer to the new node object or NULL if arguments
  * are invalid or a memory allocation failed.
  */
-xmlNodePtr
-xmlNewTextChild(xmlNodePtr parent, xmlNsPtr ns,
+xmlNode *
+xmlNewTextChild(xmlNode *parent, xmlNs *ns,
             const xmlChar *name, const xmlChar *content) {
     xmlNodePtr cur, prev;
 
@@ -2330,8 +2330,8 @@ xmlNewEntityRef(xmlDocPtr doc, xmlChar *name) {
  * @returns a pointer to the new node object or NULL if arguments are
  * invalid or a memory allocation failed.
  */
-xmlNodePtr
-xmlNewCharRef(xmlDocPtr doc, const xmlChar *name) {
+xmlNode *
+xmlNewCharRef(xmlDoc *doc, const xmlChar *name) {
     xmlChar *copy;
 
     if (name == NULL)
@@ -2364,7 +2364,7 @@ xmlNewCharRef(xmlDocPtr doc, const xmlChar *name) {
  * @returns a pointer to the new node object or NULL if arguments are
  * invalid or a memory allocation failed.
  */
-xmlNodePtr
+xmlNode *
 xmlNewReference(const xmlDoc *doc, const xmlChar *name) {
     xmlNodePtr cur;
     xmlEntityPtr ent;
@@ -2424,7 +2424,7 @@ error:
  * @returns a pointer to the new node object or NULL if a memory
  * allocation failed.
  */
-xmlNodePtr
+xmlNode *
 xmlNewDocText(const xmlDoc *doc, const xmlChar *content) {
     xmlNodePtr cur;
 
@@ -2443,7 +2443,7 @@ xmlNewDocText(const xmlDoc *doc, const xmlChar *content) {
  * @returns a pointer to the new node object or NULL if a memory
  * allocation failed.
  */
-xmlNodePtr
+xmlNode *
 xmlNewTextLen(const xmlChar *content, int len) {
     xmlNodePtr cur;
 
@@ -2479,8 +2479,8 @@ xmlNewTextLen(const xmlChar *content, int len) {
  * @returns a pointer to the new node object or NULL if a memory
  * allocation failed.
  */
-xmlNodePtr
-xmlNewDocTextLen(xmlDocPtr doc, const xmlChar *content, int len) {
+xmlNode *
+xmlNewDocTextLen(xmlDoc *doc, const xmlChar *content, int len) {
     xmlNodePtr cur;
 
     cur = xmlNewTextLen(content, len);
@@ -2497,7 +2497,7 @@ xmlNewDocTextLen(xmlDocPtr doc, const xmlChar *content, int len) {
  * @returns a pointer to the new node object or NULL if a memory
  * allocation failed.
  */
-xmlNodePtr
+xmlNode *
 xmlNewComment(const xmlChar *content) {
     xmlNodePtr cur;
 
@@ -2535,8 +2535,8 @@ error:
  * @returns a pointer to the new node object or NULL if a memory
  * allocation failed.
  */
-xmlNodePtr
-xmlNewCDataBlock(xmlDocPtr doc, const xmlChar *content, int len) {
+xmlNode *
+xmlNewCDataBlock(xmlDoc *doc, const xmlChar *content, int len) {
     xmlNodePtr cur;
 
     /*
@@ -2570,8 +2570,8 @@ xmlNewCDataBlock(xmlDocPtr doc, const xmlChar *content, int len) {
  * @returns a pointer to the new node object or NULL if a memory
  * allocation failed.
  */
-xmlNodePtr
-xmlNewDocComment(xmlDocPtr doc, const xmlChar *content) {
+xmlNode *
+xmlNewDocComment(xmlDoc *doc, const xmlChar *content) {
     xmlNodePtr cur;
 
     cur = xmlNewComment(content);
@@ -2743,7 +2743,7 @@ xmlNodeSetDoc(xmlNodePtr node, xmlDocPtr doc) {
  * may be lost.
  */
 int
-xmlSetTreeDoc(xmlNodePtr tree, xmlDocPtr doc) {
+xmlSetTreeDoc(xmlNode *tree, xmlDoc *doc) {
     int ret = 0;
 
     if ((tree == NULL) || (tree->type == XML_NAMESPACE_DECL))
@@ -2803,7 +2803,7 @@ xmlSetTreeDoc(xmlNodePtr tree, xmlDocPtr doc) {
  * may be lost.
  */
 int
-xmlSetListDoc(xmlNodePtr list, xmlDocPtr doc) {
+xmlSetListDoc(xmlNode *list, xmlDoc *doc) {
     xmlNodePtr cur;
     int ret = 0;
 
@@ -2840,8 +2840,8 @@ xmlSetListDoc(xmlNodePtr list, xmlDocPtr doc) {
  * @returns a pointer to the new node object or NULL if arguments
  * are invalid or a memory allocation failed.
  */
-xmlNodePtr
-xmlNewChild(xmlNodePtr parent, xmlNsPtr ns,
+xmlNode *
+xmlNewChild(xmlNode *parent, xmlNs *ns,
             const xmlChar *name, const xmlChar *content) {
     xmlNodePtr cur, prev;
 
@@ -3060,8 +3060,8 @@ xmlInsertNode(xmlDocPtr doc, xmlNodePtr cur, xmlNodePtr parent,
  * @returns `cur` or a sibling if `cur` was merged. Returns NULL
  * if arguments are invalid or a memory allocation failed.
  */
-xmlNodePtr
-xmlAddNextSibling(xmlNodePtr prev, xmlNodePtr cur) {
+xmlNode *
+xmlAddNextSibling(xmlNode *prev, xmlNode *cur) {
     if ((prev == NULL) || (prev->type == XML_NAMESPACE_DECL) ||
         (cur == NULL) || (cur->type == XML_NAMESPACE_DECL) ||
         (cur == prev))
@@ -3089,8 +3089,8 @@ xmlAddNextSibling(xmlNodePtr prev, xmlNodePtr cur) {
  * @returns `cur` or a sibling if `cur` was merged. Returns NULL
  * if arguments are invalid or a memory allocation failed.
  */
-xmlNodePtr
-xmlAddPrevSibling(xmlNodePtr next, xmlNodePtr cur) {
+xmlNode *
+xmlAddPrevSibling(xmlNode *next, xmlNode *cur) {
     if ((next == NULL) || (next->type == XML_NAMESPACE_DECL) ||
         (cur == NULL) || (cur->type == XML_NAMESPACE_DECL) ||
         (cur == next))
@@ -3120,8 +3120,8 @@ xmlAddPrevSibling(xmlNodePtr next, xmlNodePtr cur) {
  * @returns `cur` or a sibling if `cur` was merged. Returns NULL
  * if arguments are invalid or a memory allocation failed.
  */
-xmlNodePtr
-xmlAddSibling(xmlNodePtr node, xmlNodePtr cur) {
+xmlNode *
+xmlAddSibling(xmlNode *node, xmlNode *cur) {
     if ((node == NULL) || (node->type == XML_NAMESPACE_DECL) ||
         (cur == NULL) || (cur->type == XML_NAMESPACE_DECL) ||
         (cur == node))
@@ -3154,8 +3154,8 @@ xmlAddSibling(xmlNodePtr node, xmlNodePtr cur) {
  * @param cur  the first node in the list
  * @returns the last child or NULL in case of error.
  */
-xmlNodePtr
-xmlAddChildList(xmlNodePtr parent, xmlNodePtr cur) {
+xmlNode *
+xmlAddChildList(xmlNode *parent, xmlNode *cur) {
     xmlNodePtr iter;
     xmlNodePtr prev;
     int oom;
@@ -3261,8 +3261,8 @@ xmlAddChildList(xmlNodePtr parent, xmlNodePtr cur) {
  * @returns `cur` or a sibling if `cur` was merged. Returns NULL
  * if arguments are invalid or a memory allocation failed.
  */
-xmlNodePtr
-xmlAddChild(xmlNodePtr parent, xmlNodePtr cur) {
+xmlNode *
+xmlAddChild(xmlNode *parent, xmlNode *cur) {
     xmlNodePtr prev;
 
     if ((parent == NULL) || (parent->type == XML_NAMESPACE_DECL) ||
@@ -3303,7 +3303,7 @@ xmlAddChild(xmlNodePtr parent, xmlNodePtr cur) {
  * @param parent  the parent node
  * @returns the last child or NULL if parent has no children.
  */
-xmlNodePtr
+xmlNode *
 xmlGetLastChild(const xmlNode *parent) {
     if ((parent == NULL) || (parent->type == XML_NAMESPACE_DECL)) {
 	return(NULL);
@@ -3325,7 +3325,7 @@ xmlGetLastChild(const xmlNode *parent) {
  * invalid.
  */
 unsigned long
-xmlChildElementCount(xmlNodePtr parent) {
+xmlChildElementCount(xmlNode *parent) {
     unsigned long ret = 0;
     xmlNodePtr cur = NULL;
 
@@ -3358,8 +3358,8 @@ xmlChildElementCount(xmlNodePtr parent) {
  * @param parent  the parent node
  * @returns the first element or NULL if parent has no children.
  */
-xmlNodePtr
-xmlFirstElementChild(xmlNodePtr parent) {
+xmlNode *
+xmlFirstElementChild(xmlNode *parent) {
     xmlNodePtr cur = NULL;
 
     if (parent == NULL)
@@ -3391,8 +3391,8 @@ xmlFirstElementChild(xmlNodePtr parent) {
  * @param parent  the parent node
  * @returns the last element or NULL if parent has no children.
  */
-xmlNodePtr
-xmlLastElementChild(xmlNodePtr parent) {
+xmlNode *
+xmlLastElementChild(xmlNode *parent) {
     xmlNodePtr cur = NULL;
 
     if (parent == NULL)
@@ -3424,8 +3424,8 @@ xmlLastElementChild(xmlNodePtr parent) {
  * @param node  the current node
  * @returns the sibling or NULL if no sibling was found.
  */
-xmlNodePtr
-xmlPreviousElementSibling(xmlNodePtr node) {
+xmlNode *
+xmlPreviousElementSibling(xmlNode *node) {
     if (node == NULL)
         return(NULL);
     switch (node->type) {
@@ -3458,8 +3458,8 @@ xmlPreviousElementSibling(xmlNodePtr node) {
  * @param node  the current node
  * @returns the sibling or NULL if no sibling was found.
  */
-xmlNodePtr
-xmlNextElementSibling(xmlNodePtr node) {
+xmlNode *
+xmlNextElementSibling(xmlNode *node) {
     if (node == NULL)
         return(NULL);
     switch (node->type) {
@@ -3491,7 +3491,7 @@ xmlNextElementSibling(xmlNodePtr node) {
  * @param cur  the first node in the list
  */
 void
-xmlFreeNodeList(xmlNodePtr cur) {
+xmlFreeNodeList(xmlNode *cur) {
     xmlNodePtr next;
     xmlNodePtr parent;
     xmlDictPtr dict = NULL;
@@ -3581,7 +3581,7 @@ xmlFreeNodeList(xmlNodePtr cur) {
  * @param cur  the node
  */
 void
-xmlFreeNode(xmlNodePtr cur) {
+xmlFreeNode(xmlNode *cur) {
     xmlDictPtr dict = NULL;
 
     if (cur == NULL) return;
@@ -3681,7 +3681,7 @@ xmlUnlinkNodeInternal(xmlNodePtr cur) {
  * @param cur  the node
  */
 void
-xmlUnlinkNode(xmlNodePtr cur) {
+xmlUnlinkNode(xmlNode *cur) {
     if (cur == NULL)
 	return;
 
@@ -3721,8 +3721,8 @@ xmlUnlinkNode(xmlNodePtr cur) {
  * @returns `old` or NULL if arguments are invalid or a memory
  * allocation failed.
  */
-xmlNodePtr
-xmlReplaceNode(xmlNodePtr old, xmlNodePtr cur) {
+xmlNode *
+xmlReplaceNode(xmlNode *old, xmlNode *cur) {
     if (old == cur) return(NULL);
     if ((old == NULL) || (old->type == XML_NAMESPACE_DECL) ||
         (old->parent == NULL)) {
@@ -3778,8 +3778,8 @@ xmlReplaceNode(xmlNodePtr old, xmlNodePtr cur) {
  * @returns the copied namespace or NULL if a memory allocation
  * failed.
  */
-xmlNsPtr
-xmlCopyNamespace(xmlNsPtr cur) {
+xmlNs *
+xmlCopyNamespace(xmlNs *cur) {
     xmlNsPtr ret;
 
     if (cur == NULL) return(NULL);
@@ -3800,8 +3800,8 @@ xmlCopyNamespace(xmlNsPtr cur) {
  * @returns the head of the copied list or NULL if a memory
  * allocation failed.
  */
-xmlNsPtr
-xmlCopyNamespaceList(xmlNsPtr cur) {
+xmlNs *
+xmlCopyNamespaceList(xmlNs *cur) {
     xmlNsPtr ret = NULL;
     xmlNsPtr p = NULL,q;
 
@@ -3954,8 +3954,8 @@ error:
  * @returns the copied attribute or NULL if a memory allocation
  * failed.
  */
-xmlAttrPtr
-xmlCopyProp(xmlNodePtr target, xmlAttrPtr cur) {
+xmlAttr *
+xmlCopyProp(xmlNode *target, xmlAttr *cur) {
 	return xmlCopyPropInternal(NULL, target, cur);
 }
 
@@ -3969,8 +3969,8 @@ xmlCopyProp(xmlNodePtr target, xmlAttrPtr cur) {
  * @returns the head of the copied list or NULL if a memory
  * allocation failed.
  */
-xmlAttrPtr
-xmlCopyPropList(xmlNodePtr target, xmlAttrPtr cur) {
+xmlAttr *
+xmlCopyPropList(xmlNode *target, xmlAttr *cur) {
     xmlAttrPtr ret = NULL;
     xmlAttrPtr p = NULL,q;
 
@@ -4022,8 +4022,8 @@ xmlCopyPropList(xmlNodePtr target, xmlAttrPtr cur) {
  * @param extended  flags
  * @returns the copy or NULL if a memory allocation failed.
  */
-xmlNodePtr
-xmlStaticCopyNode(xmlNodePtr node, xmlDocPtr doc, xmlNodePtr parent,
+xmlNode *
+xmlStaticCopyNode(xmlNode *node, xmlDoc *doc, xmlNode *parent,
                   int extended) {
     xmlNodePtr ret;
 
@@ -4216,8 +4216,8 @@ error:
  * @param parent  target node (optional)
  * @returns a the copy or NULL in case of error.
  */
-xmlNodePtr
-xmlStaticCopyNodeList(xmlNodePtr node, xmlDocPtr doc, xmlNodePtr parent) {
+xmlNode *
+xmlStaticCopyNodeList(xmlNode *node, xmlDoc *doc, xmlNode *parent) {
     xmlNodePtr ret = NULL;
     xmlNodePtr p = NULL,q;
     xmlDtdPtr newSubset = NULL;
@@ -4309,8 +4309,8 @@ error:
  * @param extended  mode of operation
  * @returns the copied node or NULL if a memory allocation failed.
  */
-xmlNodePtr
-xmlCopyNode(xmlNodePtr node, int extended) {
+xmlNode *
+xmlCopyNode(xmlNode *node, int extended) {
     xmlNodePtr ret;
 
     ret = xmlStaticCopyNode(node, NULL, NULL, extended);
@@ -4333,8 +4333,8 @@ xmlCopyNode(xmlNodePtr node, int extended) {
  * @param extended  mode of operation
  * @returns the copied node or NULL if a memory allocation failed.
  */
-xmlNodePtr
-xmlDocCopyNode(xmlNodePtr node, xmlDocPtr doc, int extended) {
+xmlNode *
+xmlDocCopyNode(xmlNode *node, xmlDoc *doc, int extended) {
     xmlNodePtr ret;
 
     ret = xmlStaticCopyNode(node, doc, NULL, extended);
@@ -4349,7 +4349,7 @@ xmlDocCopyNode(xmlNodePtr node, xmlDocPtr doc, int extended) {
  * @returns the head of the copied list or NULL if a memory
  * allocation failed.
  */
-xmlNodePtr xmlDocCopyNodeList(xmlDocPtr doc, xmlNodePtr node) {
+xmlNode *xmlDocCopyNodeList(xmlDoc *doc, xmlNode *node) {
     xmlNodePtr ret = xmlStaticCopyNodeList(node, doc, NULL);
     return(ret);
 }
@@ -4363,7 +4363,7 @@ xmlNodePtr xmlDocCopyNodeList(xmlDocPtr doc, xmlNodePtr node) {
  * @returns the head of the copied list or NULL if a memory
  * allocation failed.
  */
-xmlNodePtr xmlCopyNodeList(xmlNodePtr node) {
+xmlNode *xmlCopyNodeList(xmlNode *node) {
     xmlNodePtr ret = xmlStaticCopyNodeList(node, NULL, NULL);
     return(ret);
 }
@@ -4374,8 +4374,8 @@ xmlNodePtr xmlCopyNodeList(xmlNodePtr node) {
  * @param dtd  the DTD
  * @returns the copied DTD or NULL if a memory allocation failed.
  */
-xmlDtdPtr
-xmlCopyDtd(xmlDtdPtr dtd) {
+xmlDtd *
+xmlCopyDtd(xmlDtd *dtd) {
     xmlDtdPtr ret;
     xmlNodePtr cur, p = NULL, q;
 
@@ -4481,8 +4481,8 @@ error:
  * @returns the copied document or NULL if a memory allocation
  * failed.
  */
-xmlDocPtr
-xmlCopyDoc(xmlDocPtr doc, int recursive) {
+xmlDoc *
+xmlCopyDoc(xmlDoc *doc, int recursive) {
     xmlDocPtr ret;
 
     if (doc == NULL) return(NULL);
@@ -4877,7 +4877,7 @@ xmlGetNodePath(const xmlNode *node)
  * @param doc  the document
  * @returns the root element or NULL if no element was found.
  */
-xmlNodePtr
+xmlNode *
 xmlDocGetRootElement(const xmlDoc *doc) {
     xmlNodePtr ret;
 
@@ -4905,8 +4905,8 @@ xmlDocGetRootElement(const xmlDoc *doc) {
  * @returns the unlinked old root element or NULL if the document
  * didn't have a root element or a memory allocation failed.
  */
-xmlNodePtr
-xmlDocSetRootElement(xmlDocPtr doc, xmlNodePtr root) {
+xmlNode *
+xmlDocSetRootElement(xmlDoc *doc, xmlNode *root) {
     xmlNodePtr old = NULL;
 
     if (doc == NULL) return(NULL);
@@ -4946,7 +4946,7 @@ xmlDocSetRootElement(xmlDocPtr doc, xmlNodePtr root) {
  * memory allocation failed.
  */
 int
-xmlNodeSetLang(xmlNodePtr cur, const xmlChar *lang) {
+xmlNodeSetLang(xmlNode *cur, const xmlChar *lang) {
     xmlNsPtr ns;
     xmlAttrPtr attr;
     int res;
@@ -5006,7 +5006,7 @@ xmlNodeGetLang(const xmlNode *cur) {
  * memory allocation failed.
  */
 int
-xmlNodeSetSpacePreserve(xmlNodePtr cur, int val) {
+xmlNodeSetSpacePreserve(xmlNode *cur, int val) {
     xmlNsPtr ns;
     xmlAttrPtr attr;
     const char *string;
@@ -5078,7 +5078,7 @@ xmlNodeGetSpacePreserve(const xmlNode *cur) {
  * @param name  the new tag name
  */
 void
-xmlNodeSetName(xmlNodePtr cur, const xmlChar *name) {
+xmlNodeSetName(xmlNode *cur, const xmlChar *name) {
     xmlDocPtr doc;
     xmlDictPtr dict;
     const xmlChar *copy;
@@ -5125,7 +5125,7 @@ xmlNodeSetName(xmlNodePtr cur, const xmlChar *name) {
  * @returns 0 on success, -1 on error.
  */
 int
-xmlNodeSetBase(xmlNodePtr cur, const xmlChar* uri) {
+xmlNodeSetBase(xmlNode *cur, const xmlChar* uri) {
     xmlNsPtr ns = NULL;
     xmlChar* fixed;
 
@@ -5315,7 +5315,7 @@ xmlNodeGetBase(const xmlDoc *doc, const xmlNode *cur) {
  * @returns 0 in case of success and -1 in case of error.
  */
 int
-xmlNodeBufGetContent(xmlBufferPtr buffer, const xmlNode *cur)
+xmlNodeBufGetContent(xmlBuffer *buffer, const xmlNode *cur)
 {
     xmlBufPtr buf;
     int ret1, ret2;
@@ -5400,12 +5400,12 @@ xmlBufGetChildContent(xmlBufPtr buf, const xmlNode *tree) {
  *
  * Entity references are substituted.
  *
- * @param buf  a buffer xmlBufPtr
+ * @param buf  a buffer xmlBuf
  * @param cur  the node being read
  * @returns 0 in case of success and -1 in case of error.
  */
 int
-xmlBufGetNodeContent(xmlBufPtr buf, const xmlNode *cur)
+xmlBufGetNodeContent(xmlBuf *buf, const xmlNode *cur)
 {
     if ((cur == NULL) || (buf == NULL))
         return(-1);
@@ -5578,7 +5578,7 @@ xmlNodeSetContentInternal(xmlNodePtr cur, const xmlChar *content, int len) {
  * @returns 0 on success, 1 on error, -1 if a memory allocation failed.
  */
 int
-xmlNodeSetContent(xmlNodePtr cur, const xmlChar *content) {
+xmlNodeSetContent(xmlNode *cur, const xmlChar *content) {
     return(xmlNodeSetContentInternal(cur, content, -1));
 }
 
@@ -5591,7 +5591,7 @@ xmlNodeSetContent(xmlNodePtr cur, const xmlChar *content) {
  * @returns 0 on success, 1 on error, -1 if a memory allocation failed.
  */
 int
-xmlNodeSetContentLen(xmlNodePtr cur, const xmlChar *content, int len) {
+xmlNodeSetContentLen(xmlNode *cur, const xmlChar *content, int len) {
     return(xmlNodeSetContentInternal(cur, content, len));
 }
 
@@ -5608,7 +5608,7 @@ xmlNodeSetContentLen(xmlNodePtr cur, const xmlChar *content, int len) {
  * @returns 0 on success, 1 on error, -1 if a memory allocation failed.
  */
 int
-xmlNodeAddContentLen(xmlNodePtr cur, const xmlChar *content, int len) {
+xmlNodeAddContentLen(xmlNode *cur, const xmlChar *content, int len) {
     if (cur == NULL)
 	return(1);
     if ((content == NULL) || (len <= 0))
@@ -5655,7 +5655,7 @@ xmlNodeAddContentLen(xmlNodePtr cur, const xmlChar *content, int len) {
  * @returns 0 on success, 1 on error, -1 if a memory allocation failed.
  */
 int
-xmlNodeAddContent(xmlNodePtr cur, const xmlChar *content) {
+xmlNodeAddContent(xmlNode *cur, const xmlChar *content) {
     return(xmlNodeAddContentLen(cur, content, xmlStrlen(content)));
 }
 
@@ -5668,8 +5668,8 @@ xmlNodeAddContent(xmlNodePtr cur, const xmlChar *content) {
  * @param second  the second text node being merged
  * @returns the first text node augmented or NULL in case of error.
  */
-xmlNodePtr
-xmlTextMerge(xmlNodePtr first, xmlNodePtr second) {
+xmlNode *
+xmlTextMerge(xmlNode *first, xmlNode *second) {
     if (first == NULL)
         return(second);
     if (second == NULL)
@@ -5704,7 +5704,7 @@ xmlTextMerge(xmlNodePtr first, xmlNodePtr second) {
  */
 int
 xmlGetNsListSafe(const xmlDoc *doc ATTRIBUTE_UNUSED, const xmlNode *node,
-                 xmlNsPtr **out)
+                 xmlNs ***out)
 {
     xmlNsPtr cur;
     xmlNsPtr *namespaces = NULL;
@@ -5776,7 +5776,7 @@ xmlGetNsListSafe(const xmlDoc *doc ATTRIBUTE_UNUSED, const xmlNode *node,
  * be freed by the caller or NULL if no namespaces were found or
  * a memory allocation failed.
  */
-xmlNsPtr *
+xmlNs **
 xmlGetNsList(const xmlDoc *doc, const xmlNode *node)
 {
     xmlNsPtr *ret;
@@ -5841,8 +5841,8 @@ xmlTreeEnsureXMLDecl(xmlDocPtr doc)
  * other errors.
  */
 int
-xmlSearchNsSafe(xmlNodePtr node, const xmlChar *prefix,
-                xmlNsPtr *out) {
+xmlSearchNsSafe(xmlNode *node, const xmlChar *prefix,
+                xmlNs **out) {
     xmlNsPtr cur;
     xmlDocPtr doc;
     xmlNodePtr orig = node;
@@ -5929,8 +5929,8 @@ xmlSearchNsSafe(xmlNodePtr node, const xmlChar *prefix,
  * a memory allocation failed. Allocations can only fail if the `xml`
  * namespace is queried.
  */
-xmlNsPtr
-xmlSearchNs(xmlDocPtr doc ATTRIBUTE_UNUSED, xmlNodePtr node,
+xmlNs *
+xmlSearchNs(xmlDoc *doc ATTRIBUTE_UNUSED, xmlNode *node,
             const xmlChar *nameSpace) {
     xmlNsPtr cur = NULL;
 
@@ -5988,8 +5988,8 @@ xmlNsInScope(xmlDocPtr doc ATTRIBUTE_UNUSED, xmlNodePtr node,
  * other errors.
  */
 int
-xmlSearchNsByHrefSafe(xmlNodePtr node, const xmlChar *href,
-                      xmlNsPtr *out) {
+xmlSearchNsByHrefSafe(xmlNode *node, const xmlChar *href,
+                      xmlNs **out) {
     xmlNsPtr cur;
     xmlDocPtr doc;
     xmlNodePtr orig = node;
@@ -6078,8 +6078,8 @@ xmlSearchNsByHrefSafe(xmlNodePtr node, const xmlChar *href,
  * a memory allocation failed. Allocations can only fail if the `xml`
  * namespace is queried.
  */
-xmlNsPtr
-xmlSearchNsByHref(xmlDocPtr doc ATTRIBUTE_UNUSED, xmlNodePtr node,
+xmlNs *
+xmlSearchNsByHref(xmlDoc *doc ATTRIBUTE_UNUSED, xmlNode *node,
                   const xmlChar * href) {
     xmlNsPtr cur = NULL;
 
@@ -6190,7 +6190,7 @@ xmlGrowNsCache(xmlNsCache **cache, int *capacity) {
  * @returns 0 on success or -1 in case of error.
  */
 int
-xmlReconciliateNs(xmlDocPtr doc, xmlNodePtr tree) {
+xmlReconciliateNs(xmlDoc *doc, xmlNode *tree) {
     xmlNsCache *cache = NULL;
     int sizeCache = 0;
     int nbCache = 0;
@@ -6463,7 +6463,7 @@ xmlGetPropNodeValueInternal(const xmlAttr *prop)
  * neither was found. Also returns NULL if a memory allocation failed,
  * making this function unreliable.
  */
-xmlAttrPtr
+xmlAttr *
 xmlHasProp(const xmlNode *node, const xmlChar *name) {
     xmlAttrPtr prop;
     xmlDocPtr doc;
@@ -6517,7 +6517,7 @@ xmlHasProp(const xmlNode *node, const xmlChar *name) {
  * neither was found. Also returns NULL if a memory allocation failed
  * making this function unreliable.
  */
-xmlAttrPtr
+xmlAttr *
 xmlHasNsProp(const xmlNode *node, const xmlChar *name, const xmlChar *nameSpace) {
 
     return(xmlGetPropNodeInternal(node, name, nameSpace, 1));
@@ -6660,7 +6660,7 @@ xmlGetNsProp(const xmlNode *node, const xmlChar *name, const xmlChar *nameSpace)
  * @returns 0 if successful, -1 if not found
  */
 int
-xmlUnsetProp(xmlNodePtr node, const xmlChar *name) {
+xmlUnsetProp(xmlNode *node, const xmlChar *name) {
     xmlAttrPtr prop;
 
     prop = xmlGetPropNodeInternal(node, name, NULL, 0);
@@ -6680,7 +6680,7 @@ xmlUnsetProp(xmlNodePtr node, const xmlChar *name) {
  * @returns 0 if successful, -1 if not found
  */
 int
-xmlUnsetNsProp(xmlNodePtr node, xmlNsPtr ns, const xmlChar *name) {
+xmlUnsetNsProp(xmlNode *node, xmlNs *ns, const xmlChar *name) {
     xmlAttrPtr prop;
 
     prop = xmlGetPropNodeInternal(node, name,
@@ -6702,8 +6702,8 @@ xmlUnsetNsProp(xmlNodePtr node, xmlNsPtr ns, const xmlChar *name) {
  * @param value  the attribute value
  * @returns the attribute pointer.
  */
-xmlAttrPtr
-xmlSetProp(xmlNodePtr node, const xmlChar *name, const xmlChar *value) {
+xmlAttr *
+xmlSetProp(xmlNode *node, const xmlChar *name, const xmlChar *value) {
     xmlNsPtr ns = NULL;
     const xmlChar *localname;
     xmlChar *prefix;
@@ -6742,8 +6742,8 @@ xmlSetProp(xmlNodePtr node, const xmlChar *name, const xmlChar *value) {
  * @param value  the attribute value
  * @returns the attribute pointer.
  */
-xmlAttrPtr
-xmlSetNsProp(xmlNodePtr node, xmlNsPtr ns, const xmlChar *name,
+xmlAttr *
+xmlSetNsProp(xmlNode *node, xmlNs *ns, const xmlChar *name,
 	     const xmlChar *value)
 {
     xmlAttrPtr prop;
@@ -6851,7 +6851,7 @@ xmlIsBlankNode(const xmlNode *node) {
  */
 
 int
-xmlTextConcat(xmlNodePtr node, const xmlChar *content, int len) {
+xmlTextConcat(xmlNode *node, const xmlChar *content, int len) {
     if (node == NULL)
         return(-1);
 
@@ -6885,7 +6885,7 @@ xmlGetDocCompressMode (const xmlDoc *doc) {
  * @param mode  the compression ratio
  */
 void
-xmlSetDocCompressMode (xmlDocPtr doc, int mode) {
+xmlSetDocCompressMode (xmlDoc *doc, int mode) {
     if (doc == NULL) return;
     if (mode < 0) doc->compression = 0;
     else if (mode > 9) doc->compression = 9;
@@ -7117,9 +7117,9 @@ xmlDOMWrapStoreNs(xmlDocPtr doc,
 /**
  * Allocates and initializes a new DOM-wrapper context.
  *
- * @returns the xmlDOMWrapCtxtPtr or NULL in case of an internal error.
+ * @returns the xmlDOMWrapCtxt or NULL in case of an internal error.
  */
-xmlDOMWrapCtxtPtr
+xmlDOMWrapCtxt *
 xmlDOMWrapNewCtxt(void)
 {
     xmlDOMWrapCtxtPtr ret;
@@ -7137,7 +7137,7 @@ xmlDOMWrapNewCtxt(void)
  * @param ctxt  the DOM-wrapper context
  */
 void
-xmlDOMWrapFreeCtxt(xmlDOMWrapCtxtPtr ctxt)
+xmlDOMWrapFreeCtxt(xmlDOMWrapCtxt *ctxt)
 {
     if (ctxt == NULL)
 	return;
@@ -7282,8 +7282,8 @@ xmlDOMWrapNSNormAddNsMapItem2(xmlNsPtr **list, int *size, int *number,
  *          -1 on API and internal errors.
  */
 int
-xmlDOMWrapRemoveNode(xmlDOMWrapCtxtPtr ctxt, xmlDocPtr doc,
-		     xmlNodePtr node, int options ATTRIBUTE_UNUSED)
+xmlDOMWrapRemoveNode(xmlDOMWrapCtxt *ctxt, xmlDoc *doc,
+		     xmlNode *node, int options ATTRIBUTE_UNUSED)
 {
     xmlNsPtr *list = NULL;
     int sizeList = 0, nbList = 0, ret = 0, i, j;
@@ -7796,8 +7796,8 @@ typedef enum {
  * @returns 0 if succeeded, -1 otherwise and on API/internal errors.
  */
 int
-xmlDOMWrapReconcileNamespaces(xmlDOMWrapCtxtPtr ctxt ATTRIBUTE_UNUSED,
-			      xmlNodePtr elem,
+xmlDOMWrapReconcileNamespaces(xmlDOMWrapCtxt *ctxt ATTRIBUTE_UNUSED,
+			      xmlNode *elem,
 			      int options)
 {
     int depth = -1, adoptns = 0, parnsdone = 0;
@@ -8341,12 +8341,12 @@ leave_node:
  *          -1 on API/internal errors.
  */
 int
-xmlDOMWrapCloneNode(xmlDOMWrapCtxtPtr ctxt,
-		      xmlDocPtr sourceDoc,
-		      xmlNodePtr node,
-		      xmlNodePtr *resNode,
-		      xmlDocPtr destDoc,
-		      xmlNodePtr destParent,
+xmlDOMWrapCloneNode(xmlDOMWrapCtxt *ctxt,
+		      xmlDoc *sourceDoc,
+		      xmlNode *node,
+		      xmlNode **resNode,
+		      xmlDoc *destDoc,
+		      xmlNode *destParent,
 		      int deep,
 		      int options ATTRIBUTE_UNUSED)
 {
@@ -8947,11 +8947,11 @@ xmlDOMWrapAdoptAttr(xmlDOMWrapCtxtPtr ctxt,
  *          -1 on API/internal errors.
  */
 int
-xmlDOMWrapAdoptNode(xmlDOMWrapCtxtPtr ctxt,
-		    xmlDocPtr sourceDoc,
-		    xmlNodePtr node,
-		    xmlDocPtr destDoc,
-		    xmlNodePtr destParent,
+xmlDOMWrapAdoptNode(xmlDOMWrapCtxt *ctxt,
+		    xmlDoc *sourceDoc,
+		    xmlNode *node,
+		    xmlDoc *destDoc,
+		    xmlNode *destParent,
 		    int options)
 {
     int ret = 0;

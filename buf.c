@@ -4,7 +4,7 @@
  * new buffer structures and entry points to simplify the maintenance
  * of libxml2 and ensure we keep good control over memory allocations
  * and stay 64 bits clean.
- * The new entry point use the xmlBufPtr opaque structure and
+ * The new entry point use the xmlBuf opaque structure and
  * xmlBuf...() counterparts to the old xmlBuf...() functions
  *
  * See Copyright for the status of this software.
@@ -27,8 +27,6 @@
 #define SIZE_MAX ((size_t) -1)
 #endif
 
-#define WITH_BUFFER_COMPAT
-
 #define BUF_FLAG_OOM        (1u << 0)
 #define BUF_FLAG_OVERFLOW   (1u << 1)
 #define BUF_FLAG_STATIC     (1u << 2)
@@ -44,45 +42,12 @@
 
 struct _xmlBuf {
     xmlChar *content;		/* The buffer content UTF8 */
-#ifdef WITH_BUFFER_COMPAT
-    unsigned int compat_use;    /* for binary compatibility */
-    unsigned int compat_size;   /* for binary compatibility */
-#endif
     xmlChar *mem;		/* Start of the allocation */
     size_t use;		        /* The buffer size used */
     size_t size;		/* The buffer size, excluding terminating 0 */
     size_t maxSize;             /* The maximum buffer size */
     unsigned flags;             /* flags */
 };
-
-#ifdef WITH_BUFFER_COMPAT
-/*
- * Macro for compatibility with xmlBuffer to be used after an xmlBuf
- * is updated. This makes sure the compat fields are updated too.
- */
-#define UPDATE_COMPAT(buf)				    \
-     if (buf->size < INT_MAX) buf->compat_size = buf->size; \
-     else buf->compat_size = INT_MAX;			    \
-     if (buf->use < INT_MAX) buf->compat_use = buf->use; \
-     else buf->compat_use = INT_MAX;
-
-/*
- * Macro for compatibility with xmlBuffer to be used in all the xmlBuf
- * entry points, it checks that the compat fields have not been modified
- * by direct call to xmlBuffer function from code compiled before 2.9.0 .
- */
-#define CHECK_COMPAT(buf)				    \
-     if (buf->size != (size_t) buf->compat_size)	    \
-         if (buf->compat_size < INT_MAX)		    \
-	     buf->size = buf->compat_size;		    \
-     if (buf->use != (size_t) buf->compat_use)		    \
-         if (buf->compat_use < INT_MAX)			    \
-	     buf->use = buf->compat_use;
-
-#else /* ! WITH_BUFFER_COMPAT */
-#define UPDATE_COMPAT(buf)
-#define CHECK_COMPAT(buf)
-#endif /* WITH_BUFFER_COMPAT */
 
 /**
  * Handle an out of memory condition
@@ -116,7 +81,7 @@ xmlBufOverflowError(xmlBufPtr buf)
  * @param size  initial buffer size
  * @returns  the new structure
  */
-xmlBufPtr
+xmlBuf *
 xmlBufCreate(size_t size) {
     xmlBufPtr ret;
 
@@ -140,7 +105,6 @@ xmlBufCreate(size_t size) {
     ret->content = ret->mem;
     ret->content[0] = 0;
 
-    UPDATE_COMPAT(ret);
     return(ret);
 }
 
@@ -157,7 +121,7 @@ xmlBufCreate(size_t size) {
  * @param isStatic  whether the memory area is static
  * @returns  a new buffer.
  */
-xmlBufPtr
+xmlBuf *
 xmlBufCreateMem(const xmlChar *mem, size_t size, int isStatic) {
     xmlBufPtr ret;
 
@@ -192,7 +156,6 @@ xmlBufCreateMem(const xmlChar *mem, size_t size, int isStatic) {
     ret->maxSize = SIZE_MAX - 1;
     ret->content = ret->mem;
 
-    UPDATE_COMPAT(ret);
     return(ret);
 }
 
@@ -208,7 +171,7 @@ xmlBufCreateMem(const xmlChar *mem, size_t size, int isStatic) {
  * @returns  the buffer content
  */
 xmlChar *
-xmlBufDetach(xmlBufPtr buf) {
+xmlBufDetach(xmlBuf *buf) {
     xmlChar *ret;
 
     if ((buf == NULL) || (BUF_ERROR(buf)) || (BUF_STATIC(buf)))
@@ -226,7 +189,6 @@ xmlBufDetach(xmlBufPtr buf) {
     buf->size = 0;
     buf->use = 0;
 
-    UPDATE_COMPAT(buf);
     return ret;
 }
 
@@ -236,7 +198,7 @@ xmlBufDetach(xmlBufPtr buf) {
  * @param buf  the buffer to free
  */
 void
-xmlBufFree(xmlBufPtr buf) {
+xmlBufFree(xmlBuf *buf) {
     if (buf == NULL)
 	return;
 
@@ -251,19 +213,16 @@ xmlBufFree(xmlBufPtr buf) {
  * @param buf  the buffer
  */
 void
-xmlBufEmpty(xmlBufPtr buf) {
+xmlBufEmpty(xmlBuf *buf) {
     if ((buf == NULL) || (BUF_ERROR(buf)) || (BUF_STATIC(buf)))
         return;
     if (buf->mem == NULL)
         return;
-    CHECK_COMPAT(buf)
 
     buf->use = 0;
     buf->size += buf->content - buf->mem;
     buf->content = buf->mem;
     buf->content[0] = 0;
-
-    UPDATE_COMPAT(buf)
 }
 
 /**
@@ -280,12 +239,11 @@ xmlBufEmpty(xmlBufPtr buf) {
  * @returns  the number of bytes removed or 0 in case of failure
  */
 size_t
-xmlBufShrink(xmlBufPtr buf, size_t len) {
+xmlBufShrink(xmlBuf *buf, size_t len) {
     if ((buf == NULL) || (BUF_ERROR(buf)))
         return(0);
     if (len == 0)
         return(0);
-    CHECK_COMPAT(buf)
 
     if (len > buf->use)
         return(0);
@@ -294,7 +252,6 @@ xmlBufShrink(xmlBufPtr buf, size_t len) {
     buf->content += len;
     buf->size -= len;
 
-    UPDATE_COMPAT(buf)
     return(len);
 }
 
@@ -379,10 +336,9 @@ xmlBufGrowInternal(xmlBufPtr buf, size_t len) {
  * @returns  0 on success, -1 in case of error
  */
 int
-xmlBufGrow(xmlBufPtr buf, size_t len) {
+xmlBufGrow(xmlBuf *buf, size_t len) {
     if ((buf == NULL) || (BUF_ERROR(buf)) || (BUF_STATIC(buf)))
         return(-1);
-    CHECK_COMPAT(buf)
 
     if (len <= buf->size - buf->use)
         return(0);
@@ -390,7 +346,6 @@ xmlBufGrow(xmlBufPtr buf, size_t len) {
     if (xmlBufGrowInternal(buf, len) < 0)
         return(-1);
 
-    UPDATE_COMPAT(buf)
     return(0);
 }
 
@@ -416,11 +371,10 @@ xmlBufContent(const xmlBuf *buf)
  * @returns  the end of the internal content or NULL in case of error
  */
 xmlChar *
-xmlBufEnd(xmlBufPtr buf)
+xmlBufEnd(xmlBuf *buf)
 {
     if ((!buf) || (BUF_ERROR(buf)))
         return NULL;
-    CHECK_COMPAT(buf)
 
     return(&buf->content[buf->use]);
 }
@@ -436,15 +390,13 @@ xmlBufEnd(xmlBufPtr buf)
  * @returns  0 on success, -1 in case of error
  */
 int
-xmlBufAddLen(xmlBufPtr buf, size_t len) {
+xmlBufAddLen(xmlBuf *buf, size_t len) {
     if ((buf == NULL) || (BUF_ERROR(buf)) || (BUF_STATIC(buf)))
         return(-1);
-    CHECK_COMPAT(buf)
     if (len > buf->size - buf->use)
         return(-1);
     buf->use += len;
     buf->content[buf->use] = 0;
-    UPDATE_COMPAT(buf)
     return(0);
 }
 
@@ -455,11 +407,10 @@ xmlBufAddLen(xmlBufPtr buf, size_t len) {
  * @returns  size of buffer content in bytes
  */
 size_t
-xmlBufUse(const xmlBufPtr buf)
+xmlBufUse(xmlBuf *buf)
 {
     if ((!buf) || (BUF_ERROR(buf)))
         return 0;
-    CHECK_COMPAT(buf)
 
     return(buf->use);
 }
@@ -471,11 +422,10 @@ xmlBufUse(const xmlBufPtr buf)
  * @returns  available space in bytes
  */
 size_t
-xmlBufAvail(const xmlBufPtr buf)
+xmlBufAvail(xmlBuf *buf)
 {
     if ((!buf) || (BUF_ERROR(buf)))
         return 0;
-    CHECK_COMPAT(buf)
 
     return(buf->size - buf->use);
 }
@@ -487,11 +437,10 @@ xmlBufAvail(const xmlBufPtr buf)
  * @returns  0 if no, 1 if yes and -1 in case of error
  */
 int
-xmlBufIsEmpty(const xmlBufPtr buf)
+xmlBufIsEmpty(xmlBuf *buf)
 {
     if ((!buf) || (BUF_ERROR(buf)))
         return(-1);
-    CHECK_COMPAT(buf)
 
     return(buf->use == 0);
 }
@@ -507,14 +456,13 @@ xmlBufIsEmpty(const xmlBufPtr buf)
  * @returns  0 if successful, -1 in case of error.
  */
 int
-xmlBufAdd(xmlBufPtr buf, const xmlChar *str, size_t len) {
+xmlBufAdd(xmlBuf *buf, const xmlChar *str, size_t len) {
     if ((buf == NULL) || (BUF_ERROR(buf)) || (BUF_STATIC(buf)))
         return(-1);
     if (len == 0)
         return(0);
     if (str == NULL)
 	return(-1);
-    CHECK_COMPAT(buf)
 
     if (len > buf->size - buf->use) {
         if (xmlBufGrowInternal(buf, len) < 0)
@@ -525,7 +473,6 @@ xmlBufAdd(xmlBufPtr buf, const xmlChar *str, size_t len) {
     buf->use += len;
     buf->content[buf->use] = 0;
 
-    UPDATE_COMPAT(buf)
     return(0);
 }
 
@@ -537,7 +484,7 @@ xmlBufAdd(xmlBufPtr buf, const xmlChar *str, size_t len) {
  * @returns  0 if successful, -1 in case of error.
  */
 int
-xmlBufCat(xmlBufPtr buf, const xmlChar *str) {
+xmlBufCat(xmlBuf *buf, const xmlChar *str) {
     if (str == NULL)
         return(0);
     return(xmlBufAdd(buf, str, strlen((const char *) str)));
@@ -545,15 +492,15 @@ xmlBufCat(xmlBufPtr buf, const xmlChar *str) {
 
 /**
  * Helper routine to switch from the old buffer structures in use
- * in various APIs. It creates a wrapper xmlBufPtr which will be
+ * in various APIs. It creates a wrapper xmlBuf which will be
  * used for internal processing until the xmlBufBackToBuffer() is
  * issued.
  *
  * @param buffer  incoming old buffer to convert to a new one
- * @returns  a new xmlBufPtr unless the call failed and NULL is returned
+ * @returns  a new xmlBuf unless the call failed and NULL is returned
  */
-xmlBufPtr
-xmlBufFromBuffer(xmlBufferPtr buffer) {
+xmlBuf *
+xmlBufFromBuffer(xmlBuffer *buffer) {
     xmlBufPtr ret;
 
     if (buffer == NULL)
@@ -584,7 +531,6 @@ xmlBufFromBuffer(xmlBufferPtr buffer) {
             ret->mem = buffer->content;
     }
 
-    UPDATE_COMPAT(ret);
     return(ret);
 }
 
@@ -593,14 +539,14 @@ xmlBufFromBuffer(xmlBufferPtr buffer) {
  * update back the buffer provided by the user. This can lead to
  * a failure in case the size accumulated in the xmlBuf is larger
  * than what an xmlBuffer can support on 64 bits (INT_MAX)
- * The xmlBufPtr `buf` wrapper is deallocated by this call in any case.
+ * The xmlBuf `buf` wrapper is deallocated by this call in any case.
  *
  * @param buf  new buffer wrapping the old one
  * @param ret  old buffer
  * @returns  0 on success, -1 on error.
  */
 int
-xmlBufBackToBuffer(xmlBufPtr buf, xmlBufferPtr ret) {
+xmlBufBackToBuffer(xmlBuf *buf, xmlBuffer *ret) {
     if ((buf == NULL) || (ret == NULL))
         return(-1);
 
@@ -639,7 +585,7 @@ xmlBufBackToBuffer(xmlBufPtr buf, xmlBufferPtr ret) {
  * @returns  0 on success, -1 in case of error.
  */
 int
-xmlBufResetInput(xmlBufPtr buf, xmlParserInputPtr input) {
+xmlBufResetInput(xmlBuf *buf, xmlParserInput *input) {
     return(xmlBufUpdateInput(buf, input, 0));
 }
 
@@ -656,10 +602,9 @@ xmlBufResetInput(xmlBufPtr buf, xmlParserInputPtr input) {
  * @returns  0 on success, -1 in case of error.
  */
 int
-xmlBufUpdateInput(xmlBufPtr buf, xmlParserInputPtr input, size_t pos) {
+xmlBufUpdateInput(xmlBuf *buf, xmlParserInput *input, size_t pos) {
     if ((buf == NULL) || (input == NULL))
         return(-1);
-    CHECK_COMPAT(buf)
     input->base = buf->content;
     input->cur = input->base + pos;
     input->end = &buf->content[buf->use];
@@ -702,7 +647,7 @@ xmlGetBufferAllocationScheme(void) {
  *
  * @returns  the new structure.
  */
-xmlBufferPtr
+xmlBuffer *
 xmlBufferCreate(void) {
     xmlBufferPtr ret;
 
@@ -730,7 +675,7 @@ xmlBufferCreate(void) {
  * @param size  initial size of buffer
  * @returns  the new structure.
  */
-xmlBufferPtr
+xmlBuffer *
 xmlBufferCreateSize(size_t size) {
     xmlBufferPtr ret;
 
@@ -773,7 +718,7 @@ xmlBufferCreateSize(size_t size) {
  * @returns  the buffer content
  */
 xmlChar *
-xmlBufferDetach(xmlBufferPtr buf) {
+xmlBufferDetach(xmlBuffer *buf) {
     xmlChar *ret;
 
     if (buf == NULL)
@@ -806,7 +751,7 @@ xmlBufferDetach(xmlBufferPtr buf) {
  * @param size  the size in bytes
  * @returns  a new buffer
  */
-xmlBufferPtr
+xmlBuffer *
 xmlBufferCreateStatic(void *mem, size_t size) {
     xmlBufferPtr buf = xmlBufferCreateSize(size);
 
@@ -824,7 +769,7 @@ xmlBufferCreateStatic(void *mem, size_t size) {
  * @param scheme  allocation scheme to use
  */
 void
-xmlBufferSetAllocationScheme(xmlBufferPtr buf ATTRIBUTE_UNUSED,
+xmlBufferSetAllocationScheme(xmlBuffer *buf ATTRIBUTE_UNUSED,
                              xmlBufferAllocationScheme scheme ATTRIBUTE_UNUSED) {
 }
 
@@ -834,7 +779,7 @@ xmlBufferSetAllocationScheme(xmlBufferPtr buf ATTRIBUTE_UNUSED,
  * @param buf  the buffer to free
  */
 void
-xmlBufferFree(xmlBufferPtr buf) {
+xmlBufferFree(xmlBuffer *buf) {
     if (buf == NULL)
 	return;
 
@@ -852,7 +797,7 @@ xmlBufferFree(xmlBufferPtr buf) {
  * @param buf  the buffer
  */
 void
-xmlBufferEmpty(xmlBufferPtr buf) {
+xmlBufferEmpty(xmlBuffer *buf) {
     if (buf == NULL)
         return;
     if (buf->content == NULL)
@@ -879,7 +824,7 @@ xmlBufferEmpty(xmlBufferPtr buf) {
  * @returns  the number of bytes removed, or -1 in case of failure.
  */
 int
-xmlBufferShrink(xmlBufferPtr buf, unsigned int len) {
+xmlBufferShrink(xmlBuffer *buf, unsigned int len) {
     if (buf == NULL)
         return(-1);
     if (len == 0)
@@ -909,7 +854,7 @@ xmlBufferShrink(xmlBufferPtr buf, unsigned int len) {
  * @returns  the new available space or -1 in case of error
  */
 int
-xmlBufferGrow(xmlBufferPtr buf, unsigned int len) {
+xmlBufferGrow(xmlBuffer *buf, unsigned int len) {
     unsigned int size;
     xmlChar *newbuf;
 
@@ -962,7 +907,7 @@ xmlBufferGrow(xmlBufferPtr buf, unsigned int len) {
  * @returns  the number of bytes written
  */
 int
-xmlBufferDump(FILE *file, xmlBufferPtr buf) {
+xmlBufferDump(FILE *file, xmlBuffer *buf) {
     size_t ret;
 
     if (buf == NULL)
@@ -1015,7 +960,7 @@ xmlBufferLength(const xmlBuffer *buf)
  * @returns  1 on succes, 0 in case of error
  */
 int
-xmlBufferResize(xmlBufferPtr buf, unsigned int size)
+xmlBufferResize(xmlBuffer *buf, unsigned int size)
 {
     int res;
 
@@ -1039,7 +984,7 @@ xmlBufferResize(xmlBufferPtr buf, unsigned int size)
  * @returns  an xmlParserErrors code.
  */
 int
-xmlBufferAdd(xmlBufferPtr buf, const xmlChar *str, int len) {
+xmlBufferAdd(xmlBuffer *buf, const xmlChar *str, int len) {
     if ((buf == NULL) || (str == NULL))
 	return(XML_ERR_ARGUMENT);
     if (len < 0)
@@ -1070,7 +1015,7 @@ xmlBufferAdd(xmlBufferPtr buf, const xmlChar *str, int len) {
  * @returns  an xmlParserErrors code.
  */
 int
-xmlBufferAddHead(xmlBufferPtr buf, const xmlChar *str, int len) {
+xmlBufferAddHead(xmlBuffer *buf, const xmlChar *str, int len) {
     unsigned start = 0;
 
     if ((buf == NULL) || (str == NULL))
@@ -1122,7 +1067,7 @@ xmlBufferAddHead(xmlBufferPtr buf, const xmlChar *str, int len) {
  * @returns  an xmlParserErrors code.
  */
 int
-xmlBufferCat(xmlBufferPtr buf, const xmlChar *str) {
+xmlBufferCat(xmlBuffer *buf, const xmlChar *str) {
     return(xmlBufferAdd(buf, str, -1));
 }
 
@@ -1134,7 +1079,7 @@ xmlBufferCat(xmlBufferPtr buf, const xmlChar *str) {
  * @returns  an xmlParserErrors code.
  */
 int
-xmlBufferCCat(xmlBufferPtr buf, const char *str) {
+xmlBufferCCat(xmlBuffer *buf, const char *str) {
     return(xmlBufferAdd(buf, (const xmlChar *) str, -1));
 }
 
@@ -1145,7 +1090,7 @@ xmlBufferCCat(xmlBufferPtr buf, const char *str) {
  * @param string  the string to add
  */
 void
-xmlBufferWriteCHAR(xmlBufferPtr buf, const xmlChar *string) {
+xmlBufferWriteCHAR(xmlBuffer *buf, const xmlChar *string) {
     xmlBufferAdd(buf, string, -1);
 }
 
@@ -1158,7 +1103,7 @@ xmlBufferWriteCHAR(xmlBufferPtr buf, const xmlChar *string) {
  * @param string  the string to add
  */
 void
-xmlBufferWriteChar(xmlBufferPtr buf, const char *string) {
+xmlBufferWriteChar(xmlBuffer *buf, const char *string) {
     xmlBufferAdd(buf, (const xmlChar *) string, -1);
 }
 
@@ -1173,7 +1118,7 @@ xmlBufferWriteChar(xmlBufferPtr buf, const char *string) {
  * @param string  the string to add
  */
 void
-xmlBufferWriteQuotedString(xmlBufferPtr buf, const xmlChar *string) {
+xmlBufferWriteQuotedString(xmlBuffer *buf, const xmlChar *string) {
     const xmlChar *cur, *base;
     if (buf == NULL)
         return;

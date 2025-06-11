@@ -43,6 +43,8 @@ extern "C" {
 #define XML_CATALOG_PI						\
     (const xmlChar *) "oasis-xml-catalog"
 
+/** @cond ignore */
+
 /*
  * The API is voluntarily limited to general cataloging.
  */
@@ -59,50 +61,52 @@ typedef enum {
     XML_CATA_ALLOW_ALL = 3
 } xmlCatalogAllow;
 
+/** @endcond */
+
 typedef struct _xmlCatalog xmlCatalog;
 typedef xmlCatalog *xmlCatalogPtr;
 
 /*
  * Operations on a given catalog.
  */
-XMLPUBFUN xmlCatalogPtr
+XMLPUBFUN xmlCatalog *
 		xmlNewCatalog		(int sgml);
-XMLPUBFUN xmlCatalogPtr
+XMLPUBFUN xmlCatalog *
 		xmlLoadACatalog		(const char *filename);
-XMLPUBFUN xmlCatalogPtr
+XMLPUBFUN xmlCatalog *
 		xmlLoadSGMLSuperCatalog	(const char *filename);
 XMLPUBFUN int
-		xmlConvertSGMLCatalog	(xmlCatalogPtr catal);
+		xmlConvertSGMLCatalog	(xmlCatalog *catal);
 XMLPUBFUN int
-		xmlACatalogAdd		(xmlCatalogPtr catal,
+		xmlACatalogAdd		(xmlCatalog *catal,
 					 const xmlChar *type,
 					 const xmlChar *orig,
 					 const xmlChar *replace);
 XMLPUBFUN int
-		xmlACatalogRemove	(xmlCatalogPtr catal,
+		xmlACatalogRemove	(xmlCatalog *catal,
 					 const xmlChar *value);
 XMLPUBFUN xmlChar *
-		xmlACatalogResolve	(xmlCatalogPtr catal,
+		xmlACatalogResolve	(xmlCatalog *catal,
 					 const xmlChar *pubID,
 	                                 const xmlChar *sysID);
 XMLPUBFUN xmlChar *
-		xmlACatalogResolveSystem(xmlCatalogPtr catal,
+		xmlACatalogResolveSystem(xmlCatalog *catal,
 					 const xmlChar *sysID);
 XMLPUBFUN xmlChar *
-		xmlACatalogResolvePublic(xmlCatalogPtr catal,
+		xmlACatalogResolvePublic(xmlCatalog *catal,
 					 const xmlChar *pubID);
 XMLPUBFUN xmlChar *
-		xmlACatalogResolveURI	(xmlCatalogPtr catal,
+		xmlACatalogResolveURI	(xmlCatalog *catal,
 					 const xmlChar *URI);
 #ifdef LIBXML_OUTPUT_ENABLED
 XMLPUBFUN void
-		xmlACatalogDump		(xmlCatalogPtr catal,
+		xmlACatalogDump		(xmlCatalog *catal,
 					 FILE *out);
 #endif /* LIBXML_OUTPUT_ENABLED */
 XMLPUBFUN void
-		xmlFreeCatalog		(xmlCatalogPtr catal);
+		xmlFreeCatalog		(xmlCatalog *catal);
 XMLPUBFUN int
-		xmlCatalogIsEmpty	(xmlCatalogPtr catal);
+		xmlCatalogIsEmpty	(xmlCatalog *catal);
 
 /*
  * Global operations.
@@ -135,7 +139,7 @@ XMLPUBFUN int
 XMLPUBFUN int
 		xmlCatalogRemove	(const xmlChar *value);
 XML_DEPRECATED
-XMLPUBFUN xmlDocPtr
+XMLPUBFUN xmlDoc *
 		xmlParseCatalogFile	(const char *filename);
 XMLPUBFUN int
 		xmlCatalogConvert	(void);

@@ -606,7 +606,7 @@ xmlSchematronNewSchematron(xmlSchematronParserCtxtPtr ctxt)
  * @param schema  a schema structure
  */
 void
-xmlSchematronFree(xmlSchematronPtr schema)
+xmlSchematronFree(xmlSchematron *schema)
 {
     if (schema == NULL)
         return;
@@ -630,7 +630,7 @@ xmlSchematronFree(xmlSchematronPtr schema)
  * @param URL  the location of the schema
  * @returns the parser context or NULL in case of error
  */
-xmlSchematronParserCtxtPtr
+xmlSchematronParserCtxt *
 xmlSchematronNewParserCtxt(const char *URL)
 {
     xmlSchematronParserCtxtPtr ret;
@@ -668,7 +668,7 @@ xmlSchematronNewParserCtxt(const char *URL)
  * @param size  the size of the array
  * @returns the parser context or NULL in case of error
  */
-xmlSchematronParserCtxtPtr
+xmlSchematronParserCtxt *
 xmlSchematronNewMemParserCtxt(const char *buffer, int size)
 {
     xmlSchematronParserCtxtPtr ret;
@@ -703,8 +703,8 @@ xmlSchematronNewMemParserCtxt(const char *buffer, int size)
  * @param doc  a preparsed document tree
  * @returns the parser context or NULL in case of error
  */
-xmlSchematronParserCtxtPtr
-xmlSchematronNewDocParserCtxt(xmlDocPtr doc)
+xmlSchematronParserCtxt *
+xmlSchematronNewDocParserCtxt(xmlDoc *doc)
 {
     xmlSchematronParserCtxtPtr ret;
 
@@ -739,7 +739,7 @@ xmlSchematronNewDocParserCtxt(xmlDocPtr doc)
  * @param ctxt  the schema parser context
  */
 void
-xmlSchematronFreeParserCtxt(xmlSchematronParserCtxtPtr ctxt)
+xmlSchematronFreeParserCtxt(xmlSchematronParserCtxt *ctxt)
 {
     if (ctxt == NULL)
         return;
@@ -1200,8 +1200,8 @@ done:
  * @returns the internal XML Schematron structure built from the resource or
  *         NULL in case of error
  */
-xmlSchematronPtr
-xmlSchematronParse(xmlSchematronParserCtxtPtr ctxt)
+xmlSchematron *
+xmlSchematronParse(xmlSchematronParserCtxt *ctxt)
 {
     xmlSchematronPtr ret = NULL;
     xmlDocPtr doc;
@@ -1661,7 +1661,7 @@ xmlSchematronReportPattern(xmlSchematronValidCtxtPtr ctxt,
  * @param ctx  the functions context
  */
 void
-xmlSchematronSetValidStructuredErrors(xmlSchematronValidCtxtPtr ctxt,
+xmlSchematronSetValidStructuredErrors(xmlSchematronValidCtxt *ctxt,
                                       xmlStructuredErrorFunc serror, void *ctx)
 {
     if (ctxt == NULL)
@@ -1679,8 +1679,8 @@ xmlSchematronSetValidStructuredErrors(xmlSchematronValidCtxtPtr ctxt,
  * @param options  a set of xmlSchematronValidOptions
  * @returns the validation context or NULL in case of error
  */
-xmlSchematronValidCtxtPtr
-xmlSchematronNewValidCtxt(xmlSchematronPtr schema, int options)
+xmlSchematronValidCtxt *
+xmlSchematronNewValidCtxt(xmlSchematron *schema, int options)
 {
     int i;
     xmlSchematronValidCtxtPtr ret;
@@ -1719,7 +1719,7 @@ xmlSchematronNewValidCtxt(xmlSchematronPtr schema, int options)
  * @param ctxt  the schema validation context
  */
 void
-xmlSchematronFreeValidCtxt(xmlSchematronValidCtxtPtr ctxt)
+xmlSchematronFreeValidCtxt(xmlSchematronValidCtxt *ctxt)
 {
     if (ctxt == NULL)
         return;
@@ -1897,7 +1897,7 @@ xmlSchematronUnregisterVariables(xmlSchematronValidCtxtPtr vctxt,
  *         and an error count otherwise.
  */
 int
-xmlSchematronValidateDoc(xmlSchematronValidCtxtPtr ctxt, xmlDocPtr instance)
+xmlSchematronValidateDoc(xmlSchematronValidCtxt *ctxt, xmlDoc *instance)
 {
     xmlNodePtr cur, root;
     xmlSchematronPatternPtr pattern;

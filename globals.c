@@ -241,7 +241,6 @@ static int xmlDoValidityCheckingDefaultValueThrDef = 0;
 static int xmlGetWarningsDefaultValueThrDef = 1;
 static int xmlLoadExtDtdDefaultValueThrDef = 0;
 static int xmlPedanticParserDefaultValueThrDef = 0;
-static int xmlLineNumbersDefaultValueThrDef = 0;
 static int xmlKeepBlanksDefaultValueThrDef = 1;
 static int xmlSubstituteEntitiesDefaultValueThrDef = 0;
 
@@ -491,7 +490,7 @@ xmlRegisterGlobalStateDtor(xmlGlobalState *gs) {
  * hold all data for use by a thread when supporting backwards compatibility
  * of libxml2 to pre-thread-safe behaviour.
  *
- * @returns the newly allocated xmlGlobalStatePtr or NULL in case of error
+ * @returns the newly allocated xmlGlobalState or NULL in case of error
  */
 static xmlGlobalStatePtr
 xmlNewGlobalState(int allowFailure)
@@ -581,7 +580,6 @@ xmlInitGlobalState(xmlGlobalStatePtr gs) {
          xmlDoValidityCheckingDefaultValueThrDef;
     gs->getWarningsDefaultValue = xmlGetWarningsDefaultValueThrDef;
     gs->keepBlanksDefaultValue = xmlKeepBlanksDefaultValueThrDef;
-    gs->lineNumbersDefaultValue = xmlLineNumbersDefaultValueThrDef;
     gs->loadExtDtdDefaultValue = xmlLoadExtDtdDefaultValueThrDef;
     gs->pedanticParserDefaultValue = xmlPedanticParserDefaultValueThrDef;
     gs->substituteEntitiesDefaultValue =
@@ -852,6 +850,11 @@ DllMain(ATTRIBUTE_UNUSED HINSTANCE hinstDLL, DWORD fdwReason,
 }
 #endif /* USE_DLL_MAIN */
 
+/**
+ * Set per-thread default value.
+ *
+ * @deprecated Call xmlSetGenericErrorFunc() in each thread.
+ */
 void
 xmlThrDefSetGenericErrorFunc(void *ctx, xmlGenericErrorFunc handler) {
     xmlMutexLock(&xmlThrDefMutex);
@@ -863,6 +866,11 @@ xmlThrDefSetGenericErrorFunc(void *ctx, xmlGenericErrorFunc handler) {
     xmlMutexUnlock(&xmlThrDefMutex);
 }
 
+/**
+ * Set per-thread default value.
+ *
+ * @deprecated Call xmlSetStructuredErrorFunc() in each thread.
+ */
 void
 xmlThrDefSetStructuredErrorFunc(void *ctx, xmlStructuredErrorFunc handler) {
     xmlMutexLock(&xmlThrDefMutex);
@@ -871,6 +879,11 @@ xmlThrDefSetStructuredErrorFunc(void *ctx, xmlStructuredErrorFunc handler) {
     xmlMutexUnlock(&xmlThrDefMutex);
 }
 
+/**
+ * Set per-thread default value.
+ *
+ * @deprecated Use xmlParserOption XML_PARSE_DTDVALID.
+ */
 int xmlThrDefDoValidityCheckingDefaultValue(int v) {
     int ret;
     xmlMutexLock(&xmlThrDefMutex);
@@ -880,6 +893,11 @@ int xmlThrDefDoValidityCheckingDefaultValue(int v) {
     return ret;
 }
 
+/**
+ * Set per-thread default value.
+ *
+ * @deprecated Use xmlParserOption XML_PARSE_NOWARNING.
+ */
 int xmlThrDefGetWarningsDefaultValue(int v) {
     int ret;
     xmlMutexLock(&xmlThrDefMutex);
@@ -890,6 +908,12 @@ int xmlThrDefGetWarningsDefaultValue(int v) {
 }
 
 #ifdef LIBXML_OUTPUT_ENABLED
+/**
+ * Set per-thread default value.
+ *
+ * @deprecated Indenting is enabled by default. Use the xmlsave.h API
+ * and xmlSaveOption XML_SAVE_NO_INDENT to disable indenting.
+ */
 int xmlThrDefIndentTreeOutput(int v) {
     int ret;
     xmlMutexLock(&xmlThrDefMutex);
@@ -899,6 +923,11 @@ int xmlThrDefIndentTreeOutput(int v) {
     return ret;
 }
 
+/**
+ * Set per-thread default value.
+ *
+ * @deprecated Use the xmlsave.h API and xmlSaveSetIndentString().
+ */
 const char * xmlThrDefTreeIndentString(const char * v) {
     const char * ret;
     xmlMutexLock(&xmlThrDefMutex);
@@ -908,6 +937,11 @@ const char * xmlThrDefTreeIndentString(const char * v) {
     return ret;
 }
 
+/**
+ * Set per-thread default value.
+ *
+ * @deprecated Use the xmlsave.h API and xmlSaveOption XML_SAVE_NO_EMPTY.
+ */
 int xmlThrDefSaveNoEmptyTags(int v) {
     int ret;
     xmlMutexLock(&xmlThrDefMutex);
@@ -918,6 +952,12 @@ int xmlThrDefSaveNoEmptyTags(int v) {
 }
 #endif
 
+/**
+ * Set per-thread default value.
+ *
+ * @deprecated Whitespace is kept by default. Use xmlParserOption
+ * XML_PARSE_NOBLANKS to remove whitespace.
+ */
 int xmlThrDefKeepBlanksDefaultValue(int v) {
     int ret;
     xmlMutexLock(&xmlThrDefMutex);
@@ -927,15 +967,20 @@ int xmlThrDefKeepBlanksDefaultValue(int v) {
     return ret;
 }
 
-int xmlThrDefLineNumbersDefaultValue(int v) {
-    int ret;
-    xmlMutexLock(&xmlThrDefMutex);
-    ret = xmlLineNumbersDefaultValueThrDef;
-    xmlLineNumbersDefaultValueThrDef = v;
-    xmlMutexUnlock(&xmlThrDefMutex);
-    return ret;
+/**
+ * Set per-thread default value.
+ *
+ * @deprecated Has no effect.
+ */
+int xmlThrDefLineNumbersDefaultValue(int v ATTRIBUTE_UNUSED) {
+    return 1;
 }
 
+/**
+ * Set per-thread default value.
+ *
+ * @deprecated Use xmlParserOption XML_PARSE_DTDLOAD.
+ */
 int xmlThrDefLoadExtDtdDefaultValue(int v) {
     int ret;
     xmlMutexLock(&xmlThrDefMutex);
@@ -945,6 +990,11 @@ int xmlThrDefLoadExtDtdDefaultValue(int v) {
     return ret;
 }
 
+/**
+ * Set per-thread default value.
+ *
+ * @deprecated Use xmlParserOption XML_PARSE_PEDANTIC.
+ */
 int xmlThrDefPedanticParserDefaultValue(int v) {
     int ret;
     xmlMutexLock(&xmlThrDefMutex);
@@ -954,6 +1004,11 @@ int xmlThrDefPedanticParserDefaultValue(int v) {
     return ret;
 }
 
+/**
+ * Set per-thread default value.
+ *
+ * @deprecated Use xmlParserOption XML_PARSE_NOENT.
+ */
 int xmlThrDefSubstituteEntitiesDefaultValue(int v) {
     int ret;
     xmlMutexLock(&xmlThrDefMutex);
@@ -963,6 +1018,11 @@ int xmlThrDefSubstituteEntitiesDefaultValue(int v) {
     return ret;
 }
 
+/**
+ * Set per-thread default value.
+ *
+ * @deprecated This feature will be removed.
+ */
 xmlRegisterNodeFunc
 xmlThrDefRegisterNodeDefault(xmlRegisterNodeFunc func)
 {
@@ -978,6 +1038,11 @@ xmlThrDefRegisterNodeDefault(xmlRegisterNodeFunc func)
     return(old);
 }
 
+/**
+ * Set per-thread default value.
+ *
+ * @deprecated This feature will be removed.
+ */
 xmlDeregisterNodeFunc
 xmlThrDefDeregisterNodeDefault(xmlDeregisterNodeFunc func)
 {
@@ -993,6 +1058,12 @@ xmlThrDefDeregisterNodeDefault(xmlDeregisterNodeFunc func)
     return(old);
 }
 
+/**
+ * Set per-thread default value.
+ *
+ * @deprecated Call xmlParserInputBufferCreateFilenameDefault()
+ * in each thread.
+ */
 xmlParserInputBufferCreateFilenameFunc
 xmlThrDefParserInputBufferCreateFilenameDefault(xmlParserInputBufferCreateFilenameFunc func)
 {
@@ -1010,6 +1081,12 @@ xmlThrDefParserInputBufferCreateFilenameDefault(xmlParserInputBufferCreateFilena
     return(old);
 }
 
+/**
+ * Set per-thread default value.
+ *
+ * @deprecated Call xmlOutputBufferCreateFilenameDefault()
+ * in each thread.
+ */
 xmlOutputBufferCreateFilenameFunc
 xmlThrDefOutputBufferCreateFilenameDefault(xmlOutputBufferCreateFilenameFunc func)
 {

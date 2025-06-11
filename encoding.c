@@ -72,43 +72,163 @@ typedef struct {
 } xmlEncTableEntry;
 
 static const xmlEncTableEntry xmlEncTable[] = {
-    { "ASCII", XML_CHAR_ENCODING_ASCII },
-    { "EUC-JP", XML_CHAR_ENCODING_EUC_JP },
-    { "HTML", XML_CHAR_ENCODING_HTML },
-    { "ISO LATIN 1", XML_CHAR_ENCODING_8859_1 },
-    { "ISO LATIN 2", XML_CHAR_ENCODING_8859_2 },
-    { "ISO-10646-UCS-2", XML_CHAR_ENCODING_UCS2 },
-    { "ISO-10646-UCS-4", XML_CHAR_ENCODING_UCS4LE },
-    { "ISO-2022-JP", XML_CHAR_ENCODING_2022_JP },
-    { "ISO-8859-1", XML_CHAR_ENCODING_8859_1 },
-    { "ISO-8859-10", XML_CHAR_ENCODING_8859_10 },
-    { "ISO-8859-11", XML_CHAR_ENCODING_8859_11 },
-    { "ISO-8859-13", XML_CHAR_ENCODING_8859_13 },
-    { "ISO-8859-14", XML_CHAR_ENCODING_8859_14 },
-    { "ISO-8859-15", XML_CHAR_ENCODING_8859_15 },
-    { "ISO-8859-16", XML_CHAR_ENCODING_8859_16 },
-    { "ISO-8859-2", XML_CHAR_ENCODING_8859_2 },
-    { "ISO-8859-3", XML_CHAR_ENCODING_8859_3 },
-    { "ISO-8859-4", XML_CHAR_ENCODING_8859_4 },
-    { "ISO-8859-5", XML_CHAR_ENCODING_8859_5 },
-    { "ISO-8859-6", XML_CHAR_ENCODING_8859_6 },
-    { "ISO-8859-7", XML_CHAR_ENCODING_8859_7 },
-    { "ISO-8859-8", XML_CHAR_ENCODING_8859_8 },
-    { "ISO-8859-9", XML_CHAR_ENCODING_8859_9 },
-    { "ISO-LATIN-1", XML_CHAR_ENCODING_8859_1 },
-    { "ISO-LATIN-2", XML_CHAR_ENCODING_8859_2 },
-    { "SHIFT_JIS", XML_CHAR_ENCODING_SHIFT_JIS },
-    { "UCS-2", XML_CHAR_ENCODING_UCS2 },
-    { "UCS-4", XML_CHAR_ENCODING_UCS4LE },
-    { "UCS2", XML_CHAR_ENCODING_UCS2 },
-    { "UCS4", XML_CHAR_ENCODING_UCS4LE },
-    { "US-ASCII", XML_CHAR_ENCODING_ASCII },
-    { "UTF-16", XML_CHAR_ENCODING_UTF16 },
-    { "UTF-16BE", XML_CHAR_ENCODING_UTF16BE },
-    { "UTF-16LE", XML_CHAR_ENCODING_UTF16LE },
-    { "UTF-8", XML_CHAR_ENCODING_UTF8 },
-    { "UTF16", XML_CHAR_ENCODING_UTF16 },
-    { "UTF8", XML_CHAR_ENCODING_UTF8 }
+    { "ansi_x3.4-1968", XML_CHAR_ENCODING_ASCII },
+    { "arabic", XML_CHAR_ENCODING_8859_6 },
+    { "ascii", XML_CHAR_ENCODING_ASCII },
+    { "asmo-708", XML_CHAR_ENCODING_8859_6 },
+    { "cp1252", XML_CHAR_ENCODING_WINDOWS_1252 },
+    { "cp819", XML_CHAR_ENCODING_8859_1 },
+    { "cseucpkdfmtjapanese", XML_CHAR_ENCODING_EUC_JP },
+    { "csiso2022jp", XML_CHAR_ENCODING_2022_JP },
+    { "csiso88596e", XML_CHAR_ENCODING_8859_6 },
+    { "csiso88596i", XML_CHAR_ENCODING_8859_6 },
+    { "csiso88598e", XML_CHAR_ENCODING_8859_8 },
+    { "csiso88598i", XML_CHAR_ENCODING_8859_8 },
+    { "csisolatin1", XML_CHAR_ENCODING_8859_1 },
+    { "csisolatin2", XML_CHAR_ENCODING_8859_2 },
+    { "csisolatin3", XML_CHAR_ENCODING_8859_3 },
+    { "csisolatin4", XML_CHAR_ENCODING_8859_4 },
+    { "csisolatin5", XML_CHAR_ENCODING_8859_9 },
+    { "csisolatin6", XML_CHAR_ENCODING_8859_10 },
+    { "csisolatin9", XML_CHAR_ENCODING_8859_15 },
+    { "csisolatinarabic", XML_CHAR_ENCODING_8859_6 },
+    { "csisolatincyrillic", XML_CHAR_ENCODING_8859_5 },
+    { "csisolatingreek", XML_CHAR_ENCODING_8859_7 },
+    { "csisolatinhebrew", XML_CHAR_ENCODING_8859_8 },
+    { "csshiftjis", XML_CHAR_ENCODING_SHIFT_JIS },
+    { "csunicode", XML_CHAR_ENCODING_UTF16 },
+    { "cyrillic", XML_CHAR_ENCODING_8859_5 },
+    { "ecma-114", XML_CHAR_ENCODING_8859_6 },
+    { "ecma-118", XML_CHAR_ENCODING_8859_7 },
+    { "elot_928", XML_CHAR_ENCODING_8859_7 },
+    { "euc-jp", XML_CHAR_ENCODING_EUC_JP },
+    { "greek", XML_CHAR_ENCODING_8859_7 },
+    { "greek8", XML_CHAR_ENCODING_8859_7 },
+    { "html", XML_CHAR_ENCODING_HTML },
+    { "ibm819", XML_CHAR_ENCODING_8859_1 },
+    { "iso latin 1", XML_CHAR_ENCODING_8859_1 },
+    { "iso latin 2", XML_CHAR_ENCODING_8859_2 },
+    { "iso-10646-ucs-2", XML_CHAR_ENCODING_UCS2 },
+    { "iso-10646-ucs-4", XML_CHAR_ENCODING_UCS4LE },
+    { "iso-2022-jp", XML_CHAR_ENCODING_2022_JP },
+    { "iso-8859-1", XML_CHAR_ENCODING_8859_1 },
+    { "iso-8859-10", XML_CHAR_ENCODING_8859_10 },
+    { "iso-8859-11", XML_CHAR_ENCODING_8859_11 },
+    { "iso-8859-13", XML_CHAR_ENCODING_8859_13 },
+    { "iso-8859-14", XML_CHAR_ENCODING_8859_14 },
+    { "iso-8859-15", XML_CHAR_ENCODING_8859_15 },
+    { "iso-8859-16", XML_CHAR_ENCODING_8859_16 },
+    { "iso-8859-2", XML_CHAR_ENCODING_8859_2 },
+    { "iso-8859-3", XML_CHAR_ENCODING_8859_3 },
+    { "iso-8859-4", XML_CHAR_ENCODING_8859_4 },
+    { "iso-8859-5", XML_CHAR_ENCODING_8859_5 },
+    { "iso-8859-6", XML_CHAR_ENCODING_8859_6 },
+    { "iso-8859-6-e", XML_CHAR_ENCODING_8859_6 },
+    { "iso-8859-6-i", XML_CHAR_ENCODING_8859_6 },
+    { "iso-8859-7", XML_CHAR_ENCODING_8859_7 },
+    { "iso-8859-8", XML_CHAR_ENCODING_8859_8 },
+    { "iso-8859-8-i", XML_CHAR_ENCODING_8859_8 },
+    { "iso-8859-9", XML_CHAR_ENCODING_8859_9 },
+    { "iso-ir-100", XML_CHAR_ENCODING_8859_1 },
+    { "iso-ir-101", XML_CHAR_ENCODING_8859_2 },
+    { "iso-ir-109", XML_CHAR_ENCODING_8859_3 },
+    { "iso-ir-110", XML_CHAR_ENCODING_8859_4 },
+    { "iso-ir-126", XML_CHAR_ENCODING_8859_7 },
+    { "iso-ir-127", XML_CHAR_ENCODING_8859_6 },
+    { "iso-ir-138", XML_CHAR_ENCODING_8859_8 },
+    { "iso-ir-144", XML_CHAR_ENCODING_8859_5 },
+    { "iso-ir-148", XML_CHAR_ENCODING_8859_9 },
+    { "iso-ir-157", XML_CHAR_ENCODING_8859_10 },
+    { "iso-latin-1", XML_CHAR_ENCODING_8859_1 },
+    { "iso-latin-2", XML_CHAR_ENCODING_8859_2 },
+    { "iso8859-1", XML_CHAR_ENCODING_8859_1 },
+    { "iso8859-10", XML_CHAR_ENCODING_8859_1 },
+    { "iso8859-13", XML_CHAR_ENCODING_8859_1 },
+    { "iso8859-14", XML_CHAR_ENCODING_8859_1 },
+    { "iso8859-15", XML_CHAR_ENCODING_8859_1 },
+    { "iso8859-2", XML_CHAR_ENCODING_8859_2 },
+    { "iso8859-3", XML_CHAR_ENCODING_8859_3 },
+    { "iso8859-4", XML_CHAR_ENCODING_8859_4 },
+    { "iso8859-5", XML_CHAR_ENCODING_8859_5 },
+    { "iso8859-6", XML_CHAR_ENCODING_8859_6 },
+    { "iso8859-7", XML_CHAR_ENCODING_8859_7 },
+    { "iso8859-8", XML_CHAR_ENCODING_8859_8 },
+    { "iso8859-9", XML_CHAR_ENCODING_8859_9 },
+    { "iso88591", XML_CHAR_ENCODING_8859_1 },
+    { "iso885910", XML_CHAR_ENCODING_8859_10 },
+    { "iso885913", XML_CHAR_ENCODING_8859_13 },
+    { "iso885914", XML_CHAR_ENCODING_8859_14 },
+    { "iso885915", XML_CHAR_ENCODING_8859_15 },
+    { "iso88592", XML_CHAR_ENCODING_8859_2 },
+    { "iso88593", XML_CHAR_ENCODING_8859_3 },
+    { "iso88594", XML_CHAR_ENCODING_8859_4 },
+    { "iso88595", XML_CHAR_ENCODING_8859_5 },
+    { "iso88596", XML_CHAR_ENCODING_8859_6 },
+    { "iso88597", XML_CHAR_ENCODING_8859_7 },
+    { "iso88598", XML_CHAR_ENCODING_8859_8 },
+    { "iso88599", XML_CHAR_ENCODING_8859_9 },
+    { "iso_8859-1", XML_CHAR_ENCODING_8859_1 },
+    { "iso_8859-1:1987", XML_CHAR_ENCODING_8859_1 },
+    { "iso_8859-2", XML_CHAR_ENCODING_8859_2 },
+    { "iso_8859-2:1987", XML_CHAR_ENCODING_8859_2 },
+    { "iso_8859-3", XML_CHAR_ENCODING_8859_3 },
+    { "iso_8859-3:1988", XML_CHAR_ENCODING_8859_3 },
+    { "iso_8859-4", XML_CHAR_ENCODING_8859_4 },
+    { "iso_8859-4:1988", XML_CHAR_ENCODING_8859_4 },
+    { "iso_8859-5", XML_CHAR_ENCODING_8859_5 },
+    { "iso_8859-5:1988", XML_CHAR_ENCODING_8859_5 },
+    { "iso_8859-6", XML_CHAR_ENCODING_8859_6 },
+    { "iso_8859-6:1987", XML_CHAR_ENCODING_8859_6 },
+    { "iso_8859-7", XML_CHAR_ENCODING_8859_7 },
+    { "iso_8859-7:1987", XML_CHAR_ENCODING_8859_7 },
+    { "iso_8859-8", XML_CHAR_ENCODING_8859_8 },
+    { "iso_8859-8:1988", XML_CHAR_ENCODING_8859_8 },
+    { "iso_8859-9", XML_CHAR_ENCODING_8859_9 },
+    { "iso_8859-9:1989", XML_CHAR_ENCODING_8859_9 },
+    { "l1", XML_CHAR_ENCODING_8859_1 },
+    { "l2", XML_CHAR_ENCODING_8859_2 },
+    { "l3", XML_CHAR_ENCODING_8859_3 },
+    { "l4", XML_CHAR_ENCODING_8859_4 },
+    { "l5", XML_CHAR_ENCODING_8859_9 },
+    { "l6", XML_CHAR_ENCODING_8859_10 },
+    { "l9", XML_CHAR_ENCODING_8859_15 },
+    { "latin1", XML_CHAR_ENCODING_8859_1 },
+    { "latin2", XML_CHAR_ENCODING_8859_2 },
+    { "latin3", XML_CHAR_ENCODING_8859_3 },
+    { "latin4", XML_CHAR_ENCODING_8859_4 },
+    { "latin5", XML_CHAR_ENCODING_8859_9 },
+    { "latin6", XML_CHAR_ENCODING_8859_10 },
+    { "logical", XML_CHAR_ENCODING_8859_8 },
+    { "ms932", XML_CHAR_ENCODING_SHIFT_JIS },
+    { "ms_kanji", XML_CHAR_ENCODING_SHIFT_JIS },
+    { "shift-jis", XML_CHAR_ENCODING_SHIFT_JIS },
+    { "shift_jis", XML_CHAR_ENCODING_SHIFT_JIS },
+    { "sjis", XML_CHAR_ENCODING_SHIFT_JIS },
+    { "sun_eu_greek", XML_CHAR_ENCODING_8859_7 },
+    { "ucs-2", XML_CHAR_ENCODING_UCS2 },
+    { "ucs-4", XML_CHAR_ENCODING_UCS4LE },
+    { "ucs2", XML_CHAR_ENCODING_UCS2 },
+    { "ucs4", XML_CHAR_ENCODING_UCS4LE },
+    { "unicode", XML_CHAR_ENCODING_UTF16 },
+    { "unicode-1-1-utf-8", XML_CHAR_ENCODING_UTF8 },
+    { "unicode11utf8", XML_CHAR_ENCODING_UTF8 },
+    { "unicode20utf8", XML_CHAR_ENCODING_UTF8 },
+    { "unicodefffe", XML_CHAR_ENCODING_UTF16BE },
+    { "unicodefeff", XML_CHAR_ENCODING_UTF16LE },
+    { "us-ascii", XML_CHAR_ENCODING_ASCII },
+    { "utf-16", XML_CHAR_ENCODING_UTF16 },
+    { "utf-16be", XML_CHAR_ENCODING_UTF16BE },
+    { "utf-16le", XML_CHAR_ENCODING_UTF16LE },
+    { "utf-8", XML_CHAR_ENCODING_UTF8 },
+    { "utf16", XML_CHAR_ENCODING_UTF16 },
+    { "utf8", XML_CHAR_ENCODING_UTF8 },
+    { "visual", XML_CHAR_ENCODING_8859_8 },
+    { "windows-1252", XML_CHAR_ENCODING_WINDOWS_1252 },
+    { "windows-31j", XML_CHAR_ENCODING_SHIFT_JIS },
+    { "x-cp1252", XML_CHAR_ENCODING_WINDOWS_1252 },
+    { "x-euc-jp", XML_CHAR_ENCODING_EUC_JP },
+    { "x-sjis", XML_CHAR_ENCODING_SHIFT_JIS },
+    { "x-unicode20utf8", XML_CHAR_ENCODING_UTF8 }
 };
 
 static xmlCharEncError
@@ -159,23 +279,25 @@ UTF8ToHtmlWrapper(void *vctxt, unsigned char *out, int *outlen,
 #define UTF8ToHtmlWrapper NULL
 #endif
 
+#include "codegen/charset.inc"
+
+static xmlCharEncError
+EightBitToUtf8(void *vctxt, unsigned char* out, int *outlen,
+               const unsigned char* in, int *inlen, int flush);
+static xmlCharEncError
+Utf8ToEightBit(void *vctxt, unsigned char *out, int *outlen,
+               const unsigned char *in, int *inlen, int flush);
+
+#define MAKE_8BIT_HANDLER(name, table) \
+    { (char *) name, { EightBitToUtf8 }, { Utf8ToEightBit }, \
+      (void *) xmlunicodetable_##table, \
+      (void *) xmltranscodetable_##table, \
+      NULL, XML_HANDLER_STATIC }
+
 #if !defined(LIBXML_ICONV_ENABLED) && !defined(LIBXML_ICU_ENABLED) && \
     defined(LIBXML_ISO8859X_ENABLED)
 
-#include "iso8859x.inc"
-
-static xmlCharEncError
-ISO8859xToUTF8(void *vctxt, unsigned char* out, int *outlen,
-               const unsigned char* in, int *inlen, int flush);
-static xmlCharEncError
-UTF8ToISO8859x(void *vctxt, unsigned char *out, int *outlen,
-               const unsigned char *in, int *inlen, int flush);
-
-#define MAKE_ISO_HANDLER(name, n) \
-    { (char *) name, { ISO8859xToUTF8 }, { UTF8ToISO8859x }, \
-      (void *) xmlunicodetable_ISO8859_##n, \
-      (void *) xmltranscodetable_ISO8859_##n, \
-      NULL, XML_HANDLER_STATIC }
+#define MAKE_ISO_HANDLER(name, n) MAKE_8BIT_HANDLER(name, ISO8859_##n)
 
 #else /* LIBXML_ISO8859X_ENABLED */
 
@@ -194,7 +316,7 @@ UTF8ToISO8859x(void *vctxt, unsigned char *out, int *outlen,
  * Names should match the IANA registry if possible:
  * https://www.iana.org/assignments/character-sets/character-sets.xhtml
  */
-static const xmlCharEncodingHandler defaultHandlers[31] = {
+static const xmlCharEncodingHandler defaultHandlers[32] = {
     MAKE_HANDLER(NULL, NULL, NULL), /* NONE */
     MAKE_HANDLER("UTF-8", UTF8ToUTF8, UTF8ToUTF8),
     MAKE_HANDLER("UTF-16LE", UTF16LEToUTF8, UTF8ToUTF16LE),
@@ -226,6 +348,7 @@ static const xmlCharEncodingHandler defaultHandlers[31] = {
     MAKE_ISO_HANDLER("ISO-8859-14", 14),
     MAKE_ISO_HANDLER("ISO-8859-15", 15),
     MAKE_ISO_HANDLER("ISO-8859-16", 16),
+    MAKE_8BIT_HANDLER("windows-1252", windows_1252)
 };
 
 #define NUM_DEFAULT_HANDLERS \
@@ -572,9 +695,9 @@ xmlGetCharEncodingName(xmlCharEncoding enc) {
  * @param name  the encoding name, in UTF-8 format (ASCII actually)
  * @param input  the xmlCharEncodingInputFunc to read that encoding
  * @param output  the xmlCharEncodingOutputFunc to write that encoding
- * @returns the xmlCharEncodingHandlerPtr created (or NULL in case of error).
+ * @returns the xmlCharEncodingHandler created (or NULL in case of error).
  */
-xmlCharEncodingHandlerPtr
+xmlCharEncodingHandler *
 xmlNewCharEncodingHandler(const char *name,
                           xmlCharEncodingInputFunc input,
                           xmlCharEncodingOutputFunc output) {
@@ -741,10 +864,10 @@ xmlCleanupCharEncodingHandlers(void) {
  * @deprecated This function modifies global state and is not
  * thread-safe. See xmlCtxtSetCharEncConvImpl() for an alternative.
  *
- * @param handler  the xmlCharEncodingHandlerPtr handler block
+ * @param handler  the xmlCharEncodingHandler handler block
  */
 void
-xmlRegisterCharEncodingHandler(xmlCharEncodingHandlerPtr handler) {
+xmlRegisterCharEncodingHandler(xmlCharEncodingHandler *handler) {
     if (handler == NULL)
         return;
     if (globalHandlers == NULL) {
@@ -902,7 +1025,7 @@ xmlLookupCharEncodingHandler(xmlCharEncoding enc,
  * @returns the handler or NULL if no handler was found or an error
  * occurred.
  */
-xmlCharEncodingHandlerPtr
+xmlCharEncodingHandler *
 xmlGetCharEncodingHandler(xmlCharEncoding enc) {
     xmlCharEncodingHandler *ret;
 
@@ -964,10 +1087,54 @@ xmlCreateCharEncodingHandler(const char *name, xmlCharEncFlags flags,
         return(XML_ERR_OK);
 
     if ((enc > 0) && ((size_t) enc < NUM_DEFAULT_HANDLERS)) {
+        if (flags & XML_ENC_HTML) {
+            /*
+             * TODO: HTML5 only allows a fixed set of charset
+             * labels. We should add an option to enable or
+             * disable this restriction.
+             *
+             * TODO: Map ISO-8859-9 to windows-1254.
+             */
+            switch (enc) {
+                case XML_CHAR_ENCODING_ASCII:
+                case XML_CHAR_ENCODING_8859_1:
+                    enc = XML_CHAR_ENCODING_WINDOWS_1252;
+                    break;
+                case XML_CHAR_ENCODING_UCS2:
+                case XML_CHAR_ENCODING_UTF16:
+                    enc = XML_CHAR_ENCODING_UTF16LE;
+                    break;
+                default:
+                    break;
+            }
+        }
+
         handler = &defaultHandlers[enc];
         if ((((flags & XML_ENC_INPUT) == 0) || (handler->input.func)) &&
             (((flags & XML_ENC_OUTPUT) == 0) || (handler->output.func))) {
-            *out = (xmlCharEncodingHandler *) handler;
+            xmlCharEncodingHandler *ret;
+
+            /*
+             * Return a copy of the handler with the original name.
+             */
+
+            ret = xmlMalloc(sizeof(*ret));
+            if (ret == NULL)
+                return(XML_ERR_NO_MEMORY);
+            memset(ret, 0, sizeof(*ret));
+
+            ret->name = xmlMemStrdup(norig);
+            if (ret->name == NULL) {
+                xmlFree(ret);
+                return(XML_ERR_NO_MEMORY);
+            }
+            ret->input = handler->input;
+            ret->output = handler->output;
+            ret->inputCtxt = handler->inputCtxt;
+            ret->outputCtxt = handler->outputCtxt;
+            ret->ctxtDtor = handler->ctxtDtor;
+
+            *out = ret;
             return(XML_ERR_OK);
         }
     }
@@ -1016,7 +1183,7 @@ xmlOpenCharEncodingHandler(const char *name, int output,
  * @returns the handler or NULL if no handler was found or an error
  * occurred.
  */
-xmlCharEncodingHandlerPtr
+xmlCharEncodingHandler *
 xmlFindCharEncodingHandler(const char *name) {
     xmlCharEncodingHandler *ret;
     xmlCharEncFlags flags;
@@ -1606,8 +1773,8 @@ xmlEncOutputChunk(xmlCharEncodingHandler *handler, unsigned char *out,
  * @returns the number of bytes written or an xmlCharEncError code.
  */
 int
-xmlCharEncFirstLine(xmlCharEncodingHandler *handler, xmlBufferPtr out,
-                    xmlBufferPtr in) {
+xmlCharEncFirstLine(xmlCharEncodingHandler *handler, struct _xmlBuffer *out,
+                    struct _xmlBuffer *in) {
     return(xmlCharEncInFunc(handler, out, in));
 }
 
@@ -1623,7 +1790,7 @@ xmlCharEncFirstLine(xmlCharEncodingHandler *handler, xmlBufferPtr out,
  * @returns an xmlCharEncError code.
  */
 xmlCharEncError
-xmlCharEncInput(xmlParserInputBufferPtr input, size_t *sizeOut, int flush)
+xmlCharEncInput(xmlParserInputBuffer *input, size_t *sizeOut, int flush)
 {
     xmlBufPtr out, in;
     const xmlChar *dataIn;
@@ -1722,8 +1889,8 @@ xmlCharEncInput(xmlParserInputBufferPtr input, size_t *sizeOut, int flush)
  * @returns the number of bytes written or an xmlCharEncError code.
  */
 int
-xmlCharEncInFunc(xmlCharEncodingHandler * handler, xmlBufferPtr out,
-                 xmlBufferPtr in)
+xmlCharEncInFunc(xmlCharEncodingHandler * handler, struct _xmlBuffer *out,
+                 struct _xmlBuffer *in)
 {
     int ret;
     int written;
@@ -1806,7 +1973,7 @@ xmlSerializeDecCharRef(char *buf, int val) {
  * @returns the number of bytes written or an xmlCharEncError code.
  */
 int
-xmlCharEncOutput(xmlOutputBufferPtr output, int init)
+xmlCharEncOutput(xmlOutputBuffer *output, int init)
 {
     int ret;
     size_t written;
@@ -1929,8 +2096,8 @@ error:
  * @returns the number of bytes written or an xmlCharEncError code.
  */
 int
-xmlCharEncOutFunc(xmlCharEncodingHandler *handler, xmlBufferPtr out,
-                  xmlBufferPtr in) {
+xmlCharEncOutFunc(xmlCharEncodingHandler *handler, struct _xmlBuffer *out,
+                  struct _xmlBuffer *in) {
     int ret;
     int written;
     int writtentot = 0;
@@ -2052,7 +2219,7 @@ xmlCharEncCloseFunc(xmlCharEncodingHandler *handler) {
  *         in case the index could not be computed.
  */
 long
-xmlByteConsumed(xmlParserCtxtPtr ctxt) {
+xmlByteConsumed(xmlParserCtxt *ctxt) {
     xmlParserInputPtr in;
 
     if (ctxt == NULL)
@@ -2697,11 +2864,8 @@ UTF8ToHtmlWrapper(void *vctxt ATTRIBUTE_UNUSED,
 }
 #endif
 
-#if !defined(LIBXML_ICONV_ENABLED) && !defined(LIBXML_ICU_ENABLED) && \
-    defined(LIBXML_ISO8859X_ENABLED)
-
 static xmlCharEncError
-UTF8ToISO8859x(void *vctxt,
+Utf8ToEightBit(void *vctxt,
                unsigned char *out, int *outlen,
                const unsigned char *in, int *inlen,
                int flush ATTRIBUTE_UNUSED) {
@@ -2783,7 +2947,7 @@ done:
 }
 
 static xmlCharEncError
-ISO8859xToUTF8(void *vctxt,
+EightBitToUtf8(void *vctxt,
                unsigned char* out, int *outlen,
                const unsigned char* in, int *inlen,
                int flush ATTRIBUTE_UNUSED) {
@@ -2835,6 +2999,4 @@ done:
     *inlen = in - instart;
     return(ret);
 }
-
-#endif
 

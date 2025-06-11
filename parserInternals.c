@@ -113,7 +113,7 @@ xmlCheckVersion(int version) {
  * @param data  data for error handler
  */
 void
-xmlCtxtSetErrorHandler(xmlParserCtxtPtr ctxt, xmlStructuredErrorFunc handler,
+xmlCtxtSetErrorHandler(xmlParserCtxt *ctxt, xmlStructuredErrorFunc handler,
                        void *data)
 {
     if (ctxt == NULL)
@@ -171,7 +171,7 @@ xmlCtxtResetLastError(void *ctx)
  * @param ctxt  an XML parser context
  */
 void
-xmlCtxtErrMemory(xmlParserCtxtPtr ctxt)
+xmlCtxtErrMemory(xmlParserCtxt *ctxt)
 {
     xmlStructuredErrorFunc schannel = NULL;
     xmlGenericErrorFunc channel = NULL;
@@ -213,7 +213,7 @@ xmlCtxtErrMemory(xmlParserCtxtPtr ctxt)
  * @param uri  filename or URI (optional)
  */
 void
-xmlCtxtErrIO(xmlParserCtxtPtr ctxt, int code, const char *uri)
+xmlCtxtErrIO(xmlParserCtxt *ctxt, int code, const char *uri)
 {
     const char *errstr, *msg, *str1, *str2;
     xmlErrorLevel level;
@@ -261,7 +261,7 @@ xmlCtxtErrIO(xmlParserCtxtPtr ctxt, int code, const char *uri)
  * @returns true if the last error is catastrophic.
  */
 int
-xmlCtxtIsCatastrophicError(xmlParserCtxtPtr ctxt) {
+xmlCtxtIsCatastrophicError(xmlParserCtxt *ctxt) {
     if (ctxt == NULL)
         return(1);
 
@@ -285,7 +285,7 @@ xmlCtxtIsCatastrophicError(xmlParserCtxtPtr ctxt) {
  * @param ap  extra parameters for the message display
  */
 void
-xmlCtxtVErr(xmlParserCtxtPtr ctxt, xmlNodePtr node, xmlErrorDomain domain,
+xmlCtxtVErr(xmlParserCtxt *ctxt, xmlNode *node, xmlErrorDomain domain,
             xmlParserErrors code, xmlErrorLevel level,
             const xmlChar *str1, const xmlChar *str2, const xmlChar *str3,
             int int1, const char *msg, va_list ap)
@@ -409,7 +409,7 @@ xmlCtxtVErr(xmlParserCtxtPtr ctxt, xmlNodePtr node, xmlErrorDomain domain,
  * @param ...  extra parameters for the message display
  */
 void
-xmlCtxtErr(xmlParserCtxtPtr ctxt, xmlNodePtr node, xmlErrorDomain domain,
+xmlCtxtErr(xmlParserCtxt *ctxt, xmlNode *node, xmlErrorDomain domain,
            xmlParserErrors code, xmlErrorLevel level,
            const xmlChar *str1, const xmlChar *str2, const xmlChar *str3,
            int int1, const char *msg, ...)
@@ -464,7 +464,7 @@ xmlCtxtGetStatus(xmlParserCtxt *ctxt) {
  * @param info  extra information string
  */
 void
-xmlFatalErr(xmlParserCtxtPtr ctxt, xmlParserErrors code, const char *info)
+xmlFatalErr(xmlParserCtxt *ctxt, xmlParserErrors code, const char *info)
 {
     const char *errmsg;
 
@@ -513,7 +513,7 @@ xmlIsLetter(int c) {
  * @param ctxt  an XML parser context
  */
 void
-xmlHaltParser(xmlParserCtxtPtr ctxt) {
+xmlHaltParser(xmlParserCtxt *ctxt) {
     if (ctxt == NULL)
         return;
     ctxt->instate = XML_PARSER_EOF; /* TODO: Remove after refactoring */
@@ -528,7 +528,7 @@ xmlHaltParser(xmlParserCtxtPtr ctxt) {
  * @returns -1 as this is an error to use it.
  */
 int
-xmlParserInputRead(xmlParserInputPtr in ATTRIBUTE_UNUSED, int len ATTRIBUTE_UNUSED) {
+xmlParserInputRead(xmlParserInput *in ATTRIBUTE_UNUSED, int len ATTRIBUTE_UNUSED) {
     return(-1);
 }
 
@@ -539,7 +539,7 @@ xmlParserInputRead(xmlParserInputPtr in ATTRIBUTE_UNUSED, int len ATTRIBUTE_UNUS
  * @returns the number of bytes read or -1 in case of error.
  */
 int
-xmlParserGrow(xmlParserCtxtPtr ctxt) {
+xmlParserGrow(xmlParserCtxt *ctxt) {
     xmlParserInputPtr in = ctxt->input;
     xmlParserInputBufferPtr buf = in->buf;
     size_t curEnd = in->end - in->cur;
@@ -588,7 +588,7 @@ xmlParserGrow(xmlParserCtxtPtr ctxt) {
  * @param code  error code
  */
 void
-xmlParserCheckEOF(xmlParserCtxtPtr ctxt, xmlParserErrors code) {
+xmlParserCheckEOF(xmlParserCtxt *ctxt, xmlParserErrors code) {
     xmlParserInputPtr in = ctxt->input;
     xmlParserInputBufferPtr buf;
 
@@ -634,7 +634,7 @@ xmlParserCheckEOF(xmlParserCtxtPtr ctxt, xmlParserErrors code) {
  * end of this entity
  */
 int
-xmlParserInputGrow(xmlParserInputPtr in, int len) {
+xmlParserInputGrow(xmlParserInput *in, int len) {
     int ret;
     size_t indx;
 
@@ -673,7 +673,7 @@ xmlParserInputGrow(xmlParserInputPtr in, int len) {
  * @param ctxt  an XML parser context
  */
 void
-xmlParserShrink(xmlParserCtxtPtr ctxt) {
+xmlParserShrink(xmlParserCtxt *ctxt) {
     xmlParserInputPtr in = ctxt->input;
     xmlParserInputBufferPtr buf = in->buf;
     size_t used, res;
@@ -707,7 +707,7 @@ xmlParserShrink(xmlParserCtxtPtr ctxt) {
  * @param in  an XML parser input
  */
 void
-xmlParserInputShrink(xmlParserInputPtr in) {
+xmlParserInputShrink(xmlParserInput *in) {
     size_t used;
     size_t ret;
 
@@ -749,7 +749,7 @@ xmlParserInputShrink(xmlParserInputPtr in) {
  */
 
 void
-xmlNextChar(xmlParserCtxtPtr ctxt)
+xmlNextChar(xmlParserCtxt *ctxt)
 {
     const unsigned char *cur;
     size_t avail;
@@ -856,7 +856,7 @@ encoding_error:
  */
 
 int
-xmlCurrentChar(xmlParserCtxtPtr ctxt, int *len) {
+xmlCurrentChar(xmlParserCtxt *ctxt, int *len) {
     const unsigned char *cur;
     size_t avail;
     int c;
@@ -994,7 +994,7 @@ incomplete_sequence:
  */
 
 int
-xmlStringCurrentChar(xmlParserCtxtPtr ctxt ATTRIBUTE_UNUSED,
+xmlStringCurrentChar(xmlParserCtxt *ctxt ATTRIBUTE_UNUSED,
                      const xmlChar *cur, int *len) {
     int c;
 
@@ -1090,7 +1090,7 @@ xmlCopyChar(int len ATTRIBUTE_UNUSED, xmlChar *out, int val) {
  * @param vctxt  user data
  */
 void
-xmlCtxtSetCharEncConvImpl(xmlParserCtxtPtr ctxt, xmlCharEncConvImpl impl,
+xmlCtxtSetCharEncConvImpl(xmlParserCtxt *ctxt, xmlCharEncConvImpl impl,
                           void *vctxt) {
     if (ctxt == NULL)
         return;
@@ -1194,7 +1194,7 @@ done:
  * @returns 0 in case of success, -1 otherwise
  */
 int
-xmlSwitchEncoding(xmlParserCtxtPtr ctxt, xmlCharEncoding enc)
+xmlSwitchEncoding(xmlParserCtxt *ctxt, xmlCharEncoding enc)
 {
     xmlCharEncodingHandlerPtr handler = NULL;
     int ret;
@@ -1267,7 +1267,7 @@ xmlSwitchInputEncodingName(xmlParserCtxtPtr ctxt, xmlParserInputPtr input,
  * @returns 0 in case of success, -1 otherwise
  */
 int
-xmlSwitchEncodingName(xmlParserCtxtPtr ctxt, const char *encoding) {
+xmlSwitchEncodingName(xmlParserCtxt *ctxt, const char *encoding) {
     if (ctxt == NULL)
         return(-1);
 
@@ -1284,8 +1284,8 @@ xmlSwitchEncodingName(xmlParserCtxtPtr ctxt, const char *encoding) {
  * @returns an xmlParserErrors code.
  */
 xmlParserErrors
-xmlInputSetEncodingHandler(xmlParserInputPtr input,
-                           xmlCharEncodingHandlerPtr handler) {
+xmlInputSetEncodingHandler(xmlParserInput *input,
+                           xmlCharEncodingHandler *handler) {
     xmlParserInputBufferPtr in;
     xmlBufPtr buf;
     xmlParserErrors code = XML_ERR_OK;
@@ -1383,8 +1383,8 @@ xmlInputSetEncodingHandler(xmlParserInputPtr input,
  * @returns 0 in case of success, -1 otherwise
  */
 int
-xmlSwitchInputEncoding(xmlParserCtxtPtr ctxt, xmlParserInputPtr input,
-                       xmlCharEncodingHandlerPtr handler) {
+xmlSwitchInputEncoding(xmlParserCtxt *ctxt, xmlParserInput *input,
+                       xmlCharEncodingHandler *handler) {
     xmlParserErrors code = xmlInputSetEncodingHandler(input, handler);
 
     if (code != XML_ERR_OK) {
@@ -1406,7 +1406,7 @@ xmlSwitchInputEncoding(xmlParserCtxtPtr ctxt, xmlParserInputPtr input,
  * @returns 0 in case of success, -1 otherwise
  */
 int
-xmlSwitchToEncoding(xmlParserCtxtPtr ctxt, xmlCharEncodingHandlerPtr handler)
+xmlSwitchToEncoding(xmlParserCtxt *ctxt, xmlCharEncodingHandler *handler)
 {
     xmlParserErrors code;
 
@@ -1430,7 +1430,7 @@ xmlSwitchToEncoding(xmlParserCtxtPtr ctxt, xmlCharEncodingHandlerPtr handler)
  * @param ctxt  the parser context
  */
 void
-xmlDetectEncoding(xmlParserCtxtPtr ctxt) {
+xmlDetectEncoding(xmlParserCtxt *ctxt) {
     const xmlChar *in;
     xmlCharEncoding enc;
     int bomSize;
@@ -1564,19 +1564,22 @@ xmlDetectEncoding(xmlParserCtxtPtr ctxt) {
  * @param encoding  declared encoding
  */
 void
-xmlSetDeclaredEncoding(xmlParserCtxtPtr ctxt, xmlChar *encoding) {
+xmlSetDeclaredEncoding(xmlParserCtxt *ctxt, xmlChar *encoding) {
     if (((ctxt->input->flags & XML_INPUT_HAS_ENCODING) == 0) &&
         ((ctxt->options & XML_PARSE_IGNORE_ENC) == 0)) {
         xmlCharEncodingHandlerPtr handler;
         xmlParserErrors res;
+        xmlCharEncFlags flags = XML_ENC_INPUT;
 
         /*
          * xmlSwitchEncodingName treats unsupported encodings as
          * warnings, but we want it to be an error in an encoding
          * declaration.
          */
+        if (ctxt->html)
+            flags |= XML_ENC_HTML;
         res = xmlCreateCharEncodingHandler((const char *) encoding,
-                XML_ENC_INPUT, ctxt->convImpl, ctxt->convCtxt, &handler);
+                flags, ctxt->convImpl, ctxt->convCtxt, &handler);
         if (res != XML_ERR_OK) {
             xmlFatalErr(ctxt, res, (const char *) encoding);
             xmlFree(encoding);
@@ -1656,7 +1659,7 @@ xmlSetDeclaredEncoding(xmlParserCtxtPtr ctxt, xmlChar *encoding) {
  * from the actual encoding.
  */
 const xmlChar *
-xmlCtxtGetDeclaredEncoding(xmlParserCtxtPtr ctxt) {
+xmlCtxtGetDeclaredEncoding(xmlParserCtxt *ctxt) {
     if (ctxt == NULL)
         return(NULL);
 
@@ -1669,7 +1672,7 @@ xmlCtxtGetDeclaredEncoding(xmlParserCtxtPtr ctxt) {
  * the declared encoding.
  */
 const xmlChar *
-xmlGetActualEncoding(xmlParserCtxtPtr ctxt) {
+xmlGetActualEncoding(xmlParserCtxt *ctxt) {
     const xmlChar *encoding = NULL;
 
     if ((ctxt->input->flags & XML_INPUT_USES_ENC_DECL) ||
@@ -1694,10 +1697,10 @@ xmlGetActualEncoding(xmlParserCtxtPtr ctxt) {
 /**
  * Free up an input stream.
  *
- * @param input  an xmlParserInputPtr
+ * @param input  an xmlParserInput
  */
 void
-xmlFreeInputStream(xmlParserInputPtr input) {
+xmlFreeInputStream(xmlParserInput *input) {
     if (input == NULL) return;
 
     if (input->filename != NULL) xmlFree((char *) input->filename);
@@ -1717,8 +1720,8 @@ xmlFreeInputStream(xmlParserInputPtr input) {
  * @param ctxt  an XML parser context
  * @returns the new input stream or NULL
  */
-xmlParserInputPtr
-xmlNewInputStream(xmlParserCtxtPtr ctxt) {
+xmlParserInput *
+xmlNewInputStream(xmlParserCtxt *ctxt) {
     xmlParserInputPtr input;
 
     input = (xmlParserInputPtr) xmlMalloc(sizeof(xmlParserInput));
@@ -1744,8 +1747,8 @@ xmlNewInputStream(xmlParserCtxtPtr ctxt) {
  * @param flags  unused, pass 0
  * @returns a new parser input.
  */
-xmlParserInputPtr
-xmlCtxtNewInputFromUrl(xmlParserCtxtPtr ctxt, const char *url,
+xmlParserInput *
+xmlCtxtNewInputFromUrl(xmlParserCtxt *ctxt, const char *url,
                        const char *publicId, const char *encoding,
                        xmlParserInputFlags flags ATTRIBUTE_UNUSED) {
     xmlParserInputPtr input;
@@ -1819,7 +1822,7 @@ xmlNewInputInternal(xmlParserInputBufferPtr buf, const char *filename) {
  * @param flags  optimization hints
  * @returns a new parser input or NULL if a memory allocation failed.
  */
-xmlParserInputPtr
+xmlParserInput *
 xmlNewInputFromMemory(const char *url, const void *mem, size_t size,
                       xmlParserInputFlags flags) {
     xmlParserInputBufferPtr buf;
@@ -1843,8 +1846,8 @@ xmlNewInputFromMemory(const char *url, const void *mem, size_t size,
  * @param flags  optimization hints
  * @returns a new parser input or NULL in case of error.
  */
-xmlParserInputPtr
-xmlCtxtNewInputFromMemory(xmlParserCtxtPtr ctxt, const char *url,
+xmlParserInput *
+xmlCtxtNewInputFromMemory(xmlParserCtxt *ctxt, const char *url,
                           const void *mem, size_t size,
                           const char *encoding, xmlParserInputFlags flags) {
     xmlParserInputPtr input;
@@ -1881,7 +1884,7 @@ xmlCtxtNewInputFromMemory(xmlParserCtxtPtr ctxt, const char *url,
  * @param flags  optimization hints
  * @returns a new parser input or NULL if a memory allocation failed.
  */
-xmlParserInputPtr
+xmlParserInput *
 xmlNewInputFromString(const char *url, const char *str,
                       xmlParserInputFlags flags) {
     xmlParserInputBufferPtr buf;
@@ -1904,8 +1907,8 @@ xmlNewInputFromString(const char *url, const char *str,
  * @param flags  optimization hints
  * @returns a new parser input.
  */
-xmlParserInputPtr
-xmlCtxtNewInputFromString(xmlParserCtxtPtr ctxt, const char *url,
+xmlParserInput *
+xmlCtxtNewInputFromString(xmlParserCtxt *ctxt, const char *url,
                           const char *str, const char *encoding,
                           xmlParserInputFlags flags) {
     xmlParserInputPtr input;
@@ -1944,7 +1947,7 @@ xmlCtxtNewInputFromString(xmlParserCtxtPtr ctxt, const char *url,
  * @param flags  input flags
  * @returns a new parser input or NULL if a memory allocation failed.
  */
-xmlParserInputPtr
+xmlParserInput *
 xmlNewInputFromFd(const char *url, int fd, xmlParserInputFlags flags) {
     xmlParserInputBufferPtr buf;
 
@@ -1971,8 +1974,8 @@ xmlNewInputFromFd(const char *url, int fd, xmlParserInputFlags flags) {
  * @param flags  unused, pass 0
  * @returns a new parser input.
  */
-xmlParserInputPtr
-xmlCtxtNewInputFromFd(xmlParserCtxtPtr ctxt, const char *url,
+xmlParserInput *
+xmlCtxtNewInputFromFd(xmlParserCtxt *ctxt, const char *url,
                       int fd, const char *encoding,
                       xmlParserInputFlags flags) {
     xmlParserInputPtr input;
@@ -2019,7 +2022,7 @@ xmlCtxtNewInputFromFd(xmlParserCtxtPtr ctxt, const char *url,
  * @param flags  unused, pass 0
  * @returns a new parser input or NULL if a memory allocation failed.
  */
-xmlParserInputPtr
+xmlParserInput *
 xmlNewInputFromIO(const char *url, xmlInputReadCallback ioRead,
                   xmlInputCloseCallback ioClose, void *ioCtxt,
                   xmlParserInputFlags flags ATTRIBUTE_UNUSED) {
@@ -2052,8 +2055,8 @@ xmlNewInputFromIO(const char *url, xmlInputReadCallback ioRead,
  * @param flags  unused, pass 0
  * @returns a new parser input.
  */
-xmlParserInputPtr
-xmlCtxtNewInputFromIO(xmlParserCtxtPtr ctxt, const char *url,
+xmlParserInput *
+xmlCtxtNewInputFromIO(xmlParserCtxt *ctxt, const char *url,
                       xmlInputReadCallback ioRead,
                       xmlInputCloseCallback ioClose,
                       void *ioCtxt, const char *encoding,
@@ -2083,7 +2086,7 @@ xmlCtxtNewInputFromIO(xmlParserCtxtPtr ctxt, const char *url,
  * @param size  size of array
  * @returns a new parser input or NULL if a memory allocation failed.
  */
-xmlParserInputPtr
+xmlParserInput *
 xmlNewPushInput(const char *url, const char *chunk, int size) {
     xmlParserInputBufferPtr buf;
     xmlParserInputPtr input;
@@ -2121,8 +2124,8 @@ xmlNewPushInput(const char *url, const char *chunk, int size) {
  * @param enc  the charset encoding if known
  * @returns the new input stream or NULL
  */
-xmlParserInputPtr
-xmlNewIOInputStream(xmlParserCtxtPtr ctxt, xmlParserInputBufferPtr buf,
+xmlParserInput *
+xmlNewIOInputStream(xmlParserCtxt *ctxt, xmlParserInputBuffer *buf,
 	            xmlCharEncoding enc) {
     xmlParserInputPtr input;
     const char *encoding;
@@ -2144,7 +2147,7 @@ xmlNewIOInputStream(xmlParserCtxtPtr ctxt, xmlParserInputBufferPtr buf,
 }
 
 /**
- * Create a new input stream based on an xmlEntityPtr
+ * Create a new input stream based on an xmlEntity
  *
  * @deprecated Internal function, do not use.
  *
@@ -2152,8 +2155,8 @@ xmlNewIOInputStream(xmlParserCtxtPtr ctxt, xmlParserInputBufferPtr buf,
  * @param ent  an Entity pointer
  * @returns the new input stream or NULL
  */
-xmlParserInputPtr
-xmlNewEntityInputStream(xmlParserCtxtPtr ctxt, xmlEntityPtr ent) {
+xmlParserInput *
+xmlNewEntityInputStream(xmlParserCtxt *ctxt, xmlEntity *ent) {
     xmlParserInputPtr input;
 
     if ((ctxt == NULL) || (ent == NULL))
@@ -2193,8 +2196,8 @@ xmlNewEntityInputStream(xmlParserCtxtPtr ctxt, xmlEntityPtr ent) {
  * @param buffer  an memory buffer
  * @returns the new input stream
  */
-xmlParserInputPtr
-xmlNewStringInputStream(xmlParserCtxtPtr ctxt, const xmlChar *buffer) {
+xmlParserInput *
+xmlNewStringInputStream(xmlParserCtxt *ctxt, const xmlChar *buffer) {
     return(xmlCtxtNewInputFromString(ctxt, NULL, (const char *) buffer,
                                      NULL, 0));
 }
@@ -2300,9 +2303,9 @@ xmlResolveResourceFromCatalog(const char *URL, const char *ID,
  * @param ret  an XML parser input
  * @returns NULL.
  */
-xmlParserInputPtr
-xmlCheckHTTPInput(xmlParserCtxtPtr ctxt ATTRIBUTE_UNUSED,
-                  xmlParserInputPtr ret ATTRIBUTE_UNUSED) {
+xmlParserInput *
+xmlCheckHTTPInput(xmlParserCtxt *ctxt ATTRIBUTE_UNUSED,
+                  xmlParserInput *ret ATTRIBUTE_UNUSED) {
     return(NULL);
 }
 
@@ -2333,7 +2336,7 @@ xmlCheckHTTPInput(xmlParserCtxtPtr ctxt ATTRIBUTE_UNUSED,
  */
 xmlParserErrors
 xmlNewInputFromUrl(const char *filename, xmlParserInputFlags flags,
-                   xmlParserInputPtr *out) {
+                   xmlParserInput **out) {
     xmlParserInputBufferPtr buf;
     xmlParserInputPtr input;
     xmlParserErrors code = XML_ERR_OK;
@@ -2373,8 +2376,8 @@ xmlNewInputFromUrl(const char *filename, xmlParserInputFlags flags,
  * @param filename  the filename to use as entity
  * @returns the new input stream or NULL in case of error
  */
-xmlParserInputPtr
-xmlNewInputFromFile(xmlParserCtxtPtr ctxt, const char *filename) {
+xmlParserInput *
+xmlNewInputFromFile(xmlParserCtxt *ctxt, const char *filename) {
     xmlParserInputPtr input;
     xmlParserInputFlags flags = 0;
     xmlParserErrors code;
@@ -2402,7 +2405,7 @@ xmlNewInputFromFile(xmlParserCtxtPtr ctxt, const char *filename) {
  * @param url  the URL for the entity to load
  * @param ID  the System ID for the entity to load
  * @param ctxt  the context in which the entity is called or NULL
- * @returns a new allocated xmlParserInputPtr, or NULL.
+ * @returns a new allocated xmlParserInput, or NULL.
  */
 static xmlParserInputPtr
 xmlDefaultExternalEntityLoader(const char *url, const char *ID,
@@ -2448,11 +2451,11 @@ xmlDefaultExternalEntityLoader(const char *url, const char *ID,
  * @param URL  the URL for the entity to load
  * @param ID  the System ID for the entity to load
  * @param ctxt  the context in which the entity is called or NULL
- * @returns a new allocated xmlParserInputPtr, or NULL.
+ * @returns a new allocated xmlParserInput, or NULL.
  */
-xmlParserInputPtr
+xmlParserInput *
 xmlNoNetExternalEntityLoader(const char *URL, const char *ID,
-                             xmlParserCtxtPtr ctxt) {
+                             xmlParserCtxt *ctxt) {
     int oldOptions = 0;
     xmlParserInputPtr input;
 
@@ -2511,7 +2514,7 @@ xmlGetExternalEntityLoader(void) {
  * @param vctxt  user data
  */
 void
-xmlCtxtSetResourceLoader(xmlParserCtxtPtr ctxt, xmlResourceLoader loader,
+xmlCtxtSetResourceLoader(xmlParserCtxt *ctxt, xmlResourceLoader loader,
                          void *vctxt) {
     if (ctxt == NULL)
         return;
@@ -2525,10 +2528,10 @@ xmlCtxtSetResourceLoader(xmlParserCtxtPtr ctxt, xmlResourceLoader loader,
  * @param url  the URL for the entity to load
  * @param publicId  the Public ID for the entity to load
  * @param type  resource type
- * @returns the xmlParserInputPtr or NULL in case of error.
+ * @returns the xmlParserInput or NULL in case of error.
  */
-xmlParserInputPtr
-xmlLoadResource(xmlParserCtxtPtr ctxt, const char *url, const char *publicId,
+xmlParserInput *
+xmlLoadResource(xmlParserCtxt *ctxt, const char *url, const char *publicId,
                 xmlResourceType type) {
     char *canonicFilename;
     xmlParserInputPtr ret;
@@ -2602,11 +2605,11 @@ xmlLoadResource(xmlParserCtxtPtr ctxt, const char *url, const char *publicId,
  * @param URL  the URL for the entity to load
  * @param ID  the Public ID for the entity to load
  * @param ctxt  the context in which the entity is called or NULL
- * @returns the xmlParserInputPtr or NULL
+ * @returns the xmlParserInput or NULL
  */
-xmlParserInputPtr
+xmlParserInput *
 xmlLoadExternalEntity(const char *URL, const char *ID,
-                      xmlParserCtxtPtr ctxt) {
+                      xmlParserCtxt *ctxt) {
     return(xmlLoadResource(ctxt, URL, ID, XML_RESOURCE_UNKNOWN));
 }
 
@@ -2746,7 +2749,6 @@ xmlInitSAXParserCtxt(xmlParserCtxtPtr ctxt, const xmlSAXHandler *sax,
     if (ctxt->pedantic) {
         ctxt->options |= XML_PARSE_PEDANTIC;
     }
-    ctxt->linenumbers = xmlLineNumbersDefaultValue;
     ctxt->keepBlanks = xmlKeepBlanksDefaultValue;
     if (ctxt->keepBlanks == 0) {
 	ctxt->sax->ignorableWhitespace = xmlSAX2IgnorableWhitespace;
@@ -2796,7 +2798,7 @@ xmlInitSAXParserCtxt(xmlParserCtxtPtr ctxt, const xmlSAXHandler *sax,
  */
 
 int
-xmlInitParserCtxt(xmlParserCtxtPtr ctxt)
+xmlInitParserCtxt(xmlParserCtxt *ctxt)
 {
     return(xmlInitSAXParserCtxt(ctxt, NULL, NULL));
 }
@@ -2809,7 +2811,7 @@ xmlInitParserCtxt(xmlParserCtxtPtr ctxt)
  */
 
 void
-xmlFreeParserCtxt(xmlParserCtxtPtr ctxt)
+xmlFreeParserCtxt(xmlParserCtxt *ctxt)
 {
     xmlParserInputPtr input;
 
@@ -2891,10 +2893,10 @@ xmlFreeParserCtxt(xmlParserCtxtPtr ctxt)
 /**
  * Allocate and initialize a new parser context.
  *
- * @returns the xmlParserCtxtPtr or NULL
+ * @returns the xmlParserCtxt or NULL
  */
 
-xmlParserCtxtPtr
+xmlParserCtxt *
 xmlNewParserCtxt(void)
 {
     return(xmlNewSAXParserCtxt(NULL, NULL));
@@ -2912,10 +2914,10 @@ xmlNewParserCtxt(void)
  *
  * @param sax  SAX handler
  * @param userData  user data
- * @returns the xmlParserCtxtPtr or NULL if memory allocation failed.
+ * @returns the xmlParserCtxt or NULL if memory allocation failed.
  */
 
-xmlParserCtxtPtr
+xmlParserCtxt *
 xmlNewSAXParserCtxt(const xmlSAXHandler *sax, void *userData)
 {
     xmlParserCtxtPtr ctxt;
@@ -2940,7 +2942,7 @@ xmlNewSAXParserCtxt(const xmlSAXHandler *sax, void *userData)
  * @returns the private application data.
  */
 void *
-xmlCtxtGetPrivate(xmlParserCtxtPtr ctxt) {
+xmlCtxtGetPrivate(xmlParserCtxt *ctxt) {
     if (ctxt == NULL)
         return(NULL);
 
@@ -2956,7 +2958,7 @@ xmlCtxtGetPrivate(xmlParserCtxtPtr ctxt) {
  * @param priv  private application data
  */
 void
-xmlCtxtSetPrivate(xmlParserCtxtPtr ctxt, void *priv) {
+xmlCtxtSetPrivate(xmlParserCtxt *ctxt, void *priv) {
     if (ctxt == NULL)
         return;
 
@@ -2970,7 +2972,7 @@ xmlCtxtSetPrivate(xmlParserCtxtPtr ctxt, void *priv) {
  * @returns the local catalogs.
  */
 void *
-xmlCtxtGetCatalogs(xmlParserCtxtPtr ctxt) {
+xmlCtxtGetCatalogs(xmlParserCtxt *ctxt) {
     if (ctxt == NULL)
         return(NULL);
 
@@ -2986,7 +2988,7 @@ xmlCtxtGetCatalogs(xmlParserCtxtPtr ctxt) {
  * @param catalogs  catalogs pointer
  */
 void
-xmlCtxtSetCatalogs(xmlParserCtxtPtr ctxt, void *catalogs) {
+xmlCtxtSetCatalogs(xmlParserCtxt *ctxt, void *catalogs) {
     if (ctxt == NULL)
         return;
 
@@ -2999,8 +3001,8 @@ xmlCtxtSetCatalogs(xmlParserCtxtPtr ctxt, void *catalogs) {
  * @param ctxt  parser context
  * @returns the dictionary.
  */
-xmlDictPtr
-xmlCtxtGetDict(xmlParserCtxtPtr ctxt) {
+xmlDict *
+xmlCtxtGetDict(xmlParserCtxt *ctxt) {
     if (ctxt == NULL)
         return(NULL);
 
@@ -3017,7 +3019,7 @@ xmlCtxtGetDict(xmlParserCtxtPtr ctxt) {
  * @param dict  dictionary
  */
 void
-xmlCtxtSetDict(xmlParserCtxtPtr ctxt, xmlDictPtr dict) {
+xmlCtxtSetDict(xmlParserCtxt *ctxt, xmlDict *dict) {
     if (ctxt == NULL)
         return;
 
@@ -3036,7 +3038,7 @@ xmlCtxtSetDict(xmlParserCtxtPtr ctxt, xmlDictPtr dict) {
  * be freed. Handlers can be updated.
  */
 xmlSAXHandler *
-xmlCtxtGetSaxHandler(xmlParserCtxtPtr ctxt) {
+xmlCtxtGetSaxHandler(xmlParserCtxt *ctxt) {
     if (ctxt == NULL)
         return(NULL);
 
@@ -3054,7 +3056,7 @@ xmlCtxtGetSaxHandler(xmlParserCtxtPtr ctxt) {
  * allocation failed.
  */
 int
-xmlCtxtSetSaxHandler(xmlParserCtxtPtr ctxt, const xmlSAXHandler *sax) {
+xmlCtxtSetSaxHandler(xmlParserCtxt *ctxt, const xmlSAXHandler *sax) {
     xmlSAXHandler *copy;
 
     if ((ctxt == NULL) || (sax == NULL))
@@ -3078,8 +3080,8 @@ xmlCtxtSetSaxHandler(xmlParserCtxtPtr ctxt, const xmlSAXHandler *sax) {
  * parsing. The document must be freed by the caller. Resets the
  * context's document to NULL.
  */
-xmlDocPtr
-xmlCtxtGetDocument(xmlParserCtxtPtr ctxt) {
+xmlDoc *
+xmlCtxtGetDocument(xmlParserCtxt *ctxt) {
     xmlDocPtr doc;
 
     if (ctxt == NULL)
@@ -3107,7 +3109,7 @@ xmlCtxtGetDocument(xmlParserCtxtPtr ctxt) {
  * @returns 1 if this is a HTML parser context, 0 otherwise.
  */
 int
-xmlCtxtIsHtml(xmlParserCtxtPtr ctxt) {
+xmlCtxtIsHtml(xmlParserCtxt *ctxt) {
     if (ctxt == NULL)
         return(0);
 
@@ -3121,7 +3123,7 @@ xmlCtxtIsHtml(xmlParserCtxtPtr ctxt) {
  * @returns 1 if the parser is stopped, 0 otherwise.
  */
 int
-xmlCtxtIsStopped(xmlParserCtxtPtr ctxt) {
+xmlCtxtIsStopped(xmlParserCtxt *ctxt) {
     if (ctxt == NULL)
         return(0);
 
@@ -3135,8 +3137,8 @@ xmlCtxtIsStopped(xmlParserCtxtPtr ctxt) {
  * @param ctxt  parser context
  * @returns the validation context.
  */
-xmlValidCtxtPtr
-xmlCtxtGetValidCtxt(xmlParserCtxtPtr ctxt) {
+xmlValidCtxt *
+xmlCtxtGetValidCtxt(xmlParserCtxt *ctxt) {
     if (ctxt == NULL)
         return(NULL);
 
@@ -3158,7 +3160,7 @@ xmlCtxtGetValidCtxt(xmlParserCtxtPtr ctxt) {
  * @param ctxt  an XML parser context
  */
 void
-xmlClearParserCtxt(xmlParserCtxtPtr ctxt)
+xmlClearParserCtxt(xmlParserCtxt *ctxt)
 {
     xmlCtxtReset(ctxt);
 }
@@ -3174,7 +3176,7 @@ xmlClearParserCtxt(xmlParserCtxtPtr ctxt)
  * @returns an xmlParserNodeInfo block pointer or NULL
  */
 const xmlParserNodeInfo *
-xmlParserFindNodeInfo(xmlParserCtxtPtr ctx, xmlNodePtr node)
+xmlParserFindNodeInfo(xmlParserCtxt *ctx, xmlNode *node)
 {
     unsigned long pos;
 
@@ -3198,7 +3200,7 @@ xmlParserFindNodeInfo(xmlParserCtxtPtr ctx, xmlNodePtr node)
  * @param seq  a node info sequence pointer
  */
 void
-xmlInitNodeInfoSeq(xmlParserNodeInfoSeqPtr seq)
+xmlInitNodeInfoSeq(xmlParserNodeInfoSeq *seq)
 {
     if (seq == NULL)
         return;
@@ -3215,7 +3217,7 @@ xmlInitNodeInfoSeq(xmlParserNodeInfoSeqPtr seq)
  * @param seq  a node info sequence pointer
  */
 void
-xmlClearNodeInfoSeq(xmlParserNodeInfoSeqPtr seq)
+xmlClearNodeInfoSeq(xmlParserNodeInfoSeq *seq)
 {
     if (seq == NULL)
         return;
@@ -3235,8 +3237,8 @@ xmlClearNodeInfoSeq(xmlParserNodeInfoSeqPtr seq)
  * @returns a long indicating the position of the record
  */
 unsigned long
-xmlParserFindNodeInfoIndex(xmlParserNodeInfoSeqPtr seq,
-                           xmlNodePtr node)
+xmlParserFindNodeInfoIndex(xmlParserNodeInfoSeq *seq,
+                           xmlNode *node)
 {
     unsigned long upper, lower, middle;
     int found = 0;
@@ -3275,8 +3277,8 @@ xmlParserFindNodeInfoIndex(xmlParserNodeInfoSeqPtr seq,
  * @param info  a node info sequence pointer
  */
 void
-xmlParserAddNodeInfo(xmlParserCtxtPtr ctxt,
-                     xmlParserNodeInfoPtr info)
+xmlParserAddNodeInfo(xmlParserCtxt *ctxt,
+                     xmlParserNodeInfo *info)
 {
     unsigned long pos;
 
@@ -3350,30 +3352,21 @@ xmlPedanticParserDefault(int val) {
 }
 
 /**
- * Set and return the previous value for enabling line numbers in elements
- * contents. This may break on old application and is turned off by default.
+ * Has no effect.
  *
- * @deprecated The modern options API always enables line numbers.
+ * @deprecated Line numbers are always enabled.
  *
  * @param val  int 0 or 1
- * @returns the last value for 0 for no substitution, 1 for substitution.
+ * @returns 1
  */
 
 int
-xmlLineNumbersDefault(int val) {
-    int old = xmlLineNumbersDefaultValue;
-
-    xmlLineNumbersDefaultValue = val;
-    return(old);
+xmlLineNumbersDefault(int val ATTRIBUTE_UNUSED) {
+    return(1);
 }
 
 /**
  * Set and return the previous value for default entity support.
- * Initially the parser always keep entity references instead of substituting
- * entity values in the output. This function has to be used to change the
- * default parser behavior
- * SAX::substituteEntities() has to be used for changing that on a file by
- * file basis.
  *
  * @deprecated Use the modern options API with XML_PARSE_NOENT.
  *
@@ -3391,21 +3384,6 @@ xmlSubstituteEntitiesDefault(int val) {
 
 /**
  * Set and return the previous value for default blanks text nodes support.
- * The 1.x version of the parser used an heuristic to try to detect
- * ignorable white spaces. As a result the SAX callback was generating
- * xmlSAX2IgnorableWhitespace() callbacks instead of characters() one, and when
- * using the DOM output text nodes containing those blanks were not generated.
- * The 2.x and later version will switch to the XML standard way and
- * ignorableWhitespace() are only generated when running the parser in
- * validating mode and when the current element doesn't allow CDATA or
- * mixed content.
- * This function is provided as a way to force the standard behavior
- * on 1.X libs and to switch back to the old mode for compatibility when
- * running 1.X client code on 2.X . Upgrade of 1.X code should be done
- * by using xmlIsBlankNode() commodity function to detect the "empty"
- * nodes generated.
- * This value also affect autogeneration of indentation when saving code
- * if blanks sections are kept, indentation is not generated.
  *
  * @deprecated Use the modern options API with XML_PARSE_NOBLANKS.
  *

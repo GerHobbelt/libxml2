@@ -3602,8 +3602,8 @@ error:
  * @param data  the context data associated to the callback in this context
  * @returns the new context
  */
-xmlRegExecCtxtPtr
-xmlRegNewExecCtxt(xmlRegexpPtr comp, xmlRegExecCallbacks callback, void *data) {
+xmlRegExecCtxt *
+xmlRegNewExecCtxt(xmlRegexp *comp, xmlRegExecCallbacks callback, void *data) {
     xmlRegExecCtxtPtr exec;
 
     if (comp == NULL)
@@ -3660,7 +3660,7 @@ xmlRegNewExecCtxt(xmlRegexpPtr comp, xmlRegExecCallbacks callback, void *data) {
  * @param exec  a regular expression evaluation context
  */
 void
-xmlRegFreeExecCtxt(xmlRegExecCtxtPtr exec) {
+xmlRegFreeExecCtxt(xmlRegExecCtxt *exec) {
     if (exec == NULL)
 	return;
 
@@ -4180,7 +4180,7 @@ progress:
  *     a negative value in case of error.
  */
 int
-xmlRegExecPushString(xmlRegExecCtxtPtr exec, const xmlChar *value,
+xmlRegExecPushString(xmlRegExecCtxt *exec, const xmlChar *value,
 	             void *data) {
     return(xmlRegExecPushStringInternal(exec, value, data, 0));
 }
@@ -4196,7 +4196,7 @@ xmlRegExecPushString(xmlRegExecCtxtPtr exec, const xmlChar *value,
  *     a negative value in case of error.
  */
 int
-xmlRegExecPushString2(xmlRegExecCtxtPtr exec, const xmlChar *value,
+xmlRegExecPushString2(xmlRegExecCtxt *exec, const xmlChar *value,
                       const xmlChar *value2, void *data) {
     xmlChar buf[150];
     int lenn, lenp, ret;
@@ -4411,7 +4411,7 @@ xmlRegExecGetValues(xmlRegExecCtxtPtr exec, int err,
  * @returns 0 in case of success or -1 in case of error.
  */
 int
-xmlRegExecNextValues(xmlRegExecCtxtPtr exec, int *nbval, int *nbneg,
+xmlRegExecNextValues(xmlRegExecCtxt *exec, int *nbval, int *nbneg,
                      xmlChar **values, int *terminal) {
     return(xmlRegExecGetValues(exec, 0, nbval, nbneg, values, terminal));
 }
@@ -4434,7 +4434,7 @@ xmlRegExecNextValues(xmlRegExecCtxtPtr exec, int *nbval, int *nbneg,
  * @returns 0 in case of success or -1 in case of error.
  */
 int
-xmlRegExecErrInfo(xmlRegExecCtxtPtr exec, const xmlChar **string,
+xmlRegExecErrInfo(xmlRegExecCtxt *exec, const xmlChar **string,
                   int *nbval, int *nbneg, xmlChar **values, int *terminal) {
     if (exec == NULL)
         return(-1);
@@ -5390,7 +5390,7 @@ xmlFAParseRegExp(xmlRegParserCtxtPtr ctxt, int top) {
  */
 void
 xmlRegexpPrint(FILE *output ATTRIBUTE_UNUSED,
-               xmlRegexpPtr regexp ATTRIBUTE_UNUSED) {
+               xmlRegexp *regexp ATTRIBUTE_UNUSED) {
 }
 
 /**
@@ -5401,7 +5401,7 @@ xmlRegexpPrint(FILE *output ATTRIBUTE_UNUSED,
  * @param regexp  a regular expression string
  * @returns the compiled expression or NULL in case of error
  */
-xmlRegexpPtr
+xmlRegexp *
 xmlRegexpCompile(const xmlChar *regexp) {
     xmlRegexpPtr ret = NULL;
     xmlRegParserCtxtPtr ctxt;
@@ -5452,7 +5452,7 @@ error:
  * @returns 1 if it matches, 0 if not and a negative value in case of error
  */
 int
-xmlRegexpExec(xmlRegexpPtr comp, const xmlChar *content) {
+xmlRegexpExec(xmlRegexp *comp, const xmlChar *content) {
     if ((comp == NULL) || (content == NULL))
 	return(-1);
     return(xmlFARegExec(comp, content));
@@ -5465,7 +5465,7 @@ xmlRegexpExec(xmlRegexpPtr comp, const xmlChar *content) {
  * @returns 1 if it yes, 0 if not and a negative value in case of error
  */
 int
-xmlRegexpIsDeterminist(xmlRegexpPtr comp) {
+xmlRegexpIsDeterminist(xmlRegexp *comp) {
     xmlAutomataPtr am;
     int ret;
 
@@ -5504,7 +5504,7 @@ xmlRegexpIsDeterminist(xmlRegexpPtr comp) {
  * @param regexp  the regexp
  */
 void
-xmlRegFreeRegexp(xmlRegexpPtr regexp) {
+xmlRegFreeRegexp(xmlRegexp *regexp) {
     int i;
     if (regexp == NULL)
 	return;
@@ -5547,7 +5547,7 @@ xmlRegFreeRegexp(xmlRegexpPtr regexp) {
  *
  * @returns the new object or NULL in case of failure
  */
-xmlAutomataPtr
+xmlAutomata *
 xmlNewAutomata(void) {
     xmlAutomataPtr ctxt;
 
@@ -5576,7 +5576,7 @@ xmlNewAutomata(void) {
  * @param am  an automata
  */
 void
-xmlFreeAutomata(xmlAutomataPtr am) {
+xmlFreeAutomata(xmlAutomata *am) {
     if (am == NULL)
 	return;
     xmlRegFreeParserCtxt(am);
@@ -5589,7 +5589,7 @@ xmlFreeAutomata(xmlAutomataPtr am) {
  * @param flags  a set of internal flags
  */
 void
-xmlAutomataSetFlags(xmlAutomataPtr am, int flags) {
+xmlAutomataSetFlags(xmlAutomata *am, int flags) {
     if (am == NULL)
 	return;
     am->flags |= flags;
@@ -5601,8 +5601,8 @@ xmlAutomataSetFlags(xmlAutomataPtr am, int flags) {
  * @param am  an automata
  * @returns the initial state of the automata
  */
-xmlAutomataStatePtr
-xmlAutomataGetInitState(xmlAutomataPtr am) {
+xmlAutomataState *
+xmlAutomataGetInitState(xmlAutomata *am) {
     if (am == NULL)
 	return(NULL);
     return(am->start);
@@ -5616,7 +5616,7 @@ xmlAutomataGetInitState(xmlAutomataPtr am) {
  * @returns 0 or -1 in case of error
  */
 int
-xmlAutomataSetFinalState(xmlAutomataPtr am, xmlAutomataStatePtr state) {
+xmlAutomataSetFinalState(xmlAutomata *am, xmlAutomataState *state) {
     if ((am == NULL) || (state == NULL))
 	return(-1);
     state->type = XML_REGEXP_FINAL_STATE;
@@ -5635,9 +5635,9 @@ xmlAutomataSetFinalState(xmlAutomataPtr am, xmlAutomataStatePtr state) {
  * @param data  data passed to the callback function if the transition is activated
  * @returns the target state or NULL in case of error
  */
-xmlAutomataStatePtr
-xmlAutomataNewTransition(xmlAutomataPtr am, xmlAutomataStatePtr from,
-			 xmlAutomataStatePtr to, const xmlChar *token,
+xmlAutomataState *
+xmlAutomataNewTransition(xmlAutomata *am, xmlAutomataState *from,
+			 xmlAutomataState *to, const xmlChar *token,
 			 void *data) {
     xmlRegAtomPtr atom;
 
@@ -5676,9 +5676,9 @@ xmlAutomataNewTransition(xmlAutomataPtr am, xmlAutomataStatePtr from,
  * @param data  data passed to the callback function if the transition is activated
  * @returns the target state or NULL in case of error
  */
-xmlAutomataStatePtr
-xmlAutomataNewTransition2(xmlAutomataPtr am, xmlAutomataStatePtr from,
-			  xmlAutomataStatePtr to, const xmlChar *token,
+xmlAutomataState *
+xmlAutomataNewTransition2(xmlAutomata *am, xmlAutomataState *from,
+			  xmlAutomataState *to, const xmlChar *token,
 			  const xmlChar *token2, void *data) {
     xmlRegAtomPtr atom;
 
@@ -5734,9 +5734,9 @@ xmlAutomataNewTransition2(xmlAutomataPtr am, xmlAutomataStatePtr from,
  * @param data  data passed to the callback function if the transition is activated
  * @returns the target state or NULL in case of error
  */
-xmlAutomataStatePtr
-xmlAutomataNewNegTrans(xmlAutomataPtr am, xmlAutomataStatePtr from,
-		       xmlAutomataStatePtr to, const xmlChar *token,
+xmlAutomataState *
+xmlAutomataNewNegTrans(xmlAutomata *am, xmlAutomataState *from,
+		       xmlAutomataState *to, const xmlChar *token,
 		       const xmlChar *token2, void *data) {
     xmlRegAtomPtr atom;
     xmlChar err_msg[200];
@@ -5799,9 +5799,9 @@ xmlAutomataNewNegTrans(xmlAutomataPtr am, xmlAutomataStatePtr from,
  * @param data  data associated to the transition
  * @returns the target state or NULL in case of error
  */
-xmlAutomataStatePtr
-xmlAutomataNewCountTrans2(xmlAutomataPtr am, xmlAutomataStatePtr from,
-			 xmlAutomataStatePtr to, const xmlChar *token,
+xmlAutomataState *
+xmlAutomataNewCountTrans2(xmlAutomata *am, xmlAutomataState *from,
+			 xmlAutomataState *to, const xmlChar *token,
 			 const xmlChar *token2,
 			 int min, int max, void *data) {
     xmlRegAtomPtr atom;
@@ -5892,9 +5892,9 @@ error:
  * @param data  data associated to the transition
  * @returns the target state or NULL in case of error
  */
-xmlAutomataStatePtr
-xmlAutomataNewCountTrans(xmlAutomataPtr am, xmlAutomataStatePtr from,
-			 xmlAutomataStatePtr to, const xmlChar *token,
+xmlAutomataState *
+xmlAutomataNewCountTrans(xmlAutomata *am, xmlAutomataState *from,
+			 xmlAutomataState *to, const xmlChar *token,
 			 int min, int max, void *data) {
     xmlRegAtomPtr atom;
     int counter;
@@ -5968,9 +5968,9 @@ error:
  * @param data  data associated to the transition
  * @returns the target state or NULL in case of error
  */
-xmlAutomataStatePtr
-xmlAutomataNewOnceTrans2(xmlAutomataPtr am, xmlAutomataStatePtr from,
-			 xmlAutomataStatePtr to, const xmlChar *token,
+xmlAutomataState *
+xmlAutomataNewOnceTrans2(xmlAutomata *am, xmlAutomataState *from,
+			 xmlAutomataState *to, const xmlChar *token,
 			 const xmlChar *token2,
 			 int min, int max, void *data) {
     xmlRegAtomPtr atom;
@@ -6054,9 +6054,9 @@ error:
  * @param data  data associated to the transition
  * @returns the target state or NULL in case of error
  */
-xmlAutomataStatePtr
-xmlAutomataNewOnceTrans(xmlAutomataPtr am, xmlAutomataStatePtr from,
-			 xmlAutomataStatePtr to, const xmlChar *token,
+xmlAutomataState *
+xmlAutomataNewOnceTrans(xmlAutomata *am, xmlAutomataState *from,
+			 xmlAutomataState *to, const xmlChar *token,
 			 int min, int max, void *data) {
     xmlRegAtomPtr atom;
     int counter;
@@ -6107,8 +6107,8 @@ error:
  * @param am  an automata
  * @returns the new state or NULL in case of error
  */
-xmlAutomataStatePtr
-xmlAutomataNewState(xmlAutomataPtr am) {
+xmlAutomataState *
+xmlAutomataNewState(xmlAutomata *am) {
     if (am == NULL)
 	return(NULL);
     return(xmlRegStatePush(am));
@@ -6124,9 +6124,9 @@ xmlAutomataNewState(xmlAutomataPtr am) {
  * @param to  the target point of the transition or NULL
  * @returns the target state or NULL in case of error
  */
-xmlAutomataStatePtr
-xmlAutomataNewEpsilon(xmlAutomataPtr am, xmlAutomataStatePtr from,
-		      xmlAutomataStatePtr to) {
+xmlAutomataState *
+xmlAutomataNewEpsilon(xmlAutomata *am, xmlAutomataState *from,
+		      xmlAutomataState *to) {
     if ((am == NULL) || (from == NULL))
 	return(NULL);
     xmlFAGenerateEpsilonTransition(am, from, to);
@@ -6147,9 +6147,9 @@ xmlAutomataNewEpsilon(xmlAutomataPtr am, xmlAutomataStatePtr from,
  * @param lax  allow to transition if not all all transitions have been activated
  * @returns the target state or NULL in case of error
  */
-xmlAutomataStatePtr
-xmlAutomataNewAllTrans(xmlAutomataPtr am, xmlAutomataStatePtr from,
-		       xmlAutomataStatePtr to, int lax) {
+xmlAutomataState *
+xmlAutomataNewAllTrans(xmlAutomata *am, xmlAutomataState *from,
+		       xmlAutomataState *to, int lax) {
     if ((am == NULL) || (from == NULL))
 	return(NULL);
     xmlFAGenerateAllTransition(am, from, to, lax);
@@ -6167,7 +6167,7 @@ xmlAutomataNewAllTrans(xmlAutomataPtr am, xmlAutomataStatePtr from,
  * @returns the counter number or -1 in case of error
  */
 int
-xmlAutomataNewCounter(xmlAutomataPtr am, int min, int max) {
+xmlAutomataNewCounter(xmlAutomata *am, int min, int max) {
     int ret;
 
     if (am == NULL)
@@ -6192,9 +6192,9 @@ xmlAutomataNewCounter(xmlAutomataPtr am, int min, int max) {
  * @param counter  the counter associated to that transition
  * @returns the target state or NULL in case of error
  */
-xmlAutomataStatePtr
-xmlAutomataNewCountedTrans(xmlAutomataPtr am, xmlAutomataStatePtr from,
-		xmlAutomataStatePtr to, int counter) {
+xmlAutomataState *
+xmlAutomataNewCountedTrans(xmlAutomata *am, xmlAutomataState *from,
+		xmlAutomataState *to, int counter) {
     if ((am == NULL) || (from == NULL) || (counter < 0))
 	return(NULL);
     xmlFAGenerateCountedEpsilonTransition(am, from, to, counter);
@@ -6214,9 +6214,9 @@ xmlAutomataNewCountedTrans(xmlAutomataPtr am, xmlAutomataStatePtr from,
  * @param counter  the counter associated to that transition
  * @returns the target state or NULL in case of error
  */
-xmlAutomataStatePtr
-xmlAutomataNewCounterTrans(xmlAutomataPtr am, xmlAutomataStatePtr from,
-		xmlAutomataStatePtr to, int counter) {
+xmlAutomataState *
+xmlAutomataNewCounterTrans(xmlAutomata *am, xmlAutomataState *from,
+		xmlAutomataState *to, int counter) {
     if ((am == NULL) || (from == NULL) || (counter < 0))
 	return(NULL);
     xmlFAGenerateCountedTransition(am, from, to, counter);
@@ -6232,8 +6232,8 @@ xmlAutomataNewCounterTrans(xmlAutomataPtr am, xmlAutomataStatePtr from,
  * @param am  an automata
  * @returns the compiled regexp or NULL in case of error
  */
-xmlRegexpPtr
-xmlAutomataCompile(xmlAutomataPtr am) {
+xmlRegexp *
+xmlAutomataCompile(xmlAutomata *am) {
     xmlRegexpPtr ret;
 
     if ((am == NULL) || (am->error != 0)) return(NULL);
@@ -6253,7 +6253,7 @@ xmlAutomataCompile(xmlAutomataPtr am) {
  * @returns 1 if true, 0 if not, and -1 in case of error
  */
 int
-xmlAutomataIsDeterminist(xmlAutomataPtr am) {
+xmlAutomataIsDeterminist(xmlAutomata *am) {
     int ret;
 
     if (am == NULL)
@@ -6281,15 +6281,15 @@ typedef struct _xmlExpCtxt xmlExpCtxt;
 typedef xmlExpCtxt *xmlExpCtxtPtr;
 
 XMLPUBFUN void
-			xmlExpFreeCtxt	(xmlExpCtxtPtr ctxt);
-XMLPUBFUN xmlExpCtxtPtr
+			xmlExpFreeCtxt	(xmlExpCtxt *ctxt);
+XMLPUBFUN xmlExpCtxt *
 			xmlExpNewCtxt	(int maxNodes,
-					 xmlDictPtr dict);
+					 xmlDict *dict);
 
 XMLPUBFUN int
-			xmlExpCtxtNbNodes(xmlExpCtxtPtr ctxt);
+			xmlExpCtxtNbNodes(xmlExpCtxt *ctxt);
 XMLPUBFUN int
-			xmlExpCtxtNbCons(xmlExpCtxtPtr ctxt);
+			xmlExpCtxtNbCons(xmlExpCtxt *ctxt);
 
 /* Expressions are trees but the tree is opaque */
 typedef struct _xmlExpNode xmlExpNode;
@@ -6315,67 +6315,67 @@ XMLPUBVAR xmlExpNodePtr emptyExp;
  * Expressions are reference counted internally
  */
 XMLPUBFUN void
-			xmlExpFree	(xmlExpCtxtPtr ctxt,
-					 xmlExpNodePtr expr);
+			xmlExpFree	(xmlExpCtxt *ctxt,
+					 xmlExpNode *expr);
 XMLPUBFUN void
-			xmlExpRef	(xmlExpNodePtr expr);
+			xmlExpRef	(xmlExpNode *expr);
 
 /*
  * constructors can be either manual or from a string
  */
-XMLPUBFUN xmlExpNodePtr
-			xmlExpParse	(xmlExpCtxtPtr ctxt,
+XMLPUBFUN xmlExpNode *
+			xmlExpParse	(xmlExpCtxt *ctxt,
 					 const char *expr);
-XMLPUBFUN xmlExpNodePtr
-			xmlExpNewAtom	(xmlExpCtxtPtr ctxt,
+XMLPUBFUN xmlExpNode *
+			xmlExpNewAtom	(xmlExpCtxt *ctxt,
 					 const xmlChar *name,
 					 int len);
-XMLPUBFUN xmlExpNodePtr
-			xmlExpNewOr	(xmlExpCtxtPtr ctxt,
-					 xmlExpNodePtr left,
-					 xmlExpNodePtr right);
-XMLPUBFUN xmlExpNodePtr
-			xmlExpNewSeq	(xmlExpCtxtPtr ctxt,
-					 xmlExpNodePtr left,
-					 xmlExpNodePtr right);
-XMLPUBFUN xmlExpNodePtr
-			xmlExpNewRange	(xmlExpCtxtPtr ctxt,
-					 xmlExpNodePtr subset,
+XMLPUBFUN xmlExpNode *
+			xmlExpNewOr	(xmlExpCtxt *ctxt,
+					 xmlExpNode *left,
+					 xmlExpNode *right);
+XMLPUBFUN xmlExpNode *
+			xmlExpNewSeq	(xmlExpCtxt *ctxt,
+					 xmlExpNode *left,
+					 xmlExpNode *right);
+XMLPUBFUN xmlExpNode *
+			xmlExpNewRange	(xmlExpCtxt *ctxt,
+					 xmlExpNode *subset,
 					 int min,
 					 int max);
 /*
  * The really interesting APIs
  */
 XMLPUBFUN int
-			xmlExpIsNillable(xmlExpNodePtr expr);
+			xmlExpIsNillable(xmlExpNode *expr);
 XMLPUBFUN int
-			xmlExpMaxToken	(xmlExpNodePtr expr);
+			xmlExpMaxToken	(xmlExpNode *expr);
 XMLPUBFUN int
-			xmlExpGetLanguage(xmlExpCtxtPtr ctxt,
-					 xmlExpNodePtr expr,
+			xmlExpGetLanguage(xmlExpCtxt *ctxt,
+					 xmlExpNode *expr,
 					 const xmlChar**langList,
 					 int len);
 XMLPUBFUN int
-			xmlExpGetStart	(xmlExpCtxtPtr ctxt,
-					 xmlExpNodePtr expr,
+			xmlExpGetStart	(xmlExpCtxt *ctxt,
+					 xmlExpNode *expr,
 					 const xmlChar**tokList,
 					 int len);
-XMLPUBFUN xmlExpNodePtr
-			xmlExpStringDerive(xmlExpCtxtPtr ctxt,
-					 xmlExpNodePtr expr,
+XMLPUBFUN xmlExpNode *
+			xmlExpStringDerive(xmlExpCtxt *ctxt,
+					 xmlExpNode *expr,
 					 const xmlChar *str,
 					 int len);
-XMLPUBFUN xmlExpNodePtr
-			xmlExpExpDerive	(xmlExpCtxtPtr ctxt,
-					 xmlExpNodePtr expr,
-					 xmlExpNodePtr sub);
+XMLPUBFUN xmlExpNode *
+			xmlExpExpDerive	(xmlExpCtxt *ctxt,
+					 xmlExpNode *expr,
+					 xmlExpNode *sub);
 XMLPUBFUN int
-			xmlExpSubsume	(xmlExpCtxtPtr ctxt,
-					 xmlExpNodePtr expr,
-					 xmlExpNodePtr sub);
+			xmlExpSubsume	(xmlExpCtxt *ctxt,
+					 xmlExpNode *expr,
+					 xmlExpNode *sub);
 XMLPUBFUN void
-			xmlExpDump	(xmlBufferPtr buf,
-					 xmlExpNodePtr expr);
+			xmlExpDump	(xmlBuffer *buf,
+					 xmlExpNode *expr);
 
 /************************************************************************
  *									*
@@ -6403,8 +6403,8 @@ struct _xmlExpCtxt {
  * @param dict  optional dictionary to use internally
  * @returns the context or NULL in case of error
  */
-xmlExpCtxtPtr
-xmlExpNewCtxt(int maxNodes, xmlDictPtr dict) {
+xmlExpCtxt *
+xmlExpNewCtxt(int maxNodes, xmlDict *dict) {
     xmlExpCtxtPtr ret;
     int size = 256;
 
@@ -6444,7 +6444,7 @@ xmlExpNewCtxt(int maxNodes, xmlDictPtr dict) {
  * @param ctxt  an expression context
  */
 void
-xmlExpFreeCtxt(xmlExpCtxtPtr ctxt) {
+xmlExpFreeCtxt(xmlExpCtxt *ctxt) {
     if (ctxt == NULL)
         return;
     xmlDictFree(ctxt->dict);
@@ -6831,7 +6831,7 @@ xmlExpHashGetEntry(xmlExpCtxtPtr ctxt, xmlExpNodeType type,
  * @param exp  the expression
  */
 void
-xmlExpFree(xmlExpCtxtPtr ctxt, xmlExpNodePtr exp) {
+xmlExpFree(xmlExpCtxt *ctxt, xmlExpNode *exp) {
     if ((exp == NULL) || (exp == forbiddenExp) || (exp == emptyExp))
         return;
     exp->ref--;
@@ -6872,7 +6872,7 @@ xmlExpFree(xmlExpCtxtPtr ctxt, xmlExpNodePtr exp) {
  * @param exp  the expression
  */
 void
-xmlExpRef(xmlExpNodePtr exp) {
+xmlExpRef(xmlExpNode *exp) {
     if (exp != NULL)
         exp->ref++;
 }
@@ -6885,8 +6885,8 @@ xmlExpRef(xmlExpNodePtr exp) {
  * @param len  the atom name length in byte (or -1);
  * @returns the node or NULL in case of error
  */
-xmlExpNodePtr
-xmlExpNewAtom(xmlExpCtxtPtr ctxt, const xmlChar *name, int len) {
+xmlExpNode *
+xmlExpNewAtom(xmlExpCtxt *ctxt, const xmlChar *name, int len) {
     if ((ctxt == NULL) || (name == NULL))
         return(NULL);
     name = xmlDictLookup(ctxt->dict, name, len);
@@ -6906,8 +6906,8 @@ xmlExpNewAtom(xmlExpCtxtPtr ctxt, const xmlChar *name, int len) {
  * @param right  right expression
  * @returns the node or NULL in case of error
  */
-xmlExpNodePtr
-xmlExpNewOr(xmlExpCtxtPtr ctxt, xmlExpNodePtr left, xmlExpNodePtr right) {
+xmlExpNode *
+xmlExpNewOr(xmlExpCtxt *ctxt, xmlExpNode *left, xmlExpNode *right) {
     if (ctxt == NULL)
         return(NULL);
     if ((left == NULL) || (right == NULL)) {
@@ -6929,8 +6929,8 @@ xmlExpNewOr(xmlExpCtxtPtr ctxt, xmlExpNodePtr left, xmlExpNodePtr right) {
  * @param right  right expression
  * @returns the node or NULL in case of error
  */
-xmlExpNodePtr
-xmlExpNewSeq(xmlExpCtxtPtr ctxt, xmlExpNodePtr left, xmlExpNodePtr right) {
+xmlExpNode *
+xmlExpNewSeq(xmlExpCtxt *ctxt, xmlExpNode *left, xmlExpNode *right) {
     if (ctxt == NULL)
         return(NULL);
     if ((left == NULL) || (right == NULL)) {
@@ -6953,8 +6953,8 @@ xmlExpNewSeq(xmlExpCtxtPtr ctxt, xmlExpNodePtr left, xmlExpNodePtr right) {
  * @param max  the upper bound for the repetition, -1 means infinite
  * @returns the node or NULL in case of error
  */
-xmlExpNodePtr
-xmlExpNewRange(xmlExpCtxtPtr ctxt, xmlExpNodePtr subset, int min, int max) {
+xmlExpNode *
+xmlExpNewRange(xmlExpCtxt *ctxt, xmlExpNode *subset, int min, int max) {
     if (ctxt == NULL)
         return(NULL);
     if ((subset == NULL) || (min < 0) || (max < -1) ||
@@ -7016,7 +7016,7 @@ tail:
  *         -2 if there is more than `len` strings
  */
 int
-xmlExpGetLanguage(xmlExpCtxtPtr ctxt, xmlExpNodePtr exp,
+xmlExpGetLanguage(xmlExpCtxt *ctxt, xmlExpNode *exp,
                   const xmlChar**langList, int len) {
     if ((ctxt == NULL) || (exp == NULL) || (langList == NULL) || (len <= 0))
         return(-1);
@@ -7082,7 +7082,7 @@ tail:
  *         -2 if there is more than `len` strings
  */
 int
-xmlExpGetStart(xmlExpCtxtPtr ctxt, xmlExpNodePtr exp,
+xmlExpGetStart(xmlExpCtxt *ctxt, xmlExpNode *exp,
                const xmlChar**tokList, int len) {
     if ((ctxt == NULL) || (exp == NULL) || (tokList == NULL) || (len <= 0))
         return(-1);
@@ -7096,7 +7096,7 @@ xmlExpGetStart(xmlExpCtxtPtr ctxt, xmlExpNodePtr exp,
  * @returns 1 if nillable, 0 if not and -1 in case of error
  */
 int
-xmlExpIsNillable(xmlExpNodePtr exp) {
+xmlExpIsNillable(xmlExpNode *exp) {
     if (exp == NULL)
         return(-1);
     return(IS_NILLABLE(exp) != 0);
@@ -7195,8 +7195,8 @@ xmlExpStringDeriveInt(xmlExpCtxtPtr ctxt, xmlExpNodePtr exp, const xmlChar *str)
  * @param len  the string len in bytes if available
  * @returns the resulting expression or NULL in case of internal error
  */
-xmlExpNodePtr
-xmlExpStringDerive(xmlExpCtxtPtr ctxt, xmlExpNodePtr exp,
+xmlExpNode *
+xmlExpStringDerive(xmlExpCtxt *ctxt, xmlExpNode *exp,
                    const xmlChar *str, int len) {
     const xmlChar *input;
 
@@ -7654,8 +7654,8 @@ xmlExpExpDeriveInt(xmlExpCtxtPtr ctxt, xmlExpNodePtr exp, xmlExpNodePtr sub) {
  * @returns the resulting expression or NULL in case of internal error, the
  *         result must be freed
  */
-xmlExpNodePtr
-xmlExpExpDerive(xmlExpCtxtPtr ctxt, xmlExpNodePtr exp, xmlExpNodePtr sub) {
+xmlExpNode *
+xmlExpExpDerive(xmlExpCtxt *ctxt, xmlExpNode *exp, xmlExpNode *sub) {
     if ((exp == NULL) || (ctxt == NULL) || (sub == NULL))
         return(NULL);
 
@@ -7681,7 +7681,7 @@ xmlExpExpDerive(xmlExpCtxtPtr ctxt, xmlExpNodePtr exp, xmlExpNodePtr sub) {
  * @returns 1 if true 0 if false and -1 in case of failure.
  */
 int
-xmlExpSubsume(xmlExpCtxtPtr ctxt, xmlExpNodePtr exp, xmlExpNodePtr sub) {
+xmlExpSubsume(xmlExpCtxt *ctxt, xmlExpNode *exp, xmlExpNode *sub) {
     xmlExpNodePtr tmp;
 
     if ((exp == NULL) || (ctxt == NULL) || (sub == NULL))
@@ -7880,8 +7880,8 @@ xmlExpParseExpr(xmlExpCtxtPtr ctxt) {
  * @param expr  the 0 terminated string
  * @returns a new expression or NULL in case of failure
  */
-xmlExpNodePtr
-xmlExpParse(xmlExpCtxtPtr ctxt, const char *expr) {
+xmlExpNode *
+xmlExpParse(xmlExpCtxt *ctxt, const char *expr) {
     xmlExpNodePtr ret;
 
     ctxt->expr = expr;
@@ -7979,7 +7979,7 @@ xmlExpDumpInt(xmlBufferPtr buf, xmlExpNodePtr expr, int glob) {
  * @param expr  the compiled expression
  */
 void
-xmlExpDump(xmlBufferPtr buf, xmlExpNodePtr expr) {
+xmlExpDump(xmlBuffer *buf, xmlExpNode *expr) {
     if ((buf == NULL) || (expr == NULL))
         return;
     xmlExpDumpInt(buf, expr, 0);
@@ -7992,7 +7992,7 @@ xmlExpDump(xmlBufferPtr buf, xmlExpNodePtr expr) {
  * @returns the maximum length or -1 in case of error
  */
 int
-xmlExpMaxToken(xmlExpNodePtr expr) {
+xmlExpMaxToken(xmlExpNode *expr) {
     if (expr == NULL)
         return(-1);
     return(expr->c_max);
@@ -8005,7 +8005,7 @@ xmlExpMaxToken(xmlExpNodePtr expr) {
  * @returns the number of nodes in use or -1 in case of error
  */
 int
-xmlExpCtxtNbNodes(xmlExpCtxtPtr ctxt) {
+xmlExpCtxtNbNodes(xmlExpCtxt *ctxt) {
     if (ctxt == NULL)
         return(-1);
     return(ctxt->nb_nodes);
@@ -8018,7 +8018,7 @@ xmlExpCtxtNbNodes(xmlExpCtxtPtr ctxt) {
  * @returns the number of nodes ever allocated or -1 in case of error
  */
 int
-xmlExpCtxtNbCons(xmlExpCtxtPtr ctxt) {
+xmlExpCtxtNbCons(xmlExpCtxt *ctxt) {
     if (ctxt == NULL)
         return(-1);
     return(ctxt->nb_cons);

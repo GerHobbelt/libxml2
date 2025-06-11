@@ -22,6 +22,8 @@
 extern "C" {
 #endif
 
+/** @cond ignore */
+
 /**
  * Various defines for the various Link properties.
  *
@@ -56,6 +58,8 @@ typedef enum {
     XLINK_ACTUATE_ONREQUEST
 } xlinkActuate;
 
+/** @endcond */
+
 /**
  * This is the prototype for the link detection routine.
  * It calls the default link detection callbacks upon link detection.
@@ -63,7 +67,7 @@ typedef enum {
  * @param ctx  user data pointer
  * @param node  the node to check
  */
-typedef void (*xlinkNodeDetectFunc) (void *ctx, xmlNodePtr node);
+typedef void (*xlinkNodeDetectFunc) (void *ctx, xmlNode *node);
 
 /*
  * The link detection module interact with the upper layers using
@@ -81,7 +85,7 @@ typedef void (*xlinkNodeDetectFunc) (void *ctx, xmlNodePtr node);
  */
 typedef void
 (*xlinkSimpleLinkFunk)	(void *ctx,
-			 xmlNodePtr node,
+			 xmlNode *node,
 			 const xlinkHRef href,
 			 const xlinkRole role,
 			 const xlinkTitle title);
@@ -105,7 +109,7 @@ typedef void
  */
 typedef void
 (*xlinkExtendedLinkFunk)(void *ctx,
-			 xmlNodePtr node,
+			 xmlNode *node,
 			 int nbLocators,
 			 const xlinkHRef *hrefs,
 			 const xlinkRole *roles,
@@ -132,7 +136,7 @@ typedef void
  */
 typedef void
 (*xlinkExtendedLinkSetFunk)	(void *ctx,
-				 xmlNodePtr node,
+				 xmlNode *node,
 				 int nbLocators,
 				 const xlinkHRef *hrefs,
 				 const xlinkRole *roles,
@@ -140,14 +144,14 @@ typedef void
 				 const xlinkTitle *titles,
 				 const xmlChar **langs);
 
+typedef struct _xlinkHandler xlinkHandler;
+typedef xlinkHandler *xlinkHandlerPtr;
 /**
  * This is the structure containing a set of Links detection callbacks.
  *
  * There is no default xlink callbacks, if one want to get link
  * recognition activated, those call backs must be provided before parsing.
  */
-typedef struct _xlinkHandler xlinkHandler;
-typedef xlinkHandler *xlinkHandlerPtr;
 struct _xlinkHandler {
     xlinkSimpleLinkFunk simple;
     xlinkExtendedLinkFunk extended;
@@ -170,19 +174,19 @@ XMLPUBFUN void
  * Routines to set/get the default handlers.
  */
 XML_DEPRECATED
-XMLPUBFUN xlinkHandlerPtr
+XMLPUBFUN xlinkHandler *
 		xlinkGetDefaultHandler	(void);
 XML_DEPRECATED
 XMLPUBFUN void
-		xlinkSetDefaultHandler	(xlinkHandlerPtr handler);
+		xlinkSetDefaultHandler	(xlinkHandler *handler);
 
 /*
  * Link detection module itself.
  */
 XML_DEPRECATED
 XMLPUBFUN xlinkType
-		xlinkIsLink		(xmlDocPtr doc,
-					 xmlNodePtr node);
+		xlinkIsLink		(xmlDoc *doc,
+					 xmlNode *node);
 
 #ifdef __cplusplus
 }

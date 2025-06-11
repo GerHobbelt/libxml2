@@ -194,7 +194,7 @@ struct _xmlPatParserContext {
 /**
  * Create a new XSLT Pattern
  *
- * @returns the newly allocated xmlPatternPtr or NULL in case of error
+ * @returns the newly allocated xmlPattern or NULL in case of error
  */
 static xmlPatternPtr
 xmlNewPattern(void) {
@@ -218,7 +218,7 @@ xmlNewPattern(void) {
  * @param comp  an XSLT comp
  */
 void
-xmlFreePattern(xmlPatternPtr comp) {
+xmlFreePattern(xmlPattern *comp) {
     xmlFreePatternList(comp);
 }
 
@@ -258,7 +258,7 @@ xmlFreePatternInternal(xmlPatternPtr comp) {
  * @param comp  an XSLT comp list
  */
 void
-xmlFreePatternList(xmlPatternPtr comp) {
+xmlFreePatternList(xmlPattern *comp) {
     xmlPatternPtr cur;
 
     while (comp != NULL) {
@@ -276,7 +276,7 @@ xmlFreePatternList(xmlPatternPtr comp) {
  * @param dict  the inherited dictionary or NULL
  * @param namespaces  the prefix definitions, array of [URI, prefix] terminated
  *              with [NULL, NULL] or NULL if no namespace is used
- * @returns the newly allocated xmlPatParserContextPtr or NULL in case of error
+ * @returns the newly allocated xmlPatParserContext or NULL in case of error
  */
 static xmlPatParserContextPtr
 xmlNewPatParserContext(const xmlChar *pattern, xmlDictPtr dict,
@@ -1564,7 +1564,7 @@ xmlNewStreamCtxt(xmlStreamCompPtr stream) {
  * @param stream  the stream context
  */
 void
-xmlFreeStreamCtxt(xmlStreamCtxtPtr stream) {
+xmlFreeStreamCtxt(xmlStreamCtxt *stream) {
     xmlStreamCtxtPtr next;
 
     while (stream != NULL) {
@@ -1956,7 +1956,7 @@ stream_next:
  *    match and 0 otherwise.
  */
 int
-xmlStreamPush(xmlStreamCtxtPtr stream,
+xmlStreamPush(xmlStreamCtxt *stream,
               const xmlChar *name, const xmlChar *ns) {
     return (xmlStreamPushInternal(stream, name, ns, XML_ELEMENT_NODE));
 }
@@ -1979,7 +1979,7 @@ xmlStreamPush(xmlStreamCtxtPtr stream,
  *    match and 0 otherwise.
  */
 int
-xmlStreamPushNode(xmlStreamCtxtPtr stream,
+xmlStreamPushNode(xmlStreamCtxt *stream,
 		  const xmlChar *name, const xmlChar *ns,
 		  int nodeType)
 {
@@ -1988,24 +1988,24 @@ xmlStreamPushNode(xmlStreamCtxtPtr stream,
 }
 
 /**
-* xmlStreamPushAttr:
+ * Push new attribute data onto the stream.
  *
-* @stream: the stream context
-* @name: the current name
-* @ns: the namespace name
-*
-* Push new attribute data onto the stream. NOTE: if the call xmlPatterncompile()
-* indicated a dictionary, then strings for name and ns will be expected
-* to come from the dictionary.
-* Both @name and @ns being NULL means the / i.e. the root of the document.
-* This can also act as a reset.
-* Otherwise the function will act as if it has been given an attribute-node.
-*
-* Returns: -1 in case of error, 1 if the current state in the stream is a
-*    match and 0 otherwise.
-*/
+ * NOTE: If the call to xmlPatterncompile() indicated a dictionary,
+ * then strings for `name` and `ns` will be expected to come from
+ * the dictionary.
+ *
+ * Both `name` and `ns` being NULL means the root of the document.
+ * This can also act as a reset. Otherwise the function will act as
+ * if it has been given an attribute-node.
+ *
+ * @param stream  the stream context
+ * @param name  the current name
+ * @param ns  the namespace name
+ * @returns -1 in case of error, 1 if the current state in the stream
+ * is a match and 0 otherwise.
+ */
 int
-xmlStreamPushAttr(xmlStreamCtxtPtr stream,
+xmlStreamPushAttr(xmlStreamCtxt *stream,
 		  const xmlChar *name, const xmlChar *ns) {
     return (xmlStreamPushInternal(stream, name, ns, XML_ATTRIBUTE_NODE));
 }
@@ -2017,7 +2017,7 @@ xmlStreamPushAttr(xmlStreamCtxtPtr stream,
  * @returns -1 in case of error, 0 otherwise.
  */
 int
-xmlStreamPop(xmlStreamCtxtPtr stream) {
+xmlStreamPop(xmlStreamCtxt *stream) {
     int i, lev;
 
     if (stream == NULL)
@@ -2063,7 +2063,7 @@ xmlStreamPop(xmlStreamCtxtPtr stream) {
  *          0 otherwise. -1 on API errors.
  */
 int
-xmlStreamWantsAnyNode(xmlStreamCtxtPtr streamCtxt)
+xmlStreamWantsAnyNode(xmlStreamCtxt *streamCtxt)
 {
     if (streamCtxt == NULL)
 	return(-1);
@@ -2095,7 +2095,7 @@ xmlStreamWantsAnyNode(xmlStreamCtxtPtr streamCtxt)
  */
 int
 xmlPatternCompileSafe(const xmlChar *pattern, xmlDict *dict, int flags,
-                      const xmlChar **namespaces, xmlPatternPtr *patternOut) {
+                      const xmlChar **namespaces, xmlPattern **patternOut) {
     xmlPatternPtr ret = NULL, cur;
     xmlPatParserContextPtr ctxt = NULL;
     const xmlChar *or, *start;
@@ -2218,7 +2218,7 @@ error:
  * @param namespaces  the prefix definitions, array of [URI, prefix] or NULL
  * @returns the compiled form of the pattern or NULL in case of error
  */
-xmlPatternPtr
+xmlPattern *
 xmlPatterncompile(const xmlChar *pattern, xmlDict *dict, int flags,
                   const xmlChar **namespaces) {
     xmlPatternPtr ret;
@@ -2234,7 +2234,7 @@ xmlPatterncompile(const xmlChar *pattern, xmlDict *dict, int flags,
  * @returns 1 if it matches, 0 if it doesn't and -1 in case of failure
  */
 int
-xmlPatternMatch(xmlPatternPtr comp, xmlNodePtr node)
+xmlPatternMatch(xmlPattern *comp, xmlNode *node)
 {
     int ret = 0;
 
@@ -2257,8 +2257,8 @@ xmlPatternMatch(xmlPatternPtr comp, xmlNodePtr node)
  * @param comp  the precompiled pattern
  * @returns a pointer to the context or NULL in case of failure
  */
-xmlStreamCtxtPtr
-xmlPatternGetStreamCtxt(xmlPatternPtr comp)
+xmlStreamCtxt *
+xmlPatternGetStreamCtxt(xmlPattern *comp)
 {
     xmlStreamCtxtPtr ret = NULL, cur;
 
@@ -2294,7 +2294,7 @@ failed:
  * @returns 1 if streamable, 0 if not and -1 in case of error.
  */
 int
-xmlPatternStreamable(xmlPatternPtr comp) {
+xmlPatternStreamable(xmlPattern *comp) {
     if (comp == NULL)
         return(-1);
     while (comp != NULL) {
@@ -2313,7 +2313,7 @@ xmlPatternStreamable(xmlPatternPtr comp) {
  *         and -1 in case of error
  */
 int
-xmlPatternMaxDepth(xmlPatternPtr comp) {
+xmlPatternMaxDepth(xmlPattern *comp) {
     int ret = 0, i;
     if (comp == NULL)
         return(-1);
@@ -2338,7 +2338,7 @@ xmlPatternMaxDepth(xmlPatternPtr comp) {
  * @returns -1 in case of error otherwise the depth,
  */
 int
-xmlPatternMinDepth(xmlPatternPtr comp) {
+xmlPatternMinDepth(xmlPattern *comp) {
     int ret = 12345678;
     if (comp == NULL)
         return(-1);
@@ -2361,7 +2361,7 @@ xmlPatternMinDepth(xmlPatternPtr comp) {
  * @returns 1 if true, 0 if false and -1 in case of error
  */
 int
-xmlPatternFromRoot(xmlPatternPtr comp) {
+xmlPatternFromRoot(xmlPattern *comp) {
     if (comp == NULL)
         return(-1);
     while (comp != NULL) {

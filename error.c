@@ -321,11 +321,11 @@ xmlSetStructuredErrorFunc(void *ctx, xmlStructuredErrorFunc handler) {
  *
  * @deprecated Use xmlFormatError().
  *
- * @param input  an xmlParserInputPtr input
+ * @param input  an xmlParserInput input
  */
 
 void
-xmlParserPrintFileInfo(xmlParserInputPtr input) {
+xmlParserPrintFileInfo(struct _xmlParserInput *input) {
     if (input != NULL) {
 	if (input->filename)
 	    xmlGenericError(xmlGenericErrorContext,
@@ -341,7 +341,7 @@ xmlParserPrintFileInfo(xmlParserInputPtr input) {
  * Displays current context within the input content for
  * error reporting.
  *
- * @param input  an xmlParserInputPtr input
+ * @param input  an xmlParserInput input
  * @param channel  output callback
  * @param data  user data for output callback
  */
@@ -416,10 +416,10 @@ xmlParserPrintFileContextInternal(xmlParserInputPtr input ,
  *
  * @deprecated Use xmlFormatError().
  *
- * @param input  an xmlParserInputPtr input
+ * @param input  an xmlParserInput input
  */
 void
-xmlParserPrintFileContext(xmlParserInputPtr input) {
+xmlParserPrintFileContext(struct _xmlParserInput *input) {
    xmlParserPrintFileContextInternal(input, xmlGenericError,
                                      xmlGenericErrorContext);
 }
@@ -967,7 +967,7 @@ xmlGetLastError(void)
  * @param err  pointer to the error
  */
 void
-xmlResetError(xmlErrorPtr err)
+xmlResetError(xmlError *err)
 {
     if (err == NULL)
         return;
@@ -1007,7 +1007,7 @@ xmlResetLastError(void)
  * @returns 0 in case of success and -1 in case of error.
  */
 int
-xmlCopyError(const xmlError *from, xmlErrorPtr to) {
+xmlCopyError(const xmlError *from, xmlError *to) {
     const char *fmt = NULL;
 
     if ((from == NULL) || (to == NULL))
