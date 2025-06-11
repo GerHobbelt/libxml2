@@ -16,6 +16,10 @@
  * Set if the validation context is part of a parser context.
  */
 #define XML_VCTXT_USE_PCTXT (1u << 1)
+/**
+ * Set if the validation is enabled.
+ */
+#define XML_VCTXT_VALIDATE (1u << 2)
 
 /*
  * TODO: Rename to avoid confusion with xmlParserInputFlags
@@ -29,6 +33,7 @@
 #define XML_INPUT_USES_ENC_DECL     (1u << 4)
 #define XML_INPUT_ENCODING_ERROR    (1u << 5)
 #define XML_INPUT_PROGRESSIVE       (1u << 6)
+#define XML_INPUT_MARKUP_DECL       (1u << 7)
 
 #define PARSER_STOPPED(ctxt) ((ctxt)->disableSAX > 1)
 
@@ -54,6 +59,13 @@
 struct _xmlAttrHashBucket {
     int index;
 };
+
+#define XML_SCAN_NC         1
+#define XML_SCAN_NMTOKEN    2
+#define XML_SCAN_OLD10      4
+
+XML_HIDDEN const xmlChar *
+xmlScanName(const xmlChar *buf, size_t maxSize, int flags);
 
 XML_HIDDEN void
 xmlCtxtVErr(xmlParserCtxt *ctxt, xmlNode *node, xmlErrorDomain domain,

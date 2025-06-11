@@ -121,9 +121,9 @@ main(void) {
     xmlCopyChar(0, NULL, 0);
     xmlCopyCharMultiByte(NULL, 0);
     xmlFreeDoc(xmlCopyDoc(NULL, 0));
-    xmlCopyDocElementContent(NULL, NULL);
+    xmlFreeElementContent(xmlCopyDocElementContent(NULL, NULL));
     xmlFreeDtd(xmlCopyDtd(NULL));
-    xmlCopyElementContent(NULL);
+    xmlFreeElementContent(xmlCopyElementContent(NULL));
     xmlCopyElementTable(NULL);
     xmlFreeEntitiesTable(xmlCopyEntitiesTable(NULL));
     xmlFreeEnumeration(xmlCopyEnumeration(NULL));
@@ -379,7 +379,7 @@ main(void) {
     xmlFreeNode(xmlNewComment(NULL));
     xmlFreeDoc(xmlNewDoc(NULL));
     xmlFreeNode(xmlNewDocComment(NULL, NULL));
-    xmlNewDocElementContent(NULL, NULL, 0);
+    xmlFreeElementContent(xmlNewDocElementContent(NULL, NULL, 0));
     xmlFreeNode(xmlNewDocFragment(NULL));
     xmlFreeNode(xmlNewDocNode(NULL, NULL, NULL, NULL));
     xmlFreeNode(xmlNewDocNodeEatName(NULL, NULL, NULL, NULL));
@@ -389,7 +389,7 @@ main(void) {
     xmlFreeNode(xmlNewDocText(NULL, NULL));
     xmlFreeNode(xmlNewDocTextLen(NULL, NULL, 0));
     xmlFreeDtd(xmlNewDtd(NULL, NULL, NULL, NULL));
-    xmlNewElementContent(NULL, 0);
+    xmlFreeElementContent(xmlNewElementContent(NULL, 0));
     xmlNewEntity(NULL, NULL, 0, NULL, NULL, NULL);
     xmlFreeInputStream(xmlNewEntityInputStream(NULL, NULL));
     xmlFreeInputStream(xmlNewIOInputStream(NULL, NULL, 0));

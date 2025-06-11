@@ -89,11 +89,6 @@
   #define PATH_SEPARATOR ':'
 #endif
 
-#define HTML_BUF_SIZE 50000
-
-/* Internal parser option */
-#define XML_PARSE_UNZIP     (1 << 24)
-
 typedef enum {
     XMLLINT_RETURN_OK = 0,	    /* No error */
     XMLLINT_ERR_UNCLASS = 1,	    /* Unclassified */
@@ -338,20 +333,10 @@ parseXml(xmllintState *lint, const char *filename) {
             xmlParseChunk(ctxt, chars, res, 0);
         }
         xmlParseChunk(ctxt, chars, 0, 1);
+        doc = xmlCtxtGetDocument(ctxt);
 
-        doc = ctxt->myDoc;
-        ctxt->myDoc = NULL;
         if (f != stdin)
             fclose(f);
-
-        /*
-         * The push parser leaves non-wellformed documents
-         * in ctxt->myDoc.
-         */
-        if (!ctxt->wellFormed) {
-            xmlFreeDoc(doc);
-            doc = NULL;
-        }
 
         return(doc);
     }
@@ -410,8 +395,8 @@ parseHtml(xmllintState *lint, const char *filename) {
             htmlParseChunk(ctxt, chars, res, 0);
         }
         htmlParseChunk(ctxt, chars, 0, 1);
-        doc = ctxt->myDoc;
-        ctxt->myDoc = NULL;
+        doc = xmlCtxtGetDocument(ctxt);
+
         if (f != stdin)
             fclose(f);
 

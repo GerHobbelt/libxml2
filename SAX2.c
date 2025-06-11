@@ -39,6 +39,7 @@ xmlSAX2ErrMemory(xmlParserCtxtPtr ctxt) {
     xmlCtxtErrMemory(ctxt);
 }
 
+#ifdef LIBXML_VALID_ENABLED
 /**
  * Handle a validation error
  *
@@ -57,6 +58,7 @@ xmlErrValid(xmlParserCtxtPtr ctxt, xmlParserErrors error,
     if (ctxt != NULL)
 	ctxt->valid = 0;
 }
+#endif /* LIBXML_VALID_ENABLED */
 
 /**
  * Handle a fatal parser error, i.e. violating Well-Formedness constraints
@@ -73,6 +75,22 @@ xmlFatalErrMsg(xmlParserCtxtPtr ctxt, xmlParserErrors error,
 {
     xmlCtxtErr(ctxt, NULL, XML_FROM_PARSER, error, XML_ERR_FATAL,
                str1, str2, NULL, 0, msg, str1, str2);
+}
+
+/**
+ * Handle an xml:id error
+ *
+ * @param ctxt  an XML validation parser context
+ * @param error  the error number
+ * @param msg  the error message
+ * @param str1  extra data
+ */
+static void LIBXML_ATTR_FORMAT(3,0)
+xmlErrId(xmlParserCtxtPtr ctxt, xmlParserErrors error, const char *msg,
+         const xmlChar *str1)
+{
+    xmlCtxtErr(ctxt, NULL, XML_FROM_PARSER, error, XML_ERR_ERROR,
+               str1, NULL, NULL, 0, msg, str1);
 }
 
 /**
@@ -211,12 +229,12 @@ xmlSAX2HasExternalSubset(void *ctx)
  *
  * @param ctx  the user data (XML parser context)
  * @param name  the root element name
- * @param ExternalID  the external ID
- * @param SystemID  the SYSTEM ID (e.g. filename or URL)
+ * @param publicId  public identifier of the DTD (optional)
+ * @param systemId  system identifier (URL) of the DTD
  */
 void
 xmlSAX2InternalSubset(void *ctx, const xmlChar *name,
-	       const xmlChar *ExternalID, const xmlChar *SystemID)
+	       const xmlChar *publicId, const xmlChar *systemId)
 {
     xmlParserCtxtPtr ctxt = (xmlParserCtxtPtr) ctx;
     xmlDtdPtr dtd;
@@ -233,7 +251,7 @@ xmlSAX2InternalSubset(void *ctx, const xmlChar *name,
 	ctxt->myDoc->intSubset = NULL;
     }
     ctxt->myDoc->intSubset =
-	xmlCreateIntSubset(ctxt->myDoc, name, ExternalID, SystemID);
+	xmlCreateIntSubset(ctxt->myDoc, name, publicId, systemId);
     if (ctxt->myDoc->intSubset == NULL)
         xmlSAX2ErrMemory(ctxt);
 }
@@ -243,16 +261,16 @@ xmlSAX2InternalSubset(void *ctx, const xmlChar *name,
  *
  * @param ctx  the user data (XML parser context)
  * @param name  the root element name
- * @param ExternalID  the external ID
- * @param SystemID  the SYSTEM ID (e.g. filename or URL)
+ * @param publicId  public identifier of the DTD (optional)
+ * @param systemId  system identifier (URL) of the DTD
  */
 void
 xmlSAX2ExternalSubset(void *ctx, const xmlChar *name,
-	       const xmlChar *ExternalID, const xmlChar *SystemID)
+	       const xmlChar *publicId, const xmlChar *systemId)
 {
     xmlParserCtxtPtr ctxt = (xmlParserCtxtPtr) ctx;
     if (ctx == NULL) return;
-    if ((SystemID != NULL) &&
+    if ((systemId != NULL) &&
         ((ctxt->options & XML_PARSE_NO_XXE) == 0) &&
         (((ctxt->validate) || (ctxt->loadsubset)) &&
 	 (ctxt->wellFormed && ctxt->myDoc))) {
@@ -277,13 +295,13 @@ xmlSAX2ExternalSubset(void *ctx, const xmlChar *name,
 	 * Ask the Entity resolver to load the damn thing
 	 */
 	if ((ctxt->sax != NULL) && (ctxt->sax->resolveEntity != NULL))
-	    input = ctxt->sax->resolveEntity(ctxt->userData, ExternalID,
-	                                        SystemID);
+	    input = ctxt->sax->resolveEntity(ctxt->userData, publicId,
+	                                     systemId);
 	if (input == NULL) {
 	    return;
 	}
 
-	if (xmlNewDtd(ctxt->myDoc, name, ExternalID, SystemID) == NULL) {
+	if (xmlNewDtd(ctxt->myDoc, name, publicId, systemId) == NULL) {
             xmlSAX2ErrMemory(ctxt);
             xmlFreeInputStream(input);
             return;
@@ -311,7 +329,7 @@ xmlSAX2ExternalSubset(void *ctx, const xmlChar *name,
             goto error;
 
 	if (input->filename == NULL)
-	    input->filename = (char *) xmlCanonicPath(SystemID);
+	    input->filename = (char *) xmlCanonicPath(systemId);
 	input->line = 1;
 	input->col = 1;
 	input->base = ctxt->input->cur;
@@ -321,7 +339,7 @@ xmlSAX2ExternalSubset(void *ctx, const xmlChar *name,
 	/*
 	 * let's parse that entity knowing it's an external subset.
 	 */
-	xmlParseExternalSubset(ctxt, ExternalID, SystemID);
+	xmlParseExternalSubset(ctxt, publicId, systemId);
 
         /*
 	 * Free up the external entities
@@ -367,7 +385,7 @@ error:
  *
  * @param ctx  the user data (XML parser context)
  * @param publicId  The public ID of the entity
- * @param systemId  The system ID of the entity
+ * @param systemId  The system ID (URL) of the entity
  * @returns a parser input.
  */
 xmlParserInput *
@@ -608,13 +626,8 @@ xmlSAX2AttributeDecl(void *ctx, const xmlChar *elem, const xmlChar *fullname,
 
     if ((xmlStrEqual(fullname, BAD_CAST "xml:id")) &&
         (type != XML_ATTRIBUTE_ID)) {
-	/*
-	 * Raise the error but keep the validity flag
-	 */
-	int tmp = ctxt->valid;
-	xmlErrValid(ctxt, XML_DTD_XMLID_TYPE,
-	      "xml:id : attribute type should be ID\n", NULL, NULL);
-	ctxt->valid = tmp;
+	xmlErrId(ctxt, XML_DTD_XMLID_TYPE,
+	      "xml:id : attribute type should be ID\n", NULL);
     }
     name = xmlSplitQName4(fullname, &prefix);
     if (name == NULL)
@@ -1198,9 +1211,9 @@ xmlSAX1Attribute(xmlParserCtxtPtr ctxt, const xmlChar *fullname,
 	     * Open issue: normalization of the value.
 	     */
 	    if (xmlValidateNCName(content, 1) != 0) {
-	        xmlErrValid(ctxt, XML_DTD_XMLID_VALUE,
-		            "xml:id : attribute value %s is not an NCName\n",
-		            content, NULL);
+	        xmlErrId(ctxt, XML_DTD_XMLID_VALUE,
+		         "xml:id : attribute value %s is not an NCName\n",
+		         content);
 	    }
 	    xmlAddID(&ctxt->vctxt, ctxt->myDoc, content, ret);
 	} else {
@@ -1244,10 +1257,15 @@ process_external_subset:
 
     if (elemDecl != NULL) {
 	xmlAttributePtr attr = elemDecl->attributes;
-	/*
-	 * Check against defaulted attributes from the external subset
-	 * if the document is stamped as standalone
-	 */
+
+#ifdef LIBXML_VALID_ENABLED
+        /*
+         * Check against defaulted attributes from the external subset
+         * if the document is stamped as standalone.
+         *
+         * This should be moved to valid.c, but we don't keep track
+         * whether an attribute was defaulted.
+         */
 	if ((ctxt->myDoc->standalone == 1) &&
 	    (ctxt->myDoc->extSubset != NULL) &&
 	    (ctxt->validate)) {
@@ -1301,6 +1319,7 @@ process_external_subset:
 		attr = attr->nexth;
 	    }
 	}
+#endif
 
 	/*
 	 * Actually insert defaulted values when needed
@@ -1400,6 +1419,7 @@ xmlSAX1StartElement(void *ctx, const xmlChar *fullname, const xmlChar **atts)
 
     if ((ctx == NULL) || (fullname == NULL) || (ctxt->myDoc == NULL)) return;
 
+#ifdef LIBXML_VALID_ENABLED
     /*
      * First check on validity:
      */
@@ -1413,6 +1433,7 @@ xmlSAX1StartElement(void *ctx, const xmlChar *fullname, const xmlChar **atts)
 	  "Validation failed: no DTD found !", NULL, NULL);
 	ctxt->validate = 0;
     }
+#endif
 
     /*
      * Split the full name into a namespace prefix and the tag name
@@ -2059,9 +2080,9 @@ xmlSAX2AttributeNs(xmlParserCtxtPtr ctxt,
 	     * Open issue: normalization of the value.
 	     */
 	    if (xmlValidateNCName(content, 1) != 0) {
-	        xmlErrValid(ctxt, XML_DTD_XMLID_VALUE,
-                            "xml:id : attribute value %s is not an NCName\n",
-                            content, NULL);
+	        xmlErrId(ctxt, XML_DTD_XMLID_VALUE,
+                         "xml:id : attribute value %s is not an NCName\n",
+                         content);
 	    }
 	    xmlAddID(&ctxt->vctxt, ctxt->myDoc, content, ret);
 	} else {
@@ -2116,6 +2137,8 @@ xmlSAX2StartElementNs(void *ctx,
     int i, j;
 
     if (ctx == NULL) return;
+
+#ifdef LIBXML_VALID_ENABLED
     /*
      * First check on validity:
      */
@@ -2131,6 +2154,7 @@ xmlSAX2StartElementNs(void *ctx,
 	  "Validation failed: no DTD found !", NULL, NULL);
 	ctxt->validate = 0;
     }
+#endif /* LIBXML_VALID_ENABLED */
 
     /*
      * Take care of the rare case of an undefined namespace prefix

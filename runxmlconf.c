@@ -35,7 +35,7 @@
 static FILE *logfile = NULL;
 static int verbose = 0;
 
-#define NB_EXPECTED_ERRORS 15
+#define NB_EXPECTED_ERRORS 13
 
 
 const char *skipped_tests[] = {
