@@ -4,9 +4,12 @@ doxygen = find_program('doxygen')
 
 doxygen_docs = custom_target(
     'Doxygen documentation',
-    input: [ xml_src_files, libxml_headers ],
+    input: [
+        xml_src_files, libxml_headers,
+        files('libxml2.css', 'mainpage.md'),
+    ],
     output: [ 'html', 'xml' ],
-    command: [ doxygen, '-q', doxyfile ],
+    command: [ doxygen, '-q', files('Doxyfile') ],
     env: {
         'SOURCE_ROOT': meson.project_source_root() + '/',
         'BUILD_ROOT':  meson.project_build_root()  + '/',

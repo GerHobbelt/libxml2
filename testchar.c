@@ -156,8 +156,6 @@ static int testDocumentRangeByte2(xmlParserCtxtPtr ctxt, char *document,
 }
 
 /**
- * testDocumentRanges:
- *
  * Test the correct UTF8 character parsing in context of XML documents
  * Those are in-context injection tests checking the parser behaviour on
  * edge case values at different point in content, beginning and end of
@@ -639,8 +637,6 @@ static int testCharRangeByte4(xmlParserCtxtPtr ctxt) {
 }
 
 /**
- * testCharRanges:
- *
  * Test the correct UTF8 character parsing in isolation i.e.
  * not when parsing a full document, this is less expensive and we can
  * cover the full range of UTF-8 chars accepted by XML-1.0

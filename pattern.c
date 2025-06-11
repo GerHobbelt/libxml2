@@ -2105,7 +2105,7 @@ xmlStreamWantsAnyNode(xmlStreamCtxtPtr streamCtxt)
  *
  * Compile a pattern.
  *
- * Available since 2.13.0.
+ * @since 2.13.0
  *
  * @returns 0 on success, 1 on error, -1 if a memory allocation failed.
  */
@@ -2272,7 +2272,7 @@ xmlPatternMatch(xmlPatternPtr comp, xmlNodePtr node)
  * @param comp  the precompiled pattern
  *
  * Get a streaming context for that pattern
- * Use xmlFreeStreamCtxt to free the context.
+ * Use xmlFreeStreamCtxt() to free the context.
  *
  * @returns a pointer to the context or NULL in case of failure
  */

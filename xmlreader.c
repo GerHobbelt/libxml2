@@ -180,7 +180,6 @@ static int xmlTextReaderReadTree(xmlTextReaderPtr reader);
 static int xmlTextReaderNextTree(xmlTextReaderPtr reader);
 
 /**
- * DICT_FREE:
  * @param str  a string
  *
  * Free a string if it is not owned by the "dict" dictionary in the
@@ -4595,7 +4594,7 @@ xmlTextReaderLocatorBaseURI(xmlTextReaderLocatorPtr locator) {
  * @param f  	the callback function to call on error and warnings
  * @param arg  a user argument to pass to the callback function
  *
- * @deprecated Use xmlTextReaderSetStructuredErrorHandler.
+ * @deprecated Use xmlTextReaderSetStructuredErrorHandler().
  *
  * Register a callback function that will be called on error and warnings.
  *
@@ -4728,7 +4727,7 @@ xmlTextReaderGetErrorHandler(xmlTextReaderPtr reader,
  * Register a callback function that will be called to load external
  * resources like entities.
  *
- * Available since 2.14.0.
+ * @since 2.14.0
  */
 void
 xmlTextReaderSetResourceLoader(xmlTextReaderPtr reader,
@@ -4975,7 +4974,7 @@ xmlTextReaderSetup(xmlTextReaderPtr reader,
  * @param reader  an XML reader
  * @param maxAmpl  maximum amplification factor
  *
- * Set the maximum amplification factor. See xmlCtxtSetMaxAmplification.
+ * Set the maximum amplification factor. See xmlCtxtSetMaxAmplification().
  */
 void
 xmlTextReaderSetMaxAmplification(xmlTextReaderPtr reader, unsigned maxAmpl)
@@ -4988,7 +4987,7 @@ xmlTextReaderSetMaxAmplification(xmlTextReaderPtr reader, unsigned maxAmpl)
 /**
  * @param reader  an XML reader
  *
- * Available since 2.13.0.
+ * @since 2.13.0
  *
  * @returns the last error.
  */

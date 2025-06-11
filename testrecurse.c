@@ -246,7 +246,6 @@ static const char *current;
 static int rlen;
 
 /**
- * hugeMatch:
  * @param URI  an URI to test
  *
  * Check for a huge query
@@ -269,7 +268,6 @@ hugeMatch(const char * URI) {
 }
 
 /**
- * hugeOpen:
  * @param URI  an URI to test
  *
  * @returns a pointer to the huge query handler, in this example simply
@@ -298,7 +296,6 @@ hugeOpen(const char * URI) {
 }
 
 /**
- * hugeClose:
  * @param context  the read context
  *
  * Close the huge query handler
@@ -314,7 +311,6 @@ hugeClose(void * context) {
 #define MAX_NODES 1000
 
 /**
- * hugeRead:
  * @param context  the read context
  * @param buffer  where to store data
  * @param len  number of bytes to read
@@ -478,7 +474,6 @@ static int checkTestFile(const char *filename) {
  *									*
  ************************************************************************/
 /**
- * recursiveDetectTest:
  * @param filename  the file to parse
  * @param result  the file with expected result
  * @param err  the file with error messages: unused
@@ -526,7 +521,6 @@ recursiveDetectTest(const char *filename,
 }
 
 /**
- * notRecursiveDetectTest:
  * @param filename  the file to parse
  * @param result  the file with expected result
  * @param err  the file with error messages: unused
@@ -569,7 +563,6 @@ notRecursiveDetectTest(const char *filename,
 }
 
 /**
- * notRecursiveHugeTest:
  * @param filename  the file to parse
  * @param result  the file with expected result
  * @param err  the file with error messages: unused
@@ -671,7 +664,6 @@ notRecursiveHugeTest(const char *filename ATTRIBUTE_UNUSED,
 }
 
 /**
- * notRecursiveHugeTest:
  * @param filename  the file to parse
  * @param result  the file with expected result
  * @param err  the file with error messages: unused

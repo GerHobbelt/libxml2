@@ -878,8 +878,8 @@ error:
 #endif
 
 /**
- * @deprecated This function will be made private. Call xmlCleanupParser
- * to free global state but see the warnings there. xmlCleanupParser
+ * @deprecated This function will be made private. Call xmlCleanupParser()
+ * to free global state but see the warnings there. xmlCleanupParser()
  * should be only called once at program exit. In most cases, you don't
  * have to call cleanup functions at all.
  *
@@ -1423,7 +1423,6 @@ static const long dayInLeapYearByMonth[12] =
                 dayInYearByMonth[month - 1]) + day)
 
 /**
- * _xmlSchemaParseGYear:
  * @param dt  pointer to a date structure
  * @param str  pointer to the string to analyze
  *
@@ -1479,7 +1478,6 @@ _xmlSchemaParseGYear (xmlSchemaValDatePtr dt, const xmlChar **str) {
 }
 
 /**
- * PARSE_2_DIGITS:
  * @param num  the integer to fill in
  * @param cur  an \#xmlChar *
  * @param invalid  an integer
@@ -1498,7 +1496,6 @@ _xmlSchemaParseGYear (xmlSchemaValDatePtr dt, const xmlChar **str) {
 	cur += 2;
 
 /**
- * PARSE_FLOAT:
  * @param num  the double to fill in
  * @param cur  an \#xmlChar *
  * @param invalid  an integer
@@ -1524,7 +1521,6 @@ _xmlSchemaParseGYear (xmlSchemaValDatePtr dt, const xmlChar **str) {
 	}
 
 /**
- * _xmlSchemaParseGMonth:
  * @param dt  pointer to a date structure
  * @param str  pointer to the string to analyze
  *
@@ -1554,7 +1550,6 @@ _xmlSchemaParseGMonth (xmlSchemaValDatePtr dt, const xmlChar **str) {
 }
 
 /**
- * _xmlSchemaParseGDay:
  * @param dt  pointer to a date structure
  * @param str  pointer to the string to analyze
  *
@@ -1583,7 +1578,6 @@ _xmlSchemaParseGDay (xmlSchemaValDatePtr dt, const xmlChar **str) {
 }
 
 /**
- * _xmlSchemaParseTime:
  * @param dt  pointer to a date structure
  * @param str  pointer to the string to analyze
  *
@@ -1635,7 +1629,6 @@ _xmlSchemaParseTime (xmlSchemaValDatePtr dt, const xmlChar **str) {
 }
 
 /**
- * _xmlSchemaParseTimeZone:
  * @param dt  pointer to a date structure
  * @param str  pointer to the string to analyze
  *
@@ -1710,7 +1703,6 @@ _xmlSchemaParseTimeZone (xmlSchemaValDatePtr dt, const xmlChar **str) {
 }
 
 /**
- * _xmlSchemaBase64Decode:
  * @param ch  a character
  *
  * Converts a base64 encoded character to its base 64 value.
@@ -1735,7 +1727,6 @@ _xmlSchemaBase64Decode (const xmlChar ch) {
  ****************************************************************/
 
 /**
- * PARSE_DIGITS:
  * @param num  the integer to fill in
  * @param cur  an \#xmlChar *
  * @param num_type  an integer flag
@@ -1755,7 +1746,6 @@ _xmlSchemaBase64Decode (const xmlChar ch) {
             }
 
 /**
- * PARSE_NUM:
  * @param num  the double to fill in
  * @param cur  an \#xmlChar *
  * @param num_type  an integer flag
@@ -3922,7 +3912,6 @@ xmlSchemaCopyValue(xmlSchemaValPtr val)
 }
 
 /**
- * _xmlSchemaDateAdd:
  * @param dt  an \#xmlSchemaValPtr
  * @param dur  an \#xmlSchemaValPtr of type \#XS_DURATION
  *
@@ -4116,7 +4105,6 @@ xmlSchemaDateNormalize (xmlSchemaValPtr dt, double offset)
 }
 
 /**
- * _xmlSchemaDateCastYMToDays:
  * @param dt  an \#xmlSchemaValPtr
  *
  * Convert mon and year of `dt` to total number of days. Take the
@@ -4150,7 +4138,6 @@ _xmlSchemaDateCastYMToDays (const xmlSchemaValPtr dt)
 }
 
 /**
- * TIME_TO_NUMBER:
  * @param dt  an \#xmlSchemaValPtr
  *
  * Calculates the number of seconds in the time portion of `dt`.

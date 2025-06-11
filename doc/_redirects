@@ -1,0 +1,7 @@
+# Redirects for GitLab pages
+
+# Start page
+/libxml2/ /libxml2/html/index.html 302
+
+# Old documentation
+/libxml2/devhelp/* /libxml2/html/index.html

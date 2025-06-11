@@ -1,6 +1,6 @@
 /**
  * @file
- * *
+ *
  * @brief interfaces to the Catalog handling system
  * 
  * the catalog module implements the support for
@@ -33,15 +33,11 @@ extern "C" {
 #endif
 
 /**
- * XML_CATALOGS_NAMESPACE:
- *
  * The namespace for the XML Catalogs elements.
  */
 #define XML_CATALOGS_NAMESPACE					\
     (const xmlChar *) "urn:oasis:names:tc:entity:xmlns:xml:catalog"
 /**
- * XML_CATALOG_PI:
- *
  * The specific XML Catalog Processing Instruction name.
  */
 #define XML_CATALOG_PI						\

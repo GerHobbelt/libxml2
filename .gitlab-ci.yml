@@ -14,6 +14,7 @@ install:
     - sh .gitlab-ci/install.sh
   variables:
     CFLAGS: "-O2"
+    DOXYGEN_WARN_AS_ERROR: "FAIL_ON_WARNINGS"
   artifacts:
     expire_in: 2 hrs
     paths:
@@ -94,8 +95,8 @@ clang:msan:
     - win32-ps
   variables:
     BASE_CONFIG: "--with-http --with-lzma --with-zlib --with-python"
-    # Disabled for now, see #658
-    CONFIG: "--without-python"
+    # Python is disabled for now, see #658
+    CONFIG: "--with-docs --without-python"
     CHERE_INVOKING: "yes"
   before_script:
     - $Env:Path="C:\msys64\usr\bin;$Env:Path"
@@ -326,6 +327,7 @@ pages:
   needs: [install]
   script:
     - cp -r install/share/doc/libxml2 public
+    - cp doc/_redirects public
   artifacts:
     paths:
       - public

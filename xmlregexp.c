@@ -1261,12 +1261,11 @@ xmlRegPrintStateCompact(FILE* output, xmlRegexpPtr regexp, int state)
 }
 
 /*
- * xmlRegPrintCompact
- * `output` an output stream
- * `regexp` the regexp instance
+ * @param output  an output stream
+ * @param regexp  the regexp instance
  * 
  * Print the compact representation of a regexp, in the same fashion as the
- * public xmlRegexpPrint function.
+ * public xmlRegexpPrint() function.
  */
 static void
 xmlRegPrintCompact(FILE* output, xmlRegexpPtr regexp)
@@ -2320,7 +2319,7 @@ xmlFACompareRanges(xmlRegRangePtr range1, xmlRegRangePtr range2) {
  * @param type2  an atom type
  *
  * Compares two atoms type to check whether they intersect in some ways,
- * this is used by xmlFACompareAtoms only
+ * this is used by xmlFACompareAtoms() only
  *
  * @returns 1 if they may intersect and 0 otherwise
  */
@@ -2565,7 +2564,7 @@ xmlFAEqualAtoms(xmlRegAtomPtr atom1, xmlRegAtomPtr atom2, int deep) {
  * @param deep  if not set only compare string pointers
  *
  * Compares two atoms to check whether they intersect in some ways,
- * this is used by xmlFAComputesDeterminism and xmlFARecurseDeterminism only
+ * this is used by xmlFAComputesDeterminism() and xmlFARecurseDeterminism() only
  *
  * @returns 1 if yes and 0 otherwise
  */

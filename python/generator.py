@@ -603,6 +603,7 @@ deprecated_funcs = {
     'xmlCleanupCharEncodingHandlers': True,
     'xmlCleanupEncodingAliases': True,
     'xmlCleanupGlobals': True,
+    'xmlClearParserCtxt': True,
     'xmlCopyChar': True,
     'xmlCopyCharMultiByte': True,
     'xmlCreateEntityParserCtxt': True,
@@ -740,6 +741,8 @@ def skip_function(name):
     if name == "xmlFreeValidCtxt":
         return 1
     if name == "xmlSchemaFreeValidCtxt":
+        return 1
+    if name[0:5] == "__xml":
         return 1
 
 #

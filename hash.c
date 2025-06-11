@@ -606,7 +606,7 @@ xmlHashDefaultDeallocator(void *entry, const xmlChar *key ATTRIBUTE_UNUSED) {
  * can't be distinguished from out-of-memory errors, so this function
  * should be used with care.
  *
- * Available since 2.13.0.
+ * @since 2.13.0
  *
  * @returns 1 on success, 0 if an entry exists and -1 in case of error.
  */
@@ -623,9 +623,9 @@ xmlHashAdd(xmlHashTablePtr hash, const xmlChar *key, void *payload) {
  *
  * Add a hash table entry with two strings as key.
  *
- * See xmlHashAdd.
+ * See xmlHashAdd().
  *
- * Available since 2.13.0.
+ * @since 2.13.0
  *
  * @returns 1 on success, 0 if an entry exists and -1 in case of error.
  */
@@ -644,9 +644,9 @@ xmlHashAdd2(xmlHashTablePtr hash, const xmlChar *key,
  *
  * Add a hash table entry with three strings as key.
  *
- * See xmlHashAdd.
+ * See xmlHashAdd().
  *
- * Available since 2.13.0.
+ * @since 2.13.0
  *
  * @returns 1 on success, 0 if an entry exists and -1 in case of error.
  */
@@ -668,7 +668,7 @@ xmlHashAdd3(xmlHashTablePtr hash, const xmlChar *key,
  * should be used with care.
  *
  * NOTE: This function doesn't allow to distinguish malloc failures from
- *       existing entries. Use xmlHashAdd instead.
+ *       existing entries. Use xmlHashAdd() instead.
  *
  * @returns 0 on success and -1 in case of error.
  */
@@ -692,7 +692,7 @@ xmlHashAddEntry(xmlHashTablePtr hash, const xmlChar *key, void *payload) {
  *
  * Add a hash table entry with two strings as key.
  *
- * See xmlHashAddEntry.
+ * See xmlHashAddEntry().
  *
  * @returns 0 on success and -1 in case of error.
  */
@@ -718,7 +718,7 @@ xmlHashAddEntry2(xmlHashTablePtr hash, const xmlChar *key,
  *
  * Add a hash table entry with three strings as key.
  *
- * See xmlHashAddEntry.
+ * See xmlHashAddEntry().
  *
  * @returns 0 on success and -1 in case of error.
  */
@@ -768,7 +768,7 @@ xmlHashUpdateEntry(xmlHashTablePtr hash, const xmlChar *key,
  *
  * Add a hash table entry with two strings as key.
  *
- * See xmlHashUpdateEntry.
+ * See xmlHashUpdateEntry().
  *
  * @returns 0 on success and -1 in case of error.
  */
@@ -795,7 +795,7 @@ xmlHashUpdateEntry2(xmlHashTablePtr hash, const xmlChar *key,
  *
  * Add a hash table entry with three strings as key.
  *
- * See xmlHashUpdateEntry.
+ * See xmlHashUpdateEntry().
  *
  * @returns 0 on success and -1 in case of error.
  */
@@ -1120,7 +1120,7 @@ xmlHashScanFull3(xmlHashTablePtr hash, const xmlChar *key,
  *
  * Copy the hash table using `copyFunc` to copy payloads.
  *
- * Available since 2.13.0.
+ * @since 2.13.0
  *
  * @returns the new table or NULL if a memory allocation failed.
  */
@@ -1218,7 +1218,7 @@ int xmlHashRemoveEntry(xmlHashTablePtr hash, const xmlChar *key,
  *
  * Remove an entry with two strings as key.
  *
- * See xmlHashRemoveEntry.
+ * See xmlHashRemoveEntry().
  *
  * @returns 0 on success and -1 in case of error.
  */
@@ -1237,7 +1237,7 @@ xmlHashRemoveEntry2(xmlHashTablePtr hash, const xmlChar *key,
  *
  * Remove an entry with three strings as key.
  *
- * See xmlHashRemoveEntry.
+ * See xmlHashRemoveEntry().
  *
  * @returns 0 on success and -1 in case of error.
  */

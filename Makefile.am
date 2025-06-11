@@ -2,7 +2,7 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = include . example xstc
+SUBDIRS = include . example
 if WITH_DOXYGEN
 SUBDIRS += doc
 endif
@@ -13,9 +13,9 @@ if WITH_GLOB
 SUBDIRS += fuzz
 endif
 
-DIST_SUBDIRS = include . doc example fuzz python xstc
+DIST_SUBDIRS = include . doc example fuzz python
 
-AM_CPPFLAGS = -I$(top_builddir)/include -I$(srcdir)/include -DXML_SYSCONFDIR='"$(sysconfdir)"'
+AM_CPPFLAGS = -I$(builddir)/include -I$(srcdir)/include
 
 check_PROGRAMS = \
 	runsuite \
@@ -207,8 +207,7 @@ EXTRA_DIST = Copyright libxml2-config.cmake.in autogen.sh \
 	     timsort.h \
 	     README.zOS README.md \
 	     CMakeLists.txt config.h.cmake.in libxml2-config.cmake.cmake.in \
-	     meson.build meson_options.txt xml2-config-meson \
-	     Doxyfile
+	     meson.build meson_options.txt xml2-config-meson
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libxml-2.0.pc

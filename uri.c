@@ -22,8 +22,6 @@
 #include "private/memory.h"
 
 /**
- * MAX_URI_LENGTH:
- *
  * The definition of the URI regexp in the above RFC has no size limit
  * In practice they are usually relatively short except for the
  * data URI scheme as defined in RFC 2397. Even for data URI the usual
@@ -973,7 +971,7 @@ xmlParse3986URIReference(xmlURIPtr uri, const char *str) {
  *
  * URI-reference = [ absoluteURI | relativeURI ] [ "\#" fragment ]
  *
- * Available since 2.13.0.
+ * @since 2.13.0
  *
  * @returns 0 on success, an error code (typically 1) if the URI is invalid
  * or -1 if a memory allocation failed.
@@ -1733,7 +1731,7 @@ xmlURIEscapeStr(const xmlChar *str, const xmlChar *list) {
  * @returns an copy of the string, but escaped
  *
  * 25 May 2001
- * Uses xmlParseURI and xmlURIEscapeStr to try to escape correctly
+ * Uses xmlParseURI() and xmlURIEscapeStr() to try to escape correctly
  * according to RFC2396.
  *   - Carl Douglas
  */
@@ -1993,7 +1991,7 @@ err_memory:
  *
  * 5.2. Resolving Relative References to Absolute Form
  *
- * Available since 2.13.0.
+ * @since 2.13.0
  *
  * @returns 0 on success, -1 if a memory allocation failed or an error
  * code if URI or base are invalid.
@@ -2514,7 +2512,7 @@ done:
  *     img/pic1.gif                     ../img/pic1.gif
  *     http://site1.com/docs/pic1.gif   http://site1.com/docs/pic1.gif
  *
- * Available since 2.13.0.
+ * @since 2.13.0
  *
  * @returns 0 on success, -1 if a memory allocation failed or an error
  * code if URI or base are invalid.
@@ -2740,7 +2738,7 @@ done:
  * @param URI  the URI reference under consideration
  * @param base  the base value
  *
- * See xmlBuildRelativeURISafe.
+ * See xmlBuildRelativeURISafe().
  *
  * @returns a new URI string (to be freed by the caller) or NULL in case
  * error.

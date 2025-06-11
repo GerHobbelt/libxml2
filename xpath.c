@@ -64,8 +64,6 @@
 #endif
 
 /**
- * WITH_TIM_SORT:
- *
  * Use the Timsort algorithm provided in timsort.h to sort
  * nodeset as this is a great improvement over the old Shell sort
  * used in xmlXPathNodeSetSort()
@@ -73,7 +71,6 @@
 #define WITH_TIM_SORT
 
 /*
-* XP_OPTIMIZED_NON_ELEM_COMPARISON:
 * If defined, this will use xmlXPathCmpNodesExt() instead of
 * xmlXPathCmpNodes(). The new function is optimized comparison of
 * non-element nodes; actually it will speed up comparison only if
@@ -84,14 +81,12 @@
 #define XP_OPTIMIZED_NON_ELEM_COMPARISON
 
 /*
-* XP_OPTIMIZED_FILTER_FIRST:
 * If defined, this will optimize expressions like "key('foo', 'val')[b][1]"
 * in a way, that it stop evaluation at the first node.
 */
 #define XP_OPTIMIZED_FILTER_FIRST
 
 /*
- * XPATH_MAX_STEPS:
  * when compiling an XPath expression we arbitrary limit the maximum
  * number of step operation in the compiled expression. 1000000 is
  * an insanely large value which should never be reached under normal
@@ -100,7 +95,6 @@
 #define XPATH_MAX_STEPS 1000000
 
 /*
- * XPATH_MAX_STACK_DEPTH:
  * when evaluating an XPath expression we arbitrary limit the maximum
  * number of object allowed to be pushed on the stack. 1000000 is
  * an insanely large value which should never be reached under normal
@@ -109,7 +103,6 @@
 #define XPATH_MAX_STACK_DEPTH 1000000
 
 /*
- * XPATH_MAX_NODESET_LENGTH:
  * when evaluating an XPath expression nodesets are created and we
  * arbitrary limit the maximum length of those node set. 10000000 is
  * an insanely large value which should never be reached under normal
@@ -119,7 +112,6 @@
 #define XPATH_MAX_NODESET_LENGTH 10000000
 
 /*
- * XPATH_MAX_RECRUSION_DEPTH:
  * Maximum amount of nested functions calls when parsing or evaluating
  * expressions
  */
@@ -194,7 +186,7 @@ double xmlXPathNINF = 0.0;
 #endif
 
 /**
- * @deprecated Alias for xmlInitParser.
+ * @deprecated Alias for xmlInitParser().
  */
 void
 xmlXPathInit(void) {
@@ -628,7 +620,6 @@ turtle_comparison:
 #define SORT_NAME libxml_domnode
 #define SORT_TYPE xmlNodePtr
 /**
- * wrap_cmp:
  * @param x  a node
  * @param y  another node
  *
@@ -663,7 +654,6 @@ int wrap_cmp( xmlNodePtr x, xmlNodePtr y );
  ************************************************************************/
 
 /**
- * XP_ERRORNULL:
  * @param X  the error code
  *
  * Macro to raise an XPath error and return NULL.
@@ -2079,7 +2069,7 @@ xmlXPathValuePush(xmlXPathParserContextPtr ctxt, xmlXPathObjectPtr value)
  * @param ctxt  an XPath parser context
  *
  * Pops a boolean from the stack, handling conversion if needed.
- * Check error with \#xmlXPathCheckError.
+ * Check error with xmlXPathCheckError.
  *
  * @returns the boolean
  */
@@ -2105,7 +2095,7 @@ xmlXPathPopBoolean (xmlXPathParserContextPtr ctxt) {
  * @param ctxt  an XPath parser context
  *
  * Pops a number from the stack, handling conversion if needed.
- * Check error with \#xmlXPathCheckError.
+ * Check error with xmlXPathCheckError.
  *
  * @returns the number
  */
@@ -2131,7 +2121,7 @@ xmlXPathPopNumber (xmlXPathParserContextPtr ctxt) {
  * @param ctxt  an XPath parser context
  *
  * Pops a string from the stack, handling conversion if needed.
- * Check error with \#xmlXPathCheckError.
+ * Check error with xmlXPathCheckError.
  *
  * @returns the string
  */
@@ -2156,7 +2146,7 @@ xmlXPathPopString (xmlXPathParserContextPtr ctxt) {
  * @param ctxt  an XPath parser context
  *
  * Pops a node-set from the stack, handling conversion if needed.
- * Check error with \#xmlXPathCheckError.
+ * Check error with xmlXPathCheckError.
  *
  * @returns the node-set
  */
@@ -2185,7 +2175,7 @@ xmlXPathPopNodeSet (xmlXPathParserContextPtr ctxt) {
  * @param ctxt  an XPath parser context
  *
  * Pops an external object from the stack, handling conversion if needed.
- * Check error with \#xmlXPathCheckError.
+ * Check error with xmlXPathCheckError.
  *
  * @returns the object
  */
@@ -3483,7 +3473,7 @@ error:
  *
  * Implements the EXSLT - Sets distinct() function:
  *    node-set set:distinct (node-set)
- * `nodes` is sorted by document order, then \#exslSetsDistinctSorted
+ * `nodes` is sorted by document order, then exslSetsDistinctSorted
  * is called with the sorted node-set
  *
  * @returns a subset of the nodes contained in `nodes`, or `nodes` if
@@ -3572,7 +3562,7 @@ xmlXPathNodeLeadingSorted (xmlNodeSetPtr nodes, xmlNodePtr node) {
  *
  * Implements the EXSLT - Sets leading() function:
  *    node-set set:leading (node-set, node-set)
- * `nodes` is sorted by document order, then \#exslSetsNodeLeadingSorted
+ * `nodes` is sorted by document order, then exslSetsNodeLeadingSorted
  * is called.
  *
  * @returns the nodes in `nodes` that precede `node` in document order,
@@ -3611,7 +3601,7 @@ xmlXPathLeadingSorted (xmlNodeSetPtr nodes1, xmlNodeSetPtr nodes2) {
  * Implements the EXSLT - Sets leading() function:
  *    node-set set:leading (node-set, node-set)
  * `nodes1` and `nodes2` are sorted by document order, then
- * \#exslSetsLeadingSorted is called.
+ * exslSetsLeadingSorted is called.
  *
  * @returns the nodes in `nodes1` that precede the first node in `nodes2`
  *         in document order, `nodes1` if `nodes2` is NULL or empty or
@@ -3676,7 +3666,7 @@ xmlXPathNodeTrailingSorted (xmlNodeSetPtr nodes, xmlNodePtr node) {
  *
  * Implements the EXSLT - Sets trailing() function:
  *    node-set set:trailing (node-set, node-set)
- * `nodes` is sorted by document order, then \#xmlXPathNodeTrailingSorted
+ * `nodes` is sorted by document order, then xmlXPathNodeTrailingSorted()
  * is called.
  *
  * @returns the nodes in `nodes` that follow `node` in document order,
@@ -3715,7 +3705,7 @@ xmlXPathTrailingSorted (xmlNodeSetPtr nodes1, xmlNodeSetPtr nodes2) {
  * Implements the EXSLT - Sets trailing() function:
  *    node-set set:trailing (node-set, node-set)
  * `nodes1` and `nodes2` are sorted by document order, then
- * \#xmlXPathTrailingSorted is called.
+ * xmlXPathTrailingSorted() is called.
  *
  * @returns the nodes in `nodes1` that follow the first node in `nodes2`
  *         in document order, `nodes1` if `nodes2` is NULL or empty or
@@ -4893,7 +4883,7 @@ xmlXPathFreeContext(xmlXPathContextPtr ctxt) {
  * Register a callback function that will be called on errors and
  * warnings. If handler is NULL, the error handler will be deactivated.
  *
- * Available since 2.13.0.
+ * @since 2.13.0
  */
 void
 xmlXPathSetErrorHandler(xmlXPathContextPtr ctxt,
@@ -8808,7 +8798,7 @@ xmlXPathParseLiteral(xmlXPathParserContextPtr ctxt) {
  *  [29]   Literal ::=   '"' [^"]* '"'
  *                    | "'" [^']* "'"
  *
- * TODO: xmlXPathCompLiteral memory allocation could be improved.
+ * TODO: xmlXPathCompLiteral() memory allocation could be improved.
  */
 static void
 xmlXPathCompLiteral(xmlXPathParserContextPtr ctxt) {

@@ -768,7 +768,7 @@ error:
  * @deprecated Internal function, don't use.
  *
  * Allocate an element content structure.
- * Deprecated in favor of xmlNewDocElementContent
+ * Deprecated in favor of xmlNewDocElementContent()
  *
  * @returns NULL if not, otherwise the new element content structure
  */
@@ -878,7 +878,7 @@ error:
  * @deprecated Internal function, don't use.
  *
  * Build a copy of an element content description.
- * Deprecated, use xmlCopyDocElementContent instead
+ * Deprecated, use xmlCopyDocElementContent() instead
  *
  * @returns the new xmlElementContentPtr or NULL in case of error.
  */
@@ -960,7 +960,7 @@ xmlFreeDocElementContent(xmlDocPtr doc, xmlElementContentPtr cur) {
  * @deprecated Internal function, don't use.
  *
  * Free an element content structure. The whole subtree is removed.
- * Deprecated, use xmlFreeDocElementContent instead
+ * Deprecated, use xmlFreeDocElementContent() instead
  */
 void
 xmlFreeElementContent(xmlElementContentPtr cur) {
@@ -975,7 +975,7 @@ xmlFreeElementContent(xmlElementContentPtr cur) {
  *
  * @deprecated Internal function, don't use.
  *
- * Deprecated, unsafe, use xmlSnprintfElementContent
+ * Deprecated, unsafe, use xmlSnprintfElementContent()
  */
 void
 xmlSprintfElementContent(char *buf ATTRIBUTE_UNUSED,
@@ -1403,7 +1403,7 @@ xmlCopyElementTable(xmlElementTablePtr table) {
  * @param buf  the XML buffer output
  * @param elem  An element table
  *
- * @deprecated Use xmlSaveTree.
+ * @deprecated Use xmlSaveTree().
  *
  * This will dump the content of the element declaration as an XML
  * DTD definition
@@ -1948,7 +1948,7 @@ xmlCopyAttributeTable(xmlAttributeTablePtr table) {
  * @param buf  the XML buffer output
  * @param attr  An attribute declaration
  *
- * @deprecated Use xmlSaveTree.
+ * @deprecated Use xmlSaveTree().
  *
  * This will dump the content of the attribute declaration as an XML
  * DTD definition
@@ -2235,7 +2235,6 @@ xmlDumpNotationTable(xmlBufferPtr buf, xmlNotationTablePtr table) {
  *									*
  ************************************************************************/
 /**
- * DICT_FREE:
  * @param str  a string
  *
  * Free a string if it is not owned by the "dict" dictionary in the
@@ -2368,7 +2367,7 @@ xmlAddIDInternal(xmlAttrPtr attr, const xmlChar *value, xmlIDPtr *idPtr) {
  *
  * Register a new id declaration
  *
- * Available since 2.13.0.
+ * @since 2.13.0
  *
  * @returns 1 on success, 0 if the ID already exists, -1 if a memory
  * allocation fails.
@@ -2639,7 +2638,6 @@ xmlWalkRemoveRef(const void *data, void *user)
 }
 
 /**
- * xmlDummyCompare
  * @param data0  Value supplied by the user
  * @param data1  Value supplied by the user
  *
@@ -2658,7 +2656,7 @@ xmlDummyCompare(const void *data0 ATTRIBUTE_UNUSED,
  * @param value  the value name
  * @param attr  the attribute holding the Ref
  *
- * @deprecated, do not use. This function will be removed from the public API.
+ * @deprecated do not use. This function will be removed from the public API.
  *
  * Register a new ref declaration
  *
@@ -2755,7 +2753,7 @@ failed:
 /**
  * @param table  An ref table
  *
- * @deprecated, do not use. This function will be removed from the public API.
+ * @deprecated do not use. This function will be removed from the public API.
  *
  * Deallocate the memory used by an Ref hash table.
  */
@@ -2769,7 +2767,7 @@ xmlFreeRefTable(xmlRefTablePtr table) {
  * @param elem  the element carrying the attribute
  * @param attr  the attribute
  *
- * @deprecated, do not use. This function will be removed from the public API.
+ * @deprecated do not use. This function will be removed from the public API.
  *
  * Determine whether an attribute is of type Ref. In case we have DTD(s)
  * then this is simple, otherwise we use an heuristic: name Ref (upper
@@ -2815,7 +2813,7 @@ xmlIsRef(xmlDocPtr doc, xmlNodePtr elem, xmlAttrPtr attr) {
  * @param doc  the document
  * @param attr  the attribute
  *
- * @deprecated, do not use. This function will be removed from the public API.
+ * @deprecated do not use. This function will be removed from the public API.
  *
  * Remove the given attribute from the Ref table maintained internally.
  *
@@ -2872,7 +2870,7 @@ xmlRemoveRef(xmlDocPtr doc, xmlAttrPtr attr) {
  * @param doc  pointer to the document
  * @param ID  the ID value
  *
- * @deprecated, do not use. This function will be removed from the public API.
+ * @deprecated do not use. This function will be removed from the public API.
  *
  * Find the set of references for the supplied ID.
  *
@@ -6424,9 +6422,9 @@ xmlValidateDtd(xmlValidCtxtPtr ctxt, xmlDocPtr doc, xmlDtdPtr dtd) {
  *
  * Validate a document against a DTD.
  *
- * Like xmlValidateDtd but uses the parser context's error handler.
+ * Like xmlValidateDtd() but uses the parser context's error handler.
  *
- * Availabe since 2.14.0.
+ * @since 2.14.0
  *
  * @returns 1 if valid or 0 otherwise.
  */
@@ -6696,7 +6694,7 @@ xmlValidateDocumentInternal(xmlParserCtxtPtr ctxt, xmlValidCtxtPtr vctxt,
  * @param doc  a document instance
  *
  * @deprecated This function can't report malloc or other failures.
- * Use xmlCtxtValidateDocument.
+ * Use xmlCtxtValidateDocument().
  *
  * Try to validate the document instance
  *
@@ -6717,12 +6715,12 @@ xmlValidateDocument(xmlValidCtxtPtr vctxt, xmlDocPtr doc) {
  *
  * Validate a document.
  *
- * Like xmlValidateDocument but uses the parser context's error handler.
+ * Like xmlValidateDocument() but uses the parser context's error handler.
  *
  * Option XML_PARSE_DTDLOAD should be enabled in the parser context
  * to make external entities work.
  *
- * Availabe since 2.14.0.
+ * @since 2.14.0
  *
  * @returns 1 if valid or 0 otherwise.
  */

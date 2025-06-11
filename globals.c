@@ -369,7 +369,7 @@ xmlInitGlobalState(xmlGlobalStatePtr gs);
  ************************************************************************/
 
 /**
- * @deprecated Alias for xmlInitParser.
+ * @deprecated Alias for xmlInitParser().
  */
 void xmlInitGlobals(void) {
     xmlInitParser();
@@ -394,8 +394,8 @@ void xmlInitGlobalsInternal(void) {
 }
 
 /**
- * @deprecated This function is a no-op. Call xmlCleanupParser
- * to free global state but see the warnings there. xmlCleanupParser
+ * @deprecated This function is a no-op. Call xmlCleanupParser()
+ * to free global state but see the warnings there. xmlCleanupParser()
  * should be only called once at program exit. In most cases, you don't
  * have call cleanup functions at all.
  */
@@ -771,7 +771,7 @@ xmlGetLocalRngState(void) {
  * allocation signals a typically fatal and irrecoverable out-of-memory
  * situation. Don't call any library functions in this case.
  *
- * Available since 2.12.0.
+ * @since 2.12.0
  */
 int
 xmlCheckThreadLocalStorage(void) {
@@ -793,7 +793,6 @@ xmlGetLastErrorInternal(void) {
 /** @cond IGNORE */
 
 /**
- * DllMain:
  * @param hinstDLL  handle to DLL instance
  * @param fdwReason  Reason code for entry
  * @param lpvReserved  generic pointer (depends upon reason code)

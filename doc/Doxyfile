@@ -1,6 +1,7 @@
 PROJECT_NAME           = libxml2
 OUTPUT_DIRECTORY       = $(BUILD_ROOT)doc
-STRIP_FROM_PATH        = $(SOURCE_ROOT)include/libxml
+STRIP_FROM_PATH        = $(SOURCE_ROOT)include/libxml \
+                         $(BUILD_ROOT)include/libxml
 OPTIMIZE_OUTPUT_FOR_C  = YES
 EXTRACT_LOCAL_CLASSES  = NO
 HIDE_UNDOC_MEMBERS     = YES
@@ -8,7 +9,8 @@ HIDE_UNDOC_CLASSES     = YES
 HIDE_SCOPE_NAMES       = YES
 SHOW_INCLUDE_FILES     = NO
 WARN_NO_PARAMDOC       = YES
-INPUT                  = $(SOURCE_ROOT)README.md \
+WARN_AS_ERROR          = $(DOXYGEN_WARN_AS_ERROR)
+INPUT                  = $(SOURCE_ROOT)doc/mainpage.md \
                          $(SOURCE_ROOT)include/libxml/c14n.h \
                          $(SOURCE_ROOT)include/libxml/catalog.h \
                          $(SOURCE_ROOT)include/libxml/chvalid.h \
@@ -45,6 +47,7 @@ INPUT                  = $(SOURCE_ROOT)README.md \
                          $(SOURCE_ROOT)include/libxml/xmlschemastypes.h \
                          $(SOURCE_ROOT)include/libxml/xmlstring.h \
                          $(SOURCE_ROOT)include/libxml/xmlunicode.h \
+                         $(BUILD_ROOT)include/libxml/xmlversion.h \
                          $(SOURCE_ROOT)include/libxml/xmlwriter.h \
                          $(SOURCE_ROOT)include/libxml/xpath.h \
                          $(SOURCE_ROOT)include/libxml/xpathInternals.h \
@@ -88,7 +91,7 @@ INPUT                  = $(SOURCE_ROOT)README.md \
                          $(SOURCE_ROOT)xmlwriter.c \
                          $(SOURCE_ROOT)xpath.c \
                          $(SOURCE_ROOT)xpointer.c
-USE_MDFILE_AS_MAINPAGE = $(SOURCE_ROOT)README.md
+USE_MDFILE_AS_MAINPAGE = $(SOURCE_ROOT)doc/mainpage.md
 EXCLUDE_SYMLINKS       = YES
 VERBATIM_HEADERS       = NO
 DISABLE_INDEX          = NO
