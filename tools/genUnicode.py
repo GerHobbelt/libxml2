@@ -210,7 +210,6 @@ output.write(
  *
  * Generation date: %s
  * Sources: %s
- * Daniel Veillard <veillard@redhat.com>
  */
 
 #define IN_LIBXML
@@ -284,7 +283,7 @@ output.write(
 """/**
  * xmlUnicodeLookup:
  * @tptr: pointer to the name table
- * @name: name to be found
+ * @tname: name to be found
  *
  * binary table lookup for user-supplied name
  *

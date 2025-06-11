@@ -3,7 +3,7 @@
  *
  * See Copyright for the status of this software.
  *
- * Daniel Veillard <veillard@redhat.com>
+ * Author: Daniel Veillard
  */
 
 /**
@@ -239,8 +239,6 @@ struct _xmlRelaxNGParserCtxt {
 #define FLAGS_NOERROR		8
 
 /**
- * xmlRelaxNGInterleaveGroup:
- *
  * A RelaxNGs partition set associated to lists of definitions
  */
 typedef struct _xmlRelaxNGInterleaveGroup xmlRelaxNGInterleaveGroup;
@@ -255,8 +253,6 @@ struct _xmlRelaxNGInterleaveGroup {
 #define IS_NEEDCHECK		2
 
 /**
- * xmlRelaxNGPartitions:
- *
  * A RelaxNGs partition associated to an interleave group
  */
 typedef struct _xmlRelaxNGPartition xmlRelaxNGPartition;
@@ -270,8 +266,6 @@ struct _xmlRelaxNGPartition {
 };
 
 /**
- * xmlRelaxNGValidState:
- *
  * A RelaxNGs validation state
  */
 #define MAX_ATTR 20
@@ -289,8 +283,6 @@ struct _xmlRelaxNGValidState {
 };
 
 /**
- * xmlRelaxNGStates:
- *
  * A RelaxNGs container for validation state
  */
 typedef struct _xmlRelaxNGStates xmlRelaxNGStates;
@@ -304,8 +296,6 @@ struct _xmlRelaxNGStates {
 #define ERROR_IS_DUP	1
 
 /**
- * xmlRelaxNGValidError:
- *
  * A RelaxNGs validation error
  */
 typedef struct _xmlRelaxNGValidError xmlRelaxNGValidError;
@@ -320,8 +310,6 @@ struct _xmlRelaxNGValidError {
 };
 
 /**
- * xmlRelaxNGValidCtxt:
- *
  * A RelaxNGs validation context
  */
 
@@ -371,8 +359,6 @@ struct _xmlRelaxNGValidCtxt {
 };
 
 /**
- * xmlRelaxNGInclude:
- *
  * Structure associated to a RelaxNGs document element
  */
 struct _xmlRelaxNGInclude {
@@ -384,8 +370,6 @@ struct _xmlRelaxNGInclude {
 };
 
 /**
- * xmlRelaxNGDocument:
- *
  * Structure associated to a RelaxNGs document element
  */
 struct _xmlRelaxNGDocument {
@@ -405,9 +389,7 @@ struct _xmlRelaxNGDocument {
  ************************************************************************/
 
 /**
- * xmlRngPErrMemory:
- * @ctxt:  an Relax-NG parser context
- * @extra:  extra information
+ * @param ctxt  an Relax-NG parser context
  *
  * Handle a redefinition of attribute error
  */
@@ -431,9 +413,7 @@ xmlRngPErrMemory(xmlRelaxNGParserCtxtPtr ctxt)
 }
 
 /**
- * xmlRngVErrMemory:
- * @ctxt:  a Relax-NG validation context
- * @extra:  extra information
+ * @param ctxt  a Relax-NG validation context
  *
  * Handle a redefinition of attribute error
  */
@@ -457,13 +437,12 @@ xmlRngVErrMemory(xmlRelaxNGValidCtxtPtr ctxt)
 }
 
 /**
- * xmlRngPErr:
- * @ctxt:  a Relax-NG parser context
- * @node:  the node raising the error
- * @error:  the error code
- * @msg:  message
- * @str1:  extra info
- * @str2:  extra info
+ * @param ctxt  a Relax-NG parser context
+ * @param node  the node raising the error
+ * @param error  the error code
+ * @param msg  message
+ * @param str1  extra info
+ * @param str2  extra info
  *
  * Handle a Relax NG Parsing error
  */
@@ -499,13 +478,12 @@ xmlRngPErr(xmlRelaxNGParserCtxtPtr ctxt, xmlNodePtr node, int error,
 }
 
 /**
- * xmlRngVErr:
- * @ctxt:  a Relax-NG validation context
- * @node:  the node raising the error
- * @error:  the error code
- * @msg:  message
- * @str1:  extra info
- * @str2:  extra info
+ * @param ctxt  a Relax-NG validation context
+ * @param node  the node raising the error
+ * @param error  the error code
+ * @param msg  message
+ * @param str1  extra info
+ * @param str2  extra info
  *
  * Handle a Relax NG Validation error
  */
@@ -547,44 +525,40 @@ xmlRngVErr(xmlRelaxNGValidCtxtPtr ctxt, xmlNodePtr node, int error,
  ************************************************************************/
 
 /**
- * xmlRelaxNGTypeHave:
- * @data:  data needed for the library
- * @type:  the type name
- * @value:  the value to check
+ * @param data  data needed for the library
+ * @param type  the type name
  *
  * Function provided by a type library to check if a type is exported
  *
- * Returns 1 if yes, 0 if no and -1 in case of error.
+ * @returns 1 if yes, 0 if no and -1 in case of error.
  */
 typedef int (*xmlRelaxNGTypeHave) (void *data, const xmlChar * type);
 
 /**
- * xmlRelaxNGTypeCheck:
- * @data:  data needed for the library
- * @type:  the type name
- * @value:  the value to check
- * @result:  place to store the result if needed
+ * @param data  data needed for the library
+ * @param type  the type name
+ * @param value  the value to check
+ * @param result  place to store the result if needed
  *
  * Function provided by a type library to check if a value match a type
  *
- * Returns 1 if yes, 0 if no and -1 in case of error.
+ * @returns 1 if yes, 0 if no and -1 in case of error.
  */
 typedef int (*xmlRelaxNGTypeCheck) (void *data, const xmlChar * type,
                                     const xmlChar * value, void **result,
                                     xmlNodePtr node);
 
 /**
- * xmlRelaxNGFacetCheck:
- * @data:  data needed for the library
- * @type:  the type name
- * @facet:  the facet name
- * @val:  the facet value
- * @strval:  the string value
- * @value:  the value to check
+ * @param data  data needed for the library
+ * @param type  the type name
+ * @param facet  the facet name
+ * @param val  the facet value
+ * @param strval  the string value
+ * @param value  the value to check
  *
  * Function provided by a type library to check a value facet
  *
- * Returns 1 if yes, 0 if no and -1 in case of error.
+ * @returns 1 if yes, 0 if no and -1 in case of error.
  */
 typedef int (*xmlRelaxNGFacetCheck) (void *data, const xmlChar * type,
                                      const xmlChar * facet,
@@ -592,25 +566,23 @@ typedef int (*xmlRelaxNGFacetCheck) (void *data, const xmlChar * type,
                                      const xmlChar * strval, void *value);
 
 /**
- * xmlRelaxNGTypeFree:
- * @data:  data needed for the library
- * @result:  the value to free
+ * @param data  data needed for the library
+ * @param result  the value to free
  *
  * Function provided by a type library to free a returned result
  */
 typedef void (*xmlRelaxNGTypeFree) (void *data, void *result);
 
 /**
- * xmlRelaxNGTypeCompare:
- * @data:  data needed for the library
- * @type:  the type name
- * @value1:  the first value
- * @value2:  the second value
+ * @param data  data needed for the library
+ * @param type  the type name
+ * @param value1  the first value
+ * @param value2  the second value
  *
  * Function provided by a type library to compare two values accordingly
  * to a type.
  *
- * Returns 1 if yes, 0 if no and -1 in case of error.
+ * @returns 1 if yes, 0 if no and -1 in case of error.
  */
 typedef int (*xmlRelaxNGTypeCompare) (void *data, const xmlChar * type,
                                       const xmlChar * value1,
@@ -647,8 +619,7 @@ static void xmlRelaxNGFreeValidState(xmlRelaxNGValidCtxtPtr ctxt,
                                      xmlRelaxNGValidStatePtr state);
 
 /**
- * xmlRelaxNGFreeDocument:
- * @docu:  a document structure
+ * @param docu  a document structure
  *
  * Deallocate a RelaxNG document structure.
  */
@@ -668,8 +639,7 @@ xmlRelaxNGFreeDocument(xmlRelaxNGDocumentPtr docu)
 }
 
 /**
- * xmlRelaxNGFreeDocumentList:
- * @docu:  a list of  document structure
+ * @param docu  a list of  document structure
  *
  * Deallocate a RelaxNG document structures.
  */
@@ -686,8 +656,7 @@ xmlRelaxNGFreeDocumentList(xmlRelaxNGDocumentPtr docu)
 }
 
 /**
- * xmlRelaxNGFreeInclude:
- * @incl:  a include structure
+ * @param incl  a include structure
  *
  * Deallocate a RelaxNG include structure.
  */
@@ -707,8 +676,7 @@ xmlRelaxNGFreeInclude(xmlRelaxNGIncludePtr incl)
 }
 
 /**
- * xmlRelaxNGFreeIncludeList:
- * @incl:  a include structure list
+ * @param incl  a include structure list
  *
  * Deallocate a RelaxNG include structure.
  */
@@ -725,12 +693,11 @@ xmlRelaxNGFreeIncludeList(xmlRelaxNGIncludePtr incl)
 }
 
 /**
- * xmlRelaxNGNewRelaxNG:
- * @ctxt:  a Relax-NG validation context (optional)
+ * @param ctxt  a Relax-NG validation context (optional)
  *
  * Allocate a new RelaxNG structure.
  *
- * Returns the newly allocated structure or NULL in case or error
+ * @returns the newly allocated structure or NULL in case or error
  */
 static xmlRelaxNGPtr
 xmlRelaxNGNewRelaxNG(xmlRelaxNGParserCtxtPtr ctxt)
@@ -748,8 +715,7 @@ xmlRelaxNGNewRelaxNG(xmlRelaxNGParserCtxtPtr ctxt)
 }
 
 /**
- * xmlRelaxNGFreeInnerSchema:
- * @schema:  a schema structure
+ * @param schema  a schema structure
  *
  * Deallocate a RelaxNG schema structure.
  */
@@ -773,8 +739,7 @@ xmlRelaxNGFreeInnerSchema(xmlRelaxNGPtr schema)
 }
 
 /**
- * xmlRelaxNGFree:
- * @schema:  a schema structure
+ * @param schema  a schema structure
  *
  * Deallocate a RelaxNG structure.
  */
@@ -804,12 +769,11 @@ xmlRelaxNGFree(xmlRelaxNGPtr schema)
 }
 
 /**
- * xmlRelaxNGNewGrammar:
- * @ctxt:  a Relax-NG validation context (optional)
+ * @param ctxt  a Relax-NG validation context (optional)
  *
  * Allocate a new RelaxNG grammar.
  *
- * Returns the newly allocated structure or NULL in case or error
+ * @returns the newly allocated structure or NULL in case or error
  */
 static xmlRelaxNGGrammarPtr
 xmlRelaxNGNewGrammar(xmlRelaxNGParserCtxtPtr ctxt)
@@ -827,8 +791,7 @@ xmlRelaxNGNewGrammar(xmlRelaxNGParserCtxtPtr ctxt)
 }
 
 /**
- * xmlRelaxNGFreeGrammar:
- * @grammar:  a grammar structure
+ * @param grammar  a grammar structure
  *
  * Deallocate a RelaxNG grammar structure.
  */
@@ -855,13 +818,12 @@ xmlRelaxNGFreeGrammar(xmlRelaxNGGrammarPtr grammar)
 }
 
 /**
- * xmlRelaxNGNewDefine:
- * @ctxt:  a Relax-NG validation context
- * @node:  the node in the input document.
+ * @param ctxt  a Relax-NG validation context
+ * @param node  the node in the input document.
  *
  * Allocate a new RelaxNG define.
  *
- * Returns the newly allocated structure or NULL in case or error
+ * @returns the newly allocated structure or NULL in case or error
  */
 static xmlRelaxNGDefinePtr
 xmlRelaxNGNewDefine(xmlRelaxNGParserCtxtPtr ctxt, xmlNodePtr node)
@@ -904,8 +866,7 @@ xmlRelaxNGNewDefine(xmlRelaxNGParserCtxtPtr ctxt, xmlNodePtr node)
 }
 
 /**
- * xmlRelaxNGFreePartition:
- * @partitions:  a partition set structure
+ * @param partitions  a partition set structure
  *
  * Deallocate RelaxNG partition set structures.
  */
@@ -937,8 +898,7 @@ xmlRelaxNGFreePartition(xmlRelaxNGPartitionPtr partitions)
 }
 
 /**
- * xmlRelaxNGFreeDefine:
- * @define:  a define structure
+ * @param define  a define structure
  *
  * Deallocate a RelaxNG define structure.
  */
@@ -971,13 +931,12 @@ xmlRelaxNGFreeDefine(xmlRelaxNGDefinePtr define)
 }
 
 /**
- * xmlRelaxNGNewStates:
- * @ctxt:  a Relax-NG validation context
- * @size:  the default size for the container
+ * @param ctxt  a Relax-NG validation context
+ * @param size  the default size for the container
  *
  * Allocate a new RelaxNG validation state container
  *
- * Returns the newly allocated structure or NULL in case or error
+ * @returns the newly allocated structure or NULL in case or error
  */
 static xmlRelaxNGStatesPtr
 xmlRelaxNGNewStates(xmlRelaxNGValidCtxtPtr ctxt, int size)
@@ -1016,15 +975,14 @@ xmlRelaxNGNewStates(xmlRelaxNGValidCtxtPtr ctxt, int size)
 }
 
 /**
- * xmlRelaxNGAddStateUniq:
- * @ctxt:  a Relax-NG validation context
- * @states:  the states container
- * @state:  the validation state
+ * @param ctxt  a Relax-NG validation context
+ * @param states  the states container
+ * @param state  the validation state
  *
  * Add a RelaxNG validation state to the container without checking
  * for unicity.
  *
- * Return 1 in case of success and 0 if this is a duplicate and -1 on error
+ * @returns 1 in case of success and 0 if this is a duplicate and -1 on error
  */
 static int
 xmlRelaxNGAddStatesUniq(xmlRelaxNGValidCtxtPtr ctxt,
@@ -1055,14 +1013,13 @@ xmlRelaxNGAddStatesUniq(xmlRelaxNGValidCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGAddState:
- * @ctxt:  a Relax-NG validation context
- * @states:  the states container
- * @state:  the validation state
+ * @param ctxt  a Relax-NG validation context
+ * @param states  the states container
+ * @param state  the validation state
  *
  * Add a RelaxNG validation state to the container
  *
- * Return 1 in case of success and 0 if this is a duplicate and -1 on error
+ * @returns 1 in case of success and 0 if this is a duplicate and -1 on error
  */
 static int
 xmlRelaxNGAddStates(xmlRelaxNGValidCtxtPtr ctxt,
@@ -1101,9 +1058,8 @@ xmlRelaxNGAddStates(xmlRelaxNGValidCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGFreeStates:
- * @ctxt:  a Relax-NG validation context
- * @states:  the container
+ * @param ctxt  a Relax-NG validation context
+ * @param states  the container
  *
  * Free a RelaxNG validation state container
  */
@@ -1147,13 +1103,12 @@ xmlRelaxNGFreeStates(xmlRelaxNGValidCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGNewValidState:
- * @ctxt:  a Relax-NG validation context
- * @node:  the current node or NULL for the document
+ * @param ctxt  a Relax-NG validation context
+ * @param node  the current node or NULL for the document
  *
  * Allocate a new RelaxNG validation state
  *
- * Returns the newly allocated structure or NULL in case or error
+ * @returns the newly allocated structure or NULL in case or error
  */
 static xmlRelaxNGValidStatePtr
 xmlRelaxNGNewValidState(xmlRelaxNGValidCtxtPtr ctxt, xmlNodePtr node)
@@ -1242,13 +1197,12 @@ xmlRelaxNGNewValidState(xmlRelaxNGValidCtxtPtr ctxt, xmlNodePtr node)
 }
 
 /**
- * xmlRelaxNGCopyValidState:
- * @ctxt:  a Relax-NG validation context
- * @state:  a validation state
+ * @param ctxt  a Relax-NG validation context
+ * @param state  a validation state
  *
  * Copy the validation state
  *
- * Returns the newly allocated structure or NULL in case or error
+ * @returns the newly allocated structure or NULL in case or error
  */
 static xmlRelaxNGValidStatePtr
 xmlRelaxNGCopyValidState(xmlRelaxNGValidCtxtPtr ctxt,
@@ -1308,14 +1262,13 @@ xmlRelaxNGCopyValidState(xmlRelaxNGValidCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGEqualValidState:
- * @ctxt:  a Relax-NG validation context
- * @state1:  a validation state
- * @state2:  a validation state
+ * @param ctxt  a Relax-NG validation context
+ * @param state1  a validation state
+ * @param state2  a validation state
  *
  * Compare the validation states for equality
  *
- * Returns 1 if equal, 0 otherwise
+ * @returns 1 if equal, 0 otherwise
  */
 static int
 xmlRelaxNGEqualValidState(xmlRelaxNGValidCtxtPtr ctxt ATTRIBUTE_UNUSED,
@@ -1349,8 +1302,8 @@ xmlRelaxNGEqualValidState(xmlRelaxNGValidCtxtPtr ctxt ATTRIBUTE_UNUSED,
 }
 
 /**
- * xmlRelaxNGFreeValidState:
- * @state:  a validation state structure
+ * @param ctxt  validation context
+ * @param state  a validation state structure
  *
  * Deallocate a RelaxNG validation state structure.
  */
@@ -1380,14 +1333,13 @@ xmlRelaxNGFreeValidState(xmlRelaxNGValidCtxtPtr ctxt,
  ************************************************************************/
 
 /**
- * xmlRelaxParserSetFlag:
- * @ctxt: a RelaxNG parser context
- * @flags: a set of flags values
+ * @param ctxt  a RelaxNG parser context
+ * @param flags  a set of flags values
  *
  * Semi private function used to pass information to a parser context
  * which are a combination of xmlRelaxNGParserFlag .
  *
- * Returns 0 if success and -1 in case of error
+ * @returns 0 if success and -1 in case of error
  */
 int
 xmlRelaxParserSetFlag(xmlRelaxNGParserCtxtPtr ctxt, int flags)
@@ -1456,13 +1408,12 @@ xmlRelaxReadMemory(xmlRelaxNGParserCtxtPtr ctxt, const char *buf, int size) {
 }
 
 /**
- * xmlRelaxNGIncludePush:
- * @ctxt:  the parser context
- * @value:  the element doc
+ * @param ctxt  the parser context
+ * @param value  the element doc
  *
  * Pushes a new include on top of the include stack
  *
- * Returns 0 in case of error, the index in the stack otherwise
+ * @returns 0 in case of error, the index in the stack otherwise
  */
 static int
 xmlRelaxNGIncludePush(xmlRelaxNGParserCtxtPtr ctxt,
@@ -1496,12 +1447,11 @@ xmlRelaxNGIncludePush(xmlRelaxNGParserCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGIncludePop:
- * @ctxt: the parser context
+ * @param ctxt  the parser context
  *
  * Pops the top include from the include stack
  *
- * Returns the include just removed
+ * @returns the include just removed
  */
 static xmlRelaxNGIncludePtr
 xmlRelaxNGIncludePop(xmlRelaxNGParserCtxtPtr ctxt)
@@ -1521,15 +1471,14 @@ xmlRelaxNGIncludePop(xmlRelaxNGParserCtxtPtr ctxt)
 }
 
 /**
- * xmlRelaxNGRemoveRedefine:
- * @ctxt: the parser context
- * @URL:  the normalized URL
- * @target:  the included target
- * @name:  the define name to eliminate
+ * @param ctxt  the parser context
+ * @param URL  the normalized URL
+ * @param target  the included target
+ * @param name  the define name to eliminate
  *
  * Applies the elimination algorithm of 4.7
  *
- * Returns 0 in case of error, 1 in case of success.
+ * @returns 0 in case of error, 1 in case of success.
  */
 static int
 xmlRelaxNGRemoveRedefine(xmlRelaxNGParserCtxtPtr ctxt,
@@ -1584,17 +1533,16 @@ xmlRelaxNGRemoveRedefine(xmlRelaxNGParserCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGLoadInclude:
- * @ctxt: the parser context
- * @URL:  the normalized URL
- * @node: the include node.
- * @ns:  the namespace passed from the context.
+ * @param ctxt  the parser context
+ * @param URL  the normalized URL
+ * @param node  the include node.
+ * @param ns  the namespace passed from the context.
  *
  * First lookup if the document is already loaded into the parser context,
  * check against recursion. If not found the resource is loaded and
  * the content is preprocessed before being returned back to the caller.
  *
- * Returns the xmlRelaxNGIncludePtr or NULL in case of error
+ * @returns the xmlRelaxNGIncludePtr or NULL in case of error
  */
 static xmlRelaxNGIncludePtr
 xmlRelaxNGLoadInclude(xmlRelaxNGParserCtxtPtr ctxt, const xmlChar * URL,
@@ -1748,16 +1696,15 @@ xmlRelaxNGLoadInclude(xmlRelaxNGParserCtxtPtr ctxt, const xmlChar * URL,
 }
 
 /**
- * xmlRelaxNGValidErrorPush:
- * @ctxt:  the validation context
- * @err:  the error code
- * @arg1:  the first string argument
- * @arg2:  the second string argument
- * @dup:  arg need to be duplicated
+ * @param ctxt  the validation context
+ * @param err  the error code
+ * @param arg1  the first string argument
+ * @param arg2  the second string argument
+ * @param dup  arg need to be duplicated
  *
  * Pushes a new error on top of the error stack
  *
- * Returns 0 in case of error, the index in the stack otherwise
+ * @returns 0 in case of error, the index in the stack otherwise
  */
 static int
 xmlRelaxNGValidErrorPush(xmlRelaxNGValidCtxtPtr ctxt,
@@ -1818,8 +1765,7 @@ xmlRelaxNGValidErrorPush(xmlRelaxNGValidCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGValidErrorPop:
- * @ctxt: the validation context
+ * @param ctxt  the validation context
  *
  * Pops the top error from the error stack
  */
@@ -1850,13 +1796,12 @@ xmlRelaxNGValidErrorPop(xmlRelaxNGValidCtxtPtr ctxt)
 }
 
 /**
- * xmlRelaxNGDocumentPush:
- * @ctxt:  the parser context
- * @value:  the element doc
+ * @param ctxt  the parser context
+ * @param value  the element doc
  *
  * Pushes a new doc on top of the doc stack
  *
- * Returns 0 in case of error, the index in the stack otherwise
+ * @returns 0 in case of error, the index in the stack otherwise
  */
 static int
 xmlRelaxNGDocumentPush(xmlRelaxNGParserCtxtPtr ctxt,
@@ -1890,12 +1835,11 @@ xmlRelaxNGDocumentPush(xmlRelaxNGParserCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGDocumentPop:
- * @ctxt: the parser context
+ * @param ctxt  the parser context
  *
  * Pops the top doc from the doc stack
  *
- * Returns the doc just removed
+ * @returns the doc just removed
  */
 static xmlRelaxNGDocumentPtr
 xmlRelaxNGDocumentPop(xmlRelaxNGParserCtxtPtr ctxt)
@@ -1915,16 +1859,15 @@ xmlRelaxNGDocumentPop(xmlRelaxNGParserCtxtPtr ctxt)
 }
 
 /**
- * xmlRelaxNGLoadExternalRef:
- * @ctxt: the parser context
- * @URL:  the normalized URL
- * @ns:  the inherited ns if any
+ * @param ctxt  the parser context
+ * @param URL  the normalized URL
+ * @param ns  the inherited ns if any
  *
  * First lookup if the document is already loaded into the parser context,
  * check against recursion. If not found the resource is loaded and
  * the content is preprocessed before being returned back to the caller.
  *
- * Returns the xmlRelaxNGDocumentPtr or NULL in case of error
+ * @returns the xmlRelaxNGDocumentPtr or NULL in case of error
  */
 static xmlRelaxNGDocumentPtr
 xmlRelaxNGLoadExternalRef(xmlRelaxNGParserCtxtPtr ctxt,
@@ -2071,14 +2014,13 @@ xmlRelaxNGDefName(xmlRelaxNGDefinePtr def)
 }
 
 /**
- * xmlRelaxNGGetErrorString:
- * @err:  the error code
- * @arg1:  the first string argument
- * @arg2:  the second string argument
+ * @param err  the error code
+ * @param arg1  the first string argument
+ * @param arg2  the second string argument
  *
  * computes a formatted error string for the given error code and args
  *
- * Returns the error string, it must be deallocated by the caller
+ * @returns the error string, it must be deallocated by the caller
  */
 static xmlChar *
 xmlRelaxNGGetErrorString(xmlRelaxNGValidErr err, const xmlChar * arg1,
@@ -2218,13 +2160,12 @@ xmlRelaxNGGetErrorString(xmlRelaxNGValidErr err, const xmlChar * arg1,
 }
 
 /**
- * xmlRelaxNGShowValidError:
- * @ctxt:  the validation context
- * @err:  the error number
- * @node:  the node
- * @child:  the node child generating the problem.
- * @arg1:  the first argument
- * @arg2:  the second argument
+ * @param ctxt  the validation context
+ * @param err  the error number
+ * @param node  the node
+ * @param child  the node child generating the problem.
+ * @param arg1  the first argument
+ * @param arg2  the second argument
  *
  * Show a validation error.
  */
@@ -2251,9 +2192,8 @@ xmlRelaxNGShowValidError(xmlRelaxNGValidCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGPopErrors:
- * @ctxt:  the validation context
- * @level:  the error level in the stack
+ * @param ctxt  the validation context
+ * @param level  the error level in the stack
  *
  * pop and discard all errors until the given level is reached
  */
@@ -2281,8 +2221,7 @@ xmlRelaxNGPopErrors(xmlRelaxNGValidCtxtPtr ctxt, int level)
 }
 
 /**
- * xmlRelaxNGDumpValidError:
- * @ctxt:  the validation context
+ * @param ctxt  the validation context
  *
  * Show all validation error over a given index.
  */
@@ -2322,12 +2261,11 @@ xmlRelaxNGDumpValidError(xmlRelaxNGValidCtxtPtr ctxt)
 }
 
 /**
- * xmlRelaxNGAddValidError:
- * @ctxt:  the validation context
- * @err:  the error number
- * @arg1:  the first argument
- * @arg2:  the second argument
- * @dup:  need to dup the args
+ * @param ctxt  the validation context
+ * @param err  the error number
+ * @param arg1  the first argument
+ * @param arg2  the second argument
+ * @param dup  need to dup the args
  *
  * Register a validation error, either generating it if it's sure
  * or stacking it for later handling if unsure.
@@ -2384,14 +2322,13 @@ static xmlChar *xmlRelaxNGNormalize(xmlRelaxNGValidCtxtPtr ctxt,
                                     const xmlChar * str);
 
 /**
- * xmlRelaxNGSchemaTypeHave:
- * @data:  data needed for the library
- * @type:  the type name
+ * @param data  data needed for the library
+ * @param type  the type name
  *
  * Check if the given type is provided by
  * the W3C XMLSchema Datatype library.
  *
- * Returns 1 if yes, 0 if no and -1 in case of error.
+ * @returns 1 if yes, 0 if no and -1 in case of error.
  */
 static int
 xmlRelaxNGSchemaTypeHave(void *data ATTRIBUTE_UNUSED, const xmlChar * type)
@@ -2409,16 +2346,16 @@ xmlRelaxNGSchemaTypeHave(void *data ATTRIBUTE_UNUSED, const xmlChar * type)
 }
 
 /**
- * xmlRelaxNGSchemaTypeCheck:
- * @data:  data needed for the library
- * @type:  the type name
- * @value:  the value to check
- * @node:  the node
+ * @param data  data needed for the library
+ * @param type  the type name
+ * @param value  the value to check
+ * @param result  pointer to result
+ * @param node  the node
  *
  * Check if the given type and value are validated by
  * the W3C XMLSchema Datatype library.
  *
- * Returns 1 if yes, 0 if no and -1 in case of error.
+ * @returns 1 if yes, 0 if no and -1 in case of error.
  */
 static int
 xmlRelaxNGSchemaTypeCheck(void *data ATTRIBUTE_UNUSED,
@@ -2448,17 +2385,16 @@ xmlRelaxNGSchemaTypeCheck(void *data ATTRIBUTE_UNUSED,
 }
 
 /**
- * xmlRelaxNGSchemaFacetCheck:
- * @data:  data needed for the library
- * @type:  the type name
- * @facet:  the facet name
- * @val:  the facet value
- * @strval:  the string value
- * @value:  the value to check
+ * @param data  data needed for the library
+ * @param type  the type name
+ * @param facetname  the facet name
+ * @param val  the facet value
+ * @param strval  the string value
+ * @param value  the value to check
  *
  * Function provided by a type library to check a value facet
  *
- * Returns 1 if yes, 0 if no and -1 in case of error.
+ * @returns 1 if yes, 0 if no and -1 in case of error.
  */
 static int
 xmlRelaxNGSchemaFacetCheck(void *data ATTRIBUTE_UNUSED,
@@ -2524,13 +2460,12 @@ xmlRelaxNGSchemaFacetCheck(void *data ATTRIBUTE_UNUSED,
 }
 
 /**
- * xmlRelaxNGSchemaFreeValue:
- * @data:  data needed for the library
- * @value:  the value to free
+ * @param data  data needed for the library
+ * @param value  the value to free
  *
  * Function provided by a type library to free a Schemas value
  *
- * Returns 1 if yes, 0 if no and -1 in case of error.
+ * @returns 1 if yes, 0 if no and -1 in case of error.
  */
 static void
 xmlRelaxNGSchemaFreeValue(void *data ATTRIBUTE_UNUSED, void *value)
@@ -2539,16 +2474,18 @@ xmlRelaxNGSchemaFreeValue(void *data ATTRIBUTE_UNUSED, void *value)
 }
 
 /**
- * xmlRelaxNGSchemaTypeCompare:
- * @data:  data needed for the library
- * @type:  the type name
- * @value1:  the first value
- * @value2:  the second value
+ * @param data  data needed for the library
+ * @param type  the type name
+ * @param value1  the first value
+ * @param ctxt1  the first context node
+ * @param comp1  value to compare with
+ * @param value2  the second value
+ * @param ctxt2  the second context node
  *
  * Compare two values for equality accordingly a type from the W3C XMLSchema
  * Datatype library.
  *
- * Returns 1 if equal, 0 if no and -1 in case of error.
+ * @returns 1 if equal, 0 if no and -1 in case of error.
  */
 static int
 xmlRelaxNGSchemaTypeCompare(void *data ATTRIBUTE_UNUSED,
@@ -2596,14 +2533,13 @@ xmlRelaxNGSchemaTypeCompare(void *data ATTRIBUTE_UNUSED,
 }
 
 /**
- * xmlRelaxNGDefaultTypeHave:
- * @data:  data needed for the library
- * @type:  the type name
+ * @param data  data needed for the library
+ * @param type  the type name
  *
  * Check if the given type is provided by
  * the default datatype library.
  *
- * Returns 1 if yes, 0 if no and -1 in case of error.
+ * @returns 1 if yes, 0 if no and -1 in case of error.
  */
 static int
 xmlRelaxNGDefaultTypeHave(void *data ATTRIBUTE_UNUSED,
@@ -2619,16 +2555,16 @@ xmlRelaxNGDefaultTypeHave(void *data ATTRIBUTE_UNUSED,
 }
 
 /**
- * xmlRelaxNGDefaultTypeCheck:
- * @data:  data needed for the library
- * @type:  the type name
- * @value:  the value to check
- * @node:  the node
+ * @param data  data needed for the library
+ * @param type  the type name
+ * @param value  the value to check
+ * @param result  pointer to result
+ * @param node  the node
  *
  * Check if the given type and value are validated by
  * the default datatype library.
  *
- * Returns 1 if yes, 0 if no and -1 in case of error.
+ * @returns 1 if yes, 0 if no and -1 in case of error.
  */
 static int
 xmlRelaxNGDefaultTypeCheck(void *data ATTRIBUTE_UNUSED,
@@ -2649,16 +2585,18 @@ xmlRelaxNGDefaultTypeCheck(void *data ATTRIBUTE_UNUSED,
 }
 
 /**
- * xmlRelaxNGDefaultTypeCompare:
- * @data:  data needed for the library
- * @type:  the type name
- * @value1:  the first value
- * @value2:  the second value
+ * @param data  data needed for the library
+ * @param type  the type name
+ * @param value1  the first value
+ * @param ctxt1  the first context node
+ * @param comp1  value to compare with
+ * @param value2  the second value
+ * @param ctxt2  the second context node
  *
  * Compare two values accordingly a type from the default
  * datatype library.
  *
- * Returns 1 if yes, 0 if no and -1 in case of error.
+ * @returns 1 if yes, 0 if no and -1 in case of error.
  */
 static int
 xmlRelaxNGDefaultTypeCompare(void *data ATTRIBUTE_UNUSED,
@@ -2704,9 +2642,8 @@ static int xmlRelaxNGTypeInitialized = 0;
 static xmlHashTablePtr xmlRelaxNGRegisteredTypes = NULL;
 
 /**
- * xmlRelaxNGFreeTypeLibrary:
- * @lib:  the type library structure
- * @namespace:  the URI bound to the library
+ * @param payload  the type library structure
+ * @param namespace  the URI bound to the library
  *
  * Free the structure associated to the type library
  */
@@ -2723,16 +2660,17 @@ xmlRelaxNGFreeTypeLibrary(void *payload,
 }
 
 /**
- * xmlRelaxNGRegisterTypeLibrary:
- * @namespace:  the URI bound to the library
- * @data:  data associated to the library
- * @have:  the provide function
- * @check:  the checking function
- * @comp:  the comparison function
+ * @param namespace  the URI bound to the library
+ * @param data  data associated to the library
+ * @param have  the provide function
+ * @param check  the checking function
+ * @param comp  the comparison function
+ * @param facet  facet check function
+ * @param freef  free function
  *
  * Register a new type library
  *
- * Returns 0 in case of success and -1 in case of error.
+ * @returns 0 in case of success and -1 in case of error.
  */
 static int
 xmlRelaxNGRegisterTypeLibrary(const xmlChar * namespace, void *data,
@@ -2774,11 +2712,9 @@ xmlRelaxNGRegisterTypeLibrary(const xmlChar * namespace, void *data,
 }
 
 /**
- * xmlRelaxNGInitTypes:
- *
  * Initialize the default type libraries.
  *
- * Returns 0 in case of success and -1 in case of error.
+ * @returns 0 in case of success and -1 in case of error.
  */
 int
 xmlRelaxNGInitTypes(void)
@@ -2805,9 +2741,7 @@ xmlRelaxNGInitTypes(void)
 }
 
 /**
- * xmlRelaxNGCleanupTypes:
- *
- * DEPRECATED: This function will be made private. Call xmlCleanupParser
+ * @deprecated This function will be made private. Call xmlCleanupParser
  * to free global state but see the warnings there. xmlCleanupParser
  * should be only called once at program exit. In most cases, you don't
  * have call cleanup functions at all.
@@ -2837,12 +2771,11 @@ static int xmlRelaxNGTryCompile(xmlRelaxNGParserCtxtPtr ctxt,
                                 xmlRelaxNGDefinePtr def);
 
 /**
- * xmlRelaxNGIsCompilable:
- * @define:  the definition to check
+ * @param def  the definition to check
  *
  * Check if a definition is nullable.
  *
- * Returns 1 if yes, 0 if no and -1 in case of error
+ * @returns 1 if yes, 0 if no and -1 in case of error
  */
 static int
 xmlRelaxNGIsCompilable(xmlRelaxNGDefinePtr def)
@@ -2956,14 +2889,13 @@ xmlRelaxNGIsCompilable(xmlRelaxNGDefinePtr def)
 }
 
 /**
- * xmlRelaxNGCompile:
- * ctxt:  the RelaxNG parser context
- * @define:  the definition tree to compile
+ * @param ctxt  the RelaxNG parser context
+ * @param def  the definition tree to compile
  *
  * Compile the set of definitions, it works recursively, till the
  * element boundaries, where it tries to compile the content if possible
  *
- * Returns 0 if success and -1 in case of error
+ * @returns 0 if success and -1 in case of error
  */
 static int
 xmlRelaxNGCompile(xmlRelaxNGParserCtxtPtr ctxt, xmlRelaxNGDefinePtr def)
@@ -3177,14 +3109,13 @@ xmlRelaxNGCompile(xmlRelaxNGParserCtxtPtr ctxt, xmlRelaxNGDefinePtr def)
 }
 
 /**
- * xmlRelaxNGTryCompile:
- * ctxt:  the RelaxNG parser context
- * @define:  the definition tree to compile
+ * @param ctxt  the RelaxNG parser context
+ * @param def  the definition tree to compile
  *
  * Try to compile the set of definitions, it works recursively,
  * possibly ignoring parts which cannot be compiled.
  *
- * Returns 0 if success and -1 in case of error
+ * @returns 0 if success and -1 in case of error
  */
 static int
 xmlRelaxNGTryCompile(xmlRelaxNGParserCtxtPtr ctxt, xmlRelaxNGDefinePtr def)
@@ -3278,12 +3209,11 @@ static int xmlRelaxNGElementMatch(xmlRelaxNGValidCtxtPtr ctxt,
 #define IS_BLANK_NODE(n) (xmlRelaxNGIsBlank((n)->content))
 
 /**
- * xmlRelaxNGIsNullable:
- * @define:  the definition to verify
+ * @param define  the definition to verify
  *
  * Check if a definition is nullable.
  *
- * Returns 1 if yes, 0 if no and -1 in case of error
+ * @returns 1 if yes, 0 if no and -1 in case of error
  */
 static int
 xmlRelaxNGIsNullable(xmlRelaxNGDefinePtr define)
@@ -3357,12 +3287,11 @@ xmlRelaxNGIsNullable(xmlRelaxNGDefinePtr define)
 }
 
 /**
- * xmlRelaxNGIsBlank:
- * @str:  a string
+ * @param str  a string
  *
  * Check if a string is ignorable c.f. 4.2. Whitespace
  *
- * Returns 1 if the string is NULL or made of blanks chars, 0 otherwise
+ * @returns 1 if the string is NULL or made of blanks chars, 0 otherwise
  */
 static int
 xmlRelaxNGIsBlank(xmlChar * str)
@@ -3378,13 +3307,12 @@ xmlRelaxNGIsBlank(xmlChar * str)
 }
 
 /**
- * xmlRelaxNGGetDataTypeLibrary:
- * @ctxt:  a Relax-NG parser context
- * @node:  the current data or value element
+ * @param ctxt  a Relax-NG parser context
+ * @param node  the current data or value element
  *
  * Applies algorithm from 4.3. datatypeLibrary attribute
  *
- * Returns the datatypeLibrary value or NULL if not found
+ * @returns the datatypeLibrary value or NULL if not found
  */
 static xmlChar *
 xmlRelaxNGGetDataTypeLibrary(xmlRelaxNGParserCtxtPtr ctxt ATTRIBUTE_UNUSED,
@@ -3431,13 +3359,12 @@ xmlRelaxNGGetDataTypeLibrary(xmlRelaxNGParserCtxtPtr ctxt ATTRIBUTE_UNUSED,
 }
 
 /**
- * xmlRelaxNGParseValue:
- * @ctxt:  a Relax-NG parser context
- * @node:  the data node.
+ * @param ctxt  a Relax-NG parser context
+ * @param node  the data node.
  *
  * parse the content of a RelaxNG value node.
  *
- * Returns the definition pointer or NULL in case of error
+ * @returns the definition pointer or NULL in case of error
  */
 static xmlRelaxNGDefinePtr
 xmlRelaxNGParseValue(xmlRelaxNGParserCtxtPtr ctxt, xmlNodePtr node)
@@ -3523,13 +3450,12 @@ xmlRelaxNGParseValue(xmlRelaxNGParserCtxtPtr ctxt, xmlNodePtr node)
 }
 
 /**
- * xmlRelaxNGParseData:
- * @ctxt:  a Relax-NG parser context
- * @node:  the data node.
+ * @param ctxt  a Relax-NG parser context
+ * @param node  the data node.
  *
  * parse the content of a RelaxNG data node.
  *
- * Returns the definition pointer or NULL in case of error
+ * @returns the definition pointer or NULL in case of error
  */
 static xmlRelaxNGDefinePtr
 xmlRelaxNGParseData(xmlRelaxNGParserCtxtPtr ctxt, xmlNodePtr node)
@@ -3685,17 +3611,14 @@ xmlRelaxNGParseData(xmlRelaxNGParserCtxtPtr ctxt, xmlNodePtr node)
 static const xmlChar *invalidName = BAD_CAST "\1";
 
 /**
- * xmlRelaxNGCompareNameClasses:
- * @defs1:  the first element/attribute defs
- * @defs2:  the second element/attribute defs
- * @name:  the restriction on the name
- * @ns:  the restriction on the namespace
+ * @param def1  the first element/attribute defs
+ * @param def2  the second element/attribute defs
  *
  * Compare the 2 lists of element definitions. The comparison is
  * that if both lists do not accept the same QNames, it returns 1
  * If the 2 lists can accept the same QName the comparison returns 0
  *
- * Returns 1 distinct, 0 if equal
+ * @returns 1 distinct, 0 if equal
  */
 static int
 xmlRelaxNGCompareNameClasses(xmlRelaxNGDefinePtr def1,
@@ -3789,16 +3712,15 @@ xmlRelaxNGCompareNameClasses(xmlRelaxNGDefinePtr def1,
 }
 
 /**
- * xmlRelaxNGCompareElemDefLists:
- * @ctxt:  a Relax-NG parser context
- * @defs1:  the first list of element/attribute defs
- * @defs2:  the second list of element/attribute defs
+ * @param ctxt  a Relax-NG parser context
+ * @param def1  the first list of element/attribute defs
+ * @param def2  the second list of element/attribute defs
  *
  * Compare the 2 lists of element or attribute definitions. The comparison
  * is that if both lists do not accept the same QNames, it returns 1
  * If the 2 lists can accept the same QName the comparison returns 0
  *
- * Returns 1 distinct, 0 if equal
+ * @returns 1 distinct, 0 if equal
  */
 static int
 xmlRelaxNGCompareElemDefLists(xmlRelaxNGParserCtxtPtr ctxt
@@ -3824,13 +3746,12 @@ xmlRelaxNGCompareElemDefLists(xmlRelaxNGParserCtxtPtr ctxt
 }
 
 /**
- * xmlRelaxNGGenerateAttributes:
- * @ctxt:  a Relax-NG parser context
- * @def:  the definition definition
+ * @param ctxt  a Relax-NG parser context
+ * @param def  the definition definition
  *
  * Check if the definition can only generate attributes
  *
- * Returns 1 if yes, 0 if no and -1 in case of error.
+ * @returns 1 if yes, 0 if no and -1 in case of error.
  */
 static int
 xmlRelaxNGGenerateAttributes(xmlRelaxNGParserCtxtPtr ctxt,
@@ -3899,14 +3820,13 @@ xmlRelaxNGGenerateAttributes(xmlRelaxNGParserCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGGetElements:
- * @ctxt:  a Relax-NG parser context
- * @def:  the definition definition
- * @eora:  gather elements (0), attributes (1) or elements and text (2)
+ * @param ctxt  a Relax-NG parser context
+ * @param def  the definition definition
+ * @param eora  gather elements (0), attributes (1) or elements and text (2)
  *
  * Compute the list of top elements a definition can generate
  *
- * Returns a list of elements or NULL if none was found.
+ * @returns a list of elements or NULL if none was found.
  */
 static xmlRelaxNGDefinePtr *
 xmlRelaxNGGetElements(xmlRelaxNGParserCtxtPtr ctxt,
@@ -4004,9 +3924,8 @@ xmlRelaxNGGetElements(xmlRelaxNGParserCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGCheckChoiceDeterminism:
- * @ctxt:  a Relax-NG parser context
- * @def:  the choice definition
+ * @param ctxt  a Relax-NG parser context
+ * @param def  the choice definition
  *
  * Also used to find indeterministic pattern in choice
  */
@@ -4140,9 +4059,8 @@ xmlRelaxNGCheckChoiceDeterminism(xmlRelaxNGParserCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGCheckGroupAttrs:
- * @ctxt:  a Relax-NG parser context
- * @def:  the group definition
+ * @param ctxt  a Relax-NG parser context
+ * @param def  the group definition
  *
  * Detects violations of rule 7.3
  */
@@ -4224,17 +4142,16 @@ xmlRelaxNGCheckGroupAttrs(xmlRelaxNGParserCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGComputeInterleaves:
- * @def:  the interleave definition
- * @ctxt:  a Relax-NG parser context
- * @name:  the definition name
+ * @param payload  the interleave definition
+ * @param data  a Relax-NG parser context
+ * @param name  the definition name
  *
  * A lot of work for preprocessing interleave definitions
  * is potentially needed to get a decent execution speed at runtime
  *   - trying to get a total order on the element nodes generated
  *     by the interleaves, order the list of interleave definitions
  *     following that order.
- *   - if <text/> is used to handle mixed content, it is better to
+ *   - if `<text/>` is used to handle mixed content, it is better to
  *     flag this in the define and simplify the runtime checking
  *     algorithm
  */
@@ -4390,13 +4307,12 @@ xmlRelaxNGComputeInterleaves(void *payload, void *data,
 }
 
 /**
- * xmlRelaxNGParseInterleave:
- * @ctxt:  a Relax-NG parser context
- * @node:  the data node.
+ * @param ctxt  a Relax-NG parser context
+ * @param node  the data node.
  *
  * parse the content of a RelaxNG interleave node.
  *
- * Returns the definition pointer or NULL in case of error
+ * @returns the definition pointer or NULL in case of error
  */
 static xmlRelaxNGDefinePtr
 xmlRelaxNGParseInterleave(xmlRelaxNGParserCtxtPtr ctxt, xmlNodePtr node)
@@ -4452,13 +4368,12 @@ xmlRelaxNGParseInterleave(xmlRelaxNGParserCtxtPtr ctxt, xmlNodePtr node)
 }
 
 /**
- * xmlRelaxNGParseInclude:
- * @ctxt:  a Relax-NG parser context
- * @node:  the include node
+ * @param ctxt  a Relax-NG parser context
+ * @param node  the include node
  *
  * Integrate the content of an include node in the current grammar
  *
- * Returns 0 in case of success or -1 in case of error
+ * @returns 0 in case of success or -1 in case of error
  */
 static int
 xmlRelaxNGParseInclude(xmlRelaxNGParserCtxtPtr ctxt, xmlNodePtr node)
@@ -4502,13 +4417,12 @@ xmlRelaxNGParseInclude(xmlRelaxNGParserCtxtPtr ctxt, xmlNodePtr node)
 }
 
 /**
- * xmlRelaxNGParseDefine:
- * @ctxt:  a Relax-NG parser context
- * @node:  the define node
+ * @param ctxt  a Relax-NG parser context
+ * @param node  the define node
  *
  * parse the content of a RelaxNG define element node.
  *
- * Returns 0 in case of success or -1 in case of error
+ * @returns 0 in case of success or -1 in case of error
  */
 static int
 xmlRelaxNGParseDefine(xmlRelaxNGParserCtxtPtr ctxt, xmlNodePtr node)
@@ -4574,10 +4488,9 @@ xmlRelaxNGParseDefine(xmlRelaxNGParserCtxtPtr ctxt, xmlNodePtr node)
 }
 
 /**
- * xmlRelaxNGParseImportRef:
- * @payload: the parser context
- * @data: the current grammar
- * @name: the reference name
+ * @param payload  the parser context
+ * @param data  the current grammar
+ * @param name  the reference name
  *
  * Import import one references into the current grammar
  */
@@ -4613,13 +4526,12 @@ xmlRelaxNGParseImportRef(void *payload, void *data, const xmlChar *name) {
 }
 
 /**
- * xmlRelaxNGParseImportRefs:
- * @ctxt: the parser context
- * @grammar: the sub grammar
+ * @param ctxt  the parser context
+ * @param grammar  the sub grammar
  *
  * Import references from the subgrammar into the current grammar
  *
- * Returns 0 in case of success, -1 in case of failure
+ * @returns 0 in case of success, -1 in case of failure
  */
 static int
 xmlRelaxNGParseImportRefs(xmlRelaxNGParserCtxtPtr ctxt,
@@ -4640,13 +4552,12 @@ xmlRelaxNGParseImportRefs(xmlRelaxNGParserCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGProcessExternalRef:
- * @ctxt: the parser context
- * @node:  the externalRef node
+ * @param ctxt  the parser context
+ * @param node  the externalRef node
  *
  * Process and compile an externalRef node
  *
- * Returns the xmlRelaxNGDefinePtr or NULL in case of error
+ * @returns the xmlRelaxNGDefinePtr or NULL in case of error
  */
 static xmlRelaxNGDefinePtr
 xmlRelaxNGProcessExternalRef(xmlRelaxNGParserCtxtPtr ctxt, xmlNodePtr node)
@@ -4726,13 +4637,12 @@ xmlRelaxNGProcessExternalRef(xmlRelaxNGParserCtxtPtr ctxt, xmlNodePtr node)
 }
 
 /**
- * xmlRelaxNGParsePattern:
- * @ctxt:  a Relax-NG parser context
- * @node:  the pattern node.
+ * @param ctxt  a Relax-NG parser context
+ * @param node  the pattern node.
  *
  * parse the content of a RelaxNG pattern node.
  *
- * Returns the definition pointer or NULL in case of error or if no
+ * @returns the definition pointer or NULL in case of error or if no
  *     pattern is generated.
  */
 static xmlRelaxNGDefinePtr
@@ -5021,13 +4931,12 @@ xmlRelaxNGParsePattern(xmlRelaxNGParserCtxtPtr ctxt, xmlNodePtr node)
 }
 
 /**
- * xmlRelaxNGParseAttribute:
- * @ctxt:  a Relax-NG parser context
- * @node:  the element node
+ * @param ctxt  a Relax-NG parser context
+ * @param node  the element node
  *
  * parse the content of a RelaxNG attribute node.
  *
- * Returns the definition pointer or NULL in case of error.
+ * @returns the definition pointer or NULL in case of error.
  */
 static xmlRelaxNGDefinePtr
 xmlRelaxNGParseAttribute(xmlRelaxNGParserCtxtPtr ctxt, xmlNodePtr node)
@@ -5104,14 +5013,13 @@ xmlRelaxNGParseAttribute(xmlRelaxNGParserCtxtPtr ctxt, xmlNodePtr node)
 }
 
 /**
- * xmlRelaxNGParseExceptNameClass:
- * @ctxt:  a Relax-NG parser context
- * @node:  the except node
- * @attr:  1 if within an attribute, 0 if within an element
+ * @param ctxt  a Relax-NG parser context
+ * @param node  the except node
+ * @param attr  1 if within an attribute, 0 if within an element
  *
  * parse the content of a RelaxNG nameClass node.
  *
- * Returns the definition pointer or NULL in case of error.
+ * @returns the definition pointer or NULL in case of error.
  */
 static xmlRelaxNGDefinePtr
 xmlRelaxNGParseExceptNameClass(xmlRelaxNGParserCtxtPtr ctxt,
@@ -5165,14 +5073,13 @@ xmlRelaxNGParseExceptNameClass(xmlRelaxNGParserCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGParseNameClass:
- * @ctxt:  a Relax-NG parser context
- * @node:  the nameClass node
- * @def:  the current definition
+ * @param ctxt  a Relax-NG parser context
+ * @param node  the nameClass node
+ * @param def  the current definition
  *
  * parse the content of a RelaxNG nameClass node.
  *
- * Returns the definition pointer or NULL in case of error.
+ * @returns the definition pointer or NULL in case of error.
  */
 static xmlRelaxNGDefinePtr
 xmlRelaxNGParseNameClass(xmlRelaxNGParserCtxtPtr ctxt, xmlNodePtr node,
@@ -5311,13 +5218,12 @@ xmlRelaxNGParseNameClass(xmlRelaxNGParserCtxtPtr ctxt, xmlNodePtr node,
 }
 
 /**
- * xmlRelaxNGParseElement:
- * @ctxt:  a Relax-NG parser context
- * @node:  the element node
+ * @param ctxt  a Relax-NG parser context
+ * @param node  the element node
  *
  * parse the content of a RelaxNG element node.
  *
- * Returns the definition pointer or NULL in case of error.
+ * @returns the definition pointer or NULL in case of error.
  */
 static xmlRelaxNGDefinePtr
 xmlRelaxNGParseElement(xmlRelaxNGParserCtxtPtr ctxt, xmlNodePtr node)
@@ -5423,14 +5329,13 @@ xmlRelaxNGParseElement(xmlRelaxNGParserCtxtPtr ctxt, xmlNodePtr node)
 }
 
 /**
- * xmlRelaxNGParsePatterns:
- * @ctxt:  a Relax-NG parser context
- * @nodes:  list of nodes
- * @group:  use an implicit <group> for elements
+ * @param ctxt  a Relax-NG parser context
+ * @param nodes  list of nodes
+ * @param group  use an implicit `<group>` for elements
  *
  * parse the content of a RelaxNG start node.
  *
- * Returns the definition pointer or NULL in case of error.
+ * @returns the definition pointer or NULL in case of error.
  */
 static xmlRelaxNGDefinePtr
 xmlRelaxNGParsePatterns(xmlRelaxNGParserCtxtPtr ctxt, xmlNodePtr nodes,
@@ -5476,13 +5381,12 @@ xmlRelaxNGParsePatterns(xmlRelaxNGParserCtxtPtr ctxt, xmlNodePtr nodes,
 }
 
 /**
- * xmlRelaxNGParseStart:
- * @ctxt:  a Relax-NG parser context
- * @nodes:  start children nodes
+ * @param ctxt  a Relax-NG parser context
+ * @param nodes  start children nodes
  *
  * parse the content of a RelaxNG start node.
  *
- * Returns 0 in case of success, -1 in case of error
+ * @returns 0 in case of success, -1 in case of error
  */
 static int
 xmlRelaxNGParseStart(xmlRelaxNGParserCtxtPtr ctxt, xmlNodePtr nodes)
@@ -5534,13 +5438,12 @@ xmlRelaxNGParseStart(xmlRelaxNGParserCtxtPtr ctxt, xmlNodePtr nodes)
 }
 
 /**
- * xmlRelaxNGParseGrammarContent:
- * @ctxt:  a Relax-NG parser context
- * @nodes:  grammar children nodes
+ * @param ctxt  a Relax-NG parser context
+ * @param nodes  grammar children nodes
  *
  * parse the content of a RelaxNG grammar node.
  *
- * Returns 0 in case of success, -1 in case of error
+ * @returns 0 in case of success, -1 in case of error
  */
 static int
 xmlRelaxNGParseGrammarContent(xmlRelaxNGParserCtxtPtr ctxt,
@@ -5583,10 +5486,9 @@ xmlRelaxNGParseGrammarContent(xmlRelaxNGParserCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGCheckReference:
- * @ref:  the ref
- * @ctxt:  a Relax-NG parser context
- * @name:  the name associated to the defines
+ * @param payload  the ref
+ * @param data  a Relax-NG parser context
+ * @param name  the name associated to the defines
  *
  * Applies the 4.17. combine attribute rule for all the define
  * element of a given grammar using the same name.
@@ -5639,10 +5541,9 @@ xmlRelaxNGCheckReference(void *payload, void *data, const xmlChar * name)
 }
 
 /**
- * xmlRelaxNGCheckCombine:
- * @define:  the define(s) list
- * @ctxt:  a Relax-NG parser context
- * @name:  the name associated to the defines
+ * @param payload  the define(s) list
+ * @param data  a Relax-NG parser context
+ * @param name  the name associated to the defines
  *
  * Applies the 4.17. combine attribute rule for all the define
  * element of a given grammar using the same name.
@@ -5755,9 +5656,8 @@ xmlRelaxNGCheckCombine(void *payload, void *data, const xmlChar * name)
 }
 
 /**
- * xmlRelaxNGCombineStart:
- * @ctxt:  a Relax-NG parser context
- * @grammar:  the grammar
+ * @param ctxt  a Relax-NG parser context
+ * @param grammar  the grammar
  *
  * Applies the 4.17. combine rule for all the start
  * element of a given grammar.
@@ -5855,14 +5755,13 @@ xmlRelaxNGCombineStart(xmlRelaxNGParserCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGCheckCycles:
- * @ctxt:  a Relax-NG parser context
- * @nodes:  grammar children nodes
- * @depth:  the counter
+ * @param ctxt  a Relax-NG parser context
+ * @param cur  grammar children nodes
+ * @param depth  the counter
  *
  * Check for cycles.
  *
- * Returns 0 if check passed, and -1 in case of error
+ * @returns 0 if check passed, and -1 in case of error
  */
 static int
 xmlRelaxNGCheckCycles(xmlRelaxNGParserCtxtPtr ctxt,
@@ -5894,15 +5793,14 @@ xmlRelaxNGCheckCycles(xmlRelaxNGParserCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGTryUnlink:
- * @ctxt:  a Relax-NG parser context
- * @cur:  the definition to unlink
- * @parent:  the parent definition
- * @prev:  the previous sibling definition
+ * @param ctxt  a Relax-NG parser context
+ * @param cur  the definition to unlink
+ * @param parent  the parent definition
+ * @param prev  the previous sibling definition
  *
  * Try to unlink a definition. If not possible make it a NOOP
  *
- * Returns the new prev definition
+ * @returns the new prev definition
  */
 static xmlRelaxNGDefinePtr
 xmlRelaxNGTryUnlink(xmlRelaxNGParserCtxtPtr ctxt ATTRIBUTE_UNUSED,
@@ -5928,9 +5826,9 @@ xmlRelaxNGTryUnlink(xmlRelaxNGParserCtxtPtr ctxt ATTRIBUTE_UNUSED,
 }
 
 /**
- * xmlRelaxNGSimplify:
- * @ctxt:  a Relax-NG parser context
- * @nodes:  grammar children nodes
+ * @param ctxt  a Relax-NG parser context
+ * @param cur  grammar children nodes
+ * @param parent  parent
  *
  * Check for simplification of empty and notAllowed
  */
@@ -6094,13 +5992,12 @@ xmlRelaxNGSimplify(xmlRelaxNGParserCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGGroupContentType:
- * @ct1:  the first content type
- * @ct2:  the second content type
+ * @param ct1  the first content type
+ * @param ct2  the second content type
  *
  * Try to group 2 content types
  *
- * Returns the content type
+ * @returns the content type
  */
 static xmlRelaxNGContentType
 xmlRelaxNGGroupContentType(xmlRelaxNGContentType ct1,
@@ -6120,13 +6017,12 @@ xmlRelaxNGGroupContentType(xmlRelaxNGContentType ct1,
 }
 
 /**
- * xmlRelaxNGMaxContentType:
- * @ct1:  the first content type
- * @ct2:  the second content type
+ * @param ct1  the first content type
+ * @param ct2  the second content type
  *
  * Compute the max content-type
  *
- * Returns the content type
+ * @returns the content type
  */
 static xmlRelaxNGContentType
 xmlRelaxNGMaxContentType(xmlRelaxNGContentType ct1,
@@ -6145,15 +6041,14 @@ xmlRelaxNGMaxContentType(xmlRelaxNGContentType ct1,
 }
 
 /**
- * xmlRelaxNGCheckRules:
- * @ctxt:  a Relax-NG parser context
- * @cur:  the current definition
- * @flags:  some accumulated flags
- * @ptype:  the parent type
+ * @param ctxt  a Relax-NG parser context
+ * @param cur  the current definition
+ * @param flags  some accumulated flags
+ * @param ptype  the parent type
  *
  * Check for rules in section 7.1 and 7.2
  *
- * Returns the content type of @cur
+ * @returns the content type of `cur`
  */
 static xmlRelaxNGContentType
 xmlRelaxNGCheckRules(xmlRelaxNGParserCtxtPtr ctxt,
@@ -6473,13 +6368,12 @@ xmlRelaxNGCheckRules(xmlRelaxNGParserCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGParseGrammar:
- * @ctxt:  a Relax-NG parser context
- * @nodes:  grammar children nodes
+ * @param ctxt  a Relax-NG parser context
+ * @param nodes  grammar children nodes
  *
- * parse a Relax-NG <grammar> node
+ * parse a Relax-NG `<grammar>` node
  *
- * Returns the internal xmlRelaxNGGrammarPtr built or
+ * @returns the internal xmlRelaxNGGrammarPtr built or
  *         NULL in case of error
  */
 static xmlRelaxNGGrammarPtr
@@ -6541,14 +6435,13 @@ xmlRelaxNGParseGrammar(xmlRelaxNGParserCtxtPtr ctxt, xmlNodePtr nodes)
 }
 
 /**
- * xmlRelaxNGParseDocument:
- * @ctxt:  a Relax-NG parser context
- * @node:  the root node of the RelaxNG schema
+ * @param ctxt  a Relax-NG parser context
+ * @param node  the root node of the RelaxNG schema
  *
  * parse a Relax-NG definition resource and build an internal
  * xmlRelaxNG structure which can be used to validate instances.
  *
- * Returns the internal XML RelaxNG structure built or
+ * @returns the internal XML RelaxNG structure built or
  *         NULL in case of error
  */
 static xmlRelaxNGPtr
@@ -6626,13 +6519,12 @@ xmlRelaxNGParseDocument(xmlRelaxNGParserCtxtPtr ctxt, xmlNodePtr node)
  ************************************************************************/
 
 /**
- * xmlRelaxNGNewParserCtxt:
- * @URL:  the location of the schema
+ * @param URL  the location of the schema
  *
  * Create an XML RelaxNGs parse context for that file/resource expected
  * to contain an XML RelaxNGs file.
  *
- * Returns the parser context or NULL in case of error
+ * @returns the parser context or NULL in case of error
  */
 xmlRelaxNGParserCtxtPtr
 xmlRelaxNGNewParserCtxt(const char *URL)
@@ -6654,14 +6546,13 @@ xmlRelaxNGNewParserCtxt(const char *URL)
 }
 
 /**
- * xmlRelaxNGNewMemParserCtxt:
- * @buffer:  a pointer to a char array containing the schemas
- * @size:  the size of the array
+ * @param buffer  a pointer to a char array containing the schemas
+ * @param size  the size of the array
  *
  * Create an XML RelaxNGs parse context for that memory buffer expected
  * to contain an XML RelaxNGs file.
  *
- * Returns the parser context or NULL in case of error
+ * @returns the parser context or NULL in case of error
  */
 xmlRelaxNGParserCtxtPtr
 xmlRelaxNGNewMemParserCtxt(const char *buffer, int size)
@@ -6684,14 +6575,13 @@ xmlRelaxNGNewMemParserCtxt(const char *buffer, int size)
 }
 
 /**
- * xmlRelaxNGNewDocParserCtxt:
- * @doc:  a preparsed document tree
+ * @param doc  a preparsed document tree
  *
  * Create an XML RelaxNGs parser context for that document.
  * Note: since the process of compiling a RelaxNG schemas modifies the
- *       document, the @doc parameter is duplicated internally.
+ *       document, the `doc` parameter is duplicated internally.
  *
- * Returns the parser context or NULL in case of error
+ * @returns the parser context or NULL in case of error
  */
 xmlRelaxNGParserCtxtPtr
 xmlRelaxNGNewDocParserCtxt(xmlDocPtr doc)
@@ -6720,8 +6610,7 @@ xmlRelaxNGNewDocParserCtxt(xmlDocPtr doc)
 }
 
 /**
- * xmlRelaxNGFreeParserCtxt:
- * @ctxt:  the schema parser context
+ * @param ctxt  the schema parser context
  *
  * Free the resources associated to the schema parser context
  */
@@ -6757,8 +6646,7 @@ xmlRelaxNGFreeParserCtxt(xmlRelaxNGParserCtxtPtr ctxt)
 }
 
 /**
- * xmlRelaxNGNormExtSpace:
- * @value:  a value
+ * @param value  a value
  *
  * Removes the leading and ending spaces of the value
  * The string is modified "in situ"
@@ -6809,9 +6697,8 @@ xmlRelaxNGNormExtSpace(xmlChar * value)
 }
 
 /**
- * xmlRelaxNGCleanupAttributes:
- * @ctxt:  a Relax-NG parser context
- * @node:  a Relax-NG node
+ * @param ctxt  a Relax-NG parser context
+ * @param node  a Relax-NG node
  *
  * Check all the attributes on the given node
  */
@@ -6896,9 +6783,8 @@ xmlRelaxNGCleanupAttributes(xmlRelaxNGParserCtxtPtr ctxt, xmlNodePtr node)
 }
 
 /**
- * xmlRelaxNGCleanupTree:
- * @ctxt:  a Relax-NG parser context
- * @root:  an xmlNodePtr subtree
+ * @param ctxt  a Relax-NG parser context
+ * @param root  an xmlNodePtr subtree
  *
  * Cleanup the subtree from unwanted nodes for parsing, resolve
  * Include and externalRef lookups.
@@ -7337,14 +7223,13 @@ xmlRelaxNGCleanupTree(xmlRelaxNGParserCtxtPtr ctxt, xmlNodePtr root)
 }
 
 /**
- * xmlRelaxNGCleanupDoc:
- * @ctxt:  a Relax-NG parser context
- * @doc:  an xmldocPtr document pointer
+ * @param ctxt  a Relax-NG parser context
+ * @param doc  an xmldocPtr document pointer
  *
  * Cleanup the document from unwanted nodes for parsing, resolve
  * Include and externalRef lookups.
  *
- * Returns the cleaned up document or NULL in case of error
+ * @returns the cleaned up document or NULL in case of error
  */
 static xmlDocPtr
 xmlRelaxNGCleanupDoc(xmlRelaxNGParserCtxtPtr ctxt, xmlDocPtr doc)
@@ -7365,13 +7250,12 @@ xmlRelaxNGCleanupDoc(xmlRelaxNGParserCtxtPtr ctxt, xmlDocPtr doc)
 }
 
 /**
- * xmlRelaxNGParse:
- * @ctxt:  a Relax-NG parser context
+ * @param ctxt  a Relax-NG parser context
  *
  * parse a schema definition resource and build an internal
  * XML Schema structure which can be used to validate instances.
  *
- * Returns the internal XML RelaxNG structure built from the resource or
+ * @returns the internal XML RelaxNG structure built from the resource or
  *         NULL in case of error
  */
 xmlRelaxNGPtr
@@ -7503,13 +7387,12 @@ xmlRelaxNGParse(xmlRelaxNGParserCtxtPtr ctxt)
 }
 
 /**
- * xmlRelaxNGSetParserErrors:
- * @ctxt:  a Relax-NG validation context
- * @err:  the error callback
- * @warn:  the warning callback
- * @ctx:  contextual data for the callbacks
+ * @param ctxt  a Relax-NG validation context
+ * @param err  the error callback
+ * @param warn  the warning callback
+ * @param ctx  contextual data for the callbacks
  *
- * DEPRECATED: Use xmlRelaxNGSetParserStructuredErrors.
+ * @deprecated Use xmlRelaxNGSetParserStructuredErrors.
  *
  * Set the callback functions used to handle errors for a validation context
  */
@@ -7527,15 +7410,14 @@ xmlRelaxNGSetParserErrors(xmlRelaxNGParserCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGGetParserErrors:
- * @ctxt:  a Relax-NG validation context
- * @err:  the error callback result
- * @warn:  the warning callback result
- * @ctx:  contextual data for the callbacks result
+ * @param ctxt  a Relax-NG validation context
+ * @param err  the error callback result
+ * @param warn  the warning callback result
+ * @param ctx  contextual data for the callbacks result
  *
  * Get the callback information used to handle errors for a validation context
  *
- * Returns -1 in case of failure, 0 otherwise.
+ * @returns -1 in case of failure, 0 otherwise.
  */
 int
 xmlRelaxNGGetParserErrors(xmlRelaxNGParserCtxtPtr ctxt,
@@ -7554,10 +7436,9 @@ xmlRelaxNGGetParserErrors(xmlRelaxNGParserCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGSetParserStructuredErrors:
- * @ctxt:  a Relax-NG parser context
- * @serror:  the error callback
- * @ctx:  contextual data for the callbacks
+ * @param ctxt  a Relax-NG parser context
+ * @param serror  the error callback
+ * @param ctx  contextual data for the callbacks
  *
  * Set the callback functions used to handle errors for a parsing context
  */
@@ -7575,10 +7456,9 @@ xmlRelaxNGSetParserStructuredErrors(xmlRelaxNGParserCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGSetResourceLoader:
- * @ctxt:  a Relax-NG parser context
- * @loader:  the callback
- * @vctxt:  contextual data for the callbacks
+ * @param ctxt  a Relax-NG parser context
+ * @param loader  the callback
+ * @param vctxt  contextual data for the callbacks
  *
  * Set the callback function used to load external resources.
  */
@@ -7602,9 +7482,8 @@ static void xmlRelaxNGDumpDefine(FILE * output,
                                  xmlRelaxNGDefinePtr define);
 
 /**
- * xmlRelaxNGDumpDefines:
- * @output:  the file output
- * @defines:  a list of define structures
+ * @param output  the file output
+ * @param defines  a list of define structures
  *
  * Dump a RelaxNG structure back
  */
@@ -7618,9 +7497,8 @@ xmlRelaxNGDumpDefines(FILE * output, xmlRelaxNGDefinePtr defines)
 }
 
 /**
- * xmlRelaxNGDumpDefine:
- * @output:  the file output
- * @define:  a define structure
+ * @param output  the file output
+ * @param define  a define structure
  *
  * Dump a RelaxNG structure back
  */
@@ -7736,10 +7614,9 @@ xmlRelaxNGDumpDefine(FILE * output, xmlRelaxNGDefinePtr define)
 }
 
 /**
- * xmlRelaxNGDumpGrammar:
- * @output:  the file output
- * @grammar:  a grammar structure
- * @top:  is this a top grammar
+ * @param output  the file output
+ * @param grammar  a grammar structure
+ * @param top  is this a top grammar
  *
  * Dump a RelaxNG structure back
  */
@@ -7777,9 +7654,8 @@ xmlRelaxNGDumpGrammar(FILE * output, xmlRelaxNGGrammarPtr grammar, int top)
 }
 
 /**
- * xmlRelaxNGDump:
- * @output:  the file output
- * @schema:  a schema structure
+ * @param output  the file output
+ * @param schema  a schema structure
  *
  * Dump a RelaxNG structure back
  */
@@ -7808,9 +7684,8 @@ xmlRelaxNGDump(FILE * output, xmlRelaxNGPtr schema)
 }
 
 /**
- * xmlRelaxNGDumpTree:
- * @output:  the file output
- * @schema:  a schema structure
+ * @param output  the file output
+ * @param schema  a schema structure
  *
  * Dump the transformed RelaxNG tree.
  */
@@ -7840,11 +7715,10 @@ static int xmlRelaxNGValidateDefinition(xmlRelaxNGValidCtxtPtr ctxt,
                                         xmlRelaxNGDefinePtr define);
 
 /**
- * xmlRelaxNGValidateCompiledCallback:
- * @exec:  the regular expression instance
- * @token:  the token which matched
- * @transdata:  callback data, the define for the subelement if available
- @ @inputdata:  callback data, the Relax NG validation context
+ * @param exec  the regular expression instance
+ * @param token  the token which matched
+ * @param transdata  callback data, the define for the subelement if available
+ * @param inputdata  callback data, the Relax NG validation context
  *
  * Handle the callback and if needed validate the element children.
  */
@@ -7884,14 +7758,13 @@ xmlRelaxNGValidateCompiledCallback(xmlRegExecCtxtPtr exec ATTRIBUTE_UNUSED,
 }
 
 /**
- * xmlRelaxNGValidateCompiledContent:
- * @ctxt:  the RelaxNG validation context
- * @regexp:  the regular expression as compiled
- * @content:  list of children to test against the regexp
+ * @param ctxt  the RelaxNG validation context
+ * @param regexp  the regular expression as compiled
+ * @param content  list of children to test against the regexp
  *
  * Validate the content model of an element or start using the regexp
  *
- * Returns 0 in case of success, -1 in case of error.
+ * @returns 0 in case of success, -1 in case of error.
  */
 static int
 xmlRelaxNGValidateCompiledContent(xmlRelaxNGValidCtxtPtr ctxt,
@@ -7982,13 +7855,12 @@ static int xmlRelaxNGValidateElementEnd(xmlRelaxNGValidCtxtPtr ctxt,
 static void xmlRelaxNGLogBestError(xmlRelaxNGValidCtxtPtr ctxt);
 
 /**
- * xmlRelaxNGElemPush:
- * @ctxt:  the validation context
- * @exec:  the regexp runtime for the new content model
+ * @param ctxt  the validation context
+ * @param exec  the regexp runtime for the new content model
  *
  * Push a new regexp for the current node content model on the stack
  *
- * Returns 0 in case of success and -1 in case of error.
+ * @returns 0 in case of success and -1 in case of error.
  */
 static int
 xmlRelaxNGElemPush(xmlRelaxNGValidCtxtPtr ctxt, xmlRegExecCtxtPtr exec)
@@ -8020,12 +7892,11 @@ xmlRelaxNGElemPush(xmlRelaxNGValidCtxtPtr ctxt, xmlRegExecCtxtPtr exec)
 }
 
 /**
- * xmlRelaxNGElemPop:
- * @ctxt:  the validation context
+ * @param ctxt  the validation context
  *
  * Pop the regexp of the current node content model from the stack
  *
- * Returns the exec or NULL if empty
+ * @returns the exec or NULL if empty
  */
 static xmlRegExecCtxtPtr
 xmlRelaxNGElemPop(xmlRelaxNGValidCtxtPtr ctxt)
@@ -8045,14 +7916,13 @@ xmlRelaxNGElemPop(xmlRelaxNGValidCtxtPtr ctxt)
 }
 
 /**
- * xmlRelaxNGValidateProgressiveCallback:
- * @exec:  the regular expression instance
- * @token:  the token which matched
- * @transdata:  callback data, the define for the subelement if available
- @ @inputdata:  callback data, the Relax NG validation context
+ * @param exec  the regular expression instance
+ * @param token  the token which matched
+ * @param transdata  callback data, the define for the subelement if available
+ * @param inputdata  callback data, the Relax NG validation context
  *
  * Handle the callback and if needed validate the element children.
- * some of the in/out information are passed via the context in @inputdata.
+ * some of the in/out information are passed via the context in `inputdata`.
  */
 static void
 xmlRelaxNGValidateProgressiveCallback(xmlRegExecCtxtPtr exec
@@ -8178,14 +8048,13 @@ xmlRelaxNGValidateProgressiveCallback(xmlRegExecCtxtPtr exec
 }
 
 /**
- * xmlRelaxNGValidatePushElement:
- * @ctxt:  the validation context
- * @doc:  a document instance
- * @elem:  an element instance
+ * @param ctxt  the validation context
+ * @param doc  a document instance
+ * @param elem  an element instance
  *
  * Push a new element start on the RelaxNG validation stack.
  *
- * returns 1 if no validation problem was found or 0 if validating the
+ * @returns 1 if no validation problem was found or 0 if validating the
  *         element requires a full node, and -1 in case of error.
  */
 int
@@ -8250,14 +8119,13 @@ xmlRelaxNGValidatePushElement(xmlRelaxNGValidCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGValidatePushCData:
- * @ctxt:  the RelaxNG validation context
- * @data:  some character data read
- * @len:  the length of the data
+ * @param ctxt  the RelaxNG validation context
+ * @param data  some character data read
+ * @param len  the length of the data
  *
  * check the CData parsed for validation in the current stack
  *
- * returns 1 if no validation problem was found or -1 otherwise
+ * @returns 1 if no validation problem was found or -1 otherwise
  */
 int
 xmlRelaxNGValidatePushCData(xmlRelaxNGValidCtxtPtr ctxt,
@@ -8286,14 +8154,13 @@ xmlRelaxNGValidatePushCData(xmlRelaxNGValidCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGValidatePopElement:
- * @ctxt:  the RelaxNG validation context
- * @doc:  a document instance
- * @elem:  an element instance
+ * @param ctxt  the RelaxNG validation context
+ * @param doc  a document instance
+ * @param elem  an element instance
  *
  * Pop the element end from the RelaxNG validation stack.
  *
- * returns 1 if no validation problem was found or 0 otherwise
+ * @returns 1 if no validation problem was found or 0 otherwise
  */
 int
 xmlRelaxNGValidatePopElement(xmlRelaxNGValidCtxtPtr ctxt,
@@ -8326,15 +8193,14 @@ xmlRelaxNGValidatePopElement(xmlRelaxNGValidCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGValidateFullElement:
- * @ctxt:  the validation context
- * @doc:  a document instance
- * @elem:  an element instance
+ * @param ctxt  the validation context
+ * @param doc  a document instance
+ * @param elem  an element instance
  *
  * Validate a full subtree when xmlRelaxNGValidatePushElement() returned
  * 0 and the content of the node has been expanded.
  *
- * returns 1 if no validation problem was found or -1 in case of error.
+ * @returns 1 if no validation problem was found or -1 in case of error.
  */
 int
 xmlRelaxNGValidateFullElement(xmlRelaxNGValidCtxtPtr ctxt,
@@ -8372,13 +8238,12 @@ static int xmlRelaxNGValidateValue(xmlRelaxNGValidCtxtPtr ctxt,
                                    xmlRelaxNGDefinePtr define);
 
 /**
- * xmlRelaxNGSkipIgnored:
- * @ctxt:  a schema validation context
- * @node:  the top node.
+ * @param ctxt  a schema validation context
+ * @param node  the top node.
  *
  * Skip ignorable nodes in that context
  *
- * Returns the new sibling or NULL in case of error.
+ * @returns the new sibling or NULL in case of error.
  */
 static xmlNodePtr
 xmlRelaxNGSkipIgnored(xmlRelaxNGValidCtxtPtr ctxt ATTRIBUTE_UNUSED,
@@ -8402,14 +8267,13 @@ xmlRelaxNGSkipIgnored(xmlRelaxNGValidCtxtPtr ctxt ATTRIBUTE_UNUSED,
 }
 
 /**
- * xmlRelaxNGNormalize:
- * @ctxt:  a schema validation context
- * @str:  the string to normalize
+ * @param ctxt  a schema validation context
+ * @param str  the string to normalize
  *
  * Implements the  normalizeWhiteSpace( s ) function from
  * section 6.2.9 of the spec
  *
- * Returns the new string or NULL in case of error.
+ * @returns the new string or NULL in case of error.
  */
 static xmlChar *
 xmlRelaxNGNormalize(xmlRelaxNGValidCtxtPtr ctxt, const xmlChar * str)
@@ -8448,15 +8312,14 @@ xmlRelaxNGNormalize(xmlRelaxNGValidCtxtPtr ctxt, const xmlChar * str)
 }
 
 /**
- * xmlRelaxNGValidateDatatype:
- * @ctxt:  a Relax-NG validation context
- * @value:  the string value
- * @type:  the datatype definition
- * @node:  the node
+ * @param ctxt  a Relax-NG validation context
+ * @param value  the string value
+ * @param define  the datatype definition
+ * @param node  the node
  *
  * Validate the given value against the datatype
  *
- * Returns 0 if the validation succeeded or an error code.
+ * @returns 0 if the validation succeeded or an error code.
  */
 static int
 xmlRelaxNGValidateDatatype(xmlRelaxNGValidCtxtPtr ctxt,
@@ -8522,12 +8385,11 @@ xmlRelaxNGValidateDatatype(xmlRelaxNGValidCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGNextValue:
- * @ctxt:  a Relax-NG validation context
+ * @param ctxt  a Relax-NG validation context
  *
  * Skip to the next value when validating within a list
  *
- * Returns 0 if the operation succeeded or an error code.
+ * @returns 0 if the operation succeeded or an error code.
  */
 static int
 xmlRelaxNGNextValue(xmlRelaxNGValidCtxtPtr ctxt)
@@ -8552,13 +8414,12 @@ xmlRelaxNGNextValue(xmlRelaxNGValidCtxtPtr ctxt)
 }
 
 /**
- * xmlRelaxNGValidateValueList:
- * @ctxt:  a Relax-NG validation context
- * @defines:  the list of definitions to verify
+ * @param ctxt  a Relax-NG validation context
+ * @param defines  the list of definitions to verify
  *
  * Validate the given set of definitions for the current value
  *
- * Returns 0 if the validation succeeded or an error code.
+ * @returns 0 if the validation succeeded or an error code.
  */
 static int
 xmlRelaxNGValidateValueList(xmlRelaxNGValidCtxtPtr ctxt,
@@ -8576,13 +8437,12 @@ xmlRelaxNGValidateValueList(xmlRelaxNGValidCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGValidateValue:
- * @ctxt:  a Relax-NG validation context
- * @define:  the definition to verify
+ * @param ctxt  a Relax-NG validation context
+ * @param define  the definition to verify
  *
  * Validate the given definition for the current value
  *
- * Returns 0 if the validation succeeded or an error code.
+ * @returns 0 if the validation succeeded or an error code.
  */
 static int
 xmlRelaxNGValidateValue(xmlRelaxNGValidCtxtPtr ctxt,
@@ -8845,13 +8705,12 @@ xmlRelaxNGValidateValue(xmlRelaxNGValidCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGValidateValueContent:
- * @ctxt:  a Relax-NG validation context
- * @defines:  the list of definitions to verify
+ * @param ctxt  a Relax-NG validation context
+ * @param defines  the list of definitions to verify
  *
  * Validate the given definitions for the current value
  *
- * Returns 0 if the validation succeeded or an error code.
+ * @returns 0 if the validation succeeded or an error code.
  */
 static int
 xmlRelaxNGValidateValueContent(xmlRelaxNGValidCtxtPtr ctxt,
@@ -8869,14 +8728,13 @@ xmlRelaxNGValidateValueContent(xmlRelaxNGValidCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGAttributeMatch:
- * @ctxt:  a Relax-NG validation context
- * @define:  the definition to check
- * @prop:  the attribute
+ * @param ctxt  a Relax-NG validation context
+ * @param define  the definition to check
+ * @param prop  the attribute
  *
  * Check if the attribute matches the definition nameClass
  *
- * Returns 1 if the attribute matches, 0 if no, or -1 in case of error
+ * @returns 1 if the attribute matches, 0 if no, or -1 in case of error
  */
 static int
 xmlRelaxNGAttributeMatch(xmlRelaxNGValidCtxtPtr ctxt,
@@ -8934,13 +8792,12 @@ xmlRelaxNGAttributeMatch(xmlRelaxNGValidCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGValidateAttribute:
- * @ctxt:  a Relax-NG validation context
- * @define:  the definition to verify
+ * @param ctxt  a Relax-NG validation context
+ * @param define  the definition to verify
  *
  * Validate the given attribute definition for that node
  *
- * Returns 0 if the validation succeeded or an error code.
+ * @returns 0 if the validation succeeded or an error code.
  */
 static int
 xmlRelaxNGValidateAttribute(xmlRelaxNGValidCtxtPtr ctxt,
@@ -9028,13 +8885,12 @@ xmlRelaxNGValidateAttribute(xmlRelaxNGValidCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGValidateAttributeList:
- * @ctxt:  a Relax-NG validation context
- * @define:  the list of definition to verify
+ * @param ctxt  a Relax-NG validation context
+ * @param defines  the list of definition to verify
  *
  * Validate the given node against the list of attribute definitions
  *
- * Returns 0 if the validation succeeded or an error code.
+ * @returns 0 if the validation succeeded or an error code.
  */
 static int
 xmlRelaxNGValidateAttributeList(xmlRelaxNGValidCtxtPtr ctxt,
@@ -9076,13 +8932,12 @@ xmlRelaxNGValidateAttributeList(xmlRelaxNGValidCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGNodeMatchesList:
- * @node:  the node
- * @list:  a NULL terminated array of definitions
+ * @param node  the node
+ * @param list  a NULL terminated array of definitions
  *
  * Check if a node can be matched by one of the definitions
  *
- * Returns 1 if matches 0 otherwise
+ * @returns 1 if matches 0 otherwise
  */
 static int
 xmlRelaxNGNodeMatchesList(xmlNodePtr node, xmlRelaxNGDefinePtr * list)
@@ -9114,13 +8969,12 @@ xmlRelaxNGNodeMatchesList(xmlNodePtr node, xmlRelaxNGDefinePtr * list)
 }
 
 /**
- * xmlRelaxNGValidateInterleave:
- * @ctxt:  a Relax-NG validation context
- * @define:  the definition to verify
+ * @param ctxt  a Relax-NG validation context
+ * @param define  the definition to verify
  *
  * Validate an interleave definition for a node.
  *
- * Returns 0 if the validation succeeded or an error code.
+ * @returns 0 if the validation succeeded or an error code.
  */
 static int
 xmlRelaxNGValidateInterleave(xmlRelaxNGValidCtxtPtr ctxt,
@@ -9419,13 +9273,12 @@ xmlRelaxNGValidateInterleave(xmlRelaxNGValidCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGValidateDefinitionList:
- * @ctxt:  a Relax-NG validation context
- * @define:  the list of definition to verify
+ * @param ctxt  a Relax-NG validation context
+ * @param defines  the list of definition to verify
  *
  * Validate the given node content against the (list) of definitions
  *
- * Returns 0 if the validation succeeded or an error code.
+ * @returns 0 if the validation succeeded or an error code.
  */
 static int
 xmlRelaxNGValidateDefinitionList(xmlRelaxNGValidCtxtPtr ctxt,
@@ -9457,14 +9310,13 @@ xmlRelaxNGValidateDefinitionList(xmlRelaxNGValidCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGElementMatch:
- * @ctxt:  a Relax-NG validation context
- * @define:  the definition to check
- * @elem:  the element
+ * @param ctxt  a Relax-NG validation context
+ * @param define  the definition to check
+ * @param elem  the element
  *
  * Check if the element matches the definition nameClass
  *
- * Returns 1 if the element matches, 0 if no, or -1 in case of error
+ * @returns 1 if the element matches, 0 if no, or -1 in case of error
  */
 static int
 xmlRelaxNGElementMatch(xmlRelaxNGValidCtxtPtr ctxt,
@@ -9571,15 +9423,14 @@ xmlRelaxNGElementMatch(xmlRelaxNGValidCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGBestState:
- * @ctxt:  a Relax-NG validation context
+ * @param ctxt  a Relax-NG validation context
  *
  * Find the "best" state in the ctxt->states list of states to report
  * errors about. I.e. a state with no element left in the child list
  * or the one with the less attributes left.
  * This is called only if a validation error was detected
  *
- * Returns the index of the "best" state or -1 in case of error
+ * @returns the index of the "best" state or -1 in case of error
  */
 static int
 xmlRelaxNGBestState(xmlRelaxNGValidCtxtPtr ctxt)
@@ -9614,8 +9465,7 @@ xmlRelaxNGBestState(xmlRelaxNGValidCtxtPtr ctxt)
 }
 
 /**
- * xmlRelaxNGLogBestError:
- * @ctxt:  a Relax-NG validation context
+ * @param ctxt  a Relax-NG validation context
  *
  * Find the "best" state in the ctxt->states list of states to report
  * errors about and log it.
@@ -9638,15 +9488,14 @@ xmlRelaxNGLogBestError(xmlRelaxNGValidCtxtPtr ctxt)
 }
 
 /**
- * xmlRelaxNGValidateElementEnd:
- * @ctxt:  a Relax-NG validation context
- * @dolog:  indicate that error logging should be done
+ * @param ctxt  a Relax-NG validation context
+ * @param dolog  indicate that error logging should be done
  *
  * Validate the end of the element, implements check that
  * there is nothing left not consumed in the element content
  * or in the attribute list.
  *
- * Returns 0 if the validation succeeded or an error code.
+ * @returns 0 if the validation succeeded or an error code.
  */
 static int
 xmlRelaxNGValidateElementEnd(xmlRelaxNGValidCtxtPtr ctxt, int dolog)
@@ -9678,13 +9527,12 @@ xmlRelaxNGValidateElementEnd(xmlRelaxNGValidCtxtPtr ctxt, int dolog)
 }
 
 /**
- * xmlRelaxNGValidateState:
- * @ctxt:  a Relax-NG validation context
- * @define:  the definition to verify
+ * @param ctxt  a Relax-NG validation context
+ * @param define  the definition to verify
  *
  * Validate the current state against the definition
  *
- * Returns 0 if the validation succeeded or an error code.
+ * @returns 0 if the validation succeeded or an error code.
  */
 static int
 xmlRelaxNGValidateState(xmlRelaxNGValidCtxtPtr ctxt,
@@ -10402,13 +10250,12 @@ xmlRelaxNGValidateState(xmlRelaxNGValidCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGValidateDefinition:
- * @ctxt:  a Relax-NG validation context
- * @define:  the definition to verify
+ * @param ctxt  a Relax-NG validation context
+ * @param define  the definition to verify
  *
  * Validate the current node lists against the definition
  *
- * Returns 0 if the validation succeeded or an error code.
+ * @returns 0 if the validation succeeded or an error code.
  */
 static int
 xmlRelaxNGValidateDefinition(xmlRelaxNGValidCtxtPtr ctxt,
@@ -10535,13 +10382,12 @@ xmlRelaxNGValidateDefinition(xmlRelaxNGValidCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGValidateDocument:
- * @ctxt:  a Relax-NG validation context
- * @doc:  the document
+ * @param ctxt  a Relax-NG validation context
+ * @param doc  the document
  *
  * Validate the given document
  *
- * Returns 0 if the validation succeeded or an error code.
+ * @returns 0 if the validation succeeded or an error code.
  */
 static int
 xmlRelaxNGValidateDocument(xmlRelaxNGValidCtxtPtr ctxt, xmlDocPtr doc)
@@ -10628,8 +10474,7 @@ xmlRelaxNGValidateDocument(xmlRelaxNGValidCtxtPtr ctxt, xmlDocPtr doc)
 }
 
 /**
- * xmlRelaxNGCleanPSVI:
- * @node:  an input element or document
+ * @param node  an input element or document
  *
  * Call this routine to speed up XPath computation on static documents.
  * This stamps all the element nodes with the document order
@@ -10637,7 +10482,7 @@ xmlRelaxNGValidateDocument(xmlRelaxNGValidCtxtPtr ctxt, xmlDocPtr doc)
  * field, the value stored is actually - the node number (starting at -1)
  * to be able to differentiate from line numbers.
  *
- * Returns the number of elements found in the document or -1 in case
+ * @returns the number of elements found in the document or -1 in case
  *    of error.
  */
 static void
@@ -10687,12 +10532,11 @@ xmlRelaxNGCleanPSVI(xmlNodePtr node) {
  ************************************************************************/
 
 /**
- * xmlRelaxNGNewValidCtxt:
- * @schema:  a precompiled XML RelaxNGs
+ * @param schema  a precompiled XML RelaxNGs
  *
  * Create an XML RelaxNGs validation context based on the given schema
  *
- * Returns the validation context or NULL in case of error
+ * @returns the validation context or NULL in case of error
  */
 xmlRelaxNGValidCtxtPtr
 xmlRelaxNGNewValidCtxt(xmlRelaxNGPtr schema)
@@ -10720,8 +10564,7 @@ xmlRelaxNGNewValidCtxt(xmlRelaxNGPtr schema)
 }
 
 /**
- * xmlRelaxNGFreeValidCtxt:
- * @ctxt:  the schema validation context
+ * @param ctxt  the schema validation context
  *
  * Free the resources associated to the schema validation context
  */
@@ -10762,13 +10605,12 @@ xmlRelaxNGFreeValidCtxt(xmlRelaxNGValidCtxtPtr ctxt)
 }
 
 /**
- * xmlRelaxNGSetValidErrors:
- * @ctxt:  a Relax-NG validation context
- * @err:  the error function
- * @warn: the warning function
- * @ctx: the functions context
+ * @param ctxt  a Relax-NG validation context
+ * @param err  the error function
+ * @param warn  the warning function
+ * @param ctx  the functions context
  *
- * DEPRECATED: Use xmlRelaxNGSetValidStructuredErrors.
+ * @deprecated Use xmlRelaxNGSetValidStructuredErrors.
  *
  * Set the error and warning callback information
  */
@@ -10786,10 +10628,9 @@ xmlRelaxNGSetValidErrors(xmlRelaxNGValidCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGSetValidStructuredErrors:
- * @ctxt:  a Relax-NG validation context
- * @serror:  the structured error function
- * @ctx: the functions context
+ * @param ctxt  a Relax-NG validation context
+ * @param serror  the structured error function
+ * @param ctx  the functions context
  *
  * Set the structured error callback
  */
@@ -10806,15 +10647,14 @@ xmlRelaxNGSetValidStructuredErrors(xmlRelaxNGValidCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGGetValidErrors:
- * @ctxt:  a Relax-NG validation context
- * @err:  the error function result
- * @warn: the warning function result
- * @ctx: the functions context result
+ * @param ctxt  a Relax-NG validation context
+ * @param err  the error function result
+ * @param warn  the warning function result
+ * @param ctx  the functions context result
  *
  * Get the error and warning callback information
  *
- * Returns -1 in case of error and 0 otherwise
+ * @returns -1 in case of error and 0 otherwise
  */
 int
 xmlRelaxNGGetValidErrors(xmlRelaxNGValidCtxtPtr ctxt,
@@ -10833,13 +10673,12 @@ xmlRelaxNGGetValidErrors(xmlRelaxNGValidCtxtPtr ctxt,
 }
 
 /**
- * xmlRelaxNGValidateDoc:
- * @ctxt:  a Relax-NG validation context
- * @doc:  a parsed document tree
+ * @param ctxt  a Relax-NG validation context
+ * @param doc  a parsed document tree
  *
  * Validate a document tree in memory.
  *
- * Returns 0 if the document is valid, a positive error code
+ * @returns 0 if the document is valid, a positive error code
  *     number otherwise and -1 in case of internal or API error.
  */
 int

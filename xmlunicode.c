@@ -8,7 +8,6 @@
  *
  * Generation date: Tue Mar  4 16:29:31 2025
  * Sources: Blocks-4.0.1.txt UnicodeData-4.0.1.txt
- * Daniel Veillard <veillard@redhat.com>
  */
 
 #define IN_LIBXML
@@ -764,13 +763,12 @@ static const xmlChSRange xmlZS[] = {{0x20, 0x20}, {0xa0, 0xa0},
 static const xmlChRangeGroup xmlZG = {9,0,xmlZS,NULL};
 
 /**
- * xmlUnicodeLookup:
- * @tptr: pointer to the name table
- * @name: name to be found
+ * @param tptr  pointer to the name table
+ * @param tname  name to be found
  *
  * binary table lookup for user-supplied name
  *
- * Returns pointer to range function if found, otherwise NULL
+ * @returns pointer to range function if found, otherwise NULL
  */
 static xmlIntFunc
 *xmlUnicodeLookup(const xmlUnicodeNameTable *tptr, const char *tname) {
@@ -796,12 +794,11 @@ static xmlIntFunc
 }
 
 /**
- * xmlUCSIsAegeanNumbers:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of AegeanNumbers UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsAegeanNumbers(int code) {
@@ -809,12 +806,11 @@ xmlUCSIsAegeanNumbers(int code) {
 }
 
 /**
- * xmlUCSIsAlphabeticPresentationForms:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of AlphabeticPresentationForms UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsAlphabeticPresentationForms(int code) {
@@ -822,12 +818,11 @@ xmlUCSIsAlphabeticPresentationForms(int code) {
 }
 
 /**
- * xmlUCSIsArabic:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Arabic UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsArabic(int code) {
@@ -835,12 +830,11 @@ xmlUCSIsArabic(int code) {
 }
 
 /**
- * xmlUCSIsArabicPresentationFormsA:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of ArabicPresentationForms-A UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsArabicPresentationFormsA(int code) {
@@ -848,12 +842,11 @@ xmlUCSIsArabicPresentationFormsA(int code) {
 }
 
 /**
- * xmlUCSIsArabicPresentationFormsB:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of ArabicPresentationForms-B UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsArabicPresentationFormsB(int code) {
@@ -861,12 +854,11 @@ xmlUCSIsArabicPresentationFormsB(int code) {
 }
 
 /**
- * xmlUCSIsArmenian:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Armenian UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsArmenian(int code) {
@@ -874,12 +866,11 @@ xmlUCSIsArmenian(int code) {
 }
 
 /**
- * xmlUCSIsArrows:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Arrows UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsArrows(int code) {
@@ -887,12 +878,11 @@ xmlUCSIsArrows(int code) {
 }
 
 /**
- * xmlUCSIsBasicLatin:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of BasicLatin UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsBasicLatin(int code) {
@@ -900,12 +890,11 @@ xmlUCSIsBasicLatin(int code) {
 }
 
 /**
- * xmlUCSIsBengali:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Bengali UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsBengali(int code) {
@@ -913,12 +902,11 @@ xmlUCSIsBengali(int code) {
 }
 
 /**
- * xmlUCSIsBlockElements:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of BlockElements UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsBlockElements(int code) {
@@ -926,12 +914,11 @@ xmlUCSIsBlockElements(int code) {
 }
 
 /**
- * xmlUCSIsBopomofo:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Bopomofo UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsBopomofo(int code) {
@@ -939,12 +926,11 @@ xmlUCSIsBopomofo(int code) {
 }
 
 /**
- * xmlUCSIsBopomofoExtended:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of BopomofoExtended UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsBopomofoExtended(int code) {
@@ -952,12 +938,11 @@ xmlUCSIsBopomofoExtended(int code) {
 }
 
 /**
- * xmlUCSIsBoxDrawing:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of BoxDrawing UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsBoxDrawing(int code) {
@@ -965,12 +950,11 @@ xmlUCSIsBoxDrawing(int code) {
 }
 
 /**
- * xmlUCSIsBraillePatterns:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of BraillePatterns UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsBraillePatterns(int code) {
@@ -978,12 +962,11 @@ xmlUCSIsBraillePatterns(int code) {
 }
 
 /**
- * xmlUCSIsBuhid:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Buhid UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsBuhid(int code) {
@@ -991,12 +974,11 @@ xmlUCSIsBuhid(int code) {
 }
 
 /**
- * xmlUCSIsByzantineMusicalSymbols:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of ByzantineMusicalSymbols UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsByzantineMusicalSymbols(int code) {
@@ -1004,12 +986,11 @@ xmlUCSIsByzantineMusicalSymbols(int code) {
 }
 
 /**
- * xmlUCSIsCJKCompatibility:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of CJKCompatibility UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsCJKCompatibility(int code) {
@@ -1017,12 +998,11 @@ xmlUCSIsCJKCompatibility(int code) {
 }
 
 /**
- * xmlUCSIsCJKCompatibilityForms:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of CJKCompatibilityForms UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsCJKCompatibilityForms(int code) {
@@ -1030,12 +1010,11 @@ xmlUCSIsCJKCompatibilityForms(int code) {
 }
 
 /**
- * xmlUCSIsCJKCompatibilityIdeographs:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of CJKCompatibilityIdeographs UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsCJKCompatibilityIdeographs(int code) {
@@ -1043,12 +1022,11 @@ xmlUCSIsCJKCompatibilityIdeographs(int code) {
 }
 
 /**
- * xmlUCSIsCJKCompatibilityIdeographsSupplement:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of CJKCompatibilityIdeographsSupplement UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsCJKCompatibilityIdeographsSupplement(int code) {
@@ -1056,12 +1034,11 @@ xmlUCSIsCJKCompatibilityIdeographsSupplement(int code) {
 }
 
 /**
- * xmlUCSIsCJKRadicalsSupplement:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of CJKRadicalsSupplement UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsCJKRadicalsSupplement(int code) {
@@ -1069,12 +1046,11 @@ xmlUCSIsCJKRadicalsSupplement(int code) {
 }
 
 /**
- * xmlUCSIsCJKSymbolsandPunctuation:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of CJKSymbolsandPunctuation UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsCJKSymbolsandPunctuation(int code) {
@@ -1082,12 +1058,11 @@ xmlUCSIsCJKSymbolsandPunctuation(int code) {
 }
 
 /**
- * xmlUCSIsCJKUnifiedIdeographs:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of CJKUnifiedIdeographs UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsCJKUnifiedIdeographs(int code) {
@@ -1095,12 +1070,11 @@ xmlUCSIsCJKUnifiedIdeographs(int code) {
 }
 
 /**
- * xmlUCSIsCJKUnifiedIdeographsExtensionA:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of CJKUnifiedIdeographsExtensionA UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsCJKUnifiedIdeographsExtensionA(int code) {
@@ -1108,12 +1082,11 @@ xmlUCSIsCJKUnifiedIdeographsExtensionA(int code) {
 }
 
 /**
- * xmlUCSIsCJKUnifiedIdeographsExtensionB:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of CJKUnifiedIdeographsExtensionB UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsCJKUnifiedIdeographsExtensionB(int code) {
@@ -1121,12 +1094,11 @@ xmlUCSIsCJKUnifiedIdeographsExtensionB(int code) {
 }
 
 /**
- * xmlUCSIsCherokee:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Cherokee UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsCherokee(int code) {
@@ -1134,12 +1106,11 @@ xmlUCSIsCherokee(int code) {
 }
 
 /**
- * xmlUCSIsCombiningDiacriticalMarks:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of CombiningDiacriticalMarks UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsCombiningDiacriticalMarks(int code) {
@@ -1147,12 +1118,11 @@ xmlUCSIsCombiningDiacriticalMarks(int code) {
 }
 
 /**
- * xmlUCSIsCombiningDiacriticalMarksforSymbols:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of CombiningDiacriticalMarksforSymbols UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsCombiningDiacriticalMarksforSymbols(int code) {
@@ -1160,12 +1130,11 @@ xmlUCSIsCombiningDiacriticalMarksforSymbols(int code) {
 }
 
 /**
- * xmlUCSIsCombiningHalfMarks:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of CombiningHalfMarks UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsCombiningHalfMarks(int code) {
@@ -1173,12 +1142,11 @@ xmlUCSIsCombiningHalfMarks(int code) {
 }
 
 /**
- * xmlUCSIsCombiningMarksforSymbols:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of CombiningMarksforSymbols UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsCombiningMarksforSymbols(int code) {
@@ -1186,12 +1154,11 @@ xmlUCSIsCombiningMarksforSymbols(int code) {
 }
 
 /**
- * xmlUCSIsControlPictures:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of ControlPictures UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsControlPictures(int code) {
@@ -1199,12 +1166,11 @@ xmlUCSIsControlPictures(int code) {
 }
 
 /**
- * xmlUCSIsCurrencySymbols:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of CurrencySymbols UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsCurrencySymbols(int code) {
@@ -1212,12 +1178,11 @@ xmlUCSIsCurrencySymbols(int code) {
 }
 
 /**
- * xmlUCSIsCypriotSyllabary:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of CypriotSyllabary UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsCypriotSyllabary(int code) {
@@ -1225,12 +1190,11 @@ xmlUCSIsCypriotSyllabary(int code) {
 }
 
 /**
- * xmlUCSIsCyrillic:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Cyrillic UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsCyrillic(int code) {
@@ -1238,12 +1202,11 @@ xmlUCSIsCyrillic(int code) {
 }
 
 /**
- * xmlUCSIsCyrillicSupplement:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of CyrillicSupplement UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsCyrillicSupplement(int code) {
@@ -1251,12 +1214,11 @@ xmlUCSIsCyrillicSupplement(int code) {
 }
 
 /**
- * xmlUCSIsDeseret:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Deseret UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsDeseret(int code) {
@@ -1264,12 +1226,11 @@ xmlUCSIsDeseret(int code) {
 }
 
 /**
- * xmlUCSIsDevanagari:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Devanagari UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsDevanagari(int code) {
@@ -1277,12 +1238,11 @@ xmlUCSIsDevanagari(int code) {
 }
 
 /**
- * xmlUCSIsDingbats:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Dingbats UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsDingbats(int code) {
@@ -1290,12 +1250,11 @@ xmlUCSIsDingbats(int code) {
 }
 
 /**
- * xmlUCSIsEnclosedAlphanumerics:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of EnclosedAlphanumerics UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsEnclosedAlphanumerics(int code) {
@@ -1303,12 +1262,11 @@ xmlUCSIsEnclosedAlphanumerics(int code) {
 }
 
 /**
- * xmlUCSIsEnclosedCJKLettersandMonths:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of EnclosedCJKLettersandMonths UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsEnclosedCJKLettersandMonths(int code) {
@@ -1316,12 +1274,11 @@ xmlUCSIsEnclosedCJKLettersandMonths(int code) {
 }
 
 /**
- * xmlUCSIsEthiopic:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Ethiopic UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsEthiopic(int code) {
@@ -1329,12 +1286,11 @@ xmlUCSIsEthiopic(int code) {
 }
 
 /**
- * xmlUCSIsGeneralPunctuation:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of GeneralPunctuation UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsGeneralPunctuation(int code) {
@@ -1342,12 +1298,11 @@ xmlUCSIsGeneralPunctuation(int code) {
 }
 
 /**
- * xmlUCSIsGeometricShapes:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of GeometricShapes UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsGeometricShapes(int code) {
@@ -1355,12 +1310,11 @@ xmlUCSIsGeometricShapes(int code) {
 }
 
 /**
- * xmlUCSIsGeorgian:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Georgian UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsGeorgian(int code) {
@@ -1368,12 +1322,11 @@ xmlUCSIsGeorgian(int code) {
 }
 
 /**
- * xmlUCSIsGothic:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Gothic UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsGothic(int code) {
@@ -1381,12 +1334,11 @@ xmlUCSIsGothic(int code) {
 }
 
 /**
- * xmlUCSIsGreek:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Greek UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsGreek(int code) {
@@ -1394,12 +1346,11 @@ xmlUCSIsGreek(int code) {
 }
 
 /**
- * xmlUCSIsGreekExtended:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of GreekExtended UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsGreekExtended(int code) {
@@ -1407,12 +1358,11 @@ xmlUCSIsGreekExtended(int code) {
 }
 
 /**
- * xmlUCSIsGreekandCoptic:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of GreekandCoptic UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsGreekandCoptic(int code) {
@@ -1420,12 +1370,11 @@ xmlUCSIsGreekandCoptic(int code) {
 }
 
 /**
- * xmlUCSIsGujarati:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Gujarati UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsGujarati(int code) {
@@ -1433,12 +1382,11 @@ xmlUCSIsGujarati(int code) {
 }
 
 /**
- * xmlUCSIsGurmukhi:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Gurmukhi UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsGurmukhi(int code) {
@@ -1446,12 +1394,11 @@ xmlUCSIsGurmukhi(int code) {
 }
 
 /**
- * xmlUCSIsHalfwidthandFullwidthForms:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of HalfwidthandFullwidthForms UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsHalfwidthandFullwidthForms(int code) {
@@ -1459,12 +1406,11 @@ xmlUCSIsHalfwidthandFullwidthForms(int code) {
 }
 
 /**
- * xmlUCSIsHangulCompatibilityJamo:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of HangulCompatibilityJamo UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsHangulCompatibilityJamo(int code) {
@@ -1472,12 +1418,11 @@ xmlUCSIsHangulCompatibilityJamo(int code) {
 }
 
 /**
- * xmlUCSIsHangulJamo:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of HangulJamo UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsHangulJamo(int code) {
@@ -1485,12 +1430,11 @@ xmlUCSIsHangulJamo(int code) {
 }
 
 /**
- * xmlUCSIsHangulSyllables:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of HangulSyllables UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsHangulSyllables(int code) {
@@ -1498,12 +1442,11 @@ xmlUCSIsHangulSyllables(int code) {
 }
 
 /**
- * xmlUCSIsHanunoo:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Hanunoo UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsHanunoo(int code) {
@@ -1511,12 +1454,11 @@ xmlUCSIsHanunoo(int code) {
 }
 
 /**
- * xmlUCSIsHebrew:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Hebrew UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsHebrew(int code) {
@@ -1524,12 +1466,11 @@ xmlUCSIsHebrew(int code) {
 }
 
 /**
- * xmlUCSIsHighPrivateUseSurrogates:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of HighPrivateUseSurrogates UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsHighPrivateUseSurrogates(int code) {
@@ -1537,12 +1478,11 @@ xmlUCSIsHighPrivateUseSurrogates(int code) {
 }
 
 /**
- * xmlUCSIsHighSurrogates:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of HighSurrogates UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsHighSurrogates(int code) {
@@ -1550,12 +1490,11 @@ xmlUCSIsHighSurrogates(int code) {
 }
 
 /**
- * xmlUCSIsHiragana:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Hiragana UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsHiragana(int code) {
@@ -1563,12 +1502,11 @@ xmlUCSIsHiragana(int code) {
 }
 
 /**
- * xmlUCSIsIPAExtensions:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of IPAExtensions UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsIPAExtensions(int code) {
@@ -1576,12 +1514,11 @@ xmlUCSIsIPAExtensions(int code) {
 }
 
 /**
- * xmlUCSIsIdeographicDescriptionCharacters:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of IdeographicDescriptionCharacters UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsIdeographicDescriptionCharacters(int code) {
@@ -1589,12 +1526,11 @@ xmlUCSIsIdeographicDescriptionCharacters(int code) {
 }
 
 /**
- * xmlUCSIsKanbun:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Kanbun UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsKanbun(int code) {
@@ -1602,12 +1538,11 @@ xmlUCSIsKanbun(int code) {
 }
 
 /**
- * xmlUCSIsKangxiRadicals:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of KangxiRadicals UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsKangxiRadicals(int code) {
@@ -1615,12 +1550,11 @@ xmlUCSIsKangxiRadicals(int code) {
 }
 
 /**
- * xmlUCSIsKannada:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Kannada UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsKannada(int code) {
@@ -1628,12 +1562,11 @@ xmlUCSIsKannada(int code) {
 }
 
 /**
- * xmlUCSIsKatakana:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Katakana UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsKatakana(int code) {
@@ -1641,12 +1574,11 @@ xmlUCSIsKatakana(int code) {
 }
 
 /**
- * xmlUCSIsKatakanaPhoneticExtensions:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of KatakanaPhoneticExtensions UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsKatakanaPhoneticExtensions(int code) {
@@ -1654,12 +1586,11 @@ xmlUCSIsKatakanaPhoneticExtensions(int code) {
 }
 
 /**
- * xmlUCSIsKhmer:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Khmer UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsKhmer(int code) {
@@ -1667,12 +1598,11 @@ xmlUCSIsKhmer(int code) {
 }
 
 /**
- * xmlUCSIsKhmerSymbols:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of KhmerSymbols UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsKhmerSymbols(int code) {
@@ -1680,12 +1610,11 @@ xmlUCSIsKhmerSymbols(int code) {
 }
 
 /**
- * xmlUCSIsLao:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Lao UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsLao(int code) {
@@ -1693,12 +1622,11 @@ xmlUCSIsLao(int code) {
 }
 
 /**
- * xmlUCSIsLatin1Supplement:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Latin-1Supplement UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsLatin1Supplement(int code) {
@@ -1706,12 +1634,11 @@ xmlUCSIsLatin1Supplement(int code) {
 }
 
 /**
- * xmlUCSIsLatinExtendedA:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of LatinExtended-A UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsLatinExtendedA(int code) {
@@ -1719,12 +1646,11 @@ xmlUCSIsLatinExtendedA(int code) {
 }
 
 /**
- * xmlUCSIsLatinExtendedB:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of LatinExtended-B UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsLatinExtendedB(int code) {
@@ -1732,12 +1658,11 @@ xmlUCSIsLatinExtendedB(int code) {
 }
 
 /**
- * xmlUCSIsLatinExtendedAdditional:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of LatinExtendedAdditional UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsLatinExtendedAdditional(int code) {
@@ -1745,12 +1670,11 @@ xmlUCSIsLatinExtendedAdditional(int code) {
 }
 
 /**
- * xmlUCSIsLetterlikeSymbols:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of LetterlikeSymbols UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsLetterlikeSymbols(int code) {
@@ -1758,12 +1682,11 @@ xmlUCSIsLetterlikeSymbols(int code) {
 }
 
 /**
- * xmlUCSIsLimbu:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Limbu UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsLimbu(int code) {
@@ -1771,12 +1694,11 @@ xmlUCSIsLimbu(int code) {
 }
 
 /**
- * xmlUCSIsLinearBIdeograms:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of LinearBIdeograms UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsLinearBIdeograms(int code) {
@@ -1784,12 +1706,11 @@ xmlUCSIsLinearBIdeograms(int code) {
 }
 
 /**
- * xmlUCSIsLinearBSyllabary:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of LinearBSyllabary UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsLinearBSyllabary(int code) {
@@ -1797,12 +1718,11 @@ xmlUCSIsLinearBSyllabary(int code) {
 }
 
 /**
- * xmlUCSIsLowSurrogates:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of LowSurrogates UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsLowSurrogates(int code) {
@@ -1810,12 +1730,11 @@ xmlUCSIsLowSurrogates(int code) {
 }
 
 /**
- * xmlUCSIsMalayalam:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Malayalam UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsMalayalam(int code) {
@@ -1823,12 +1742,11 @@ xmlUCSIsMalayalam(int code) {
 }
 
 /**
- * xmlUCSIsMathematicalAlphanumericSymbols:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of MathematicalAlphanumericSymbols UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsMathematicalAlphanumericSymbols(int code) {
@@ -1836,12 +1754,11 @@ xmlUCSIsMathematicalAlphanumericSymbols(int code) {
 }
 
 /**
- * xmlUCSIsMathematicalOperators:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of MathematicalOperators UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsMathematicalOperators(int code) {
@@ -1849,12 +1766,11 @@ xmlUCSIsMathematicalOperators(int code) {
 }
 
 /**
- * xmlUCSIsMiscellaneousMathematicalSymbolsA:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of MiscellaneousMathematicalSymbols-A UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsMiscellaneousMathematicalSymbolsA(int code) {
@@ -1862,12 +1778,11 @@ xmlUCSIsMiscellaneousMathematicalSymbolsA(int code) {
 }
 
 /**
- * xmlUCSIsMiscellaneousMathematicalSymbolsB:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of MiscellaneousMathematicalSymbols-B UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsMiscellaneousMathematicalSymbolsB(int code) {
@@ -1875,12 +1790,11 @@ xmlUCSIsMiscellaneousMathematicalSymbolsB(int code) {
 }
 
 /**
- * xmlUCSIsMiscellaneousSymbols:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of MiscellaneousSymbols UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsMiscellaneousSymbols(int code) {
@@ -1888,12 +1802,11 @@ xmlUCSIsMiscellaneousSymbols(int code) {
 }
 
 /**
- * xmlUCSIsMiscellaneousSymbolsandArrows:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of MiscellaneousSymbolsandArrows UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsMiscellaneousSymbolsandArrows(int code) {
@@ -1901,12 +1814,11 @@ xmlUCSIsMiscellaneousSymbolsandArrows(int code) {
 }
 
 /**
- * xmlUCSIsMiscellaneousTechnical:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of MiscellaneousTechnical UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsMiscellaneousTechnical(int code) {
@@ -1914,12 +1826,11 @@ xmlUCSIsMiscellaneousTechnical(int code) {
 }
 
 /**
- * xmlUCSIsMongolian:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Mongolian UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsMongolian(int code) {
@@ -1927,12 +1838,11 @@ xmlUCSIsMongolian(int code) {
 }
 
 /**
- * xmlUCSIsMusicalSymbols:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of MusicalSymbols UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsMusicalSymbols(int code) {
@@ -1940,12 +1850,11 @@ xmlUCSIsMusicalSymbols(int code) {
 }
 
 /**
- * xmlUCSIsMyanmar:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Myanmar UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsMyanmar(int code) {
@@ -1953,12 +1862,11 @@ xmlUCSIsMyanmar(int code) {
 }
 
 /**
- * xmlUCSIsNumberForms:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of NumberForms UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsNumberForms(int code) {
@@ -1966,12 +1874,11 @@ xmlUCSIsNumberForms(int code) {
 }
 
 /**
- * xmlUCSIsOgham:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Ogham UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsOgham(int code) {
@@ -1979,12 +1886,11 @@ xmlUCSIsOgham(int code) {
 }
 
 /**
- * xmlUCSIsOldItalic:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of OldItalic UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsOldItalic(int code) {
@@ -1992,12 +1898,11 @@ xmlUCSIsOldItalic(int code) {
 }
 
 /**
- * xmlUCSIsOpticalCharacterRecognition:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of OpticalCharacterRecognition UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsOpticalCharacterRecognition(int code) {
@@ -2005,12 +1910,11 @@ xmlUCSIsOpticalCharacterRecognition(int code) {
 }
 
 /**
- * xmlUCSIsOriya:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Oriya UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsOriya(int code) {
@@ -2018,12 +1922,11 @@ xmlUCSIsOriya(int code) {
 }
 
 /**
- * xmlUCSIsOsmanya:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Osmanya UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsOsmanya(int code) {
@@ -2031,12 +1934,11 @@ xmlUCSIsOsmanya(int code) {
 }
 
 /**
- * xmlUCSIsPhoneticExtensions:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of PhoneticExtensions UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsPhoneticExtensions(int code) {
@@ -2044,12 +1946,11 @@ xmlUCSIsPhoneticExtensions(int code) {
 }
 
 /**
- * xmlUCSIsPrivateUse:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of PrivateUse UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsPrivateUse(int code) {
@@ -2059,12 +1960,11 @@ xmlUCSIsPrivateUse(int code) {
 }
 
 /**
- * xmlUCSIsPrivateUseArea:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of PrivateUseArea UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsPrivateUseArea(int code) {
@@ -2072,12 +1972,11 @@ xmlUCSIsPrivateUseArea(int code) {
 }
 
 /**
- * xmlUCSIsRunic:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Runic UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsRunic(int code) {
@@ -2085,12 +1984,11 @@ xmlUCSIsRunic(int code) {
 }
 
 /**
- * xmlUCSIsShavian:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Shavian UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsShavian(int code) {
@@ -2098,12 +1996,11 @@ xmlUCSIsShavian(int code) {
 }
 
 /**
- * xmlUCSIsSinhala:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Sinhala UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsSinhala(int code) {
@@ -2111,12 +2008,11 @@ xmlUCSIsSinhala(int code) {
 }
 
 /**
- * xmlUCSIsSmallFormVariants:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of SmallFormVariants UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsSmallFormVariants(int code) {
@@ -2124,12 +2020,11 @@ xmlUCSIsSmallFormVariants(int code) {
 }
 
 /**
- * xmlUCSIsSpacingModifierLetters:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of SpacingModifierLetters UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsSpacingModifierLetters(int code) {
@@ -2137,12 +2032,11 @@ xmlUCSIsSpacingModifierLetters(int code) {
 }
 
 /**
- * xmlUCSIsSpecials:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Specials UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsSpecials(int code) {
@@ -2150,12 +2044,11 @@ xmlUCSIsSpecials(int code) {
 }
 
 /**
- * xmlUCSIsSuperscriptsandSubscripts:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of SuperscriptsandSubscripts UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsSuperscriptsandSubscripts(int code) {
@@ -2163,12 +2056,11 @@ xmlUCSIsSuperscriptsandSubscripts(int code) {
 }
 
 /**
- * xmlUCSIsSupplementalArrowsA:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of SupplementalArrows-A UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsSupplementalArrowsA(int code) {
@@ -2176,12 +2068,11 @@ xmlUCSIsSupplementalArrowsA(int code) {
 }
 
 /**
- * xmlUCSIsSupplementalArrowsB:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of SupplementalArrows-B UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsSupplementalArrowsB(int code) {
@@ -2189,12 +2080,11 @@ xmlUCSIsSupplementalArrowsB(int code) {
 }
 
 /**
- * xmlUCSIsSupplementalMathematicalOperators:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of SupplementalMathematicalOperators UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsSupplementalMathematicalOperators(int code) {
@@ -2202,12 +2092,11 @@ xmlUCSIsSupplementalMathematicalOperators(int code) {
 }
 
 /**
- * xmlUCSIsSupplementaryPrivateUseAreaA:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of SupplementaryPrivateUseArea-A UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsSupplementaryPrivateUseAreaA(int code) {
@@ -2215,12 +2104,11 @@ xmlUCSIsSupplementaryPrivateUseAreaA(int code) {
 }
 
 /**
- * xmlUCSIsSupplementaryPrivateUseAreaB:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of SupplementaryPrivateUseArea-B UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsSupplementaryPrivateUseAreaB(int code) {
@@ -2228,12 +2116,11 @@ xmlUCSIsSupplementaryPrivateUseAreaB(int code) {
 }
 
 /**
- * xmlUCSIsSyriac:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Syriac UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsSyriac(int code) {
@@ -2241,12 +2128,11 @@ xmlUCSIsSyriac(int code) {
 }
 
 /**
- * xmlUCSIsTagalog:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Tagalog UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsTagalog(int code) {
@@ -2254,12 +2140,11 @@ xmlUCSIsTagalog(int code) {
 }
 
 /**
- * xmlUCSIsTagbanwa:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Tagbanwa UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsTagbanwa(int code) {
@@ -2267,12 +2152,11 @@ xmlUCSIsTagbanwa(int code) {
 }
 
 /**
- * xmlUCSIsTags:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Tags UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsTags(int code) {
@@ -2280,12 +2164,11 @@ xmlUCSIsTags(int code) {
 }
 
 /**
- * xmlUCSIsTaiLe:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of TaiLe UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsTaiLe(int code) {
@@ -2293,12 +2176,11 @@ xmlUCSIsTaiLe(int code) {
 }
 
 /**
- * xmlUCSIsTaiXuanJingSymbols:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of TaiXuanJingSymbols UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsTaiXuanJingSymbols(int code) {
@@ -2306,12 +2188,11 @@ xmlUCSIsTaiXuanJingSymbols(int code) {
 }
 
 /**
- * xmlUCSIsTamil:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Tamil UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsTamil(int code) {
@@ -2319,12 +2200,11 @@ xmlUCSIsTamil(int code) {
 }
 
 /**
- * xmlUCSIsTelugu:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Telugu UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsTelugu(int code) {
@@ -2332,12 +2212,11 @@ xmlUCSIsTelugu(int code) {
 }
 
 /**
- * xmlUCSIsThaana:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Thaana UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsThaana(int code) {
@@ -2345,12 +2224,11 @@ xmlUCSIsThaana(int code) {
 }
 
 /**
- * xmlUCSIsThai:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Thai UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsThai(int code) {
@@ -2358,12 +2236,11 @@ xmlUCSIsThai(int code) {
 }
 
 /**
- * xmlUCSIsTibetan:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Tibetan UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsTibetan(int code) {
@@ -2371,12 +2248,11 @@ xmlUCSIsTibetan(int code) {
 }
 
 /**
- * xmlUCSIsUgaritic:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Ugaritic UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsUgaritic(int code) {
@@ -2384,12 +2260,11 @@ xmlUCSIsUgaritic(int code) {
 }
 
 /**
- * xmlUCSIsUnifiedCanadianAboriginalSyllabics:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of UnifiedCanadianAboriginalSyllabics UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsUnifiedCanadianAboriginalSyllabics(int code) {
@@ -2397,12 +2272,11 @@ xmlUCSIsUnifiedCanadianAboriginalSyllabics(int code) {
 }
 
 /**
- * xmlUCSIsVariationSelectors:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of VariationSelectors UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsVariationSelectors(int code) {
@@ -2410,12 +2284,11 @@ xmlUCSIsVariationSelectors(int code) {
 }
 
 /**
- * xmlUCSIsVariationSelectorsSupplement:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of VariationSelectorsSupplement UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsVariationSelectorsSupplement(int code) {
@@ -2423,12 +2296,11 @@ xmlUCSIsVariationSelectorsSupplement(int code) {
 }
 
 /**
- * xmlUCSIsYiRadicals:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of YiRadicals UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsYiRadicals(int code) {
@@ -2436,12 +2308,11 @@ xmlUCSIsYiRadicals(int code) {
 }
 
 /**
- * xmlUCSIsYiSyllables:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of YiSyllables UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsYiSyllables(int code) {
@@ -2449,12 +2320,11 @@ xmlUCSIsYiSyllables(int code) {
 }
 
 /**
- * xmlUCSIsYijingHexagramSymbols:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of YijingHexagramSymbols UCS Block
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 static int
 xmlUCSIsYijingHexagramSymbols(int code) {
@@ -2462,12 +2332,11 @@ xmlUCSIsYijingHexagramSymbols(int code) {
 }
 
 /**
- * xmlUCSIsCatC:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of C UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatC(int code) {
@@ -2475,12 +2344,11 @@ xmlUCSIsCatC(int code) {
 }
 
 /**
- * xmlUCSIsCatCc:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Cc UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatCc(int code) {
@@ -2489,12 +2357,11 @@ xmlUCSIsCatCc(int code) {
 }
 
 /**
- * xmlUCSIsCatCf:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Cf UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatCf(int code) {
@@ -2502,12 +2369,11 @@ xmlUCSIsCatCf(int code) {
 }
 
 /**
- * xmlUCSIsCatCo:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Co UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatCo(int code) {
@@ -2520,12 +2386,11 @@ xmlUCSIsCatCo(int code) {
 }
 
 /**
- * xmlUCSIsCatCs:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Cs UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatCs(int code) {
@@ -2536,12 +2401,11 @@ xmlUCSIsCatCs(int code) {
 }
 
 /**
- * xmlUCSIsCatL:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of L UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatL(int code) {
@@ -2549,12 +2413,11 @@ xmlUCSIsCatL(int code) {
 }
 
 /**
- * xmlUCSIsCatLl:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Ll UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatLl(int code) {
@@ -2562,12 +2425,11 @@ xmlUCSIsCatLl(int code) {
 }
 
 /**
- * xmlUCSIsCatLm:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Lm UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatLm(int code) {
@@ -2575,12 +2437,11 @@ xmlUCSIsCatLm(int code) {
 }
 
 /**
- * xmlUCSIsCatLo:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Lo UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatLo(int code) {
@@ -2588,12 +2449,11 @@ xmlUCSIsCatLo(int code) {
 }
 
 /**
- * xmlUCSIsCatLt:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Lt UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatLt(int code) {
@@ -2601,12 +2461,11 @@ xmlUCSIsCatLt(int code) {
 }
 
 /**
- * xmlUCSIsCatLu:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Lu UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatLu(int code) {
@@ -2614,12 +2473,11 @@ xmlUCSIsCatLu(int code) {
 }
 
 /**
- * xmlUCSIsCatM:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of M UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatM(int code) {
@@ -2627,12 +2485,11 @@ xmlUCSIsCatM(int code) {
 }
 
 /**
- * xmlUCSIsCatMc:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Mc UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatMc(int code) {
@@ -2640,12 +2497,11 @@ xmlUCSIsCatMc(int code) {
 }
 
 /**
- * xmlUCSIsCatMe:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Me UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatMe(int code) {
@@ -2656,12 +2512,11 @@ xmlUCSIsCatMe(int code) {
 }
 
 /**
- * xmlUCSIsCatMn:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Mn UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatMn(int code) {
@@ -2669,12 +2524,11 @@ xmlUCSIsCatMn(int code) {
 }
 
 /**
- * xmlUCSIsCatN:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of N UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatN(int code) {
@@ -2682,12 +2536,11 @@ xmlUCSIsCatN(int code) {
 }
 
 /**
- * xmlUCSIsCatNd:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Nd UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatNd(int code) {
@@ -2695,12 +2548,11 @@ xmlUCSIsCatNd(int code) {
 }
 
 /**
- * xmlUCSIsCatNl:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Nl UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatNl(int code) {
@@ -2713,12 +2565,11 @@ xmlUCSIsCatNl(int code) {
 }
 
 /**
- * xmlUCSIsCatNo:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of No UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatNo(int code) {
@@ -2726,12 +2577,11 @@ xmlUCSIsCatNo(int code) {
 }
 
 /**
- * xmlUCSIsCatP:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of P UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatP(int code) {
@@ -2739,12 +2589,11 @@ xmlUCSIsCatP(int code) {
 }
 
 /**
- * xmlUCSIsCatPc:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Pc UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatPc(int code) {
@@ -2759,12 +2608,11 @@ xmlUCSIsCatPc(int code) {
 }
 
 /**
- * xmlUCSIsCatPd:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Pd UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatPd(int code) {
@@ -2772,12 +2620,11 @@ xmlUCSIsCatPd(int code) {
 }
 
 /**
- * xmlUCSIsCatPe:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Pe UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatPe(int code) {
@@ -2785,12 +2632,11 @@ xmlUCSIsCatPe(int code) {
 }
 
 /**
- * xmlUCSIsCatPf:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Pf UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatPf(int code) {
@@ -2801,12 +2647,11 @@ xmlUCSIsCatPf(int code) {
 }
 
 /**
- * xmlUCSIsCatPi:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Pi UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatPi(int code) {
@@ -2818,12 +2663,11 @@ xmlUCSIsCatPi(int code) {
 }
 
 /**
- * xmlUCSIsCatPo:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Po UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatPo(int code) {
@@ -2831,12 +2675,11 @@ xmlUCSIsCatPo(int code) {
 }
 
 /**
- * xmlUCSIsCatPs:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Ps UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatPs(int code) {
@@ -2844,12 +2687,11 @@ xmlUCSIsCatPs(int code) {
 }
 
 /**
- * xmlUCSIsCatS:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of S UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatS(int code) {
@@ -2857,12 +2699,11 @@ xmlUCSIsCatS(int code) {
 }
 
 /**
- * xmlUCSIsCatSc:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Sc UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatSc(int code) {
@@ -2870,12 +2711,11 @@ xmlUCSIsCatSc(int code) {
 }
 
 /**
- * xmlUCSIsCatSk:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Sk UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatSk(int code) {
@@ -2883,12 +2723,11 @@ xmlUCSIsCatSk(int code) {
 }
 
 /**
- * xmlUCSIsCatSm:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Sm UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatSm(int code) {
@@ -2896,12 +2735,11 @@ xmlUCSIsCatSm(int code) {
 }
 
 /**
- * xmlUCSIsCatSo:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of So UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatSo(int code) {
@@ -2909,12 +2747,11 @@ xmlUCSIsCatSo(int code) {
 }
 
 /**
- * xmlUCSIsCatZ:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Z UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatZ(int code) {
@@ -2922,12 +2759,11 @@ xmlUCSIsCatZ(int code) {
 }
 
 /**
- * xmlUCSIsCatZl:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Zl UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatZl(int code) {
@@ -2935,12 +2771,11 @@ xmlUCSIsCatZl(int code) {
 }
 
 /**
- * xmlUCSIsCatZp:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Zp UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatZp(int code) {
@@ -2948,12 +2783,11 @@ xmlUCSIsCatZp(int code) {
 }
 
 /**
- * xmlUCSIsCatZs:
- * @code: UCS code point
+ * @param code  UCS code point
  *
  * Check whether the character is part of Zs UCS Category
  *
- * Returns 1 if true 0 otherwise
+ * @returns 1 if true 0 otherwise
  */
 int
 xmlUCSIsCatZs(int code) {
@@ -3138,13 +2972,12 @@ static const xmlUnicodeNameTable xmlUnicodeBlockTbl = {xmlUnicodeBlocks, 128};
 static const xmlUnicodeNameTable xmlUnicodeCatTbl = {xmlUnicodeCats, 36};
 
 /**
- * xmlUCSIsBlock:
- * @code: UCS code point
- * @block: UCS block name
+ * @param code  UCS code point
+ * @param block  UCS block name
  *
  * Check whether the character is part of the UCS Block
  *
- * Returns 1 if true, 0 if false and -1 on unknown block
+ * @returns 1 if true, 0 if false and -1 on unknown block
  */
 int
 xmlUCSIsBlock(int code, const char *block) {
@@ -3157,13 +2990,12 @@ xmlUCSIsBlock(int code, const char *block) {
 }
 
 /**
- * xmlUCSIsCat:
- * @code: UCS code point
- * @cat: UCS Category name
+ * @param code  UCS code point
+ * @param cat  UCS Category name
  *
  * Check whether the character is part of the UCS Category
  *
- * Returns 1 if true, 0 if false and -1 on unknown category
+ * @returns 1 if true, 0 if false and -1 on unknown category
  */
 int
 xmlUCSIsCat(int code, const char *cat) {

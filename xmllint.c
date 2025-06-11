@@ -3,7 +3,7 @@
  *
  * See Copyright for the status of this software.
  *
- * daniel@veillard.com
+ * Author: Daniel Veillard
  */
 
 #include "libxml.h"
@@ -628,14 +628,6 @@ static const xmlSAXHandler emptySAXHandler = {
     NULL  /* xmlStructuredErrorFunc */
 };
 
-/**
- * isStandaloneDebug:
- * @ctxt:  An XML parser context
- *
- * Is this document tagged standalone ?
- *
- * Returns 1 if true
- */
 static int
 isStandaloneDebug(void *ctx)
 {
@@ -648,14 +640,6 @@ isStandaloneDebug(void *ctx)
     return(0);
 }
 
-/**
- * hasInternalSubsetDebug:
- * @ctxt:  An XML parser context
- *
- * Does this document has an internal subset
- *
- * Returns 1 if true
- */
 static int
 hasInternalSubsetDebug(void *ctx)
 {
@@ -668,14 +652,6 @@ hasInternalSubsetDebug(void *ctx)
     return(0);
 }
 
-/**
- * hasExternalSubsetDebug:
- * @ctxt:  An XML parser context
- *
- * Does this document has an external subset
- *
- * Returns 1 if true
- */
 static int
 hasExternalSubsetDebug(void *ctx)
 {
@@ -688,12 +664,6 @@ hasExternalSubsetDebug(void *ctx)
     return(0);
 }
 
-/**
- * internalSubsetDebug:
- * @ctxt:  An XML parser context
- *
- * Does this document has an internal subset
- */
 static void
 internalSubsetDebug(void *ctx, const xmlChar *name,
 	       const xmlChar *ExternalID, const xmlChar *SystemID)
@@ -714,12 +684,6 @@ internalSubsetDebug(void *ctx, const xmlChar *name,
 	fprintf(stdout, " %s)\n", SystemID);
 }
 
-/**
- * externalSubsetDebug:
- * @ctxt:  An XML parser context
- *
- * Does this document has an external subset
- */
 static void
 externalSubsetDebug(void *ctx, const xmlChar *name,
 	       const xmlChar *ExternalID, const xmlChar *SystemID)
@@ -740,20 +704,6 @@ externalSubsetDebug(void *ctx, const xmlChar *name,
 	fprintf(stdout, " %s)\n", SystemID);
 }
 
-/**
- * resolveEntityDebug:
- * @ctxt:  An XML parser context
- * @publicId: The public ID of the entity
- * @systemId: The system ID of the entity
- *
- * Special entity resolver, better left to the parser, it has
- * more context than the application layer.
- * The default behaviour is to NOT resolve the entities, in that case
- * the ENTITY_REF nodes are built in the structure (and the parameter
- * values).
- *
- * Returns the xmlParserInputPtr if inlined or NULL for DOM behaviour.
- */
 static xmlParserInputPtr
 resolveEntityDebug(void *ctx, const xmlChar *publicId, const xmlChar *systemId)
 {
@@ -777,15 +727,6 @@ resolveEntityDebug(void *ctx, const xmlChar *publicId, const xmlChar *systemId)
     return(NULL);
 }
 
-/**
- * getEntityDebug:
- * @ctxt:  An XML parser context
- * @name: The entity name
- *
- * Get an entity by name
- *
- * Returns the xmlParserInputPtr if inlined or NULL for DOM behaviour.
- */
 static xmlEntityPtr
 getEntityDebug(void *ctx, const xmlChar *name)
 {
@@ -798,15 +739,6 @@ getEntityDebug(void *ctx, const xmlChar *name)
     return(NULL);
 }
 
-/**
- * getParameterEntityDebug:
- * @ctxt:  An XML parser context
- * @name: The entity name
- *
- * Get a parameter entity by name
- *
- * Returns the xmlParserInputPtr
- */
 static xmlEntityPtr
 getParameterEntityDebug(void *ctx, const xmlChar *name)
 {
@@ -819,18 +751,6 @@ getParameterEntityDebug(void *ctx, const xmlChar *name)
     return(NULL);
 }
 
-
-/**
- * entityDeclDebug:
- * @ctxt:  An XML parser context
- * @name:  the entity name
- * @type:  the entity type
- * @publicId: The public ID of the entity
- * @systemId: The system ID of the entity
- * @content: the entity value (without processing).
- *
- * An entity definition has been parsed
- */
 static void
 entityDeclDebug(void *ctx, const xmlChar *name, int type,
           const xmlChar *publicId, const xmlChar *systemId, xmlChar *content)
@@ -852,14 +772,6 @@ entityDeclDebug(void *ctx, const xmlChar *name, int type,
             name, type, publicId, systemId, content);
 }
 
-/**
- * attributeDeclDebug:
- * @ctxt:  An XML parser context
- * @name:  the attribute name
- * @type:  the attribute type
- *
- * An attribute definition has been parsed
- */
 static void
 attributeDeclDebug(void *ctx, const xmlChar * elem,
                    const xmlChar * name, int type, int def,
@@ -879,15 +791,6 @@ attributeDeclDebug(void *ctx, const xmlChar * elem,
     xmlFreeEnumeration(tree);
 }
 
-/**
- * elementDeclDebug:
- * @ctxt:  An XML parser context
- * @name:  the element name
- * @type:  the element type
- * @content: the element value (without processing).
- *
- * An element definition has been parsed
- */
 static void
 elementDeclDebug(void *ctx, const xmlChar *name, int type,
 	    xmlElementContentPtr content ATTRIBUTE_UNUSED)
@@ -901,15 +804,6 @@ elementDeclDebug(void *ctx, const xmlChar *name, int type,
             name, type);
 }
 
-/**
- * notationDeclDebug:
- * @ctxt:  An XML parser context
- * @name: The name of the notation
- * @publicId: The public ID of the entity
- * @systemId: The system ID of the entity
- *
- * What to do when a notation declaration has been parsed.
- */
 static void
 notationDeclDebug(void *ctx, const xmlChar *name,
 	     const xmlChar *publicId, const xmlChar *systemId)
@@ -923,16 +817,6 @@ notationDeclDebug(void *ctx, const xmlChar *name,
             (char *) name, (char *) publicId, (char *) systemId);
 }
 
-/**
- * unparsedEntityDeclDebug:
- * @ctxt:  An XML parser context
- * @name: The name of the entity
- * @publicId: The public ID of the entity
- * @systemId: The system ID of the entity
- * @notationName: the name of the notation
- *
- * What to do when an unparsed entity declaration is parsed
- */
 static void
 unparsedEntityDeclDebug(void *ctx, const xmlChar *name,
 		   const xmlChar *publicId, const xmlChar *systemId,
@@ -955,14 +839,6 @@ unparsedEntityDeclDebug(void *ctx, const xmlChar *name,
 	    (char *) notationName);
 }
 
-/**
- * setDocumentLocatorDebug:
- * @ctxt:  An XML parser context
- * @loc: A SAX Locator
- *
- * Receive the document locator at startup, actually xmlDefaultSAXLocator
- * Everything is available on the context, so this is useless in our case.
- */
 static void
 setDocumentLocatorDebug(void *ctx, xmlSAXLocatorPtr loc ATTRIBUTE_UNUSED)
 {
@@ -974,12 +850,6 @@ setDocumentLocatorDebug(void *ctx, xmlSAXLocatorPtr loc ATTRIBUTE_UNUSED)
     fprintf(stdout, "SAX.setDocumentLocator()\n");
 }
 
-/**
- * startDocumentDebug:
- * @ctxt:  An XML parser context
- *
- * called when the document start being processed.
- */
 static void
 startDocumentDebug(void *ctx)
 {
@@ -991,12 +861,6 @@ startDocumentDebug(void *ctx)
     fprintf(stdout, "SAX.startDocument()\n");
 }
 
-/**
- * endDocumentDebug:
- * @ctxt:  An XML parser context
- *
- * called when the document end has been detected.
- */
 static void
 endDocumentDebug(void *ctx)
 {
@@ -1008,13 +872,6 @@ endDocumentDebug(void *ctx)
     fprintf(stdout, "SAX.endDocument()\n");
 }
 
-/**
- * startElementDebug:
- * @ctxt:  An XML parser context
- * @name:  The element name
- *
- * called when an opening tag has been processed.
- */
 static void
 startElementDebug(void *ctx, const xmlChar *name, const xmlChar **atts)
 {
@@ -1035,13 +892,6 @@ startElementDebug(void *ctx, const xmlChar *name, const xmlChar **atts)
     fprintf(stdout, ")\n");
 }
 
-/**
- * endElementDebug:
- * @ctxt:  An XML parser context
- * @name:  The element name
- *
- * called when the end of an element has been detected.
- */
 static void
 endElementDebug(void *ctx, const xmlChar *name)
 {
@@ -1053,15 +903,6 @@ endElementDebug(void *ctx, const xmlChar *name)
     fprintf(stdout, "SAX.endElement(%s)\n", (char *) name);
 }
 
-/**
- * charactersDebug:
- * @ctxt:  An XML parser context
- * @ch:  a xmlChar string
- * @len: the number of xmlChar
- *
- * receiving some chars from the parser.
- * Question: how much at a time ???
- */
 static void
 charactersDebug(void *ctx, const xmlChar *ch, int len)
 {
@@ -1079,13 +920,6 @@ charactersDebug(void *ctx, const xmlChar *ch, int len)
     fprintf(stdout, "SAX.characters(%s, %d)\n", out, len);
 }
 
-/**
- * referenceDebug:
- * @ctxt:  An XML parser context
- * @name:  The entity name
- *
- * called when an entity reference is detected.
- */
 static void
 referenceDebug(void *ctx, const xmlChar *name)
 {
@@ -1097,16 +931,6 @@ referenceDebug(void *ctx, const xmlChar *name)
     fprintf(stdout, "SAX.reference(%s)\n", name);
 }
 
-/**
- * ignorableWhitespaceDebug:
- * @ctxt:  An XML parser context
- * @ch:  a xmlChar string
- * @start: the first char in the string
- * @len: the number of xmlChar
- *
- * receiving some ignorable whitespaces from the parser.
- * Question: how much at a time ???
- */
 static void
 ignorableWhitespaceDebug(void *ctx, const xmlChar *ch, int len)
 {
@@ -1123,15 +947,6 @@ ignorableWhitespaceDebug(void *ctx, const xmlChar *ch, int len)
     fprintf(stdout, "SAX.ignorableWhitespace(%s, %d)\n", out, len);
 }
 
-/**
- * processingInstructionDebug:
- * @ctxt:  An XML parser context
- * @target:  the target name
- * @data: the PI data's
- * @len: the number of xmlChar
- *
- * A processing instruction has been parsed.
- */
 static void
 processingInstructionDebug(void *ctx, const xmlChar *target,
                       const xmlChar *data)
@@ -1149,14 +964,6 @@ processingInstructionDebug(void *ctx, const xmlChar *target,
 		(char *) target);
 }
 
-/**
- * cdataBlockDebug:
- * @ctx: the user data (XML parser context)
- * @value:  The pcdata content
- * @len:  the block length
- *
- * called when a pcdata block has been parsed
- */
 static void
 cdataBlockDebug(void *ctx, const xmlChar *value, int len)
 {
@@ -1169,13 +976,6 @@ cdataBlockDebug(void *ctx, const xmlChar *value, int len)
 	    (char *) value, len);
 }
 
-/**
- * commentDebug:
- * @ctxt:  An XML parser context
- * @value:  the comment content
- *
- * A comment has been parsed.
- */
 static void
 commentDebug(void *ctx, const xmlChar *value)
 {
@@ -1187,15 +987,6 @@ commentDebug(void *ctx, const xmlChar *value)
     fprintf(stdout, "SAX.comment(%s)\n", value);
 }
 
-/**
- * warningDebug:
- * @ctxt:  An XML parser context
- * @msg:  the message to display/transmit
- * @...:  extra parameters for the message display
- *
- * Display and format a warning messages, gives file, line, position and
- * extra parameters.
- */
 static void LIBXML_ATTR_FORMAT(2,3)
 warningDebug(void *ctx, const char *msg, ...)
 {
@@ -1211,15 +1002,6 @@ warningDebug(void *ctx, const char *msg, ...)
     va_end(args);
 }
 
-/**
- * errorDebug:
- * @ctxt:  An XML parser context
- * @msg:  the message to display/transmit
- * @...:  extra parameters for the message display
- *
- * Display and format a error messages, gives file, line, position and
- * extra parameters.
- */
 static void LIBXML_ATTR_FORMAT(2,3)
 errorDebug(void *ctx, const char *msg, ...)
 {
@@ -1235,15 +1017,6 @@ errorDebug(void *ctx, const char *msg, ...)
     va_end(args);
 }
 
-/**
- * fatalErrorDebug:
- * @ctxt:  An XML parser context
- * @msg:  the message to display/transmit
- * @...:  extra parameters for the message display
- *
- * Display and format a fatalError messages, gives file, line, position and
- * extra parameters.
- */
 static void LIBXML_ATTR_FORMAT(2,3)
 fatalErrorDebug(void *ctx, const char *msg, ...)
 {
@@ -1299,13 +1072,7 @@ static const xmlSAXHandler debugSAXHandler = {
 /*
  * SAX2 specific callbacks
  */
-/**
- * startElementNsDebug:
- * @ctxt:  An XML parser context
- * @name:  The element name
- *
- * called when an opening tag has been processed.
- */
+
 static void
 startElementNsDebug(void *ctx,
                     const xmlChar *localname,
@@ -1357,13 +1124,6 @@ startElementNsDebug(void *ctx,
     fprintf(stdout, ")\n");
 }
 
-/**
- * endElementDebug:
- * @ctxt:  An XML parser context
- * @name:  The element name
- *
- * called when the end of an element has been detected.
- */
 static void
 endElementNsDebug(void *ctx,
                   const xmlChar *localname,

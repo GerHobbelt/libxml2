@@ -4,7 +4,7 @@
  *
  * See Copyright for the status of this software.
  *
- * Daniel Veillard <veillard@redhat.com>
+ * Author: Daniel Veillard
  */
 
 /*
@@ -383,8 +383,6 @@ typedef xmlSchemaBucket *xmlSchemaBucketPtr;
 #define XML_SCHEMA_SCHEMA_REDEFINE 3
 
 /**
- * xmlSchemaSchemaRelation:
- *
  * Used to create a graph of schema relationships.
  */
 typedef struct _xmlSchemaSchemaRelation xmlSchemaSchemaRelation;
@@ -416,7 +414,6 @@ struct _xmlSchemaBucket {
 };
 
 /**
- * xmlSchemaImport:
  * (extends xmlSchemaBucket)
  *
  * Reflects a schema. Holds some information
@@ -474,8 +471,6 @@ struct _xmlSchemaInclude {
 };
 
 /**
- * xmlSchemaBasicItem:
- *
  * The abstract base type for schema components.
  */
 typedef struct _xmlSchemaBasicItem xmlSchemaBasicItem;
@@ -486,8 +481,6 @@ struct _xmlSchemaBasicItem {
 };
 
 /**
- * xmlSchemaAnnotItem:
- *
  * The abstract base type for annotated schema components.
  * (Extends xmlSchemaBasicItem)
  */
@@ -499,8 +492,6 @@ struct _xmlSchemaAnnotItem {
 };
 
 /**
- * xmlSchemaTreeItem:
- *
  * The abstract base type for tree-like structured schema components.
  * (Extends xmlSchemaAnnotItem)
  */
@@ -516,8 +507,6 @@ struct _xmlSchemaTreeItem {
 
 #define XML_SCHEMA_ATTR_USE_FIXED 1<<0
 /**
- * xmlSchemaAttributeUsePtr:
- *
  * The abstract base type for tree-like structured schema components.
  * (Extends xmlSchemaTreeItem)
  */
@@ -541,8 +530,6 @@ struct _xmlSchemaAttributeUse {
 };
 
 /**
- * xmlSchemaAttributeUseProhibPtr:
- *
  * A helper component to reflect attribute prohibitions.
  * (Extends xmlSchemaBasicItem)
  */
@@ -557,7 +544,6 @@ struct _xmlSchemaAttributeUseProhib {
 };
 
 /**
- * xmlSchemaRedef:
  */
 typedef struct _xmlSchemaRedef xmlSchemaRedef;
 typedef xmlSchemaRedef *xmlSchemaRedefPtr;
@@ -573,7 +559,6 @@ struct _xmlSchemaRedef {
 };
 
 /**
- * xmlSchemaConstructionCtxt:
  */
 typedef struct _xmlSchemaConstructionCtxt xmlSchemaConstructionCtxt;
 typedef xmlSchemaConstructionCtxt *xmlSchemaConstructionCtxtPtr;
@@ -647,8 +632,6 @@ struct _xmlSchemaParserCtxt {
 };
 
 /**
- * xmlSchemaQNameRef:
- *
  * A component reference item (not a schema component)
  * (Extends xmlSchemaBasicItem)
  */
@@ -664,8 +647,6 @@ struct _xmlSchemaQNameRef {
 };
 
 /**
- * xmlSchemaParticle:
- *
  * A particle component.
  * (Extends xmlSchemaTreeItem)
  */
@@ -684,8 +665,6 @@ struct _xmlSchemaParticle {
 };
 
 /**
- * xmlSchemaModelGroup:
- *
  * A model group component.
  * (Extends xmlSchemaTreeItem)
  */
@@ -702,8 +681,6 @@ struct _xmlSchemaModelGroup {
 #define XML_SCHEMA_MODEL_GROUP_DEF_MARKED 1<<0
 #define XML_SCHEMA_MODEL_GROUP_DEF_REDEFINED 1<<1
 /**
- * xmlSchemaModelGroupDef:
- *
  * A model group definition component.
  * (Extends xmlSchemaTreeItem)
  */
@@ -724,8 +701,6 @@ typedef struct _xmlSchemaIDC xmlSchemaIDC;
 typedef xmlSchemaIDC *xmlSchemaIDCPtr;
 
 /**
- * xmlSchemaIDCSelect:
- *
  * The identity-constraint "field" and "selector" item, holding the
  * XPath expression.
  */
@@ -740,8 +715,6 @@ struct _xmlSchemaIDCSelect {
 };
 
 /**
- * xmlSchemaIDC:
- *
  * The identity-constraint definition component.
  * (Extends xmlSchemaAnnotItem)
  */
@@ -760,8 +733,6 @@ struct _xmlSchemaIDC {
 };
 
 /**
- * xmlSchemaIDCAug:
- *
  * The augmented IDC information used for validation.
  */
 typedef struct _xmlSchemaIDCAug xmlSchemaIDCAug;
@@ -774,8 +745,6 @@ struct _xmlSchemaIDCAug {
 };
 
 /**
- * xmlSchemaPSVIIDCKeySequence:
- *
  * The key sequence of a node table item.
  */
 typedef struct _xmlSchemaPSVIIDCKey xmlSchemaPSVIIDCKey;
@@ -786,8 +755,6 @@ struct _xmlSchemaPSVIIDCKey {
 };
 
 /**
- * xmlSchemaPSVIIDCNode:
- *
  * The node table item of a node table.
  */
 typedef struct _xmlSchemaPSVIIDCNode xmlSchemaPSVIIDCNode;
@@ -801,8 +768,6 @@ struct _xmlSchemaPSVIIDCNode {
 };
 
 /**
- * xmlSchemaPSVIIDCBinding:
- *
  * The identity-constraint binding item of the [identity-constraint table].
  */
 typedef struct _xmlSchemaPSVIIDCBinding xmlSchemaPSVIIDCBinding;
@@ -827,8 +792,6 @@ typedef struct _xmlSchemaIDCMatcher xmlSchemaIDCMatcher;
 typedef xmlSchemaIDCMatcher *xmlSchemaIDCMatcherPtr;
 
 /**
- * xmlSchemaIDCStateObj:
- *
  * The state object used to evaluate XPath expressions.
  */
 typedef struct _xmlSchemaIDCStateObj xmlSchemaIDCStateObj;
@@ -849,8 +812,6 @@ struct _xmlSchemaIDCStateObj {
 #define IDC_MATCHER 0
 
 /**
- * xmlSchemaIDCMatcher:
- *
  * Used to evaluate IDC selectors (and fields).
  */
 struct _xmlSchemaIDCMatcher {
@@ -886,8 +847,6 @@ struct _xmlSchemaIDCMatcher {
 #define XML_SCHEMA_NODE_INFO_ERR_BAD_TYPE      (1<<10)
 
 /**
- * xmlSchemaNodeInfo:
- *
  * Holds information of an element node.
  */
 struct _xmlSchemaNodeInfo {
@@ -971,8 +930,6 @@ struct _xmlSchemaAttrInfo {
 
 #define XML_SCHEMA_VALID_CTXT_FLAG_STREAM 1
 /**
- * xmlSchemaValidCtxt:
- *
  * A Schemas validation context
  */
 struct _xmlSchemaValidCtxt {
@@ -1049,11 +1006,6 @@ struct _xmlSchemaValidCtxt {
     void *locCtxt;
 };
 
-/**
- * xmlSchemaSubstGroup:
- *
- *
- */
 typedef struct _xmlSchemaSubstGroup xmlSchemaSubstGroup;
 typedef xmlSchemaSubstGroup *xmlSchemaSubstGroupPtr;
 struct _xmlSchemaSubstGroup {
@@ -1062,8 +1014,6 @@ struct _xmlSchemaSubstGroup {
 };
 
 /**
- * xmlIDCHashEntry:
- *
  * an entry in hash tables to quickly look up keys/uniques
  */
 typedef struct _xmlIDCHashEntry xmlIDCHashEntry;
@@ -1134,10 +1084,9 @@ xmlSchemaParseAttributeGroupRef(xmlSchemaParserCtxtPtr pctxt,
  ************************************************************************/
 
 /**
- * xmlSchemaItemTypeToStr:
- * @type: the type of the schema item
+ * @param type  the type of the schema item
  *
- * Returns the component name of a schema item.
+ * @returns the component name of a schema item.
  */
 static const xmlChar *
 xmlSchemaItemTypeToStr(xmlSchemaTypeType type)
@@ -1190,10 +1139,9 @@ xmlSchemaItemTypeToStr(xmlSchemaTypeType type)
 }
 
 /**
- * xmlSchemaGetComponentTypeStr:
- * @type: the type of the schema item
+ * @param item  the type of the schema item
  *
- * Returns the component name of a schema item.
+ * @returns the component name of a schema item.
  */
 static const xmlChar *
 xmlSchemaGetComponentTypeStr(xmlSchemaBasicItemPtr item)
@@ -1210,10 +1158,9 @@ xmlSchemaGetComponentTypeStr(xmlSchemaBasicItemPtr item)
 }
 
 /**
- * xmlSchemaGetComponentNode:
- * @item: a schema component
+ * @param item  a schema component
  *
- * Returns node associated with the schema component.
+ * @returns node associated with the schema component.
  * NOTE that such a node need not be available; plus, a component's
  * node need not to reflect the component directly, since there is no
  * one-to-one relationship between the XML Schema representation and
@@ -1262,10 +1209,9 @@ xmlSchemaGetComponentNode(xmlSchemaBasicItemPtr item)
 
 #if 0
 /**
- * xmlSchemaGetNextComponent:
- * @item: a schema component
+ * @param item  a schema component
  *
- * Returns the next sibling of the schema component.
+ * @returns the next sibling of the schema component.
  */
 static xmlSchemaBasicItemPtr
 xmlSchemaGetNextComponent(xmlSchemaBasicItemPtr item)
@@ -1303,15 +1249,14 @@ xmlSchemaGetNextComponent(xmlSchemaBasicItemPtr item)
 
 
 /**
- * xmlSchemaFormatQName:
- * @buf: the string buffer
- * @namespaceName:  the namespace name
- * @localName: the local name
+ * @param buf  the string buffer
+ * @param namespaceName  the namespace name
+ * @param localName  the local name
  *
- * Returns the given QName in the format "{namespaceName}localName" or
- * just "localName" if @namespaceName is NULL.
+ * @returns the given QName in the format "{namespaceName}localName" or
+ * just "localName" if `namespaceName` is NULL.
  *
- * Returns the localName if @namespaceName is NULL, a formatted
+ * @returns the localName if `namespaceName` is NULL, a formatted
  * string otherwise.
  */
 static const xmlChar*
@@ -1476,10 +1421,9 @@ xmlSchemaGetIDCDesignation(xmlChar **buf, xmlSchemaIDCPtr idc)
 }
 
 /**
- * xmlSchemaWildcardPCToString:
- * @pc: the type of processContents
+ * @param pc  the type of processContents
  *
- * Returns a string representation of the type of
+ * @returns a string representation of the type of
  * processContents.
  */
 static const xmlChar *
@@ -1498,16 +1442,15 @@ xmlSchemaWildcardPCToString(int pc)
 }
 
 /**
- * xmlSchemaGetCanonValueWhtspExt:
- * @val: the precomputed value
- * @retValue: the returned value
- * @ws: the whitespace type of the value
- * @for_hash: non-zero if this is supposed to generate a string for hashing
+ * @param val  the precomputed value
+ * @param retValue  the returned value
+ * @param ws  the whitespace type of the value
+ * @param for_hash  non-zero if this is supposed to generate a string for hashing
  *
  * Get a the canonical representation of the value.
  * The caller has to free the returned retValue.
  *
- * Returns 0 if the value could be built and -1 in case of
+ * @returns 0 if the value could be built and -1 in case of
  *         API errors or if the value type is not supported yet.
  */
 static int
@@ -1605,16 +1548,12 @@ xmlSchemaGetCanonValueHash(xmlSchemaValPtr val,
 }
 
 /**
- * xmlSchemaFormatItemForReport:
- * @buf: the string buffer
- * @itemDes: the designation of the item
- * @itemName: the name of the item
- * @item: the item as an object
- * @itemNode: the node of the item
- * @local: the local name
- * @parsing: if the function is used during the parse
+ * @param buf  the string buffer
+ * @param itemDes  the designation of the item
+ * @param item  the item as an object
+ * @param itemNode  the node of the item
  *
- * Returns a representation of the given item used
+ * @returns a representation of the given item used
  * for error reports.
  *
  * The following order is used to build the resulting
@@ -1628,7 +1567,7 @@ xmlSchemaGetCanonValueHash(xmlSchemaValPtr val,
  * If the itemNode is an attribute node, the name of the attribute
  * will be appended to the result.
  *
- * Returns the formatted string and sets @buf to the resulting value.
+ * @returns the formatted string and sets `buf` to the resulting value.
  */
 static xmlChar*
 xmlSchemaFormatItemForReport(xmlChar **buf,
@@ -1838,13 +1777,13 @@ xmlSchemaFormatItemForReport(xmlChar **buf,
 }
 
 /**
- * xmlSchemaFormatFacetEnumSet:
- * @buf: the string buffer
- * @type: the type holding the enumeration facets
+ * @param actxt  schema context
+ * @param buf  the string buffer
+ * @param type  the type holding the enumeration facets
  *
  * Builds a string consisting of all enumeration elements.
  *
- * Returns a string of all enumeration elements.
+ * @returns a string of all enumeration elements.
  */
 static const xmlChar *
 xmlSchemaFormatFacetEnumSet(xmlSchemaAbstractCtxtPtr actxt,
@@ -1911,9 +1850,7 @@ xmlSchemaFormatFacetEnumSet(xmlSchemaAbstractCtxtPtr actxt,
  ************************************************************************/
 
 /**
- * xmlSchemaPErrMemory:
- * @node: a context node
- * @extra:  extra information
+ * @param ctxt  schema parser context
  *
  * Handle an out of memory condition
  */
@@ -1981,13 +1918,12 @@ xmlSchemaPErrFull(xmlSchemaParserCtxtPtr ctxt, xmlNodePtr node, int code,
 }
 
 /**
- * xmlSchemaPErr:
- * @ctxt: the parsing context
- * @node: the context node
- * @error: the error code
- * @msg: the error message
- * @str1: extra data
- * @str2: extra data
+ * @param ctxt  the parsing context
+ * @param node  the context node
+ * @param code  the error code
+ * @param msg  the error message
+ * @param str1  extra data
+ * @param str2  extra data
  *
  * Handle a parser error
  */
@@ -2000,14 +1936,13 @@ xmlSchemaPErr(xmlSchemaParserCtxtPtr ctxt, xmlNodePtr node, int code,
 }
 
 /**
- * xmlSchemaPErr2:
- * @ctxt: the parsing context
- * @node: the context node
- * @node: the current child
- * @error: the error code
- * @msg: the error message
- * @str1: extra data
- * @str2: extra data
+ * @param ctxt  the parsing context
+ * @param node  the context node
+ * @param child  the current child
+ * @param error  the error code
+ * @param msg  the error message
+ * @param str1  extra data
+ * @param str2  extra data
  *
  * Handle a parser error
  */
@@ -2024,19 +1959,18 @@ xmlSchemaPErr2(xmlSchemaParserCtxtPtr ctxt, xmlNodePtr node,
 
 
 /**
- * xmlSchemaPErrExt:
- * @ctxt: the parsing context
- * @node: the context node
- * @error: the error code
- * @strData1: extra data
- * @strData2: extra data
- * @strData3: extra data
- * @msg: the message
- * @str1:  extra parameter for the message display
- * @str2:  extra parameter for the message display
- * @str3:  extra parameter for the message display
- * @str4:  extra parameter for the message display
- * @str5:  extra parameter for the message display
+ * @param ctxt  the parsing context
+ * @param node  the context node
+ * @param code  the error code
+ * @param strData1  extra data
+ * @param strData2  extra data
+ * @param strData3  extra data
+ * @param msg  the message
+ * @param str1  extra parameter for the message display
+ * @param str2  extra parameter for the message display
+ * @param str3  extra parameter for the message display
+ * @param str4  extra parameter for the message display
+ * @param str5  extra parameter for the message display
  *
  * Handle a parser error
  */
@@ -2059,9 +1993,7 @@ xmlSchemaPErrExt(xmlSchemaParserCtxtPtr ctxt, xmlNodePtr node, int code,
  ************************************************************************/
 
 /**
- * xmlSchemaVTypeErrMemory:
- * @node: a context node
- * @extra:  extra information
+ * @param ctxt  schema validation context
  *
  * Handle an out of memory condition
  */
@@ -2131,17 +2063,16 @@ xmlSchemaVErrFull(xmlSchemaValidCtxtPtr ctxt, xmlNodePtr node, int code,
 #define WXS_ERROR_TYPE_ERROR 1
 #define WXS_ERROR_TYPE_WARNING 2
 /**
- * xmlSchemaErr4Line:
- * @ctxt: the validation context
- * @errorLevel: the error level
- * @error: the error code
- * @node: the context node
- * @line: the line number
- * @msg: the error message
- * @str1: extra data
- * @str2: extra data
- * @str3: extra data
- * @str4: extra data
+ * @param ctxt  the validation context
+ * @param errorLevel  the error level
+ * @param code  the error code
+ * @param node  the context node
+ * @param line  the line number
+ * @param msg  the error message
+ * @param str1  extra data
+ * @param str2  extra data
+ * @param str3  extra data
+ * @param str4  extra data
  *
  * Handle a validation error
  */
@@ -2227,14 +2158,13 @@ xmlSchemaErr4Line(xmlSchemaAbstractCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaErr3:
- * @ctxt: the validation context
- * @node: the context node
- * @error: the error code
- * @msg: the error message
- * @str1: extra data
- * @str2: extra data
- * @str3: extra data
+ * @param actxt  the validation context
+ * @param error  the error code
+ * @param node  the context node
+ * @param msg  the error message
+ * @param str1  extra data
+ * @param str2  extra data
+ * @param str3  extra data
  *
  * Handle a validation error
  */
@@ -2865,12 +2795,12 @@ xmlSchemaFacetErr(xmlSchemaAbstractCtxtPtr actxt,
 
 
 /**
- * xmlSchemaPMissingAttrErr:
- * @ctxt: the schema validation context
- * @ownerItem: the owner as a schema object
- * @ownerElem: the owner as an element node
- * @node: the parent element node of the missing attribute node
- * @type: the corresponding type of the attribute node
+ * @param ctxt  the schema validation context
+ * @param error  the error code
+ * @param ownerItem  the owner as a schema object
+ * @param ownerElem  the owner as an element node
+ * @param name  name of the attribute
+ * @param message  the error message
  *
  * Reports an illegal attribute.
  */
@@ -2897,15 +2827,15 @@ xmlSchemaPMissingAttrErr(xmlSchemaParserCtxtPtr ctxt,
 
 
 /**
- * xmlSchemaPResCompAttrErr:
- * @ctxt: the schema validation context
- * @error: the error code
- * @ownerItem: the owner as a schema object
- * @ownerElem: the owner as an element node
- * @name: the name of the attribute holding the QName
- * @refName: the referenced local name
- * @refURI: the referenced namespace URI
- * @message: optional message
+ * @param ctxt  the schema validation context
+ * @param error  the error code
+ * @param ownerItem  the owner as a schema object
+ * @param ownerElem  the owner as an element node
+ * @param name  the name of the attribute holding the QName
+ * @param refName  the referenced local name
+ * @param refURI  the referenced namespace URI
+ * @param refType  the referenced type
+ * @param refTypeStr  the referenced type string
  *
  * Used to report QName attribute values that failed to resolve
  * to schema components.
@@ -2937,12 +2867,12 @@ xmlSchemaPResCompAttrErr(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaPCustomAttrErr:
- * @ctxt: the schema parser context
- * @error: the error code
- * @ownerDes: the designation of the owner
- * @ownerItem: the owner as a schema object
- * @attr: the illegal attribute node
+ * @param ctxt  the schema parser context
+ * @param error  the error code
+ * @param ownerDes  the designation of the owner
+ * @param ownerItem  the owner as a schema object
+ * @param attr  the illegal attribute node
+ * @param msg  the error message
  *
  * Reports an illegal attribute during the parse.
  */
@@ -2978,11 +2908,10 @@ xmlSchemaPCustomAttrErr(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaPIllegalAttrErr:
- * @ctxt: the schema parser context
- * @error: the error code
- * @ownerItem: the attribute's owner item
- * @attr: the illegal attribute node
+ * @param ctxt  the schema parser context
+ * @param error  the error code
+ * @param ownerComp  the attribute's owner item (unused)
+ * @param attr  the illegal attribute node
  *
  * Reports an illegal attribute during the parse.
  */
@@ -3004,16 +2933,14 @@ xmlSchemaPIllegalAttrErr(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaPCustomErr:
- * @ctxt: the schema parser context
- * @error: the error code
- * @itemDes: the designation of the schema item
- * @item: the schema item
- * @itemElem: the node of the schema item
- * @message: the error message
- * @str1: an optional param for the error message
- * @str2: an optional param for the error message
- * @str3: an optional param for the error message
+ * @param ctxt  the schema parser context
+ * @param error  the error code
+ * @param item  the schema item
+ * @param itemElem  the node of the schema item
+ * @param message  the error message
+ * @param str1  an optional param for the error message
+ * @param str2  an optional param for the error message
+ * @param str3  an optional param for the error message
  *
  * Reports an error during parsing.
  */
@@ -3042,14 +2969,12 @@ xmlSchemaPCustomErrExt(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaPCustomErr:
- * @ctxt: the schema parser context
- * @error: the error code
- * @itemDes: the designation of the schema item
- * @item: the schema item
- * @itemElem: the node of the schema item
- * @message: the error message
- * @str1: the optional param for the error message
+ * @param ctxt  the schema parser context
+ * @param error  the error code
+ * @param item  the schema item
+ * @param itemElem  the node of the schema item
+ * @param message  the error message
+ * @param str1  the optional param for the error message
  *
  * Reports an error during parsing.
  */
@@ -3066,15 +2991,16 @@ xmlSchemaPCustomErr(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaPAttrUseErr:
- * @ctxt: the schema parser context
- * @error: the error code
- * @itemDes: the designation of the schema type
- * @item: the schema type
- * @itemElem: the node of the schema type
- * @attr: the invalid schema attribute
- * @message: the error message
- * @str1: the optional param for the error message
+ * @param ctxt  the schema parser context
+ * @param error  the error code
+ * @param node  the context node
+ * @param ownerItem  the owner as a schema object
+ * @param attruse  the invalid schema attribute
+ * @param message  the error message
+ * @param str1  the optional param for the error message
+ * @param str2  the optional param for the error message
+ * @param str3  the optional param for the error message
+ * @param str4  the optional param for the error message
  *
  * Reports an attribute use error during parsing.
  */
@@ -3105,12 +3031,11 @@ xmlSchemaPAttrUseErr4(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaPIllegalFacetAtomicErr:
- * @ctxt: the schema parser context
- * @error: the error code
- * @type: the schema type
- * @baseType: the base type of type
- * @facet: the illegal facet
+ * @param ctxt  the schema parser context
+ * @param error  the error code
+ * @param type  the schema type
+ * @param baseType  the base type of type
+ * @param facet  the illegal facet
  *
  * Reports an illegal facet for atomic simple types.
  */
@@ -3135,14 +3060,12 @@ xmlSchemaPIllegalFacetAtomicErr(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaPIllegalFacetListUnionErr:
- * @ctxt: the schema parser context
- * @error: the error code
- * @itemDes: the designation of the schema item involved
- * @item: the schema item involved
- * @facet: the illegal facet
+ * @param ctxt  the schema parser context
+ * @param error  the error code
+ * @param type  the schema type
+ * @param facet  the illegal facet
  *
- * Reports an illegal facet for <list> and <union>.
+ * Reports an illegal facet for `<list>` and `<union>`.
  */
 static void
 xmlSchemaPIllegalFacetListUnionErr(xmlSchemaParserCtxtPtr ctxt,
@@ -3161,12 +3084,12 @@ xmlSchemaPIllegalFacetListUnionErr(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaPMutualExclAttrErr:
- * @ctxt: the schema validation context
- * @error: the error code
- * @elemDes: the designation of the parent element node
- * @attr: the bad attribute node
- * @type: the corresponding type of the attribute node
+ * @param ctxt  the schema validation context
+ * @param error  the error code
+ * @param ownerItem  the owner as a schema object
+ * @param attr  the bad attribute node
+ * @param name1  first mutually exclusive name
+ * @param name2  second mutually exclusive name
  *
  * Reports an illegal attribute.
  */
@@ -3188,13 +3111,16 @@ xmlSchemaPMutualExclAttrErr(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaPSimpleTypeErr:
- * @ctxt:  the schema validation context
- * @error: the error code
- * @type: the type specifier
- * @ownerItem: the schema object if existent
- * @node: the validated node
- * @value: the validated value
+ * @param ctxt  the schema validation context
+ * @param error  the error code
+ * @param ownerItem  the schema object if existent
+ * @param node  the validated node
+ * @param type  the type specifier
+ * @param expected  the expected value
+ * @param value  the validated value
+ * @param message  error message
+ * @param str1  extra data
+ * @param str2  extra data
  *
  * Reports a simple type validation error.
  * TODO: Should this report the value of an element as well?
@@ -3281,14 +3207,13 @@ xmlSchemaPSimpleTypeErr(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaPContentErr:
- * @ctxt: the schema parser context
- * @error: the error code
- * @ownerItem: the owner item of the holder of the content
- * @ownerElem: the node of the holder of the content
- * @child: the invalid child node
- * @message: the optional error message
- * @content: the optional string describing the correct content
+ * @param ctxt  the schema parser context
+ * @param error  the error code
+ * @param ownerItem  the owner item of the holder of the content
+ * @param ownerElem  the node of the holder of the content
+ * @param child  the invalid child node
+ * @param message  the optional error message
+ * @param content  the optional string describing the correct content
  *
  * Reports an error concerning the content of a schema element.
  */
@@ -3345,12 +3270,11 @@ xmlSchemaPContentErr(xmlSchemaParserCtxtPtr ctxt,
  ************************************************************************/
 
 /**
- * xmlSchemaNewSchemaForParserCtxt:
- * @ctxt:  a schema validation context
+ * @param ctxt  a schema validation context
  *
  * Allocate a new Schema structure.
  *
- * Returns the newly allocated structure or NULL in case or error
+ * @returns the newly allocated structure or NULL in case or error
  */
 static xmlSchemaPtr
 xmlSchemaNewSchema(xmlSchemaParserCtxtPtr ctxt)
@@ -3370,11 +3294,9 @@ xmlSchemaNewSchema(xmlSchemaParserCtxtPtr ctxt)
 }
 
 /**
- * xmlSchemaNewFacet:
- *
  * Allocate a new Facet structure.
  *
- * Returns the newly allocated structure or NULL in case or error
+ * @returns the newly allocated structure or NULL in case or error
  */
 xmlSchemaFacetPtr
 xmlSchemaNewFacet(void)
@@ -3391,13 +3313,12 @@ xmlSchemaNewFacet(void)
 }
 
 /**
- * xmlSchemaNewAnnot:
- * @ctxt:  a schema validation context
- * @node:  a node
+ * @param ctxt  a schema validation context
+ * @param node  a node
  *
  * Allocate a new annotation structure.
  *
- * Returns the newly allocated structure or NULL in case or error
+ * @returns the newly allocated structure or NULL in case or error
  */
 static xmlSchemaAnnotPtr
 xmlSchemaNewAnnot(xmlSchemaParserCtxtPtr ctxt, xmlNodePtr node)
@@ -3531,8 +3452,7 @@ xmlSchemaItemListRemove(xmlSchemaItemListPtr list, int idx)
 }
 
 /**
- * xmlSchemaItemListFree:
- * @annot:  a schema type structure
+ * @param list  a schema type structure
  *
  * Deallocate a annotation structure
  */
@@ -3732,8 +3652,7 @@ xmlSchemaAddItemSize(xmlSchemaItemListPtr *list, int initialSize, void *item)
 }
 
 /**
- * xmlSchemaFreeAnnot:
- * @annot:  a schema type structure
+ * @param annot  a schema type structure
  *
  * Deallocate a annotation structure
  */
@@ -3756,8 +3675,7 @@ xmlSchemaFreeAnnot(xmlSchemaAnnotPtr annot)
 }
 
 /**
- * xmlSchemaFreeNotation:
- * @schema:  a schema notation structure
+ * @param nota  a schema notation structure
  *
  * Deallocate a Schema Notation structure.
  */
@@ -3772,8 +3690,7 @@ xmlSchemaFreeNotation(xmlSchemaNotationPtr nota)
 }
 
 /**
- * xmlSchemaFreeAttribute:
- * @attr:  an attribute declaration
+ * @param attr  an attribute declaration
  *
  * Deallocates an attribute declaration structure.
  */
@@ -3790,8 +3707,7 @@ xmlSchemaFreeAttribute(xmlSchemaAttributePtr attr)
 }
 
 /**
- * xmlSchemaFreeAttributeUse:
- * @use:  an attribute use
+ * @param use  an attribute use
  *
  * Deallocates an attribute use structure.
  */
@@ -3808,8 +3724,7 @@ xmlSchemaFreeAttributeUse(xmlSchemaAttributeUsePtr use)
 }
 
 /**
- * xmlSchemaFreeAttributeUseProhib:
- * @prohib:  an attribute use prohibition
+ * @param prohib  an attribute use prohibition
  *
  * Deallocates an attribute use structure.
  */
@@ -3822,7 +3737,6 @@ xmlSchemaFreeAttributeUseProhib(xmlSchemaAttributeUseProhibPtr prohib)
 }
 
 /**
- * xmlSchemaFreeWildcardNsSet:
  * set:  a schema wildcard namespace
  *
  * Deallocates a list of wildcard constraint structures.
@@ -3840,8 +3754,7 @@ xmlSchemaFreeWildcardNsSet(xmlSchemaWildcardNsPtr set)
 }
 
 /**
- * xmlSchemaFreeWildcard:
- * @wildcard:  a wildcard structure
+ * @param wildcard  a wildcard structure
  *
  * Deallocates a wildcard structure.
  */
@@ -3860,8 +3773,7 @@ xmlSchemaFreeWildcard(xmlSchemaWildcardPtr wildcard)
 }
 
 /**
- * xmlSchemaFreeAttributeGroup:
- * @schema:  a schema attribute group structure
+ * @param attrGr  a schema attribute group structure
  *
  * Deallocate a Schema Attribute Group structure.
  */
@@ -3878,8 +3790,7 @@ xmlSchemaFreeAttributeGroup(xmlSchemaAttributeGroupPtr attrGr)
 }
 
 /**
- * xmlSchemaFreeQNameRef:
- * @item: a QName reference structure
+ * @param item  a QName reference structure
  *
  * Deallocatea a QName reference structure.
  */
@@ -3890,8 +3801,7 @@ xmlSchemaFreeQNameRef(xmlSchemaQNameRefPtr item)
 }
 
 /**
- * xmlSchemaFreeTypeLinkList:
- * @alink: a type link
+ * @param link  a type link
  *
  * Deallocate a list of types.
  */
@@ -3923,8 +3833,7 @@ xmlSchemaFreeIDCStateObjList(xmlSchemaIDCStateObjPtr sto)
 }
 
 /**
- * xmlSchemaFreeIDC:
- * @idc: a identity-constraint definition
+ * @param idcDef  a identity-constraint definition
  *
  * Deallocates an identity-constraint definition.
  */
@@ -3958,8 +3867,7 @@ xmlSchemaFreeIDC(xmlSchemaIDCPtr idcDef)
 }
 
 /**
- * xmlSchemaFreeElement:
- * @schema:  a schema element structure
+ * @param elem  a schema element structure
  *
  * Deallocate a Schema Element structure.
  */
@@ -3978,8 +3886,7 @@ xmlSchemaFreeElement(xmlSchemaElementPtr elem)
 }
 
 /**
- * xmlSchemaFreeFacet:
- * @facet:  a schema facet structure
+ * @param facet  a schema facet structure
  *
  * Deallocate a Schema Facet structure.
  */
@@ -3998,8 +3905,7 @@ xmlSchemaFreeFacet(xmlSchemaFacetPtr facet)
 }
 
 /**
- * xmlSchemaFreeType:
- * @type:  a schema type structure
+ * @param type  a schema type structure
  *
  * Deallocate a Schema Type structure.
  */
@@ -4040,8 +3946,7 @@ xmlSchemaFreeType(xmlSchemaTypePtr type)
 }
 
 /**
- * xmlSchemaFreeModelGroupDef:
- * @item:  a schema model group definition
+ * @param item  a schema model group definition
  *
  * Deallocates a schema model group definition.
  */
@@ -4054,8 +3959,7 @@ xmlSchemaFreeModelGroupDef(xmlSchemaModelGroupDefPtr item)
 }
 
 /**
- * xmlSchemaFreeModelGroup:
- * @item:  a schema model group
+ * @param item  a schema model group
  *
  * Deallocates a schema model group structure.
  */
@@ -4142,8 +4046,7 @@ xmlSchemaComponentListFree(xmlSchemaItemListPtr list)
 }
 
 /**
- * xmlSchemaFree:
- * @schema:  a schema structure
+ * @param schema  a schema structure
  *
  * Deallocate a Schema structure.
  */
@@ -4202,9 +4105,11 @@ static void
 xmlSchemaTypeDump(xmlSchemaTypePtr type, FILE * output); /* forward */
 
 /**
- * xmlSchemaElementDump:
- * @elem:  an element
- * @output:  the file output
+ * @param payload  an element
+ * @param data  the file output
+ * @param name  unused
+ * @param namespace  unused
+ * @param context  unused
  *
  * Dump the element
  */
@@ -4289,9 +4194,8 @@ xmlSchemaElementDump(void *payload, void *data,
 }
 
 /**
- * xmlSchemaAnnotDump:
- * @output:  the file output
- * @annot:  a annotation
+ * @param output  the file output
+ * @param annot  a annotation
  *
  * Dump the annotation
  */
@@ -4312,10 +4216,9 @@ xmlSchemaAnnotDump(FILE * output, xmlSchemaAnnotPtr annot)
 }
 
 /**
- * xmlSchemaContentModelDump:
- * @particle: the schema particle
- * @output: the file output
- * @depth: the depth used for indentation
+ * @param particle  the schema particle
+ * @param output  the file output
+ * @param depth  the depth used for indentation
  *
  * Dump a SchemaType structure
  */
@@ -4386,9 +4289,8 @@ xmlSchemaContentModelDump(xmlSchemaParticlePtr particle, FILE * output, int dept
 }
 
 /**
- * xmlSchemaAttrUsesDump:
- * @uses:  attribute uses list
- * @output:  the file output
+ * @param uses  attribute uses list
+ * @param output  the file output
  *
  * Dumps a list of attribute use components.
  */
@@ -4430,9 +4332,8 @@ xmlSchemaAttrUsesDump(xmlSchemaItemListPtr uses, FILE * output)
 }
 
 /**
- * xmlSchemaTypeDump:
- * @output:  the file output
- * @type:  a type structure
+ * @param output  the file output
+ * @param type  a type structure
  *
  * Dump a SchemaType structure
  */
@@ -4538,9 +4439,8 @@ xmlSchemaTypeDumpEntry(void *type, void *output,
 }
 
 /**
- * xmlSchemaDump:
- * @output:  the file output
- * @schema:  a schema structure
+ * @param output  the file output
+ * @param schema  a schema structure
  *
  * Dump a Schema structure.
  */
@@ -4578,14 +4478,13 @@ xmlSchemaDump(FILE * output, xmlSchemaPtr schema)
  ************************************************************************/
 
 /**
- * xmlSchemaGetPropNode:
- * @node: the element node
- * @name: the name of the attribute
+ * @param node  the element node
+ * @param name  the name of the attribute
  *
- * Seeks an attribute with a name of @name in
+ * Seeks an attribute with a name of `name` in
  * no namespace.
  *
- * Returns the attribute or NULL if not present.
+ * @returns the attribute or NULL if not present.
  */
 static xmlAttrPtr
 xmlSchemaGetPropNode(xmlNodePtr node, const char *name)
@@ -4604,15 +4503,14 @@ xmlSchemaGetPropNode(xmlNodePtr node, const char *name)
 }
 
 /**
- * xmlSchemaGetPropNodeNs:
- * @node: the element node
- * @uri: the uri
- * @name: the name of the attribute
+ * @param node  the element node
+ * @param uri  the uri
+ * @param name  the name of the attribute
  *
- * Seeks an attribute with a local name of @name and
- * a namespace URI of @uri.
+ * Seeks an attribute with a local name of `name` and
+ * a namespace URI of `uri`.
  *
- * Returns the attribute or NULL if not present.
+ * @returns the attribute or NULL if not present.
  */
 static xmlAttrPtr
 xmlSchemaGetPropNodeNs(xmlNodePtr node, const char *uri, const char *name)
@@ -4655,14 +4553,13 @@ xmlSchemaGetNodeContentNoDict(xmlNodePtr node)
 }
 
 /**
- * xmlSchemaGetProp:
- * @ctxt: the parser context
- * @node: the node
- * @name: the property name
+ * @param ctxt  the parser context
+ * @param node  the node
+ * @param name  the property name
  *
  * Read a attribute value and internalize the string
  *
- * Returns the string or NULL if not present.
+ * @returns the string or NULL if not present.
  */
 static const xmlChar *
 xmlSchemaGetProp(xmlSchemaParserCtxtPtr ctxt, xmlNodePtr node,
@@ -4703,14 +4600,13 @@ xmlSchemaGetProp(xmlSchemaParserCtxtPtr ctxt, xmlNodePtr node,
     }
 
 /**
- * xmlSchemaGetElem:
- * @schema:  the schema context
- * @name:  the element name
- * @ns:  the element namespace
+ * @param schema  the schema context
+ * @param name  the element name
+ * @param nsName  the element namespace
  *
  * Lookup a global element declaration in the schema.
  *
- * Returns the element declaration or NULL if not found.
+ * @returns the element declaration or NULL if not found.
  */
 static xmlSchemaElementPtr
 xmlSchemaGetElem(xmlSchemaPtr schema, const xmlChar * name,
@@ -4728,14 +4624,13 @@ exit:
 }
 
 /**
- * xmlSchemaGetType:
- * @schema:  the main schema
- * @name:  the type's name
- * nsName:  the type's namespace
+ * @param schema  the main schema
+ * @param name  the type's name
+ * @param nsName  the type's namespace
  *
  * Lookup a type in the schemas or the predefined types
  *
- * Returns the group definition or NULL if not found.
+ * @returns the group definition or NULL if not found.
  */
 static xmlSchemaTypePtr
 xmlSchemaGetType(xmlSchemaPtr schema, const xmlChar * name,
@@ -4766,14 +4661,13 @@ exit:
 }
 
 /**
- * xmlSchemaGetAttributeDecl:
- * @schema:  the context of the schema
- * @name:  the name of the attribute
- * @ns:  the target namespace of the attribute
+ * @param schema  the context of the schema
+ * @param name  the name of the attribute
+ * @param nsName  the target namespace of the attribute
  *
  * Lookup a an attribute in the schema or imported schemas
  *
- * Returns the attribute declaration or NULL if not found.
+ * @returns the attribute declaration or NULL if not found.
  */
 static xmlSchemaAttributePtr
 xmlSchemaGetAttributeDecl(xmlSchemaPtr schema, const xmlChar * name,
@@ -4791,14 +4685,13 @@ exit:
 }
 
 /**
- * xmlSchemaGetAttributeGroup:
- * @schema:  the context of the schema
- * @name:  the name of the attribute group
- * @ns:  the target namespace of the attribute group
+ * @param schema  the context of the schema
+ * @param name  the name of the attribute group
+ * @param nsName  the target namespace of the attribute group
  *
  * Lookup a an attribute group in the schema or imported schemas
  *
- * Returns the attribute group definition or NULL if not found.
+ * @returns the attribute group definition or NULL if not found.
  */
 static xmlSchemaAttributeGroupPtr
 xmlSchemaGetAttributeGroup(xmlSchemaPtr schema, const xmlChar * name,
@@ -4822,14 +4715,13 @@ exit:
 }
 
 /**
- * xmlSchemaGetGroup:
- * @schema:  the context of the schema
- * @name:  the name of the group
- * @ns:  the target namespace of the group
+ * @param schema  the context of the schema
+ * @param name  the name of the group
+ * @param nsName  the target namespace of the group
  *
  * Lookup a group in the schema or imported schemas
  *
- * Returns the group definition or NULL if not found.
+ * @returns the group definition or NULL if not found.
  */
 static xmlSchemaModelGroupDefPtr
 xmlSchemaGetGroup(xmlSchemaPtr schema, const xmlChar * name,
@@ -4880,14 +4772,14 @@ exit:
 }
 
 /**
- * xmlSchemaGetNamedComponent:
- * @schema:  the schema
- * @name:  the name of the group
- * @ns:  the target namespace of the group
+ * @param schema  the schema
+ * @param itemType  the item type
+ * @param name  the name of the group
+ * @param targetNs  the target namespace of the group
  *
  * Lookup a group in the schema or imported schemas
  *
- * Returns the group definition or NULL if not found.
+ * @returns the group definition or NULL if not found.
  */
 static xmlSchemaBasicItemPtr
 xmlSchemaGetNamedComponent(xmlSchemaPtr schema,
@@ -4918,13 +4810,12 @@ xmlSchemaGetNamedComponent(xmlSchemaPtr schema,
     (((n)->type == XML_TEXT_NODE) && (xmlSchemaIsBlank((n)->content, -1)))
 
 /**
- * xmlSchemaIsBlank:
- * @str:  a string
- * @len: the length of the string or -1
+ * @param str  a string
+ * @param len  the length of the string or -1
  *
  * Check if a string is ignorable
  *
- * Returns 1 if the string is NULL or made of blanks chars, 0 otherwise
+ * @returns 1 if the string is NULL or made of blanks chars, 0 otherwise
  */
 static int
 xmlSchemaIsBlank(xmlChar * str, int len)
@@ -5035,15 +4926,16 @@ subschemas:
 }
 
 /**
- * xmlSchemaAddNotation:
- * @ctxt:  a schema parser context
- * @schema:  the schema being built
- * @name:  the item name
+ * @param ctxt  a schema parser context
+ * @param schema  the schema being built
+ * @param name  the item name
+ * @param nsName  the element namespace
+ * @param node  unused
  *
  * Add an XML schema annotation declaration
  * *WARNING* this interface is highly subject to change
  *
- * Returns the new structure or NULL in case of error
+ * @returns the new structure or NULL in case of error
  */
 static xmlSchemaNotationPtr
 xmlSchemaAddNotation(xmlSchemaParserCtxtPtr ctxt, xmlSchemaPtr schema,
@@ -5071,16 +4963,17 @@ xmlSchemaAddNotation(xmlSchemaParserCtxtPtr ctxt, xmlSchemaPtr schema,
 }
 
 /**
- * xmlSchemaAddAttribute:
- * @ctxt:  a schema parser context
- * @schema:  the schema being built
- * @name:  the item name
- * @namespace:  the namespace
+ * @param ctxt  a schema parser context
+ * @param schema  the schema being built
+ * @param name  the item name
+ * @param nsName  the item namespace
+ * @param node  the context node
+ * @param topLevel  whether this is a top-level element
  *
  * Add an XML schema Attribute declaration
  * *WARNING* this interface is highly subject to change
  *
- * Returns the new structure or NULL in case of error
+ * @returns the new structure or NULL in case of error
  */
 static xmlSchemaAttributePtr
 xmlSchemaAddAttribute(xmlSchemaParserCtxtPtr ctxt, xmlSchemaPtr schema,
@@ -5112,16 +5005,13 @@ xmlSchemaAddAttribute(xmlSchemaParserCtxtPtr ctxt, xmlSchemaPtr schema,
 }
 
 /**
- * xmlSchemaAddAttributeUse:
- * @ctxt:  a schema parser context
- * @schema:  the schema being built
- * @name:  the item name
- * @namespace:  the namespace
+ * @param pctxt  a schema parser context
+ * @param node  the context node
  *
  * Add an XML schema Attribute declaration
  * *WARNING* this interface is highly subject to change
  *
- * Returns the new structure or NULL in case of error
+ * @returns the new structure or NULL in case of error
  */
 static xmlSchemaAttributeUsePtr
 xmlSchemaAddAttributeUse(xmlSchemaParserCtxtPtr pctxt,
@@ -5181,16 +5071,15 @@ xmlSchemaAddRedef(xmlSchemaParserCtxtPtr pctxt,
 }
 
 /**
- * xmlSchemaAddAttributeGroupDefinition:
- * @ctxt:  a schema parser context
- * @schema:  the schema being built
- * @name:  the item name
- * @nsName:  the target namespace
- * @node: the corresponding node
+ * @param pctxt  a schema parser context
+ * @param schema  the schema being built
+ * @param name  the item name
+ * @param nsName  the target namespace
+ * @param node  the corresponding node
  *
  * Add an XML schema Attribute Group definition.
  *
- * Returns the new structure or NULL in case of error
+ * @returns the new structure or NULL in case of error
  */
 static xmlSchemaAttributeGroupPtr
 xmlSchemaAddAttributeGroupDefinition(xmlSchemaParserCtxtPtr pctxt,
@@ -5233,16 +5122,16 @@ xmlSchemaAddAttributeGroupDefinition(xmlSchemaParserCtxtPtr pctxt,
 }
 
 /**
- * xmlSchemaAddElement:
- * @ctxt:  a schema parser context
- * @schema:  the schema being built
- * @name:  the type name
- * @namespace:  the type namespace
+ * @param ctxt  a schema parser context
+ * @param name  the type name
+ * @param nsName  the type namespace
+ * @param node  the context node
+ * @param topLevel  whether this is a top-level element
  *
  * Add an XML schema Element declaration
  * *WARNING* this interface is highly subject to change
  *
- * Returns the new structure or NULL in case of error
+ * @returns the new structure or NULL in case of error
  */
 static xmlSchemaElementPtr
 xmlSchemaAddElement(xmlSchemaParserCtxtPtr ctxt,
@@ -5274,16 +5163,18 @@ xmlSchemaAddElement(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaAddType:
- * @ctxt:  a schema parser context
- * @schema:  the schema being built
- * @name:  the item name
- * @namespace:  the namespace
+ * @param ctxt  a schema parser context
+ * @param schema  the schema being built
+ * @param type  the type
+ * @param name  the item name
+ * @param nsName  the namespace
+ * @param node  the context node
+ * @param topLevel  whether this is a top-level element
  *
  * Add an XML schema item
  * *WARNING* this interface is highly subject to change
  *
- * Returns the new structure or NULL in case of error
+ * @returns the new structure or NULL in case of error
  */
 static xmlSchemaTypePtr
 xmlSchemaAddType(xmlSchemaParserCtxtPtr ctxt, xmlSchemaPtr schema,
@@ -5369,16 +5260,15 @@ xmlSchemaAddAttributeUseProhib(xmlSchemaParserCtxtPtr pctxt)
 
 
 /**
- * xmlSchemaAddModelGroup:
- * @ctxt:  a schema parser context
- * @schema:  the schema being built
- * @type: the "compositor" type of the model group
- * @node: the node in the schema doc
+ * @param ctxt  a schema parser context
+ * @param schema  the schema being built
+ * @param type  the "compositor" type of the model group
+ * @param node  the node in the schema doc
  *
  * Adds a schema model group
  * *WARNING* this interface is highly subject to change
  *
- * Returns the new structure or NULL in case of error
+ * @returns the new structure or NULL in case of error
  */
 static xmlSchemaModelGroupPtr
 xmlSchemaAddModelGroup(xmlSchemaParserCtxtPtr ctxt,
@@ -5409,17 +5299,15 @@ xmlSchemaAddModelGroup(xmlSchemaParserCtxtPtr ctxt,
 
 
 /**
- * xmlSchemaAddParticle:
- * @ctxt:  a schema parser context
- * @schema:  the schema being built
- * @node: the corresponding node in the schema doc
- * @min: the minOccurs
- * @max: the maxOccurs
+ * @param ctxt  a schema parser context
+ * @param node  the corresponding node in the schema doc
+ * @param min  the minOccurs
+ * @param max  the maxOccurs
  *
  * Adds an XML schema particle component.
  * *WARNING* this interface is highly subject to change
  *
- * Returns the new structure or NULL in case of error
+ * @returns the new structure or NULL in case of error
  */
 static xmlSchemaParticlePtr
 xmlSchemaAddParticle(xmlSchemaParserCtxtPtr ctxt,
@@ -5454,14 +5342,15 @@ xmlSchemaAddParticle(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaAddModelGroupDefinition:
- * @ctxt:  a schema validation context
- * @schema:  the schema being built
- * @name:  the group name
+ * @param ctxt  a schema validation context
+ * @param schema  the schema being built
+ * @param name  the group name
+ * @param nsName  the group namespace
+ * @param node  the context node
  *
  * Add an XML schema Group definition
  *
- * Returns the new structure or NULL in case of error
+ * @returns the new structure or NULL in case of error
  */
 static xmlSchemaModelGroupDefPtr
 xmlSchemaAddModelGroupDefinition(xmlSchemaParserCtxtPtr ctxt,
@@ -5502,12 +5391,11 @@ xmlSchemaAddModelGroupDefinition(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaNewWildcardNs:
- * @ctxt:  a schema validation context
+ * @param ctxt  a schema validation context
  *
  * Creates a new wildcard namespace constraint.
  *
- * Returns the new structure or NULL in case of error
+ * @returns the new structure or NULL in case of error
  */
 static xmlSchemaWildcardNsPtr
 xmlSchemaNewWildcardNsConstraint(xmlSchemaParserCtxtPtr ctxt)
@@ -5557,14 +5445,15 @@ xmlSchemaAddIDC(xmlSchemaParserCtxtPtr ctxt, xmlSchemaPtr schema,
 }
 
 /**
- * xmlSchemaAddWildcard:
- * @ctxt:  a schema validation context
- * @schema: a schema
+ * @param ctxt  a schema validation context
+ * @param schema  a schema
+ * @param type  the type
+ * @param node  the context node
  *
  * Adds a wildcard.
  * It corresponds to a xsd:anyAttribute and xsd:any.
  *
- * Returns the new structure or NULL in case of error
+ * @returns the new structure or NULL in case of error
  */
 static xmlSchemaWildcardPtr
 xmlSchemaAddWildcard(xmlSchemaParserCtxtPtr ctxt, xmlSchemaPtr schema,
@@ -5652,14 +5541,13 @@ xmlSchemaSubstGroupGet(xmlSchemaParserCtxtPtr pctxt,
 }
 
 /**
- * xmlSchemaAddElementSubstitutionMember:
- * @pctxt:  a schema parser context
- * @head:  the head of the substitution group
- * @member: the new member of the substitution group
+ * @param pctxt  a schema parser context
+ * @param head  the head of the substitution group
+ * @param member  the new member of the substitution group
  *
  * Allocate a new annotation structure.
  *
- * Returns the newly allocated structure or NULL in case or error
+ * @returns the newly allocated structure or NULL in case or error
  */
 static int
 xmlSchemaAddElementSubstitutionMember(xmlSchemaParserCtxtPtr pctxt,
@@ -5688,19 +5576,19 @@ xmlSchemaAddElementSubstitutionMember(xmlSchemaParserCtxtPtr pctxt,
  ************************************************************************/
 
 /**
- * xmlSchemaPValAttrNodeQNameValue:
- * @ctxt:  a schema parser context
- * @schema: the schema context
- * @ownerItem: the parent as a schema object
- * @value:  the QName value
- * @uri:  the resulting namespace URI if found
- * @local: the resulting local part if found, the attribute value otherwise
+ * @param ctxt  a schema parser context
+ * @param schema  the schema context
+ * @param attr  the attribute node
+ * @param ownerItem  the parent as a schema object
+ * @param value  the QName value
+ * @param uri  the resulting namespace URI if found
+ * @param local  the resulting local part if found, the attribute value otherwise
  *
  * Extracts the local name and the URI of a QName value and validates it.
  * This one is intended to be used on attribute values that
  * should resolve to schema components.
  *
- * Returns 0, in case the QName is valid, a positive error code
+ * @returns 0, in case the QName is valid, a positive error code
  * if not valid and -1 if an internal error occurs.
  */
 static int
@@ -5768,19 +5656,18 @@ xmlSchemaPValAttrNodeQNameValue(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaPValAttrNodeQName:
- * @ctxt:  a schema parser context
- * @schema: the schema context
- * @ownerItem: the owner as a schema object
- * @attr:  the attribute node
- * @uri:  the resulting namespace URI if found
- * @local: the resulting local part if found, the attribute value otherwise
+ * @param ctxt  a schema parser context
+ * @param schema  the schema context
+ * @param ownerItem  the owner as a schema object
+ * @param attr  the attribute node
+ * @param uri  the resulting namespace URI if found
+ * @param local  the resulting local part if found, the attribute value otherwise
  *
  * Extracts and validates the QName of an attribute value.
  * This one is intended to be used on attribute values that
  * should resolve to schema components.
  *
- * Returns 0, in case the QName is valid, a positive error code
+ * @returns 0, in case the QName is valid, a positive error code
  * if not valid and -1 if an internal error occurs.
  */
 static int
@@ -5799,18 +5686,17 @@ xmlSchemaPValAttrNodeQName(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaPValAttrQName:
- * @ctxt:  a schema parser context
- * @schema: the schema context
- * @ownerItem: the owner as a schema object
- * @ownerElem:  the parent node of the attribute
- * @name:  the name of the attribute
- * @uri:  the resulting namespace URI if found
- * @local: the resulting local part if found, the attribute value otherwise
+ * @param ctxt  a schema parser context
+ * @param schema  the schema context
+ * @param ownerItem  the owner as a schema object
+ * @param ownerElem  the parent node of the attribute
+ * @param name  the name of the attribute
+ * @param uri  the resulting namespace URI if found
+ * @param local  the resulting local part if found, the attribute value otherwise
  *
  * Extracts and validates the QName of an attribute value.
  *
- * Returns 0, in case the QName is valid, a positive error code
+ * @returns 0, in case the QName is valid, a positive error code
  * if not valid and -1 if an internal error occurs.
  */
 static int
@@ -5835,12 +5721,12 @@ xmlSchemaPValAttrQName(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaPValAttrID:
- * @ctxt:  a schema parser context
+ * @param ctxt  a schema parser context
+ * @param attr  attribute node
  *
  * Extracts and validates the ID of an attribute value.
  *
- * Returns 0, in case the ID is valid, a positive error code
+ * @returns 0, in case the ID is valid, a positive error code
  * if not valid and -1 if an internal error occurs.
  */
 static int
@@ -5914,13 +5800,16 @@ xmlSchemaPValAttrID(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlGetMaxOccurs:
- * @ctxt:  a schema validation context
- * @node:  a subtree containing XML Schema information
+ * @param ctxt  a schema validation context
+ * @param node  a subtree containing XML Schema information
+ * @param min  minimum
+ * @param max  maximum
+ * @param def  default
+ * @param expected  expected
  *
  * Get the maxOccurs property
  *
- * Returns the default if not found, or the value
+ * @returns the default if not found, or the value
  */
 static int
 xmlGetMaxOccurs(xmlSchemaParserCtxtPtr ctxt, xmlNodePtr node,
@@ -5990,13 +5879,16 @@ xmlGetMaxOccurs(xmlSchemaParserCtxtPtr ctxt, xmlNodePtr node,
 }
 
 /**
- * xmlGetMinOccurs:
- * @ctxt:  a schema validation context
- * @node:  a subtree containing XML Schema information
+ * @param ctxt  a schema validation context
+ * @param node  a subtree containing XML Schema information
+ * @param min  minimum
+ * @param max  maximum
+ * @param def  default
+ * @param expected  expected
  *
  * Get the minOccurs property
  *
- * Returns the default if not found, or the value
+ * @returns the default if not found, or the value
  */
 static int
 xmlGetMinOccurs(xmlSchemaParserCtxtPtr ctxt, xmlNodePtr node,
@@ -6053,14 +5945,13 @@ xmlGetMinOccurs(xmlSchemaParserCtxtPtr ctxt, xmlNodePtr node,
 }
 
 /**
- * xmlSchemaPGetBoolNodeValue:
- * @ctxt:  a schema validation context
- * @ownerItem:  the owner as a schema item
- * @node: the node holding the value
+ * @param ctxt  a schema validation context
+ * @param ownerItem  the owner as a schema item
+ * @param node  the node holding the value
  *
  * Converts a boolean string value into 1 or 0.
  *
- * Returns 0 or 1.
+ * @returns 0 or 1.
  */
 static int
 xmlSchemaPGetBoolNodeValue(xmlSchemaParserCtxtPtr ctxt,
@@ -6098,15 +5989,14 @@ xmlSchemaPGetBoolNodeValue(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlGetBooleanProp:
- * @ctxt:  a schema validation context
- * @node:  a subtree containing XML Schema information
- * @name:  the attribute name
- * @def:  the default value
+ * @param ctxt  a schema validation context
+ * @param node  a subtree containing XML Schema information
+ * @param name  the attribute name
+ * @param def  the default value
  *
  * Evaluate if a boolean property is set
  *
- * Returns the default if not found, 0 if found to be false,
+ * @returns the default if not found, 0 if found to be false,
  * 1 if found to be true
  */
 static int
@@ -6176,19 +6066,17 @@ xmlSchemaParseAnyAttribute(xmlSchemaParserCtxtPtr ctxt,
                            xmlSchemaPtr schema, xmlNodePtr node);
 
 /**
- * xmlSchemaPValAttrNodeValue:
- *
- * @pctxt:  a schema parser context
- * @ownerItem: the schema object owner if existent
- * @attr:  the schema attribute node being validated
- * @value: the value
- * @type: the built-in type to be validated against
+ * @param pctxt  a schema parser context
+ * @param ownerItem  the schema object owner if existent
+ * @param attr  the schema attribute node being validated
+ * @param value  the value
+ * @param type  the built-in type to be validated against
  *
  * Validates a value against the given built-in type.
  * This one is intended to be used internally for validation
  * of schema attribute values during parsing of the schema.
  *
- * Returns 0 if the value is valid, a positive error code
+ * @returns 0 if the value is valid, a positive error code
  * number otherwise and -1 in case of an internal or API error.
  */
 static int
@@ -6248,19 +6136,17 @@ xmlSchemaPValAttrNodeValue(xmlSchemaParserCtxtPtr pctxt,
 }
 
 /**
- * xmlSchemaPValAttrNode:
- *
- * @ctxt:  a schema parser context
- * @ownerItem: the schema object owner if existent
- * @attr:  the schema attribute node being validated
- * @type: the built-in type to be validated against
- * @value: the resulting value if any
+ * @param ctxt  a schema parser context
+ * @param ownerItem  the schema object owner if existent
+ * @param attr  the schema attribute node being validated
+ * @param type  the built-in type to be validated against
+ * @param value  the resulting value if any
  *
  * Extracts and validates a value against the given built-in type.
  * This one is intended to be used internally for validation
  * of schema attribute values during parsing of the schema.
  *
- * Returns 0 if the value is valid, a positive error code
+ * @returns 0 if the value is valid, a positive error code
  * number otherwise and -1 in case of an internal or API error.
  */
 static int
@@ -6284,21 +6170,18 @@ xmlSchemaPValAttrNode(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaPValAttr:
- *
- * @ctxt:  a schema parser context
- * @node: the element node of the attribute
- * @ownerItem: the schema object owner if existent
- * @ownerElem: the owner element node
- * @name:  the name of the schema attribute node
- * @type: the built-in type to be validated against
- * @value: the resulting value if any
+ * @param ctxt  a schema parser context
+ * @param ownerItem  the schema object owner if existent
+ * @param ownerElem  the owner element node
+ * @param name  the name of the schema attribute node
+ * @param type  the built-in type to be validated against
+ * @param value  the resulting value if any
  *
  * Extracts and validates a value against the given built-in type.
  * This one is intended to be used internally for validation
  * of schema attribute values during parsing of the schema.
  *
- * Returns 0 if the value is valid, a positive error code
+ * @returns 0 if the value is valid, a positive error code
  * number otherwise and -1 in case of an internal or API error.
  */
 static int
@@ -6385,11 +6268,12 @@ xmlSchemaCheckReference(xmlSchemaParserCtxtPtr pctxt,
 }
 
 /**
- * xmlSchemaParseLocalAttributes:
- * @ctxt:  a schema validation context
- * @schema:  the schema being built
- * @node:  a subtree containing XML Schema information
- * @type:  the hosting type where the attributes will be anchored
+ * @param ctxt  a schema validation context
+ * @param schema  the schema being built
+ * @param child  a subtree containing XML Schema information
+ * @param list  an item list
+ * @param parentType  the hosting type where the attributes will be anchored
+ * @param hasRefs  set if references were found
  *
  * Parses attribute uses and attribute declarations and
  * attribute group references.
@@ -6427,15 +6311,14 @@ xmlSchemaParseLocalAttributes(xmlSchemaParserCtxtPtr ctxt, xmlSchemaPtr schema,
 }
 
 /**
- * xmlSchemaParseAnnotation:
- * @ctxt:  a schema validation context
- * @schema:  the schema being built
- * @node:  a subtree containing XML Schema information
+ * @param ctxt  a schema validation context
+ * @param node  a subtree containing XML Schema information
+ * @param needed  needed
  *
  * parse a XML schema Attribute declaration
  * *WARNING* this interface is highly subject to change
  *
- * Returns -1 in case of error, 0 if the declaration is improper and
+ * @returns -1 in case of error, 0 if the declaration is improper and
  *         1 in case of success.
  */
 static xmlSchemaAnnotPtr
@@ -6547,15 +6430,14 @@ xmlSchemaParseAnnotation(xmlSchemaParserCtxtPtr ctxt, xmlNodePtr node, int neede
 }
 
 /**
- * xmlSchemaParseFacet:
- * @ctxt:  a schema validation context
- * @schema:  the schema being built
- * @node:  a subtree containing XML Schema information
+ * @param ctxt  a schema validation context
+ * @param schema  the schema being built
+ * @param node  a subtree containing XML Schema information
  *
  * parse a XML schema Facet declaration
  * *WARNING* this interface is highly subject to change
  *
- * Returns the new type structure or NULL in case of error
+ * @returns the new type structure or NULL in case of error
  */
 static xmlSchemaFacetPtr
 xmlSchemaParseFacet(xmlSchemaParserCtxtPtr ctxt, xmlSchemaPtr schema,
@@ -6638,16 +6520,16 @@ xmlSchemaParseFacet(xmlSchemaParserCtxtPtr ctxt, xmlSchemaPtr schema,
 }
 
 /**
- * xmlSchemaParseWildcardNs:
- * @ctxt:  a schema parser context
- * @wildc:  the wildcard, already created
- * @node:  a subtree containing XML Schema information
+ * @param ctxt  a schema parser context
+ * @param schema  unused
+ * @param wildc  the wildcard, already created
+ * @param node  a subtree containing XML Schema information
  *
  * Parses the attribute "processContents" and "namespace"
  * of a xsd:anyAttribute and xsd:any.
  * *WARNING* this interface is highly subject to change
  *
- * Returns 0 if everything goes fine, a positive error code
+ * @returns 0 if everything goes fine, a positive error code
  * if something is not valid and -1 if an internal error occurs.
  */
 static int
@@ -6807,17 +6689,16 @@ xmlSchemaPCheckParticleCorrect_2(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaParseAny:
- * @ctxt:  a schema validation context
- * @schema:  the schema being built
- * @node:  a subtree containing XML Schema information
+ * @param ctxt  a schema validation context
+ * @param schema  the schema being built
+ * @param node  a subtree containing XML Schema information
  *
- * Parsea a XML schema <any> element. A particle and wildcard
+ * Parsea a XML schema `<any>` element. A particle and wildcard
  * will be created (except if minOccurs==maxOccurs==0, in this case
  * nothing will be created).
  * *WARNING* this interface is highly subject to change
  *
- * Returns the particle or NULL in case of error or if minOccurs==maxOccurs==0
+ * @returns the particle or NULL in case of error or if minOccurs==maxOccurs==0
  */
 static xmlSchemaParticlePtr
 xmlSchemaParseAny(xmlSchemaParserCtxtPtr ctxt, xmlSchemaPtr schema,
@@ -6902,14 +6783,13 @@ xmlSchemaParseAny(xmlSchemaParserCtxtPtr ctxt, xmlSchemaPtr schema,
 }
 
 /**
- * xmlSchemaParseNotation:
- * @ctxt:  a schema validation context
- * @schema:  the schema being built
- * @node:  a subtree containing XML Schema information
+ * @param ctxt  a schema validation context
+ * @param schema  the schema being built
+ * @param node  a subtree containing XML Schema information
  *
  * parse a XML schema Notation declaration
  *
- * Returns the new structure or NULL in case of error
+ * @returns the new structure or NULL in case of error
  */
 static xmlSchemaNotationPtr
 xmlSchemaParseNotation(xmlSchemaParserCtxtPtr ctxt, xmlSchemaPtr schema,
@@ -6949,15 +6829,14 @@ xmlSchemaParseNotation(xmlSchemaParserCtxtPtr ctxt, xmlSchemaPtr schema,
 }
 
 /**
- * xmlSchemaParseAnyAttribute:
- * @ctxt:  a schema validation context
- * @schema:  the schema being built
- * @node:  a subtree containing XML Schema information
+ * @param ctxt  a schema validation context
+ * @param schema  the schema being built
+ * @param node  a subtree containing XML Schema information
  *
  * parse a XML schema AnyAttribute declaration
  * *WARNING* this interface is highly subject to change
  *
- * Returns a wildcard or NULL.
+ * @returns a wildcard or NULL.
  */
 static xmlSchemaWildcardPtr
 xmlSchemaParseAnyAttribute(xmlSchemaParserCtxtPtr ctxt,
@@ -7019,15 +6898,16 @@ xmlSchemaParseAnyAttribute(xmlSchemaParserCtxtPtr ctxt,
 
 
 /**
- * xmlSchemaParseAttribute:
- * @ctxt:  a schema validation context
- * @schema:  the schema being built
- * @node:  a subtree containing XML Schema information
+ * @param pctxt  a schema validation context
+ * @param schema  the schema being built
+ * @param node  a subtree containing XML Schema information
+ * @param uses  attribute uses list
+ * @param parentType  parent type
  *
  * parse a XML schema Attribute declaration
  * *WARNING* this interface is highly subject to change
  *
- * Returns the attribute declaration.
+ * @returns the attribute declaration.
  */
 static xmlSchemaBasicItemPtr
 xmlSchemaParseLocalAttribute(xmlSchemaParserCtxtPtr pctxt,
@@ -7562,17 +7442,16 @@ xmlSchemaParseGlobalAttribute(xmlSchemaParserCtxtPtr pctxt,
 }
 
 /**
- * xmlSchemaParseAttributeGroupRef:
- * @ctxt:  a schema validation context
- * @schema:  the schema being built
- * @node:  a subtree containing XML Schema information
+ * @param pctxt  a schema validation context
+ * @param schema  the schema being built
+ * @param node  a subtree containing XML Schema information
  *
  * Parse an attribute group definition reference.
  * Note that a reference to an attribute group does not
  * correspond to any component at all.
  * *WARNING* this interface is highly subject to change
  *
- * Returns the attribute group or NULL in case of error.
+ * @returns the attribute group or NULL in case of error.
  */
 static xmlSchemaQNameRefPtr
 xmlSchemaParseAttributeGroupRef(xmlSchemaParserCtxtPtr pctxt,
@@ -7695,15 +7574,14 @@ xmlSchemaParseAttributeGroupRef(xmlSchemaParserCtxtPtr pctxt,
 }
 
 /**
- * xmlSchemaParseAttributeGroupDefinition:
- * @pctxt:  a schema validation context
- * @schema:  the schema being built
- * @node:  a subtree containing XML Schema information
+ * @param pctxt  a schema validation context
+ * @param schema  the schema being built
+ * @param node  a subtree containing XML Schema information
  *
  * parse a XML schema Attribute Group declaration
  * *WARNING* this interface is highly subject to change
  *
- * Returns the attribute group definition or NULL in case of error.
+ * @returns the attribute group definition or NULL in case of error.
  */
 static xmlSchemaAttributeGroupPtr
 xmlSchemaParseAttributeGroupDefinition(xmlSchemaParserCtxtPtr pctxt,
@@ -7795,12 +7673,11 @@ xmlSchemaParseAttributeGroupDefinition(xmlSchemaParserCtxtPtr pctxt,
 }
 
 /**
- * xmlSchemaPValAttrFormDefault:
- * @value:  the value
- * @flags: the flags to be modified
- * @flagQualified: the specific flag for "qualified"
+ * @param value  the value
+ * @param flags  the flags to be modified
+ * @param flagQualified  the specific flag for "qualified"
  *
- * Returns 0 if the value is valid, 1 otherwise.
+ * @returns 0 if the value is valid, 1 otherwise.
  */
 static int
 xmlSchemaPValAttrFormDefault(const xmlChar *value,
@@ -7817,20 +7694,19 @@ xmlSchemaPValAttrFormDefault(const xmlChar *value,
 }
 
 /**
- * xmlSchemaPValAttrBlockFinal:
- * @value:  the value
- * @flags: the flags to be modified
- * @flagAll: the specific flag for "#all"
- * @flagExtension: the specific flag for "extension"
- * @flagRestriction: the specific flag for "restriction"
- * @flagSubstitution: the specific flag for "substitution"
- * @flagList: the specific flag for "list"
- * @flagUnion: the specific flag for "union"
+ * @param value  the value
+ * @param flags  the flags to be modified
+ * @param flagAll  the specific flag for "\#all"
+ * @param flagExtension  the specific flag for "extension"
+ * @param flagRestriction  the specific flag for "restriction"
+ * @param flagSubstitution  the specific flag for "substitution"
+ * @param flagList  the specific flag for "list"
+ * @param flagUnion  the specific flag for "union"
  *
  * Validates the value of the attribute "final" and "block". The value
- * is converted into the specified flag values and returned in @flags.
+ * is converted into the specified flag values and returned in `flags`.
  *
- * Returns 0 if the value is valid, 1 otherwise.
+ * @returns 0 if the value is valid, 1 otherwise.
  */
 
 static int
@@ -8031,13 +7907,12 @@ xmlSchemaCheckCSelectorXPath(xmlSchemaParserCtxtPtr ctxt,
     cur->next = annot;
 
 /**
- * xmlSchemaAssignAnnotation:
- * @item: the schema component
- * @annot: the annotation
+ * @param annItem  the schema component
+ * @param annot  the annotation
  *
  * Adds the annotation to the given schema component.
  *
- * Returns the given annotation.
+ * @returns the given annotation.
  */
 static xmlSchemaAnnotPtr
 xmlSchemaAddAnnotation(xmlSchemaAnnotItemPtr annItem,
@@ -8127,15 +8002,15 @@ xmlSchemaAddAnnotation(xmlSchemaAnnotItemPtr annItem,
 }
 
 /**
- * xmlSchemaParseIDCSelectorAndField:
- * @ctxt:  a schema validation context
- * @schema:  the schema being built
- * @node:  a subtree containing XML Schema information
+ * @param ctxt  a schema validation context
+ * @param idc  the identity-constraint definition
+ * @param node  a subtree containing XML Schema information
+ * @param isField  field indicator
  *
  * Parses a XML Schema identity-constraint definition's
- * <selector> and <field> elements.
+ * `<selector>` and `<field>` elements.
  *
- * Returns the parsed identity-constraint definition.
+ * @returns the parsed identity-constraint definition.
  */
 static xmlSchemaIDCSelectPtr
 xmlSchemaParseIDCSelectorAndField(xmlSchemaParserCtxtPtr ctxt,
@@ -8223,14 +8098,15 @@ xmlSchemaParseIDCSelectorAndField(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaParseIDC:
- * @ctxt:  a schema validation context
- * @schema:  the schema being built
- * @node:  a subtree containing XML Schema information
+ * @param ctxt  a schema validation context
+ * @param schema  the schema being built
+ * @param node  a subtree containing XML Schema information
+ * @param idcCategory  the IDC category
+ * @param targetNamespace  the target namespace
  *
  * Parses a XML Schema identity-constraint definition.
  *
- * Returns the parsed identity-constraint definition.
+ * @returns the parsed identity-constraint definition.
  */
 static xmlSchemaIDCPtr
 xmlSchemaParseIDC(xmlSchemaParserCtxtPtr ctxt,
@@ -8370,16 +8246,16 @@ xmlSchemaParseIDC(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaParseElement:
- * @ctxt:  a schema validation context
- * @schema:  the schema being built
- * @node:  a subtree containing XML Schema information
- * @topLevel: indicates if this is global declaration
+ * @param ctxt  a schema validation context
+ * @param schema  the schema being built
+ * @param node  a subtree containing XML Schema information
+ * @param isElemRef  set if the element is a reference
+ * @param topLevel  indicates if this is global declaration
  *
  * Parses a XML schema element declaration.
  * *WARNING* this interface is highly subject to change
  *
- * Returns the element declaration or a particle; NULL in case
+ * @returns the element declaration or a particle; NULL in case
  * of an error or if the particle has minOccurs==maxOccurs==0.
  */
 static xmlSchemaBasicItemPtr
@@ -8769,15 +8645,14 @@ return_null:
 }
 
 /**
- * xmlSchemaParseUnion:
- * @ctxt:  a schema validation context
- * @schema:  the schema being built
- * @node:  a subtree containing XML Schema information
+ * @param ctxt  a schema validation context
+ * @param schema  the schema being built
+ * @param node  a subtree containing XML Schema information
  *
  * parse a XML schema Union definition
  * *WARNING* this interface is highly subject to change
  *
- * Returns -1 in case of internal error, 0 in case of success and a positive
+ * @returns -1 in case of internal error, 0 in case of success and a positive
  * error code otherwise.
  */
 static int
@@ -8947,15 +8822,14 @@ xmlSchemaParseUnion(xmlSchemaParserCtxtPtr ctxt, xmlSchemaPtr schema,
 }
 
 /**
- * xmlSchemaParseList:
- * @ctxt:  a schema validation context
- * @schema:  the schema being built
- * @node:  a subtree containing XML Schema information
+ * @param ctxt  a schema validation context
+ * @param schema  the schema being built
+ * @param node  a subtree containing XML Schema information
  *
  * parse a XML schema List definition
  * *WARNING* this interface is highly subject to change
  *
- * Returns -1 in case of error, 0 if the declaration is improper and
+ * @returns -1 in case of error, 0 if the declaration is improper and
  *         1 in case of success.
  */
 static xmlSchemaTypePtr
@@ -9058,15 +8932,15 @@ xmlSchemaParseList(xmlSchemaParserCtxtPtr ctxt, xmlSchemaPtr schema,
 }
 
 /**
- * xmlSchemaParseSimpleType:
- * @ctxt:  a schema validation context
- * @schema:  the schema being built
- * @node:  a subtree containing XML Schema information
+ * @param ctxt  a schema validation context
+ * @param schema  the schema being built
+ * @param node  a subtree containing XML Schema information
+ * @param topLevel  whether this is a top-level element
  *
  * parse a XML schema Simple Type definition
  * *WARNING* this interface is highly subject to change
  *
- * Returns -1 in case of error, 0 if the declaration is improper and
+ * @returns -1 in case of error, 0 if the declaration is improper and
  * 1 in case of success.
  */
 static xmlSchemaTypePtr
@@ -9273,10 +9147,9 @@ xmlSchemaParseSimpleType(xmlSchemaParserCtxtPtr ctxt, xmlSchemaPtr schema,
 }
 
 /**
- * xmlSchemaParseModelGroupDefRef:
- * @ctxt:  the parser context
- * @schema: the schema being built
- * @node:  the node
+ * @param ctxt  the parser context
+ * @param schema  the schema being built
+ * @param node  the node
  *
  * Parses a reference to a model group definition.
  *
@@ -9369,10 +9242,9 @@ xmlSchemaParseModelGroupDefRef(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaParseModelGroupDefinition:
- * @ctxt:  a schema validation context
- * @schema:  the schema being built
- * @node:  a subtree containing XML Schema information
+ * @param ctxt  a schema validation context
+ * @param schema  the schema being built
+ * @param node  a subtree containing XML Schema information
  *
  * Parses a XML schema model group definition.
  *
@@ -9382,7 +9254,7 @@ xmlSchemaParseModelGroupDefRef(xmlSchemaParserCtxtPtr ctxt,
  *
  * *WARNING* this interface is highly subject to change
  *
- * Returns -1 in case of error, 0 if the declaration is improper and
+ * @returns -1 in case of error, 0 if the declaration is improper and
  *         1 in case of success.
  */
 static xmlSchemaModelGroupDefPtr
@@ -9465,9 +9337,8 @@ xmlSchemaParseModelGroupDefinition(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaCleanupDoc:
- * @ctxt:  a schema validation context
- * @node:  the root of the document.
+ * @param ctxt  a schema validation context
+ * @param root  the root of the document.
  *
  * removes unwanted nodes in a schemas document tree
  */
@@ -9675,12 +9546,11 @@ exit_failure:
 }
 
 /**
- * xmlSchemaParseSchemaTopLevel:
- * @ctxt:  a schema validation context
- * @schema:  the schemas
- * @nodes:  the list of top level nodes
+ * @param ctxt  a schema validation context
+ * @param schema  the schemas
+ * @param nodes  the list of top level nodes
  *
- * Returns the internal XML Schema structure built from the resource or
+ * @returns the internal XML Schema structure built from the resource or
  *         NULL in case of error
  */
 static int
@@ -9894,14 +9764,13 @@ xmlSchemaParserCtxtCreate(void)
 }
 
 /**
- * xmlSchemaNewParserCtxtUseDict:
- * @URL:  the location of the schema
- * @dict: the dictionary to be used
+ * @param URL  the location of the schema
+ * @param dict  the dictionary to be used
  *
  * Create an XML Schemas parse context for that file/resource expected
  * to contain an XML Schemas file.
  *
- * Returns the parser context or NULL in case of error
+ * @returns the parser context or NULL in case of error
  */
 static xmlSchemaParserCtxtPtr
 xmlSchemaNewParserCtxtUseDict(const char *URL, xmlDictPtr dict)
@@ -9942,14 +9811,13 @@ xmlSchemaCreatePCtxtOnVCtxt(xmlSchemaValidCtxtPtr vctxt)
 }
 
 /**
- * xmlSchemaGetSchemaBucket:
- * @pctxt: the schema parser context
- * @schemaLocation: the URI of the schema document
+ * @param pctxt  the schema parser context
+ * @param schemaLocation  the URI of the schema document
  *
- * Returns a schema bucket if it was already parsed.
+ * @returns a schema bucket if it was already parsed.
  *
- * Returns a schema bucket if it was already parsed from
- *         @schemaLocation, NULL otherwise.
+ * @returns a schema bucket if it was already parsed from
+ *         `schemaLocation`, NULL otherwise.
  */
 static xmlSchemaBucketPtr
 xmlSchemaGetSchemaBucket(xmlSchemaParserCtxtPtr pctxt,
@@ -10203,20 +10071,26 @@ xmlSchemaBuildAbsoluteURI(xmlDictPtr dict, const xmlChar* location,
 
 
 /**
- * xmlSchemaAddSchemaDoc:
- * @pctxt:  a schema validation context
- * @schema:  the schema being built
- * @node:  a subtree containing XML Schema information
+ * @param pctxt  a schema validation context
+ * @param type  import or include or redefine
+ * @param schemaLocation  schema location
+ * @param schemaDoc  schema document
+ * @param schemaBuffer  document buffer
+ * @param schemaBufferLen  buffer size
+ * @param invokingNode  invoking node
+ * @param sourceTargetNamespace  source target namespace
+ * @param importNamespace  import namespace
+ * @param bucket  bucket
  *
  * Parse an included (and to-be-redefined) XML schema document.
  *
- * Returns 0 on success, a positive error code on errors and
+ * @returns 0 on success, a positive error code on errors and
  *         -1 in case of an internal or API error.
  */
 
 static int
 xmlSchemaAddSchemaDoc(xmlSchemaParserCtxtPtr pctxt,
-		int type, /* import or include or redefine */
+		int type,
 		const xmlChar *schemaLocation,
 		xmlDocPtr schemaDoc,
 		const char *schemaBuffer,
@@ -10633,15 +10507,14 @@ exit_failure:
 }
 
 /**
- * xmlSchemaParseImport:
- * @ctxt:  a schema validation context
- * @schema:  the schema being built
- * @node:  a subtree containing XML Schema information
+ * @param pctxt  a schema validation context
+ * @param schema  the schema being built
+ * @param node  a subtree containing XML Schema information
  *
  * parse a XML schema Import definition
  * *WARNING* this interface is highly subject to change
  *
- * Returns 0 in case of success, a positive error code if
+ * @returns 0 in case of success, a positive error code if
  * not valid and -1 in case of an internal error.
  */
 static int
@@ -11114,12 +10987,11 @@ xmlSchemaParseInclude(xmlSchemaParserCtxtPtr pctxt, xmlSchemaPtr schema,
 }
 
 /**
- * xmlSchemaParseModelGroup:
- * @ctxt:  a schema validation context
- * @schema:  the schema being built
- * @node:  a subtree containing XML Schema information
- * @type: the "compositor" type
- * @particleNeeded: if a a model group with a particle
+ * @param ctxt  a schema validation context
+ * @param schema  the schema being built
+ * @param node  a subtree containing XML Schema information
+ * @param type  the "compositor" type
+ * @param withParticle  if a a model group with a particle
  *
  * parse a XML schema Sequence definition.
  * Applies parts of:
@@ -11135,7 +11007,7 @@ xmlSchemaParseInclude(xmlSchemaParserCtxtPtr pctxt, xmlSchemaPtr schema,
  *
  * *WARNING* this interface is highly subject to change
  *
- * Returns -1 in case of error, 0 if the declaration is improper and
+ * @returns -1 in case of error, 0 if the declaration is improper and
  *         1 in case of success.
  */
 static xmlSchemaTreeItemPtr
@@ -11394,15 +11266,15 @@ xmlSchemaParseModelGroup(xmlSchemaParserCtxtPtr ctxt, xmlSchemaPtr schema,
 }
 
 /**
- * xmlSchemaParseRestriction:
- * @ctxt:  a schema validation context
- * @schema:  the schema being built
- * @node:  a subtree containing XML Schema information
+ * @param ctxt  a schema validation context
+ * @param schema  the schema being built
+ * @param node  a subtree containing XML Schema information
+ * @param parentType  the parent type
  *
  * parse a XML schema Restriction definition
  * *WARNING* this interface is highly subject to change
  *
- * Returns the type definition or NULL in case of error
+ * @returns the type definition or NULL in case of error
  */
 static xmlSchemaTypePtr
 xmlSchemaParseRestriction(xmlSchemaParserCtxtPtr ctxt, xmlSchemaPtr schema,
@@ -11697,16 +11569,16 @@ xmlSchemaParseRestriction(xmlSchemaParserCtxtPtr ctxt, xmlSchemaPtr schema,
 }
 
 /**
- * xmlSchemaParseExtension:
- * @ctxt:  a schema validation context
- * @schema:  the schema being built
- * @node:  a subtree containing XML Schema information
+ * @param ctxt  a schema validation context
+ * @param schema  the schema being built
+ * @param node  a subtree containing XML Schema information
+ * @param parentType  parent type
  *
- * Parses an <extension>, which is found inside a
- * <simpleContent> or <complexContent>.
+ * Parses an `<extension>`, which is found inside a
+ * `<simpleContent>` or `<complexContent>`.
  * *WARNING* this interface is highly subject to change.
  *
- * TODO: Returns the type definition or NULL in case of error
+ * @returns the type definition or NULL in case of error
  */
 static xmlSchemaTypePtr
 xmlSchemaParseExtension(xmlSchemaParserCtxtPtr ctxt, xmlSchemaPtr schema,
@@ -11833,15 +11705,15 @@ xmlSchemaParseExtension(xmlSchemaParserCtxtPtr ctxt, xmlSchemaPtr schema,
 }
 
 /**
- * xmlSchemaParseSimpleContent:
- * @ctxt:  a schema validation context
- * @schema:  the schema being built
- * @node:  a subtree containing XML Schema information
+ * @param ctxt  a schema validation context
+ * @param schema  the schema being built
+ * @param node  a subtree containing XML Schema information
+ * @param hasRestrictionOrExtension  set if restriction or extension was found
  *
  * parse a XML schema SimpleContent definition
  * *WARNING* this interface is highly subject to change
  *
- * Returns the type definition or NULL in case of error
+ * @returns the type definition or NULL in case of error
  */
 static int
 xmlSchemaParseSimpleContent(xmlSchemaParserCtxtPtr ctxt,
@@ -11923,15 +11795,15 @@ xmlSchemaParseSimpleContent(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaParseComplexContent:
- * @ctxt:  a schema validation context
- * @schema:  the schema being built
- * @node:  a subtree containing XML Schema information
+ * @param ctxt  a schema validation context
+ * @param schema  the schema being built
+ * @param node  a subtree containing XML Schema information
+ * @param hasRestrictionOrExtension  set if restriction or extension was found
  *
  * parse a XML schema ComplexContent definition
  * *WARNING* this interface is highly subject to change
  *
- * Returns the type definition or NULL in case of error
+ * @returns the type definition or NULL in case of error
  */
 static int
 xmlSchemaParseComplexContent(xmlSchemaParserCtxtPtr ctxt,
@@ -12018,15 +11890,15 @@ xmlSchemaParseComplexContent(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaParseComplexType:
- * @ctxt:  a schema validation context
- * @schema:  the schema being built
- * @node:  a subtree containing XML Schema information
+ * @param ctxt  a schema validation context
+ * @param schema  the schema being built
+ * @param node  a subtree containing XML Schema information
+ * @param topLevel  whether this is a top-level element
  *
  * parse a XML schema Complex Type definition
  * *WARNING* this interface is highly subject to change
  *
- * Returns the type definition or NULL in case of error
+ * @returns the type definition or NULL in case of error
  */
 static xmlSchemaTypePtr
 xmlSchemaParseComplexType(xmlSchemaParserCtxtPtr ctxt, xmlSchemaPtr schema,
@@ -12316,13 +12188,12 @@ xmlSchemaParseComplexType(xmlSchemaParserCtxtPtr ctxt, xmlSchemaPtr schema,
 
 #if 0 /* Will be enabled if it is clear what options are needed. */
 /**
- * xmlSchemaParserCtxtSetOptions:
- * @ctxt:	a schema parser context
- * @options: a combination of xmlSchemaParserOption
+ * @param ctxt  	a schema parser context
+ * @param options  a combination of xmlSchemaParserOption
  *
  * Sets the options to be used during the parse.
  *
- * Returns 0 in case of success, -1 in case of an
+ * @returns 0 in case of success, -1 in case of an
  * API error.
  */
 static int
@@ -12348,10 +12219,9 @@ xmlSchemaParserCtxtSetOptions(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaValidCtxtGetOptions:
- * @ctxt: a schema parser context
+ * @param ctxt  a schema parser context
  *
- * Returns the option combination of the parser context.
+ * @returns the option combination of the parser context.
  */
 static int
 xmlSchemaParserCtxtGetOptions(xmlSchemaParserCtxtPtr ctxt)
@@ -12365,13 +12235,12 @@ xmlSchemaParserCtxtGetOptions(xmlSchemaParserCtxtPtr ctxt)
 #endif
 
 /**
- * xmlSchemaNewParserCtxt:
- * @URL:  the location of the schema
+ * @param URL  the location of the schema
  *
  * Create an XML Schemas parse context for that file/resource expected
  * to contain an XML Schemas file.
  *
- * Returns the parser context or NULL in case of error
+ * @returns the parser context or NULL in case of error
  */
 xmlSchemaParserCtxtPtr
 xmlSchemaNewParserCtxt(const char *URL)
@@ -12390,14 +12259,13 @@ xmlSchemaNewParserCtxt(const char *URL)
 }
 
 /**
- * xmlSchemaNewMemParserCtxt:
- * @buffer:  a pointer to a char array containing the schemas
- * @size:  the size of the array
+ * @param buffer  a pointer to a char array containing the schemas
+ * @param size  the size of the array
  *
  * Create an XML Schemas parse context for that memory buffer expected
  * to contain an XML Schemas file.
  *
- * Returns the parser context or NULL in case of error
+ * @returns the parser context or NULL in case of error
  */
 xmlSchemaParserCtxtPtr
 xmlSchemaNewMemParserCtxt(const char *buffer, int size)
@@ -12416,13 +12284,12 @@ xmlSchemaNewMemParserCtxt(const char *buffer, int size)
 }
 
 /**
- * xmlSchemaNewDocParserCtxt:
- * @doc:  a preparsed document tree
+ * @param doc  a preparsed document tree
  *
  * Create an XML Schemas parse context for that document.
  * NB. The document may be modified during the parsing process.
  *
- * Returns the parser context or NULL in case of error
+ * @returns the parser context or NULL in case of error
  */
 xmlSchemaParserCtxtPtr
 xmlSchemaNewDocParserCtxt(xmlDocPtr doc)
@@ -12443,8 +12310,7 @@ xmlSchemaNewDocParserCtxt(xmlDocPtr doc)
 }
 
 /**
- * xmlSchemaFreeParserCtxt:
- * @ctxt:  the schema parser context
+ * @param ctxt  the schema parser context
  *
  * Free the resources associated to the schema parser context
  */
@@ -12476,9 +12342,7 @@ xmlSchemaFreeParserCtxt(xmlSchemaParserCtxtPtr ctxt)
  ************************************************************************/
 
 /**
- * xmlSchemaBuildContentModelForSubstGroup:
- *
- * Returns 1 if nillable, 0 otherwise
+ * @returns 1 if nillable, 0 otherwise
  */
 static int
 xmlSchemaBuildContentModelForSubstGroup(xmlSchemaParserCtxtPtr pctxt,
@@ -12593,9 +12457,7 @@ xmlSchemaBuildContentModelForSubstGroup(xmlSchemaParserCtxtPtr pctxt,
 }
 
 /**
- * xmlSchemaBuildContentModelForElement:
- *
- * Returns 1 if nillable, 0 otherwise
+ * @returns 1 if nillable, 0 otherwise
  */
 static int
 xmlSchemaBuildContentModelForElement(xmlSchemaParserCtxtPtr ctxt,
@@ -12653,14 +12515,12 @@ xmlSchemaBuildContentModelForElement(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaBuildAContentModel:
- * @ctxt:  the schema parser context
- * @particle:  the particle component
- * @name:  the complex type's name whose content is being built
+ * @param pctxt  the schema parser context
+ * @param particle  the particle component
  *
  * Create the automaton for the {content type} of a complex type.
  *
- * Returns 1 if the content is nillable, 0 otherwise
+ * @returns 1 if the content is nillable, 0 otherwise
  */
 static int
 xmlSchemaBuildAContentModel(xmlSchemaParserCtxtPtr pctxt,
@@ -13062,10 +12922,8 @@ xmlSchemaBuildAContentModel(xmlSchemaParserCtxtPtr pctxt,
 }
 
 /**
- * xmlSchemaBuildContentModel:
- * @ctxt:  the schema parser context
- * @type:  the complex type definition
- * @name:  the element name
+ * @param type  the complex type definition
+ * @param ctxt  the schema parser context
  *
  * Builds the content model of the complex type.
  */
@@ -13111,9 +12969,8 @@ xmlSchemaBuildContentModel(xmlSchemaTypePtr type,
 }
 
 /**
- * xmlSchemaResolveElementReferences:
- * @elem:  the schema element context
- * @ctxt:  the schema parser context
+ * @param elemDecl  the schema element context
+ * @param ctxt  the schema parser context
  *
  * Resolves the references of an element declaration
  * or particle, which has an element declaration as it's
@@ -13200,15 +13057,14 @@ xmlSchemaResolveElementReferences(xmlSchemaElementPtr elemDecl,
 }
 
 /**
- * xmlSchemaResolveUnionMemberTypes:
- * @ctxt:  the schema parser context
- * @type:  the schema simple type definition
+ * @param ctxt  the schema parser context
+ * @param type  the schema simple type definition
  *
  * Checks and builds the "member type definitions" property of the union
  * simple type. This handles part (1), part (2) is done in
  * xmlSchemaFinishMemberTypeDefinitionsProperty()
  *
- * Returns -1 in case of an internal error, 0 otherwise.
+ * @returns -1 in case of an internal error, 0 otherwise.
  */
 static int
 xmlSchemaResolveUnionMemberTypes(xmlSchemaParserCtxtPtr ctxt,
@@ -13280,13 +13136,11 @@ xmlSchemaResolveUnionMemberTypes(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaIsDerivedFromBuiltInType:
- * @ctxt:  the schema parser context
- * @type:  the type definition
- * @valType: the value type
+ * @param type  the type definition
+ * @param valType  the value type
  *
  *
- * Returns 1 if the type has the given value type, or
+ * @returns 1 if the type has the given value type, or
  * is derived from such a type.
  */
 static int
@@ -13309,13 +13163,12 @@ xmlSchemaIsDerivedFromBuiltInType(xmlSchemaTypePtr type, int valType)
 
 #if 0
 /**
- * xmlSchemaIsDerivedFromBuiltInType:
- * @ctxt:  the schema parser context
- * @type:  the type definition
- * @valType: the value type
+ * @param ctxt  the schema parser context
+ * @param type  the type definition
+ * @param valType  the value type
  *
  *
- * Returns 1 if the type has the given value type, or
+ * @returns 1 if the type has the given value type, or
  * is derived from such a type.
  */
 static int
@@ -13349,10 +13202,9 @@ xmlSchemaQueryBuiltInType(xmlSchemaTypePtr type)
 #endif
 
 /**
- * xmlSchemaGetPrimitiveType:
- * @type:  the simpleType definition
+ * @param type  the simpleType definition
  *
- * Returns the primitive type of the given type or
+ * @returns the primitive type of the given type or
  * NULL in case of error.
  */
 static xmlSchemaTypePtr
@@ -13375,10 +13227,9 @@ xmlSchemaGetPrimitiveType(xmlSchemaTypePtr type)
 
 #if 0
 /**
- * xmlSchemaGetBuiltInTypeAncestor:
- * @type:  the simpleType definition
+ * @param type  the simpleType definition
  *
- * Returns the primitive type of the given type or
+ * @returns the primitive type of the given type or
  * NULL in case of error.
  */
 static xmlSchemaTypePtr
@@ -13397,14 +13248,13 @@ xmlSchemaGetBuiltInTypeAncestor(xmlSchemaTypePtr type)
 #endif
 
 /**
- * xmlSchemaCloneWildcardNsConstraints:
- * @ctxt:  the schema parser context
- * @dest:  the destination wildcard
- * @source: the source wildcard
+ * @param ctxt  the schema parser context
+ * @param dest  the destination wildcard
+ * @param source  the source wildcard
  *
  * Clones the namespace constraints of source
  * and assigns them to dest.
- * Returns -1 on internal error, 0 otherwise.
+ * @returns -1 on internal error, 0 otherwise.
  */
 static int
 xmlSchemaCloneWildcardNsConstraints(xmlSchemaParserCtxtPtr ctxt,
@@ -13443,14 +13293,13 @@ xmlSchemaCloneWildcardNsConstraints(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaUnionWildcards:
- * @ctxt:  the schema parser context
- * @completeWild:  the first wildcard
- * @curWild: the second wildcard
+ * @param ctxt  the schema parser context
+ * @param completeWild  the first wildcard
+ * @param curWild  the second wildcard
  *
  * Unions the namespace constraints of the given wildcards.
- * @completeWild will hold the resulting union.
- * Returns a positive error code on failure, -1 in case of an
+ * `completeWild` will hold the resulting union.
+ * @returns a positive error code on failure, -1 in case of an
  * internal error, 0 otherwise.
  */
 static int
@@ -13703,14 +13552,13 @@ xmlSchemaUnionWildcards(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaIntersectWildcards:
- * @ctxt:  the schema parser context
- * @completeWild:  the first wildcard
- * @curWild: the second wildcard
+ * @param ctxt  the schema parser context
+ * @param completeWild  the first wildcard
+ * @param curWild  the second wildcard
  *
  * Intersects the namespace constraints of the given wildcards.
- * @completeWild will hold the resulting intersection.
- * Returns a positive error code on failure, -1 in case of an
+ * `completeWild` will hold the resulting intersection.
+ * @returns a positive error code on failure, -1 in case of an
  * internal error, 0 otherwise.
  */
 static int
@@ -13881,15 +13729,13 @@ xmlSchemaIntersectWildcards(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaIsWildcardNsConstraintSubset:
- * @ctxt:  the schema parser context
- * @sub:  the first wildcard
- * @super: the second wildcard
+ * @param sub  the first wildcard
+ * @param super  the second wildcard
  *
  * Schema Component Constraint: Wildcard Subset (cos-ns-subset)
  *
- * Returns 0 if the namespace constraint of @sub is an intensional
- * subset of @super, 1 otherwise.
+ * @returns 0 if the namespace constraint of `sub` is an intensional
+ * subset of `super`, 1 otherwise.
  */
 static int
 xmlSchemaCheckCOSNSSubset(xmlSchemaWildcardPtr sub,
@@ -13984,14 +13830,13 @@ xmlSchemaGetEffectiveValueConstraint(xmlSchemaAttributeUsePtr attruse,
     return(0);
 }
 /**
- * xmlSchemaCheckCVCWildcardNamespace:
- * @wild:  the wildcard
- * @ns:  the namespace
+ * @param wild  the wildcard
+ * @param ns  the namespace
  *
  * Validation Rule: Wildcard allows Namespace Name
  * (cvc-wildcard-namespace)
  *
- * Returns 0 if the given namespace matches the wildcard,
+ * @returns 0 if the given namespace matches the wildcard,
  * 1 otherwise and -1 on API errors.
  */
 static int
@@ -14326,13 +14171,12 @@ xmlSchemaExpandAttributeGroupRefs(xmlSchemaParserCtxtPtr pctxt,
 				  xmlSchemaItemListPtr list,
 				  xmlSchemaItemListPtr prohibs);
 /**
- * xmlSchemaFixupTypeAttributeUses:
- * @ctxt:  the schema parser context
- * @type:  the complex type definition
+ * @param pctxt  the schema parser context
+ * @param type  the complex type definition
  *
  *
  * Builds the wildcard and the attribute uses on the given complex type.
- * Returns -1 if an internal error occurs, 0 otherwise.
+ * @returns -1 if an internal error occurs, 0 otherwise.
  *
  * ATTENTION TODO: Experimentally this uses pointer comparisons for
  * strings, so recheck this if we start to hardcode some schemata, since
@@ -14528,15 +14372,13 @@ exit_failure:
 }
 
 /**
- * xmlSchemaTypeFinalContains:
- * @schema:  the schema
- * @type:  the type definition
- * @final: the final
+ * @param type  the type definition
+ * @param final  the final
  *
  * Evaluates if a type definition contains the given "final".
  * This does take "finalDefault" into account as well.
  *
- * Returns 1 if the type does contain the given "final",
+ * @returns 1 if the type does contain the given "final",
  * 0 otherwise.
  */
 static int
@@ -14551,11 +14393,10 @@ xmlSchemaTypeFinalContains(xmlSchemaTypePtr type, int final)
 }
 
 /**
- * xmlSchemaGetUnionSimpleTypeMemberTypes:
- * @type:  the Union Simple Type
+ * @param type  the Union Simple Type
  *
- * Returns a list of member types of @type if existing,
- * returns NULL otherwise.
+ * @returns a list of member types of `type` if existing,
+ * @returns NULL otherwise.
  */
 static xmlSchemaTypeLinkPtr
 xmlSchemaGetUnionSimpleTypeMemberTypes(xmlSchemaTypePtr type)
@@ -14571,13 +14412,12 @@ xmlSchemaGetUnionSimpleTypeMemberTypes(xmlSchemaTypePtr type)
 
 #if 0
 /**
- * xmlSchemaGetParticleTotalRangeMin:
- * @particle: the particle
+ * @param particle  the particle
  *
  * Schema Component Constraint: Effective Total Range
  * (all and sequence) + (choice)
  *
- * Returns the minimum Effective Total Range.
+ * @returns the minimum Effective Total Range.
  */
 static int
 xmlSchemaGetParticleTotalRangeMin(xmlSchemaParticlePtr particle)
@@ -14626,13 +14466,12 @@ xmlSchemaGetParticleTotalRangeMin(xmlSchemaParticlePtr particle)
 }
 
 /**
- * xmlSchemaGetParticleTotalRangeMax:
- * @particle: the particle
+ * @param particle  the particle
  *
  * Schema Component Constraint: Effective Total Range
  * (all and sequence) + (choice)
  *
- * Returns the maximum Effective Total Range.
+ * @returns the maximum Effective Total Range.
  */
 static int
 xmlSchemaGetParticleTotalRangeMax(xmlSchemaParticlePtr particle)
@@ -14687,10 +14526,9 @@ xmlSchemaGetParticleTotalRangeMax(xmlSchemaParticlePtr particle)
 #endif
 
 /**
- * xmlSchemaGetParticleEmptiable:
- * @particle: the particle
+ * @param particle  the particle
  *
- * Returns 1 if emptiable, 0 otherwise.
+ * @returns 1 if emptiable, 0 otherwise.
  */
 static int
 xmlSchemaGetParticleEmptiable(xmlSchemaParticlePtr particle)
@@ -14729,13 +14567,12 @@ xmlSchemaGetParticleEmptiable(xmlSchemaParticlePtr particle)
 }
 
 /**
- * xmlSchemaIsParticleEmptiable:
- * @particle: the particle
+ * @param particle  the particle
  *
  * Schema Component Constraint: Particle Emptiable
  * Checks whether the given particle is emptiable.
  *
- * Returns 1 if emptiable, 0 otherwise.
+ * @returns 1 if emptiable, 0 otherwise.
  */
 static int
 xmlSchemaIsParticleEmptiable(xmlSchemaParticlePtr particle)
@@ -14756,19 +14593,18 @@ xmlSchemaIsParticleEmptiable(xmlSchemaParticlePtr particle)
 }
 
 /**
- * xmlSchemaCheckCOSSTDerivedOK:
- * @actxt: a context
- * @type:  the derived simple type definition
- * @baseType:  the base type definition
- * @subset: the subset of ('restriction', etc.)
+ * @param actxt  a context
+ * @param type  the derived simple type definition
+ * @param baseType  the base type definition
+ * @param subset  the subset of ('restriction', etc.)
  *
  * Schema Component Constraint:
  * Type Derivation OK (Simple) (cos-st-derived-OK)
  *
- * Checks whether @type can be validly
- * derived from @baseType.
+ * Checks whether `type` can be validly
+ * derived from `baseType`.
  *
- * Returns 0 on success, an positive error code otherwise.
+ * @returns 0 on success, an positive error code otherwise.
  */
 static int
 xmlSchemaCheckCOSSTDerivedOK(xmlSchemaAbstractCtxtPtr actxt,
@@ -14859,15 +14695,14 @@ xmlSchemaCheckCOSSTDerivedOK(xmlSchemaAbstractCtxtPtr actxt,
 }
 
 /**
- * xmlSchemaCheckTypeDefCircularInternal:
- * @pctxt:  the schema parser context
- * @ctxtType:  the type definition
- * @ancestor: an ancestor of @ctxtType
+ * @param pctxt  the schema parser context
+ * @param ctxtType  the type definition
+ * @param ancestor  an ancestor of `ctxtType`
  *
  * Checks st-props-correct (2) + ct-props-correct (3).
  * Circular type definitions are not allowed.
  *
- * Returns XML_SCHEMAP_ST_PROPS_CORRECT_2 if the given type is
+ * @returns XML_SCHEMAP_ST_PROPS_CORRECT_2 if the given type is
  * circular, 0 otherwise.
  */
 static int
@@ -14901,10 +14736,8 @@ xmlSchemaCheckTypeDefCircularInternal(xmlSchemaParserCtxtPtr pctxt,
 }
 
 /**
- * xmlSchemaCheckTypeDefCircular:
- * @item:  the complex/simple type definition
- * @ctxt:  the parser context
- * @name:  the name
+ * @param item  the complex/simple type definition
+ * @param ctxt  the parser context
  *
  * Checks for circular type definitions.
  */
@@ -14983,10 +14816,8 @@ xmlSchemaCheckUnionTypeDefCircular(xmlSchemaParserCtxtPtr pctxt,
 }
 
 /**
- * xmlSchemaResolveTypeReferences:
- * @item:  the complex/simple type definition
- * @ctxt:  the parser context
- * @name:  the name
+ * @param typeDef  the complex/simple type definition
+ * @param ctxt  the parser context
  *
  * Resolves type definition references
  */
@@ -15109,13 +14940,12 @@ xmlSchemaResolveTypeReferences(xmlSchemaTypePtr typeDef,
 
 
 /**
- * xmlSchemaCheckSTPropsCorrect:
- * @ctxt:  the schema parser context
- * @type:  the simple type definition
+ * @param ctxt  the schema parser context
+ * @param type  the simple type definition
  *
  * Checks st-props-correct.
  *
- * Returns 0 if the properties are correct,
+ * @returns 0 if the properties are correct,
  * if not, a positive error code and -1 on internal
  * errors.
  */
@@ -15211,17 +15041,16 @@ xmlSchemaCheckSTPropsCorrect(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaCheckCOSSTRestricts:
- * @ctxt:  the schema parser context
- * @type:  the simple type definition
+ * @param pctxt  the schema parser context
+ * @param type  the simple type definition
  *
  * Schema Component Constraint:
  * Derivation Valid (Restriction, Simple) (cos-st-restricts)
 
- * Checks if the given @type (simpleType) is derived validly by restriction.
+ * Checks if the given `type` (simpleType) is derived validly by restriction.
  * STATUS:
  *
- * Returns -1 on internal errors, 0 if the type is validly derived,
+ * @returns -1 on internal errors, 0 if the type is validly derived,
  * a positive error code otherwise.
  */
 static int
@@ -15678,18 +15507,17 @@ xmlSchemaCheckCOSSTRestricts(xmlSchemaParserCtxtPtr pctxt,
     return (0);
 }
 
+#if 0
 /**
- * xmlSchemaCheckSRCSimpleType:
- * @ctxt:  the schema parser context
- * @type:  the simple type definition
+ * @param ctxt  the schema parser context
+ * @param type  the simple type definition
  *
  * Checks crc-simple-type constraints.
  *
- * Returns 0 if the constraints are satisfied,
+ * @returns 0 if the constraints are satisfied,
  * if not a positive error code and -1 on internal
  * errors.
  */
-#if 0
 static int
 xmlSchemaCheckSRCSimpleType(xmlSchemaParserCtxtPtr ctxt,
 			    xmlSchemaTypePtr type)
@@ -15758,18 +15586,18 @@ xmlSchemaVCheckCVCSimpleType(xmlSchemaAbstractCtxtPtr actxt,
 			     int isNormalized);
 
 /**
- * xmlSchemaParseCheckCOSValidDefault:
- * @pctxt:  the schema parser context
- * @type:  the simple type definition
- * @value: the default value
- * @node: an optional node (the holder of the value)
+ * @param pctxt  the schema parser context
+ * @param node  an optional node (the holder of the value)
+ * @param type  the simple type definition
+ * @param value  the default value
+ * @param val  resulting value
  *
  * Schema Component Constraint: Element Default Valid (Immediate)
  * (cos-valid-default)
  * This will be used by the parser only. For the validator there's
  * an other version.
  *
- * Returns 0 if the constraints are satisfied,
+ * @returns 0 if the constraints are satisfied,
  * if not, a positive error code and -1 on internal
  * errors.
  */
@@ -15839,16 +15667,15 @@ xmlSchemaParseCheckCOSValidDefault(xmlSchemaParserCtxtPtr pctxt,
 }
 
 /**
- * xmlSchemaCheckCTPropsCorrect:
- * @ctxt:  the schema parser context
- * @type:  the complex type definition
+ * @param pctxt  the schema parser context
+ * @param type  the complex type definition
  *
  *.(4.6) Constraints on Complex Type Definition Schema Components
  * Schema Component Constraint:
  * Complex Type Definition Properties Correct (ct-props-correct)
  * STATUS: (seems) complete
  *
- * Returns 0 if the constraints are satisfied, a positive
+ * @returns 0 if the constraints are satisfied, a positive
  * error code if not and -1 if an internal error occurred.
  */
 static int
@@ -15984,18 +15811,17 @@ xmlSchemaAreEqualTypes(xmlSchemaTypePtr typeA,
 }
 
 /**
- * xmlSchemaCheckCOSCTDerivedOK:
- * @ctxt:  the schema parser context
- * @type:  the to-be derived complex type definition
- * @baseType:  the base complex type definition
- * @set: the given set
+ * @param actxt  the schema parser context
+ * @param type  the to-be derived complex type definition
+ * @param baseType  the base complex type definition
+ * @param set  the given set
  *
  * Schema Component Constraint:
  * Type Derivation OK (Complex) (cos-ct-derived-ok)
  *
  * STATUS: completed
  *
- * Returns 0 if the constraints are satisfied, or 1
+ * @returns 0 if the constraints are satisfied, or 1
  * if not.
  */
 static int
@@ -16058,16 +15884,17 @@ xmlSchemaCheckCOSCTDerivedOK(xmlSchemaAbstractCtxtPtr actxt,
 }
 
 /**
- * xmlSchemaCheckCOSDerivedOK:
- * @type:  the derived simple type definition
- * @baseType:  the base type definition
+ * @param actxt  the schema parser context
+ * @param type  the derived simple type definition
+ * @param baseType  the base type definition
+ * @param set  the given set
  *
  * Calls:
  * Type Derivation OK (Simple) AND Type Derivation OK (Complex)
  *
- * Checks whether @type can be validly derived from @baseType.
+ * Checks whether `type` can be validly derived from `baseType`.
  *
- * Returns 0 on success, an positive error code otherwise.
+ * @returns 0 on success, an positive error code otherwise.
  */
 static int
 xmlSchemaCheckCOSDerivedOK(xmlSchemaAbstractCtxtPtr actxt,
@@ -16082,9 +15909,8 @@ xmlSchemaCheckCOSDerivedOK(xmlSchemaAbstractCtxtPtr actxt,
 }
 
 /**
- * xmlSchemaCheckCOSCTExtends:
- * @ctxt:  the schema parser context
- * @type:  the complex type definition
+ * @param ctxt  the schema parser context
+ * @param type  the complex type definition
  *
  * (3.4.6) Constraints on Complex Type Definition Schema Components
  * Schema Component Constraint:
@@ -16095,7 +15921,7 @@ xmlSchemaCheckCOSDerivedOK(xmlSchemaAbstractCtxtPtr actxt,
  *     (1.5)
  *     (1.4.3.2.2.2) "Particle Valid (Extension)"
  *
- * Returns 0 if the constraints are satisfied, a positive
+ * @returns 0 if the constraints are satisfied, a positive
  * error code if not and -1 if an internal error occurred.
  */
 static int
@@ -16336,9 +16162,8 @@ xmlSchemaCheckCOSCTExtends(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaCheckDerivationOKRestriction:
- * @ctxt:  the schema parser context
- * @type:  the complex type definition
+ * @param ctxt  the schema parser context
+ * @param type  the complex type definition
  *
  * (3.4.6) Constraints on Complex Type Definition Schema Components
  * Schema Component Constraint:
@@ -16352,7 +16177,7 @@ xmlSchemaCheckCOSCTExtends(xmlSchemaParserCtxtPtr ctxt,
  * In XML Schema 1.1 this will be:
  * Validation Rule: Checking complex type subsumption
  *
- * Returns 0 if the constraints are satisfied, a positive
+ * @returns 0 if the constraints are satisfied, a positive
  * error code if not and -1 if an internal error occurred.
  */
 static int
@@ -16536,13 +16361,12 @@ xmlSchemaCheckDerivationOKRestriction(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaCheckCTComponent:
- * @ctxt:  the schema parser context
- * @type:  the complex type definition
+ * @param ctxt  the schema parser context
+ * @param type  the complex type definition
  *
  * (3.4.6) Constraints on Complex Type Definition Schema Components
  *
- * Returns 0 if the constraints are satisfied, a positive
+ * @returns 0 if the constraints are satisfied, a positive
  * error code if not and -1 if an internal error occurred.
  */
 static int
@@ -16564,15 +16388,14 @@ xmlSchemaCheckCTComponent(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaCheckSRCCT:
- * @ctxt:  the schema parser context
- * @type:  the complex type definition
+ * @param ctxt  the schema parser context
+ * @param type  the complex type definition
  *
  * (3.4.3) Constraints on XML Representations of Complex Type Definitions:
  * Schema Representation Constraint:
  * Complex Type Definition Representation OK (src-ct)
  *
- * Returns 0 if the constraints are satisfied, a positive
+ * @returns 0 if the constraints are satisfied, a positive
  * error code if not and -1 if an internal error occurred.
  */
 static int
@@ -16731,9 +16554,8 @@ xmlSchemaCheckSRCCT(xmlSchemaParserCtxtPtr ctxt,
 
 #ifdef ENABLE_PARTICLE_RESTRICTION
 /**
- * xmlSchemaCheckParticleRangeOK:
- * @ctxt:  the schema parser context
- * @type:  the complex type definition
+ * @param ctxt  the schema parser context
+ * @param type  the complex type definition
  *
  * (3.9.6) Constraints on Particle Schema Components
  * Schema Component Constraint:
@@ -16741,7 +16563,7 @@ xmlSchemaCheckSRCCT(xmlSchemaParserCtxtPtr ctxt,
  *
  * STATUS: complete
  *
- * Returns 0 if the constraints are satisfied, a positive
+ * @returns 0 if the constraints are satisfied, a positive
  * error code if not and -1 if an internal error occurred.
  */
 static int
@@ -16757,10 +16579,9 @@ xmlSchemaCheckParticleRangeOK(int rmin, int rmax,
 }
 
 /**
- * xmlSchemaCheckRCaseNameAndTypeOK:
- * @ctxt:  the schema parser context
- * @r: the restricting element declaration particle
- * @b: the base element declaration particle
+ * @param ctxt  the schema parser context
+ * @param r  the restricting element declaration particle
+ * @param b  the base element declaration particle
  *
  * (3.9.6) Constraints on Particle Schema Components
  * Schema Component Constraint:
@@ -16771,7 +16592,7 @@ xmlSchemaCheckParticleRangeOK(int rmin, int rmax,
  *   MISSING (3.2.3)
  *   CLARIFY: (3.2.2)
  *
- * Returns 0 if the constraints are satisfied, a positive
+ * @returns 0 if the constraints are satisfied, a positive
  * error code if not and -1 if an internal error occurred.
  */
 static int
@@ -16864,10 +16685,9 @@ xmlSchemaCheckRCaseNameAndTypeOK(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaCheckRCaseNSCompat:
- * @ctxt:  the schema parser context
- * @r: the restricting element declaration particle
- * @b: the base wildcard particle
+ * @param ctxt  the schema parser context
+ * @param r  the restricting element declaration particle
+ * @param b  the base wildcard particle
  *
  * (3.9.6) Constraints on Particle Schema Components
  * Schema Component Constraint:
@@ -16876,7 +16696,7 @@ xmlSchemaCheckRCaseNameAndTypeOK(xmlSchemaParserCtxtPtr ctxt,
  *
  * STATUS: complete
  *
- * Returns 0 if the constraints are satisfied, a positive
+ * @returns 0 if the constraints are satisfied, a positive
  * error code if not and -1 if an internal error occurred.
  */
 static int
@@ -16908,10 +16728,9 @@ xmlSchemaCheckRCaseNSCompat(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaCheckRCaseRecurseAsIfGroup:
- * @ctxt:  the schema parser context
- * @r: the restricting element declaration particle
- * @b: the base model group particle
+ * @param ctxt  the schema parser context
+ * @param r  the restricting element declaration particle
+ * @param b  the base model group particle
  *
  * (3.9.6) Constraints on Particle Schema Components
  * Schema Component Constraint:
@@ -16920,7 +16739,7 @@ xmlSchemaCheckRCaseNSCompat(xmlSchemaParserCtxtPtr ctxt,
  *
  * STATUS: TODO
  *
- * Returns 0 if the constraints are satisfied, a positive
+ * @returns 0 if the constraints are satisfied, a positive
  * error code if not and -1 if an internal error occurred.
  */
 static int
@@ -16934,10 +16753,9 @@ xmlSchemaCheckRCaseRecurseAsIfGroup(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaCheckRCaseNSSubset:
- * @ctxt:  the schema parser context
- * @r: the restricting wildcard particle
- * @b: the base wildcard particle
+ * @param ctxt  the schema parser context
+ * @param r  the restricting wildcard particle
+ * @param b  the base wildcard particle
  *
  * (3.9.6) Constraints on Particle Schema Components
  * Schema Component Constraint:
@@ -16946,7 +16764,7 @@ xmlSchemaCheckRCaseRecurseAsIfGroup(xmlSchemaParserCtxtPtr ctxt,
  *
  * STATUS: complete
  *
- * Returns 0 if the constraints are satisfied, a positive
+ * @returns 0 if the constraints are satisfied, a positive
  * error code if not and -1 if an internal error occurred.
  */
 static int
@@ -16986,9 +16804,8 @@ xmlSchemaCheckRCaseNSSubset(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaCheckCOSParticleRestrict:
- * @ctxt:  the schema parser context
- * @type:  the complex type definition
+ * @param ctxt  the schema parser context
+ * @param type  the complex type definition
  *
  * (3.9.6) Constraints on Particle Schema Components
  * Schema Component Constraint:
@@ -16996,7 +16813,7 @@ xmlSchemaCheckRCaseNSSubset(xmlSchemaParserCtxtPtr ctxt,
  *
  * STATUS: TODO
  *
- * Returns 0 if the constraints are satisfied, a positive
+ * @returns 0 if the constraints are satisfied, a positive
  * error code if not and -1 if an internal error occurred.
  */
 static int
@@ -17024,10 +16841,9 @@ xmlSchemaCheckCOSParticleRestrict(xmlSchemaParserCtxtPtr ctxt,
 
 #if 0
 /**
- * xmlSchemaCheckRCaseNSRecurseCheckCardinality:
- * @ctxt:  the schema parser context
- * @r: the model group particle
- * @b: the base wildcard particle
+ * @param ctxt  the schema parser context
+ * @param r  the model group particle
+ * @param b  the base wildcard particle
  *
  * (3.9.6) Constraints on Particle Schema Components
  * Schema Component Constraint:
@@ -17037,7 +16853,7 @@ xmlSchemaCheckCOSParticleRestrict(xmlSchemaParserCtxtPtr ctxt,
  *
  * STATUS: TODO: subst-groups
  *
- * Returns 0 if the constraints are satisfied, a positive
+ * @returns 0 if the constraints are satisfied, a positive
  * error code if not and -1 if an internal error occurred.
  */
 static int
@@ -17078,10 +16894,9 @@ xmlSchemaCheckRCaseNSRecurseCheckCardinality(xmlSchemaParserCtxtPtr ctxt,
 #endif
 
 /**
- * xmlSchemaCheckRCaseRecurse:
- * @ctxt:  the schema parser context
- * @r: the <all> or <sequence> model group particle
- * @b: the base <all> or <sequence> model group particle
+ * @param ctxt  the schema parser context
+ * @param r  the <all> or <sequence> model group particle
+ * @param b  the base <all> or <sequence> model group particle
  *
  * (3.9.6) Constraints on Particle Schema Components
  * Schema Component Constraint:
@@ -17092,7 +16907,7 @@ xmlSchemaCheckRCaseNSRecurseCheckCardinality(xmlSchemaParserCtxtPtr ctxt,
  * STATUS:  ?
  * TODO: subst-groups
  *
- * Returns 0 if the constraints are satisfied, a positive
+ * @returns 0 if the constraints are satisfied, a positive
  * error code if not and -1 if an internal error occurred.
  */
 static int
@@ -18489,9 +18304,8 @@ exit_failure:
 
 
 /**
- * xmlSchemaTypeFixup:
- * @typeDecl:  the schema type definition
- * @ctxt:  the schema parser context
+ * @param type  the schema type definition
+ * @param actxt  the schema parser context
  *
  * Fixes the content model of the type.
  * URGENT TODO: We need an int result!
@@ -18517,15 +18331,14 @@ xmlSchemaTypeFixup(xmlSchemaTypePtr type,
 }
 
 /**
- * xmlSchemaCheckFacet:
- * @facet:  the facet
- * @typeDecl:  the schema type definition
- * @pctxt:  the schema parser context or NULL
- * @name: the optional name of the type
+ * @param facet  the facet
+ * @param typeDecl  the schema type definition
+ * @param pctxt  the schema parser context or NULL
+ * @param name  the optional name of the type
  *
  * Checks and computes the values of facets.
  *
- * Returns 0 if valid, a positive error code if not valid and
+ * @returns 0 if valid, a positive error code if not valid and
  *         -1 in case of an internal or API error.
  */
 int
@@ -18730,9 +18543,8 @@ internal_error:
 }
 
 /**
- * xmlSchemaCheckFacetValues:
- * @typeDecl:  the schema type definition
- * @ctxt:  the schema parser context
+ * @param typeDecl  the schema type definition
+ * @param pctxt  the schema parser context
  *
  * Checks the default values types, especially for facets
  */
@@ -18773,15 +18585,13 @@ exit_failure:
 }
 
 /**
- * xmlSchemaGetCircModelGrDefRef:
- * @ctxtMGroup: the searched model group
- * @selfMGroup: the second searched model group
- * @particle: the first particle
+ * @param groupDef  the searched model group
+ * @param particle  the first particle
  *
  * This one is intended to be used by
  * xmlSchemaCheckGroupDefCircular only.
  *
- * Returns the particle with the circular model group definition reference,
+ * @returns the particle with the circular model group definition reference,
  * otherwise NULL.
  */
 static xmlSchemaTreeItemPtr
@@ -18831,10 +18641,8 @@ xmlSchemaGetCircModelGrDefRef(xmlSchemaModelGroupDefPtr groupDef,
 }
 
 /**
- * xmlSchemaCheckGroupDefCircular:
- * @item:  the model group definition
- * @ctxt:  the parser context
- * @name:  the name
+ * @param item  the model group definition
+ * @param ctxt  the parser context
  *
  * Checks for circular references to model group definitions.
  */
@@ -18882,9 +18690,8 @@ xmlSchemaCheckGroupDefCircular(xmlSchemaModelGroupDefPtr item,
 }
 
 /**
- * xmlSchemaModelGroupToModelGroupDefFixup:
- * @ctxt:  the parser context
- * @mg:  the model group
+ * @param ctxt  the parser context
+ * @param mg  the model group
  *
  * Assigns the model group of model group definitions to the "term"
  * of the referencing particle.
@@ -18929,14 +18736,13 @@ xmlSchemaModelGroupToModelGroupDefFixup(
 }
 
 /**
- * xmlSchemaCheckAttrGroupCircularRecur:
- * @ctxtGr: the searched attribute group
- * @attr: the current attribute list to be processed
+ * @param ctxtGr  the searched attribute group
+ * @param list  the current attribute list to be processed
  *
  * This one is intended to be used by
  * xmlSchemaCheckAttrGroupCircular only.
  *
- * Returns the circular attribute group reference, otherwise NULL.
+ * @returns the circular attribute group reference, otherwise NULL.
  */
 static xmlSchemaQNameRefPtr
 xmlSchemaCheckAttrGroupCircularRecur(xmlSchemaAttributeGroupPtr ctxtGr,
@@ -18981,10 +18787,8 @@ xmlSchemaCheckAttrGroupCircularRecur(xmlSchemaAttributeGroupPtr ctxtGr,
 }
 
 /**
- * xmlSchemaCheckAttrGroupCircular:
- * attrGr:  the attribute group definition
- * @ctxt:  the parser context
- * @name:  the name
+ * @param attrGr  the attribute group definition
+ * @param ctxt  the parser context
  *
  * Checks for circular references of attribute groups.
  */
@@ -19043,16 +18847,16 @@ xmlSchemaAttributeGroupExpandRefs(xmlSchemaParserCtxtPtr pctxt,
 				  xmlSchemaAttributeGroupPtr attrGr);
 
 /**
- * xmlSchemaExpandAttributeGroupRefs:
- * @pctxt: the parser context
- * @node: the node of the component holding the attribute uses
- * @completeWild: the intersected wildcard to be returned
- * @list: the attribute uses
+ * @param pctxt  the parser context
+ * @param item  the schema item
+ * @param completeWild  the intersected wildcard to be returned
+ * @param list  the attribute uses
+ * @param prohibs  the attribute prohibitions
  *
  * Substitutes contained attribute group references
  * for their attribute uses. Wildcards are intersected.
  * Attribute use prohibitions are removed from the list
- * and returned via the @prohibs list.
+ * and returned via the `prohibs` list.
  * Pointlessness of attr. prohibs, if a matching attr. decl
  * is existent a well, are checked.
  */
@@ -19215,9 +19019,8 @@ xmlSchemaExpandAttributeGroupRefs(xmlSchemaParserCtxtPtr pctxt,
 }
 
 /**
- * xmlSchemaAttributeGroupExpandRefs:
- * @pctxt:  the parser context
- * @attrGr:  the attribute group definition
+ * @param pctxt  the parser context
+ * @param attrGr  the attribute group definition
  *
  * Computation of:
  * {attribute uses} property
@@ -19242,9 +19045,8 @@ xmlSchemaAttributeGroupExpandRefs(xmlSchemaParserCtxtPtr pctxt,
 }
 
 /**
- * xmlSchemaAttributeGroupExpandRefs:
- * @pctxt:  the parser context
- * @attrGr:  the attribute group definition
+ * @param pctxt  the parser context
+ * @param attrGr  the attribute group definition
  *
  * Substitutes contained attribute group references
  * for their attribute uses. Wildcards are intersected.
@@ -19342,10 +19144,8 @@ next_use: {}
 }
 
 /**
- * xmlSchemaResolveAttrGroupReferences:
- * @attrgrpDecl:  the schema attribute definition
- * @ctxt:  the schema parser context
- * @name:  the attribute name
+ * @param ref  the schema attribute definition
+ * @param ctxt  the schema parser context
  *
  * Resolves references to attribute group definitions.
  */
@@ -19373,11 +19173,8 @@ xmlSchemaResolveAttrGroupReferences(xmlSchemaQNameRefPtr ref,
 }
 
 /**
- * xmlSchemaCheckAttrPropsCorrect:
- * @item:  an schema attribute declaration/use
- * @ctxt:  a schema parser context
- * @name:  the name of the attribute
- *
+ * @param pctxt  a schema parser context
+ * @param attr  an schema attribute declaration/use
  *
  * Schema Component Constraint:
  *    Attribute Declaration Properties Correct (a-props-correct)
@@ -19473,10 +19270,8 @@ xmlSchemaCheckSubstGroupCircular(xmlSchemaElementPtr elemDecl,
 }
 
 /**
- * xmlSchemaCheckElemPropsCorrect:
- * @ctxt:  a schema parser context
- * @decl: the element declaration
- * @name:  the name of the attribute
+ * @param pctxt  a schema parser context
+ * @param elemDecl  the element declaration
  *
  * Schema Component Constraint:
  * Element Declaration Properties Correct (e-props-correct)
@@ -19648,10 +19443,8 @@ xmlSchemaCheckElemPropsCorrect(xmlSchemaParserCtxtPtr pctxt,
 }
 
 /**
- * xmlSchemaCheckElemSubstGroup:
- * @ctxt:  a schema parser context
- * @decl: the element declaration
- * @name:  the name of the attribute
+ * @param ctxt  a schema parser context
+ * @param elemDecl  the element declaration
  *
  * Schema Component Constraint:
  * Substitution Group (cos-equiv-class)
@@ -19769,10 +19562,12 @@ add_member:
 #ifdef WXS_ELEM_DECL_CONS_ENABLED /* enable when finished */
 /**
  * xmlSchemaCheckElementDeclComponent
- * @pctxt: the schema parser context
- * @ctxtComponent: the context component (an element declaration)
- * @ctxtParticle: the first particle of the context component
- * @searchParticle: the element declaration particle to be analysed
+ * @param pctxt  the schema parser context
+ * @param ctxtComponent  the context component (an element declaration)
+ * @param ctxtParticle  the first particle of the context component
+ * @param searchParticle  the element declaration particle to be analysed
+ * @param curParticle  the current particle
+ * @param search  search flag
  *
  * Schema Component Constraint: Element Declarations Consistent
  */
@@ -19885,9 +19680,8 @@ exit:
 
 /**
  * xmlSchemaCheckElementDeclComponent
- * @item:  an schema element declaration/particle
- * @ctxt:  a schema parser context
- * @name:  the name of the attribute
+ * @param elemDecl  an schema element declaration/particle
+ * @param ctxt  a schema parser context
  *
  * Validates the value constraints of an element declaration.
  * Adds substitution group members.
@@ -19910,9 +19704,8 @@ xmlSchemaCheckElementDeclComponent(xmlSchemaElementPtr elemDecl,
 }
 
 /**
- * xmlSchemaResolveModelGroupParticleReferences:
- * @particle:  a particle component
- * @ctxt:  a parser context
+ * @param ctxt  a parser context
+ * @param mg  a model group
  *
  * Resolves references of a model group's {particles} to
  * model group definitions and to element declarations.
@@ -20059,9 +19852,8 @@ xmlSchemaAreValuesEqual(xmlSchemaValPtr x,
 }
 
 /**
- * xmlSchemaResolveAttrUseReferences:
- * @item:  an attribute use
- * @ctxt:  a parser context
+ * @param ause  an attribute use
+ * @param ctxt  a parser context
  *
  * Resolves the referenced attribute declaration.
  */
@@ -20097,9 +19889,8 @@ xmlSchemaResolveAttrUseReferences(xmlSchemaAttributeUsePtr ause,
 }
 
 /**
- * xmlSchemaCheckAttrUsePropsCorrect:
- * @ctxt:  a parser context
- * @use:  an attribute use
+ * @param ctxt  a parser context
+ * @param use  an attribute use
  *
  * Schema Component Constraint:
  * Attribute Use Correct (au-props-correct)
@@ -20208,9 +19999,8 @@ xmlSchemaCheckAttrUsePropsCorrect(xmlSchemaParserCtxtPtr ctxt,
 
 
 /**
- * xmlSchemaResolveAttrTypeReferences:
- * @item:  an attribute declaration
- * @ctxt:  a parser context
+ * @param item  an attribute declaration
+ * @param ctxt  a parser context
  *
  * Resolves the referenced type definition component.
  */
@@ -20254,10 +20044,8 @@ xmlSchemaResolveAttrTypeReferences(xmlSchemaAttributePtr item,
 }
 
 /**
- * xmlSchemaResolveIDCKeyReferences:
- * @idc:  the identity-constraint definition
- * @ctxt:  the schema parser context
- * @name:  the attribute name
+ * @param idc  the identity-constraint definition
+ * @param pctxt  the schema parser context
  *
  * Resolve keyRef references to key/unique IDCs.
  * Schema Component Constraint:
@@ -21184,13 +20972,12 @@ exit:
     return(ret);
 }
 /**
- * xmlSchemaParse:
- * @ctxt:  a schema validation context
+ * @param ctxt  a schema validation context
  *
  * parse a schema definition resource and build an internal
  * XML Schema structure which can be used to validate instances.
  *
- * Returns the internal XML Schema structure built from the resource or
+ * @returns the internal XML Schema structure built from the resource or
  *         NULL in case of error
  */
 xmlSchemaPtr
@@ -21309,13 +21096,12 @@ exit_failure:
 }
 
 /**
- * xmlSchemaSetParserErrors:
- * @ctxt:  a schema validation context
- * @err:  the error callback
- * @warn:  the warning callback
- * @ctx:  contextual data for the callbacks
+ * @param ctxt  a schema validation context
+ * @param err  the error callback
+ * @param warn  the warning callback
+ * @param ctx  contextual data for the callbacks
  *
- * DEPRECATED: Use xmlSchemaSetParserStructuredErrors.
+ * @deprecated Use xmlSchemaSetParserStructuredErrors.
  *
  * Set the callback functions used to handle errors for a validation context
  */
@@ -21334,10 +21120,9 @@ xmlSchemaSetParserErrors(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaSetParserStructuredErrors:
- * @ctxt:  a schema parser context
- * @serror:  the structured error function
- * @ctx: the functions context
+ * @param ctxt  a schema parser context
+ * @param serror  the structured error function
+ * @param ctx  the functions context
  *
  * Set the structured error callback
  */
@@ -21355,15 +21140,14 @@ xmlSchemaSetParserStructuredErrors(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaGetParserErrors:
- * @ctxt:  a XMl-Schema parser context
- * @err: the error callback result
- * @warn: the warning callback result
- * @ctx: contextual data for the callbacks result
+ * @param ctxt  a XMl-Schema parser context
+ * @param err  the error callback result
+ * @param warn  the warning callback result
+ * @param ctx  contextual data for the callbacks result
  *
  * Get the callback information used to handle errors for a parser context
  *
- * Returns -1 in case of failure, 0 otherwise
+ * @returns -1 in case of failure, 0 otherwise
  */
 int
 xmlSchemaGetParserErrors(xmlSchemaParserCtxtPtr ctxt,
@@ -21382,10 +21166,9 @@ xmlSchemaGetParserErrors(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaSetResourceLoader:
- * @ctxt:  schema parser
- * @loader:  resource loader
- * @data:  user data which will be passed to the loader
+ * @param ctxt  schema parser
+ * @param loader  resource loader
+ * @param data  user data which will be passed to the loader
  *
  * Register a callback function that will be called to load documents
  * or external entities.
@@ -21402,12 +21185,11 @@ xmlSchemaSetResourceLoader(xmlSchemaParserCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaFacetTypeToString:
- * @type:  the facet type
+ * @param type  the facet type
  *
  * Convert the xmlSchemaTypeType to a char string.
  *
- * Returns the char string representation of the facet type if the
+ * @returns the char string representation of the facet type if the
  *     type is a facet and an "Internal Error" string otherwise.
  */
 static const xmlChar *
@@ -21501,17 +21283,15 @@ xmlSchemaGetWhiteSpaceFacetValue(xmlSchemaTypePtr type)
  ************************************************************************/
 
 /**
- * xmlSchemaAssembleByLocation:
- * @pctxt:  a schema parser context
- * @vctxt:  a schema validation context
- * @schema: the existing schema
- * @node: the node that fired the assembling
- * @nsName: the namespace name of the new schema
- * @location: the location of the schema
+ * @param vctxt  a schema validation context
+ * @param schema  the existing schema
+ * @param node  the node that fired the assembling
+ * @param nsName  the namespace name of the new schema
+ * @param location  the location of the schema
  *
  * Expands an existing schema by an additional schema.
  *
- * Returns 0 if the new schema is correct, a positive error code
+ * @returns 0 if the new schema is correct, a positive error code
  * number otherwise and -1 in case of an internal or API error.
  */
 static int
@@ -21641,15 +21421,14 @@ xmlSchemaGetMetaAttrInfo(xmlSchemaValidCtxtPtr vctxt,
 }
 
 /**
- * xmlSchemaAssembleByXSI:
- * @vctxt:  a schema validation context
+ * @param vctxt  a schema validation context
  *
  * Expands an existing schema by an additional schema using
  * the xsi:schemaLocation or xsi:noNamespaceSchemaLocation attribute
- * of an instance. If xsi:noNamespaceSchemaLocation is used, @noNamespace
+ * of an instance. If xsi:noNamespaceSchemaLocation is used, `noNamespace`
  * must be set to 1.
  *
- * Returns 0 if the new schema is correct, a positive error code
+ * @returns 0 if the new schema is correct, a positive error code
  * number otherwise and -1 in case of an internal or API error.
  */
 static int
@@ -21903,12 +21682,13 @@ xmlSchemaVAddNodeQName(xmlSchemaValidCtxtPtr vctxt,
  ************************************************************************/
 
 /**
- * xmlSchemaAugmentIDC:
- * @idcDef: the IDC definition
+ * @param payload  the IDC definition
+ * @param data  validation context
+ * @param name  unused
  *
  * Creates an augmented IDC definition item.
  *
- * Returns the item, or NULL on internal errors.
+ * @returns the item, or NULL on internal errors.
  */
 static void
 xmlSchemaAugmentIDC(void *payload, void *data,
@@ -21941,8 +21721,9 @@ xmlSchemaAugmentIDC(void *payload, void *data,
 }
 
 /**
- * xmlSchemaAugmentImportedIDC:
- * @imported: the imported schema
+ * @param payload  the imported schema
+ * @param data  validation context
+ * @param name  unused
  *
  * Creates an augmented IDC definition for the imported schema.
  */
@@ -21957,12 +21738,11 @@ xmlSchemaAugmentImportedIDC(void *payload, void *data,
 }
 
 /**
- * xmlSchemaIDCNewBinding:
- * @idcDef: the IDC definition of this binding
+ * @param idcDef  the IDC definition of this binding
  *
  * Creates a new IDC binding.
  *
- * Returns the new IDC binding, NULL on internal errors.
+ * @returns the new IDC binding, NULL on internal errors.
  */
 static xmlSchemaPSVIIDCBindingPtr
 xmlSchemaIDCNewBinding(xmlSchemaIDCPtr idcDef)
@@ -21981,15 +21761,14 @@ xmlSchemaIDCNewBinding(xmlSchemaIDCPtr idcDef)
 }
 
 /**
- * xmlSchemaIDCStoreNodeTableItem:
- * @vctxt: the WXS validation context
- * @item: the IDC node table item
+ * @param vctxt  the WXS validation context
+ * @param item  the IDC node table item
  *
  * The validation context is used to store IDC node table items.
  * They are stored to avoid copying them if IDC node-tables are merged
  * with corresponding parent IDC node-tables (bubbling).
  *
- * Returns 0 if succeeded, -1 on internal errors.
+ * @returns 0 if succeeded, -1 on internal errors.
  */
 static int
 xmlSchemaIDCStoreNodeTableItem(xmlSchemaValidCtxtPtr vctxt,
@@ -22023,13 +21802,12 @@ xmlSchemaIDCStoreNodeTableItem(xmlSchemaValidCtxtPtr vctxt,
 }
 
 /**
- * xmlSchemaIDCStoreKey:
- * @vctxt: the WXS validation context
- * @item: the IDC key
+ * @param vctxt  the WXS validation context
+ * @param key  the IDC key
  *
  * The validation context is used to store an IDC key.
  *
- * Returns 0 if succeeded, -1 on internal errors.
+ * @returns 0 if succeeded, -1 on internal errors.
  */
 static int
 xmlSchemaIDCStoreKey(xmlSchemaValidCtxtPtr vctxt,
@@ -22063,13 +21841,12 @@ xmlSchemaIDCStoreKey(xmlSchemaValidCtxtPtr vctxt,
 }
 
 /**
- * xmlSchemaIDCAppendNodeTableItem:
- * @bind: the IDC binding
- * @ntItem: the node-table item
+ * @param bind  the IDC binding
+ * @param ntItem  the node-table item
  *
  * Appends the IDC node-table item to the binding.
  *
- * Returns 0 on success and -1 on internal errors.
+ * @returns 0 on success and -1 on internal errors.
  */
 static int
 xmlSchemaIDCAppendNodeTableItem(xmlSchemaPSVIIDCBindingPtr bind,
@@ -22100,15 +21877,14 @@ xmlSchemaIDCAppendNodeTableItem(xmlSchemaPSVIIDCBindingPtr bind,
 }
 
 /**
- * xmlSchemaIDCAcquireBinding:
- * @vctxt: the WXS validation context
- * @matcher: the IDC matcher
+ * @param vctxt  the WXS validation context
+ * @param matcher  the IDC matcher
  *
  * Looks up an PSVI IDC binding, for the IDC definition and
  * of the given matcher. If none found, a new one is created
  * and added to the IDC table.
  *
- * Returns an IDC binding or NULL on internal errors.
+ * @returns an IDC binding or NULL on internal errors.
  */
 static xmlSchemaPSVIIDCBindingPtr
 xmlSchemaIDCAcquireBinding(xmlSchemaValidCtxtPtr vctxt,
@@ -22155,8 +21931,7 @@ xmlSchemaIDCAcquireTargetList(xmlSchemaValidCtxtPtr vctxt,
 }
 
 /**
- * xmlSchemaIDCFreeKey:
- * @key: the IDC key
+ * @param key  the IDC key
  *
  * Frees an IDC key together with its compiled value.
  */
@@ -22169,8 +21944,6 @@ xmlSchemaIDCFreeKey(xmlSchemaPSVIIDCKeyPtr key)
 }
 
 /**
- * xmlSchemaIDCFreeBinding:
- *
  * Frees an IDC binding. Note that the node table-items
  * are not freed.
  */
@@ -22185,8 +21958,7 @@ xmlSchemaIDCFreeBinding(xmlSchemaPSVIIDCBindingPtr bind)
 }
 
 /**
- * xmlSchemaIDCFreeIDCTable:
- * @bind: the first IDC binding in the list
+ * @param bind  the first IDC binding in the list
  *
  * Frees an IDC table, i.e. all the IDC bindings in the list.
  */
@@ -22214,8 +21986,7 @@ xmlFreeIDCHashEntry (void *payload, const xmlChar *name ATTRIBUTE_UNUSED)
 }
 
 /**
- * xmlSchemaIDCFreeMatcherList:
- * @matcher: the first IDC matcher in the list
+ * @param matcher  the first IDC matcher in the list
  *
  * Frees a list of IDC matchers.
  */
@@ -22259,9 +22030,8 @@ xmlSchemaIDCFreeMatcherList(xmlSchemaIDCMatcherPtr matcher)
 }
 
 /**
- * xmlSchemaIDCReleaseMatcherList:
- * @vctxt: the WXS validation context
- * @matcher: the first IDC matcher in the list
+ * @param vctxt  the WXS validation context
+ * @param matcher  the first IDC matcher in the list
  *
  * Caches a list of IDC matchers for reuse.
  */
@@ -22320,18 +22090,16 @@ xmlSchemaIDCReleaseMatcherList(xmlSchemaValidCtxtPtr vctxt,
 }
 
 /**
- * xmlSchemaIDCAddStateObject:
- * @vctxt: the WXS validation context
- * @matcher: the IDC matcher
- * @sel: the XPath information
- * @parent: the parent "selector" state object if any
- * @type: "selector" or "field"
+ * @param vctxt  the WXS validation context
+ * @param matcher  the IDC matcher
+ * @param sel  the XPath information
+ * @param type  "selector" or "field"
  *
  * Creates/reuses and activates state objects for the given
  * XPath information; if the XPath expression consists of unions,
  * multiple state objects are created for every unioned expression.
  *
- * Returns 0 on success and -1 on internal errors.
+ * @returns 0 on success and -1 on internal errors.
  */
 static int
 xmlSchemaIDCAddStateObject(xmlSchemaValidCtxtPtr vctxt,
@@ -22392,13 +22160,12 @@ xmlSchemaIDCAddStateObject(xmlSchemaValidCtxtPtr vctxt,
 }
 
 /**
- * xmlSchemaXPathEvaluate:
- * @vctxt: the WXS validation context
- * @nodeType: the nodeType of the current node
+ * @param vctxt  the WXS validation context
+ * @param nodeType  the nodeType of the current node
  *
  * Evaluates all active XPath state objects.
  *
- * Returns the number of IC "field" state objects which resolved to
+ * @returns the number of IC "field" state objects which resolved to
  * this node, 0 if none resolved and -1 on internal errors.
  */
 static int
@@ -22560,12 +22327,11 @@ xmlSchemaHashKeySequence(xmlSchemaValidCtxtPtr vctxt,
 }
 
 /**
- * xmlSchemaXPathPop:
- * @vctxt: the WXS validation context
+ * @param vctxt  the WXS validation context
  *
  * Pops all XPath states.
  *
- * Returns 0 on success and -1 on internal errors.
+ * @returns 0 on success and -1 on internal errors.
  */
 static int
 xmlSchemaXPathPop(xmlSchemaValidCtxtPtr vctxt)
@@ -22586,15 +22352,13 @@ xmlSchemaXPathPop(xmlSchemaValidCtxtPtr vctxt)
 }
 
 /**
- * xmlSchemaXPathProcessHistory:
- * @vctxt: the WXS validation context
- * @type: the simple/complex type of the current node if any at all
- * @val: the precompiled value
+ * @param vctxt  the WXS validation context
+ * @param depth  depth
  *
  * Processes and pops the history items of the IDC state objects.
  * IDC key-sequences are validated/created on IDC bindings.
  *
- * Returns 0 on success and -1 on internal errors.
+ * @returns 0 on success and -1 on internal errors.
  */
 static int
 xmlSchemaXPathProcessHistory(xmlSchemaValidCtxtPtr vctxt,
@@ -23098,14 +22862,13 @@ deregister_check:
 }
 
 /**
- * xmlSchemaIDCRegisterMatchers:
- * @vctxt: the WXS validation context
- * @elemDecl: the element declaration
+ * @param vctxt  the WXS validation context
+ * @param elemDecl  the element declaration
  *
  * Creates helper objects to evaluate IDC selectors/fields
  * successively.
  *
- * Returns 0 if OK and -1 on internal errors.
+ * @returns 0 if OK and -1 on internal errors.
  */
 static int
 xmlSchemaIDCRegisterMatchers(xmlSchemaValidCtxtPtr vctxt,
@@ -23409,15 +23172,14 @@ internal_error:
 }
 
 /**
- * xmlSchemaBubbleIDCNodeTables:
- * @depth: the current tree depth
+ * @param vctxt  the WXS validation context
  *
- * Merges IDC bindings of an element at @depth into the corresponding IDC
+ * Merges IDC bindings of an element at `depth` into the corresponding IDC
  * bindings of its parent element. If a duplicate note-table entry is found,
  * both, the parent node-table entry and child entry are discarded from the
  * node-table of the parent.
  *
- * Returns 0 if OK and -1 on internal errors.
+ * @returns 0 if OK and -1 on internal errors.
  */
 static int
 xmlSchemaBubbleIDCNodeTables(xmlSchemaValidCtxtPtr vctxt)
@@ -23709,9 +23471,7 @@ internal_error:
 }
 
 /**
- * xmlSchemaCheckCVCIDCKeyRef:
- * @vctxt: the WXS validation context
- * @elemDecl: the element declaration
+ * @param vctxt  the WXS validation context
  *
  * Check the cvc-idc-keyref constraints.
  */
@@ -23991,9 +23751,8 @@ xmlSchemaValidatorPushAttribute(xmlSchemaValidCtxtPtr vctxt,
 }
 
 /**
- * xmlSchemaClearElemInfo:
- * @vctxt: the WXS validation context
- * @ielem: the element information item
+ * @param vctxt  the WXS validation context
+ * @param ielem  the element information item
  */
 static void
 xmlSchemaClearElemInfo(xmlSchemaValidCtxtPtr vctxt,
@@ -24052,13 +23811,12 @@ xmlSchemaClearElemInfo(xmlSchemaValidCtxtPtr vctxt,
 }
 
 /**
- * xmlSchemaGetFreshElemInfo:
- * @vctxt: the schema validation context
+ * @param vctxt  the schema validation context
  *
  * Creates/reuses and initializes the element info item for
  * the current tree depth.
  *
- * Returns the element info item or NULL on API or internal errors.
+ * @returns the element info item or NULL on API or internal errors.
  */
 static xmlSchemaNodeInfoPtr
 xmlSchemaGetFreshElemInfo(xmlSchemaValidCtxtPtr vctxt)
@@ -27403,12 +27161,11 @@ internal_error:
  ************************************************************************/
 
 /**
- * xmlSchemaNewValidCtxt:
- * @schema:  a precompiled XML Schemas
+ * @param schema  a precompiled XML Schemas
  *
  * Create an XML Schemas validation context based on the given schema.
  *
- * Returns the validation context or NULL in case of error
+ * @returns the validation context or NULL in case of error
  */
 xmlSchemaValidCtxtPtr
 xmlSchemaNewValidCtxt(xmlSchemaPtr schema)
@@ -27437,9 +27194,8 @@ xmlSchemaNewValidCtxt(xmlSchemaPtr schema)
 }
 
 /**
- * xmlSchemaValidateSetFilename:
- * @vctxt: the schema validation context
- * @filename: the file name
+ * @param vctxt  the schema validation context
+ * @param filename  the file name
  *
  * Workaround to provide file error reporting information when this is
  * not provided by current APIs
@@ -27457,8 +27213,7 @@ xmlSchemaValidateSetFilename(xmlSchemaValidCtxtPtr vctxt, const char *filename) 
 }
 
 /**
- * xmlSchemaClearValidCtxt:
- * @vctxt: the schema validation context
+ * @param vctxt  the schema validation context
  *
  * Free the resources associated to the schema validation context;
  * leaves some fields alive intended for reuse of the context.
@@ -27582,8 +27337,7 @@ xmlSchemaClearValidCtxt(xmlSchemaValidCtxtPtr vctxt)
 }
 
 /**
- * xmlSchemaFreeValidCtxt:
- * @ctxt:  the schema validation context
+ * @param ctxt  the schema validation context
  *
  * Free the resources associated to the schema validation context
  */
@@ -27670,12 +27424,11 @@ xmlSchemaFreeValidCtxt(xmlSchemaValidCtxtPtr ctxt)
 }
 
 /**
- * xmlSchemaIsValid:
- * @ctxt: the schema validation context
+ * @param ctxt  the schema validation context
  *
  * Check if any error was detected during validation.
  *
- * Returns 1 if valid so far, 0 if errors were detected, and -1 in case
+ * @returns 1 if valid so far, 0 if errors were detected, and -1 in case
  *         of internal error.
  */
 int
@@ -27687,13 +27440,12 @@ xmlSchemaIsValid(xmlSchemaValidCtxtPtr ctxt)
 }
 
 /**
- * xmlSchemaSetValidErrors:
- * @ctxt:  a schema validation context
- * @err:  the error function
- * @warn: the warning function
- * @ctx: the functions context
+ * @param ctxt  a schema validation context
+ * @param err  the error function
+ * @param warn  the warning function
+ * @param ctx  the functions context
  *
- * DEPRECATED: Use xmlSchemaSetValidStructuredErrors.
+ * @deprecated Use xmlSchemaSetValidStructuredErrors.
  *
  * Set the error and warning callback information
  */
@@ -27712,10 +27464,9 @@ xmlSchemaSetValidErrors(xmlSchemaValidCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaSetValidStructuredErrors:
- * @ctxt:  a schema validation context
- * @serror:  the structured error function
- * @ctx: the functions context
+ * @param ctxt  a schema validation context
+ * @param serror  the structured error function
+ * @param ctx  the functions context
  *
  * Set the structured error callback
  */
@@ -27734,15 +27485,14 @@ xmlSchemaSetValidStructuredErrors(xmlSchemaValidCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaGetValidErrors:
- * @ctxt: a XML-Schema validation context
- * @err: the error function result
- * @warn: the warning function result
- * @ctx: the functions context result
+ * @param ctxt  a XML-Schema validation context
+ * @param err  the error function result
+ * @param warn  the warning function result
+ * @param ctx  the functions context result
  *
  * Get the error and warning callback information
  *
- * Returns -1 in case of error and 0 otherwise
+ * @returns -1 in case of error and 0 otherwise
  */
 int
 xmlSchemaGetValidErrors(xmlSchemaValidCtxtPtr ctxt,
@@ -27762,13 +27512,12 @@ xmlSchemaGetValidErrors(xmlSchemaValidCtxtPtr ctxt,
 
 
 /**
- * xmlSchemaSetValidOptions:
- * @ctxt:	a schema validation context
- * @options: a combination of xmlSchemaValidOption
+ * @param ctxt  	a schema validation context
+ * @param options  a combination of xmlSchemaValidOption
  *
  * Sets the options to be used during the validation.
  *
- * Returns 0 in case of success, -1 in case of an
+ * @returns 0 in case of success, -1 in case of an
  * API error.
  */
 int
@@ -27795,12 +27544,11 @@ xmlSchemaSetValidOptions(xmlSchemaValidCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaValidCtxtGetOptions:
- * @ctxt: a schema validation context
+ * @param ctxt  a schema validation context
  *
  * Get the validation context options.
  *
- * Returns the option combination or -1 on error.
+ * @returns the option combination or -1 on error.
  */
 int
 xmlSchemaValidCtxtGetOptions(xmlSchemaValidCtxtPtr ctxt)
@@ -28096,13 +27844,12 @@ xmlSchemaVStart(xmlSchemaValidCtxtPtr vctxt)
 }
 
 /**
- * xmlSchemaValidateOneElement:
- * @ctxt:  a schema validation context
- * @elem:  an element node
+ * @param ctxt  a schema validation context
+ * @param elem  an element node
  *
- * Validate a branch of a tree, starting with the given @elem.
+ * Validate a branch of a tree, starting with the given `elem`.
  *
- * Returns 0 if the element and its subtree is valid, a positive error
+ * @returns 0 if the element and its subtree is valid, a positive error
  * code number otherwise and -1 in case of an internal or API error.
  */
 int
@@ -28121,13 +27868,12 @@ xmlSchemaValidateOneElement(xmlSchemaValidCtxtPtr ctxt, xmlNodePtr elem)
 }
 
 /**
- * xmlSchemaValidateDoc:
- * @ctxt:  a schema validation context
- * @doc:  a parsed document tree
+ * @param ctxt  a schema validation context
+ * @param doc  a parsed document tree
  *
  * Validate a document tree in memory.
  *
- * Returns 0 if the document is schemas valid, a positive error code
+ * @returns 0 if the document is schemas valid, a positive error code
  *     number otherwise and -1 in case of internal or API error.
  */
 int
@@ -28491,16 +28237,15 @@ endElementNsSplit(void *ctx, const xmlChar * localname,
 }
 
 /**
- * xmlSchemaSAXPlug:
- * @ctxt:  a schema validation context
- * @sax:  a pointer to the original xmlSAXHandlerPtr
- * @user_data:  a pointer to the original SAX user data pointer
+ * @param ctxt  a schema validation context
+ * @param sax  a pointer to the original xmlSAXHandlerPtr
+ * @param user_data  a pointer to the original SAX user data pointer
  *
  * Plug a SAX based validation layer in a SAX parsing event flow.
- * The original @saxptr and @dataptr data are replaced by new pointers
+ * The original `saxptr` and `dataptr` data are replaced by new pointers
  * but the calls to the original will be maintained.
  *
- * Returns a pointer to a data structure needed to unplug the validation layer
+ * @returns a pointer to a data structure needed to unplug the validation layer
  *         or NULL in case of errors.
  */
 xmlSchemaSAXPlugPtr
@@ -28637,13 +28382,12 @@ xmlSchemaSAXPlug(xmlSchemaValidCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaSAXUnplug:
- * @plug:  a data structure returned by xmlSchemaSAXPlug
+ * @param plug  a data structure returned by xmlSchemaSAXPlug
  *
  * Unplug a SAX based validation layer in a SAX parsing event flow.
  * The original pointers used in the call are restored.
  *
- * Returns 0 in case of success and -1 in case of failure.
+ * @returns 0 in case of success and -1 in case of failure.
  */
 int
 xmlSchemaSAXUnplug(xmlSchemaSAXPlugPtr plug)
@@ -28670,15 +28414,14 @@ xmlSchemaSAXUnplug(xmlSchemaSAXPlugPtr plug)
 }
 
 /**
- * xmlSchemaValidateSetLocator:
- * @vctxt: a schema validation context
- * @f: the locator function pointer
- * @ctxt: the locator context
+ * @param vctxt  a schema validation context
+ * @param f  the locator function pointer
+ * @param ctxt  the locator context
  *
  * Allows to set a locator function to the validation context,
  * which will be used to provide file and line information since
  * those are not provided as part of the SAX validation flow
- * Setting @f to NULL disable the locator.
+ * Setting `f` to NULL disable the locator.
  */
 
 void
@@ -28692,14 +28435,13 @@ xmlSchemaValidateSetLocator(xmlSchemaValidCtxtPtr vctxt,
 }
 
 /**
- * xmlSchemaValidateStreamLocator:
- * @ctx: the xmlTextReaderPtr used
- * @file: returned file information
- * @line: returned line information
+ * @param ctx  the xmlTextReaderPtr used
+ * @param file  returned file information
+ * @param line  returned line information
  *
  * Internal locator function for the readers
  *
- * Returns 0 in case the Schema validation could be (de)activated and
+ * @returns 0 in case the Schema validation could be (de)activated and
  *         -1 in case of error.
  */
 static int
@@ -28727,11 +28469,10 @@ xmlSchemaValidateStreamLocator(void *ctx, const char **file,
 }
 
 /**
- * xmlSchemaValidateStreamInternal:
- * @ctxt:  a schema validation context
- * @pctxt:  a parser context
+ * @param ctxt  a schema validation context
+ * @param pctxt  a parser context
  *
- * Returns 0 if the document is schemas valid, a positive error code
+ * @returns 0 if the document is schemas valid, a positive error code
  *     number otherwise and -1 in case of internal or API error.
  */
 static int
@@ -28776,18 +28517,17 @@ done:
 }
 
 /**
- * xmlSchemaValidateStream:
- * @ctxt:  a schema validation context
- * @input:  the input to use for reading the data
- * @enc:  an optional encoding information
- * @sax:  a SAX handler for the resulting events
- * @user_data:  the context to provide to the SAX handler.
+ * @param ctxt  a schema validation context
+ * @param input  the input to use for reading the data
+ * @param enc  an optional encoding information
+ * @param sax  a SAX handler for the resulting events
+ * @param user_data  the context to provide to the SAX handler.
  *
  * Validate an input based on a flow of SAX event from the parser
- * and forward the events to the @sax handler with the provided @user_data
- * the user provided @sax handler must be a SAX2 one.
+ * and forward the events to the `sax` handler with the provided `user_data`
+ * the user provided `sax` handler must be a SAX2 one.
  *
- * Returns 0 if the document is schemas valid, a positive error code
+ * @returns 0 if the document is schemas valid, a positive error code
  *     number otherwise and -1 in case of internal or API error.
  */
 int
@@ -28846,15 +28586,14 @@ done:
 }
 
 /**
- * xmlSchemaValidateFile:
- * @ctxt: a schema validation context
- * @filename: the URI of the instance
- * @options: a future set of options, currently unused
+ * @param ctxt  a schema validation context
+ * @param filename  the URI of the instance
+ * @param options  a future set of options, currently unused
  *
  * Do a schemas validation of the given resource, it will use the
  * SAX streamable validation internally.
  *
- * Returns 0 if the document is valid, a positive error code
+ * @returns 0 if the document is valid, a positive error code
  *     number otherwise and -1 in case of an internal or API error.
  */
 int
@@ -28880,12 +28619,11 @@ xmlSchemaValidateFile(xmlSchemaValidCtxtPtr ctxt,
 }
 
 /**
- * xmlSchemaValidCtxtGetParserCtxt:
- * @ctxt: a schema validation context
+ * @param ctxt  a schema validation context
  *
  * allow access to the parser context of the schema validation context
  *
- * Returns the parser context of the schema validation context or NULL
+ * @returns the parser context of the schema validation context or NULL
  *         in case of error.
  */
 xmlParserCtxtPtr

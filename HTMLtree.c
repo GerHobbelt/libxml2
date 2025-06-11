@@ -3,7 +3,7 @@
  *
  * See Copyright for the status of this software.
  *
- * daniel@veillard.com
+ * Author: Daniel Veillard
  */
 
 
@@ -35,12 +35,11 @@
  ************************************************************************/
 
 /**
- * htmlGetMetaEncoding:
- * @doc:  the document
+ * @param doc  the document
  *
  * Encoding definition lookup in the Meta tags
  *
- * Returns the current encoding as flagged in the HTML source
+ * @returns the current encoding as flagged in the HTML source
  */
 const xmlChar *
 htmlGetMetaEncoding(htmlDocPtr doc) {
@@ -146,15 +145,14 @@ found_content:
 }
 
 /**
- * htmlSetMetaEncoding:
- * @doc:  the document
- * @encoding:  the encoding string
+ * @param doc  the document
+ * @param encoding  the encoding string
  *
  * Sets the current encoding in the Meta tags
  * NOTE: this will not change the document content encoding, just
  * the META flag associated.
  *
- * Returns 0 in case of success and -1 in case of error
+ * @returns 0 in case of success and -1 in case of error
  */
 int
 htmlSetMetaEncoding(htmlDocPtr doc, const xmlChar *encoding) {
@@ -293,12 +291,9 @@ create:
 }
 
 /**
- * booleanHTMLAttrs:
- *
  * These are the HTML attributes which will be output
- * in minimized form, i.e. <option selected="selected"> will be
- * output as <option selected>, as per XSLT 1.0 16.2 "HTML Output Method"
- *
+ * in minimized form, i.e. `<option selected="selected">` will be
+ * output as `<option selected>`, as per XSLT 1.0 16.2 "HTML Output Method"
  */
 static const char* const htmlBooleanAttrs[] = {
   "checked", "compact", "declare", "defer", "disabled", "ismap",
@@ -308,14 +303,13 @@ static const char* const htmlBooleanAttrs[] = {
 
 
 /**
- * htmlIsBooleanAttr:
- * @name:  the name of the attribute to check
+ * @param name  the name of the attribute to check
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Determine if a given attribute is a boolean attribute.
  *
- * returns: false if the attribute is not boolean, true otherwise.
+ * @returns false if the attribute is not boolean, true otherwise.
  */
 int
 htmlIsBooleanAttr(const xmlChar *name)
@@ -349,15 +343,14 @@ htmlFindOutputEncoder(const char *encoding, xmlCharEncodingHandler **out) {
 }
 
 /**
- * htmlBufNodeDumpFormat:
- * @buf:  the xmlBufPtr output
- * @doc:  the document
- * @cur:  the current node
- * @format:  should formatting spaces been added
+ * @param buf  the xmlBufPtr output
+ * @param doc  the document
+ * @param cur  the current node
+ * @param format  should formatting spaces been added
  *
  * Dump an HTML node, recursive behaviour,children are printed too.
  *
- * Returns the number of byte written or -1 in case of error
+ * @returns the number of byte written or -1 in case of error
  */
 static size_t
 htmlBufNodeDumpFormat(xmlBufPtr buf, xmlDocPtr doc, xmlNodePtr cur,
@@ -394,15 +387,14 @@ htmlBufNodeDumpFormat(xmlBufPtr buf, xmlDocPtr doc, xmlNodePtr cur,
 }
 
 /**
- * htmlNodeDump:
- * @buf:  the HTML buffer output
- * @doc:  the document
- * @cur:  the current node
+ * @param buf  the HTML buffer output
+ * @param doc  the document
+ * @param cur  the current node
  *
  * Dump an HTML node, recursive behaviour,children are printed too,
  * and formatting returns are added.
  *
- * Returns the number of byte written or -1 in case of error
+ * @returns the number of byte written or -1 in case of error
  */
 int
 htmlNodeDump(xmlBufferPtr buf, xmlDocPtr doc, xmlNodePtr cur) {
@@ -428,18 +420,17 @@ htmlNodeDump(xmlBufferPtr buf, xmlDocPtr doc, xmlNodePtr cur) {
 }
 
 /**
- * htmlNodeDumpFileFormat:
- * @out:  the FILE pointer
- * @doc:  the document
- * @cur:  the current node
- * @encoding: the document encoding
- * @format:  should formatting spaces been added
+ * @param out  the FILE pointer
+ * @param doc  the document
+ * @param cur  the current node
+ * @param encoding  the document encoding
+ * @param format  should formatting spaces been added
  *
  * Dump an HTML node, recursive behaviour,children are printed too.
  *
  * TODO: if encoding == NULL try to save in the doc encoding
  *
- * returns: the number of byte written or -1 in case of failure.
+ * @returns the number of byte written or -1 in case of failure.
  */
 int
 htmlNodeDumpFileFormat(FILE *out, xmlDocPtr doc,
@@ -466,10 +457,9 @@ htmlNodeDumpFileFormat(FILE *out, xmlDocPtr doc,
 }
 
 /**
- * htmlNodeDumpFile:
- * @out:  the FILE pointer
- * @doc:  the document
- * @cur:  the current node
+ * @param out  the FILE pointer
+ * @param doc  the document
+ * @param cur  the current node
  *
  * Dump an HTML node, recursive behaviour,children are printed too,
  * and formatting returns are added.
@@ -480,11 +470,10 @@ htmlNodeDumpFile(FILE *out, xmlDocPtr doc, xmlNodePtr cur) {
 }
 
 /**
- * htmlDocDumpMemoryFormat:
- * @cur:  the document
- * @mem:  OUT: the memory pointer
- * @size:  OUT: the memory length
- * @format:  should formatting spaces been added
+ * @param cur  the document
+ * @param mem  OUT: the memory pointer
+ * @param size  OUT: the memory length
+ * @param format  should formatting spaces been added
  *
  * Dump an HTML document in memory and return the xmlChar * and it's size.
  * It's up to the caller to free the memory.
@@ -529,10 +518,9 @@ htmlDocDumpMemoryFormat(xmlDocPtr cur, xmlChar**mem, int *size, int format) {
 }
 
 /**
- * htmlDocDumpMemory:
- * @cur:  the document
- * @mem:  OUT: the memory pointer
- * @size:  OUT: the memory length
+ * @param cur  the document
+ * @param mem  OUT: the memory pointer
+ * @param size  OUT: the memory length
  *
  * Dump an HTML document in memory and return the xmlChar * and it's size.
  * It's up to the caller to free the memory.
@@ -550,10 +538,9 @@ htmlDocDumpMemory(xmlDocPtr cur, xmlChar**mem, int *size) {
  ************************************************************************/
 
 /**
- * htmlDtdDumpOutput:
- * @buf:  the HTML buffer output
- * @doc:  the document
- * @encoding:  the encoding string
+ * @param buf  the HTML buffer output
+ * @param doc  the document
+ * @param encoding  the encoding string
  *
  * TODO: check whether encoding is needed
  *
@@ -584,10 +571,9 @@ htmlDtdDumpOutput(xmlOutputBufferPtr buf, xmlDocPtr doc,
 }
 
 /**
- * htmlAttrDumpOutput:
- * @buf:  the HTML buffer output
- * @doc:  the document
- * @cur:  the attribute pointer
+ * @param buf  the HTML buffer output
+ * @param doc  the document
+ * @param cur  the attribute pointer
  *
  * Dump an HTML attribute
  */
@@ -654,12 +640,11 @@ htmlAttrDumpOutput(xmlOutputBufferPtr buf, xmlDocPtr doc, xmlAttrPtr cur) {
 }
 
 /**
- * htmlNodeDumpFormatOutput:
- * @buf:  the HTML buffer output
- * @doc:  the document
- * @cur:  the current node
- * @encoding:  the encoding string (unused)
- * @format:  should formatting spaces been added
+ * @param buf  the HTML buffer output
+ * @param doc  the document
+ * @param cur  the current node
+ * @param encoding  the encoding string (unused)
+ * @param format  should formatting spaces been added
  *
  * Dump an HTML node, recursive behaviour,children are printed too.
  */
@@ -889,11 +874,10 @@ htmlNodeDumpFormatOutput(xmlOutputBufferPtr buf, xmlDocPtr doc,
 }
 
 /**
- * htmlNodeDumpOutput:
- * @buf:  the HTML buffer output
- * @doc:  the document
- * @cur:  the current node
- * @encoding:  the encoding string (unused)
+ * @param buf  the HTML buffer output
+ * @param doc  the document
+ * @param cur  the current node
+ * @param encoding  the encoding string (unused)
  *
  * Dump an HTML node, recursive behaviour,children are printed too,
  * and formatting returns/spaces are added.
@@ -905,11 +889,10 @@ htmlNodeDumpOutput(xmlOutputBufferPtr buf, xmlDocPtr doc,
 }
 
 /**
- * htmlDocContentDumpFormatOutput:
- * @buf:  the HTML buffer output
- * @cur:  the document
- * @encoding:  the encoding string (unused)
- * @format:  should formatting spaces been added
+ * @param buf  the HTML buffer output
+ * @param cur  the document
+ * @param encoding  the encoding string (unused)
+ * @param format  should formatting spaces been added
  *
  * Dump an HTML document.
  */
@@ -928,10 +911,9 @@ htmlDocContentDumpFormatOutput(xmlOutputBufferPtr buf, xmlDocPtr cur,
 }
 
 /**
- * htmlDocContentDumpOutput:
- * @buf:  the HTML buffer output
- * @cur:  the document
- * @encoding:  the encoding string (unused)
+ * @param buf  the HTML buffer output
+ * @param cur  the document
+ * @param encoding  the encoding string (unused)
  *
  * Dump an HTML document. Formatting return/spaces are added.
  */
@@ -948,13 +930,12 @@ htmlDocContentDumpOutput(xmlOutputBufferPtr buf, xmlDocPtr cur,
  ************************************************************************/
 
 /**
- * htmlDocDump:
- * @f:  the FILE*
- * @cur:  the document
+ * @param f  the FILE*
+ * @param cur  the document
  *
  * Dump an HTML document to an open FILE.
  *
- * returns: the number of byte written or -1 in case of failure.
+ * @returns the number of byte written or -1 in case of failure.
  */
 int
 htmlDocDump(FILE *f, xmlDocPtr cur) {
@@ -982,13 +963,12 @@ htmlDocDump(FILE *f, xmlDocPtr cur) {
 }
 
 /**
- * htmlSaveFile:
- * @filename:  the filename (or URL)
- * @cur:  the document
+ * @param filename  the filename (or URL)
+ * @param cur  the document
  *
- * Dump an HTML document to a file. If @filename is "-" the stdout file is
+ * Dump an HTML document to a file. If `filename` is "-" the stdout file is
  * used.
- * returns: the number of byte written or -1 in case of failure.
+ * @returns the number of byte written or -1 in case of failure.
  */
 int
 htmlSaveFile(const char *filename, xmlDocPtr cur) {
@@ -1016,15 +996,14 @@ htmlSaveFile(const char *filename, xmlDocPtr cur) {
 }
 
 /**
- * htmlSaveFileFormat:
- * @filename:  the filename
- * @cur:  the document
- * @format:  should formatting spaces been added
- * @encoding: the document encoding
+ * @param filename  the filename
+ * @param cur  the document
+ * @param format  should formatting spaces been added
+ * @param encoding  the document encoding
  *
  * Dump an HTML document to a file using a given encoding.
  *
- * returns: the number of byte written or -1 in case of failure.
+ * @returns the number of byte written or -1 in case of failure.
  */
 int
 htmlSaveFileFormat(const char *filename, xmlDocPtr cur,
@@ -1059,15 +1038,14 @@ htmlSaveFileFormat(const char *filename, xmlDocPtr cur,
 }
 
 /**
- * htmlSaveFileEnc:
- * @filename:  the filename
- * @cur:  the document
- * @encoding: the document encoding
+ * @param filename  the filename
+ * @param cur  the document
+ * @param encoding  the document encoding
  *
  * Dump an HTML document to a file using a given encoding
  * and formatting returns/spaces are added.
  *
- * returns: the number of byte written or -1 in case of failure.
+ * @returns the number of byte written or -1 in case of failure.
  */
 int
 htmlSaveFileEnc(const char *filename, xmlDocPtr cur, const char *encoding) {

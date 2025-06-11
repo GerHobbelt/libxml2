@@ -55,7 +55,6 @@ AC_PROG_LN_S
 AC_PROG_MKDIR_P
 AC_PATH_PROG(TAR, tar, /bin/tar)
 AC_PATH_PROG(WGET, wget, /usr/bin/wget)
-AC_PATH_PROG(XSLTPROC, xsltproc, /usr/bin/xsltproc)
 PKG_PROG_PKG_CONFIG
 
 LT_INIT([disable-static])
@@ -73,6 +72,8 @@ AC_ARG_WITH(catalog,
 [  --with-catalog          XML Catalogs support (on)])
 AC_ARG_WITH(debug,
 [  --with-debug            debugging module (on)])
+AC_ARG_WITH(docs,
+[  --with-docs             Build documentation (off)])
 AC_ARG_WITH(history,
 [  --with-history          history support for xmllint shell (off)])
 AC_ARG_WITH(readline,
@@ -561,6 +562,18 @@ fi
 AC_SUBST(WITH_DEBUG)
 AM_CONDITIONAL(WITH_DEBUG_SOURCES, test "$WITH_DEBUG" = "1")
 
+if test "$with_docs" = "yes" ; then
+    echo Enabling documentation
+    AC_PATH_PROG(XSLTPROC, xsltproc, [no])
+    if test "$XSLTPROC" = "no"; then
+        AC_MSG_ERROR([cannot find xsltproc])
+    fi
+    WITH_DOCS=1
+else
+    WITH_DOCS=0
+fi
+AM_CONDITIONAL(WITH_DOCS, test "$WITH_DOCS" = "1")
+
 dnl
 dnl Check for Python
 dnl
@@ -570,6 +583,19 @@ AS_IF([test "x$with_python" = "xyes"], [
     PKG_CHECK_MODULES([PYTHON], [python-${PYTHON_VERSION}])
 ])
 AM_CONDITIONAL([WITH_PYTHON], [test "x$with_python" = "xyes"])
+
+dnl
+dnl Check for Doxygen
+dnl
+
+if test "$with_python" = "yes" || test "$with_docs" = "yes"; then
+    AC_PATH_PROG(DOXYGEN, doxygen, [no])
+    if test "$DOXYGEN" = "no"; then
+        AC_MSG_ERROR([cannot find doxygen])
+    fi
+    WITH_DOXYGEN=1
+fi
+AM_CONDITIONAL([WITH_DOXYGEN], test "$WITH_DOXYGEN" = "1")
 
 dnl
 dnl Extra Python flags
@@ -1033,12 +1059,23 @@ AC_SUBST(XML_PRIVATE_LIBS)
 AC_SUBST(XML_PRIVATE_CFLAGS)
 AC_SUBST(XML_INCLUDEDIR)
 
+# for libxml2-config.cmake.in
+AX_RECURSIVE_EVAL(["$bindir"], [INSTALL_BINDIR])
+AX_RECURSIVE_EVAL(["$includedir"], [INSTALL_INCLUDEDIR])
+AX_RECURSIVE_EVAL(["$libdir"], [INSTALL_LIBDIR])
+AC_SUBST(INSTALL_BINDIR)
+AC_SUBST(INSTALL_INCLUDEDIR)
+AC_SUBST(INSTALL_LIBDIR)
+AM_SUBST_NOTMAKE(INSTALL_BINDIR)
+AM_SUBST_NOTMAKE(INSTALL_INCLUDEDIR)
+AM_SUBST_NOTMAKE(INSTALL_LIBDIR)
+
 AX_RECURSIVE_EVAL(["$sysconfdir"], [XML_SYSCONFDIR])
 AC_DEFINE_UNQUOTED([XML_SYSCONFDIR], ["$XML_SYSCONFDIR"],
                    [System configuration directory (/etc)])
 
 # keep on one line for cygwin c.f. #130896
-AC_CONFIG_FILES([Makefile include/Makefile include/libxml/Makefile include/private/Makefile doc/Makefile doc/devhelp/Makefile example/Makefile fuzz/Makefile python/Makefile python/tests/Makefile xstc/Makefile include/libxml/xmlversion.h libxml-2.0.pc libxml2-config.cmake])
+AC_CONFIG_FILES([Makefile include/Makefile include/libxml/Makefile include/private/Makefile doc/Makefile example/Makefile fuzz/Makefile python/Makefile python/tests/Makefile xstc/Makefile include/libxml/xmlversion.h libxml-2.0.pc libxml2-config.cmake])
 AC_CONFIG_FILES([python/setup.py], [chmod +x python/setup.py])
 AC_CONFIG_FILES([xml2-config], [chmod +x xml2-config])
 AC_OUTPUT

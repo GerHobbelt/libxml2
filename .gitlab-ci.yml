@@ -323,15 +323,12 @@ dist:
       dotenv: build.env
 
 pages:
+  needs: [install]
   script:
-    - mkdir -p public
-    - cp -r doc/devhelp doc/xmllint.html doc/xmlcatalog.html public
+    - cp -r install/share/doc/libxml2 public
   artifacts:
     paths:
       - public
-    exclude:
-      - public/devhelp/Makefile*
-      - public/devhelp/*.xsl
   only:
     - master@GNOME/libxml2
 

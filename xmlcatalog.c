@@ -3,7 +3,7 @@
  *
  * See Copyright for the status of this software.
  *
- * daniel@veillard.com
+ * Author: Daniel Veillard
  */
 
 #include "libxml.h"
@@ -65,12 +65,11 @@ static const char *filename = NULL;
  *									*
  ************************************************************************/
 /**
- * xmlShellReadline:
- * @prompt:  the prompt value
+ * @param prompt  the prompt value
  *
  * Read a string
  *
- * Returns a pointer to it or NULL on EOF the caller is expected to
+ * @returns a pointer to it or NULL on EOF the caller is expected to
  *     free the returned string.
  */
 static char *

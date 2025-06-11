@@ -8,7 +8,7 @@
  *
  * See Copyright for the status of this software.
  *
- * daniel@veillard.com
+ * Author: Daniel Veillard
  */
 
 /*
@@ -192,11 +192,9 @@ struct _xmlPatParserContext {
  ************************************************************************/
 
 /**
- * xmlNewPattern:
- *
  * Create a new XSLT Pattern
  *
- * Returns the newly allocated xmlPatternPtr or NULL in case of error
+ * @returns the newly allocated xmlPatternPtr or NULL in case of error
  */
 static xmlPatternPtr
 xmlNewPattern(void) {
@@ -215,10 +213,9 @@ xmlNewPattern(void) {
 }
 
 /**
- * xmlFreePattern:
- * @comp:  an XSLT comp
+ * @param comp  an XSLT comp
  *
- * Free up the memory allocated by @comp
+ * Free up the memory allocated by `comp`
  */
 void
 xmlFreePattern(xmlPatternPtr comp) {
@@ -256,10 +253,9 @@ xmlFreePatternInternal(xmlPatternPtr comp) {
 }
 
 /**
- * xmlFreePatternList:
- * @comp:  an XSLT comp list
+ * @param comp  an XSLT comp list
  *
- * Free up the memory allocated by all the elements of @comp
+ * Free up the memory allocated by all the elements of `comp`
  */
 void
 xmlFreePatternList(xmlPatternPtr comp) {
@@ -274,15 +270,14 @@ xmlFreePatternList(xmlPatternPtr comp) {
 }
 
 /**
- * xmlNewPatParserContext:
- * @pattern:  the pattern context
- * @dict:  the inherited dictionary or NULL
- * @namespaces: the prefix definitions, array of [URI, prefix] terminated
+ * @param pattern  the pattern context
+ * @param dict  the inherited dictionary or NULL
+ * @param namespaces  the prefix definitions, array of [URI, prefix] terminated
  *              with [NULL, NULL] or NULL if no namespace is used
  *
  * Create a new XML pattern parser context
  *
- * Returns the newly allocated xmlPatParserContextPtr or NULL in case of error
+ * @returns the newly allocated xmlPatParserContextPtr or NULL in case of error
  */
 static xmlPatParserContextPtr
 xmlNewPatParserContext(const xmlChar *pattern, xmlDictPtr dict,
@@ -315,10 +310,9 @@ xmlNewPatParserContext(const xmlChar *pattern, xmlDictPtr dict,
 }
 
 /**
- * xmlFreePatParserContext:
- * @ctxt:  an XSLT parser context
+ * @param ctxt  an XSLT parser context
  *
- * Free up the memory allocated by @ctxt
+ * Free up the memory allocated by `ctxt`
  */
 static void
 xmlFreePatParserContext(xmlPatParserContextPtr ctxt) {
@@ -347,15 +341,15 @@ xmlPatternGrow(xmlPatternPtr comp) {
 }
 
 /**
- * xmlPatternAdd:
- * @comp:  the compiled match expression
- * @op:  an op
- * @value:  the first value
- * @value2:  the second value
+ * @param ctxt  the pattern parser context
+ * @param comp  the compiled match expression
+ * @param op  an op
+ * @param value  the first value
+ * @param value2  the second value
  *
  * Add a step to an XSLT Compiled Match
  *
- * Returns -1 in case of failure, 0 otherwise.
+ * @returns -1 in case of failure, 0 otherwise.
  */
 static int
 xmlPatternAdd(xmlPatParserContextPtr ctxt, xmlPatternPtr comp,
@@ -375,12 +369,11 @@ xmlPatternAdd(xmlPatParserContextPtr ctxt, xmlPatternPtr comp,
 }
 
 /**
- * xmlReversePattern:
- * @comp:  the compiled match expression
+ * @param comp  the compiled match expression
  *
  * reverse all the stack of expressions
  *
- * returns 0 in case of success and -1 in case of error.
+ * @returns 0 in case of success and -1 in case of error.
  */
 static int
 xmlReversePattern(xmlPatternPtr comp) {
@@ -458,13 +451,12 @@ xmlPatPushState(xmlStepStates *states, int step, xmlNodePtr node) {
 }
 
 /**
- * xmlPatMatch:
- * @comp: the precompiled pattern
- * @node: a node
+ * @param comp  the precompiled pattern
+ * @param node  a node
  *
  * Test whether the node matches the pattern
  *
- * Returns 1 if it matches, 0 if it doesn't and -1 in case of failure
+ * @returns 1 if it matches, 0 if it doesn't and -1 in case of failure
  */
 static int
 xmlPatMatch(xmlPatternPtr comp, xmlNodePtr node) {
@@ -683,8 +675,7 @@ rollback:
     if (xmlPatternAdd(ctxt, ctxt->comp, (op), (val), (val2))) goto error;
 
 /**
- * xmlPatScanName:
- * @ctxt:  the XPath Parser context
+ * @param ctxt  the XPath Parser context
  *
  * [4] NameChar ::= Letter | Digit | '.' | '-' | '_' |
  *                  CombiningChar | Extender
@@ -693,7 +684,7 @@ rollback:
  *
  * [6] Names ::= Name (S Name)*
  *
- * Returns the Name parsed or NULL
+ * @returns the Name parsed or NULL
  */
 
 static xmlChar *
@@ -726,12 +717,11 @@ xmlPatScanName(xmlPatParserContextPtr ctxt) {
 }
 
 /**
- * xmlPatScanNCName:
- * @ctxt:  the XPath Parser context
+ * @param ctxt  the XPath Parser context
  *
  * Parses a non qualified name
  *
- * Returns the Name parsed or NULL
+ * @returns the Name parsed or NULL
  */
 
 static xmlChar *
@@ -766,8 +756,7 @@ xmlPatScanNCName(xmlPatParserContextPtr ctxt) {
 }
 
 /**
- * xmlCompileAttributeTest:
- * @ctxt:  the compilation context
+ * @param ctxt  the compilation context
  *
  * Compile an attribute test.
  */
@@ -857,8 +846,7 @@ error:
 }
 
 /**
- * xmlCompileStepPattern:
- * @ctxt:  the compilation context
+ * @param ctxt  the compilation context
  *
  * Compile the Step Pattern and generates a precompiled
  * form suitable for fast matching.
@@ -1080,8 +1068,7 @@ error:
 }
 
 /**
- * xmlCompilePathPattern:
- * @ctxt:  the compilation context
+ * @param ctxt  the compilation context
  *
  * Compile the Path Pattern and generates a precompiled
  * form suitable for fast matching.
@@ -1179,8 +1166,7 @@ error:
 }
 
 /**
- * xmlCompileIDCXPathPath:
- * @ctxt:  the compilation context
+ * @param ctxt  the compilation context
  *
  * Compile the Path Pattern and generates a precompiled
  * form suitable for fast matching.
@@ -1285,12 +1271,11 @@ error_unfinished:
  ************************************************************************/
 
 /**
- * xmlNewStreamComp:
- * @size: the number of expected steps
+ * @param size  the number of expected steps
  *
  * build a new compiled pattern for streaming
  *
- * Returns the new structure or NULL in case of error.
+ * @returns the new structure or NULL in case of error.
  */
 static xmlStreamCompPtr
 xmlNewStreamComp(int size) {
@@ -1319,8 +1304,7 @@ xmlNewStreamComp(int size) {
 }
 
 /**
- * xmlFreeStreamComp:
- * @comp: the compiled pattern for streaming
+ * @param comp  the compiled pattern for streaming
  *
  * Free the compiled pattern for streaming
  */
@@ -1336,15 +1320,15 @@ xmlFreeStreamComp(xmlStreamCompPtr comp) {
 }
 
 /**
- * xmlStreamCompAddStep:
- * @comp: the compiled pattern for streaming
- * @name: the first string, the name, or NULL for *
- * @ns: the second step, the namespace name
- * @flags: the flags for that step
+ * @param comp  the compiled pattern for streaming
+ * @param name  the first string, the name, or NULL for *
+ * @param ns  the second step, the namespace name
+ * @param nodeType  the node type
+ * @param flags  the flags for that step
  *
  * Add a new step to the compiled pattern
  *
- * Returns -1 in case of error or the step index if successful
+ * @returns -1 in case of error or the step index if successful
  */
 static int
 xmlStreamCompAddStep(xmlStreamCompPtr comp, const xmlChar *name,
@@ -1380,12 +1364,11 @@ xmlStreamCompAddStep(xmlStreamCompPtr comp, const xmlChar *name,
 }
 
 /**
- * xmlStreamCompile:
- * @comp: the precompiled pattern
+ * @param comp  the precompiled pattern
  *
  * Tries to stream compile a pattern
  *
- * Returns -1 in case of failure and 0 in case of success.
+ * @returns -1 in case of failure and 0 in case of success.
  */
 static int
 xmlStreamCompile(xmlPatternPtr comp) {
@@ -1559,12 +1542,11 @@ error:
 }
 
 /**
- * xmlNewStreamCtxt:
- * @size: the number of expected states
+ * @param stream  the copmiled stream
  *
  * build a new stream context
  *
- * Returns the new structure or NULL in case of error.
+ * @returns the new structure or NULL in case of error.
  */
 static xmlStreamCtxtPtr
 xmlNewStreamCtxt(xmlStreamCompPtr stream) {
@@ -1587,8 +1569,7 @@ xmlNewStreamCtxt(xmlStreamCompPtr stream) {
 }
 
 /**
- * xmlFreeStreamCtxt:
- * @stream: the stream context
+ * @param stream  the stream context
  *
  * Free the stream context
  */
@@ -1606,13 +1587,13 @@ xmlFreeStreamCtxt(xmlStreamCtxtPtr stream) {
 }
 
 /**
- * xmlStreamCtxtAddState:
- * @comp: the stream context
- * @idx: the step index for that streaming state
+ * @param comp  the stream context
+ * @param idx  the step index for that streaming state
+ * @param level  the level
  *
  * Add a new state to the stream context
  *
- * Returns -1 in case of error or the state index if successful
+ * @returns -1 in case of error or the state index if successful
  */
 static int
 xmlStreamCtxtAddState(xmlStreamCtxtPtr comp, int idx, int level) {
@@ -1650,19 +1631,18 @@ xmlStreamCtxtAddState(xmlStreamCtxtPtr comp, int idx, int level) {
 }
 
 /**
- * xmlStreamPushInternal:
- * @stream: the stream context
- * @name: the current name
- * @ns: the namespace name
- * @nodeType: the type of the node
+ * @param stream  the stream context
+ * @param name  the current name
+ * @param ns  the namespace name
+ * @param nodeType  the type of the node
  *
  * Push new data onto the stream. NOTE: if the call xmlPatterncompile()
  * indicated a dictionary, then strings for name and ns will be expected
  * to come from the dictionary.
- * Both @name and @ns being NULL means the / i.e. the root of the document.
+ * Both `name` and `ns` being NULL means the / i.e. the root of the document.
  * This can also act as a reset.
  *
- * Returns: -1 in case of error, 1 if the current state in the stream is a
+ * @returns -1 in case of error, 1 if the current state in the stream is a
  *    match and 0 otherwise.
  */
 static int
@@ -1974,19 +1954,18 @@ stream_next:
 }
 
 /**
- * xmlStreamPush:
- * @stream: the stream context
- * @name: the current name
- * @ns: the namespace name
+ * @param stream  the stream context
+ * @param name  the current name
+ * @param ns  the namespace name
  *
  * Push new data onto the stream. NOTE: if the call xmlPatterncompile()
  * indicated a dictionary, then strings for name and ns will be expected
  * to come from the dictionary.
- * Both @name and @ns being NULL means the / i.e. the root of the document.
+ * Both `name` and `ns` being NULL means the / i.e. the root of the document.
  * This can also act as a reset.
  * Otherwise the function will act as if it has been given an element-node.
  *
- * Returns: -1 in case of error, 1 if the current state in the stream is a
+ * @returns -1 in case of error, 1 if the current state in the stream is a
  *    match and 0 otherwise.
  */
 int
@@ -1996,22 +1975,21 @@ xmlStreamPush(xmlStreamCtxtPtr stream,
 }
 
 /**
- * xmlStreamPushNode:
- * @stream: the stream context
- * @name: the current name
- * @ns: the namespace name
- * @nodeType: the type of the node being pushed
+ * @param stream  the stream context
+ * @param name  the current name
+ * @param ns  the namespace name
+ * @param nodeType  the type of the node being pushed
  *
  * Push new data onto the stream. NOTE: if the call xmlPatterncompile()
  * indicated a dictionary, then strings for name and ns will be expected
  * to come from the dictionary.
- * Both @name and @ns being NULL means the / i.e. the root of the document.
+ * Both `name` and `ns` being NULL means the / i.e. the root of the document.
  * This can also act as a reset.
  * Different from xmlStreamPush() this function can be fed with nodes of type:
  * element-, attribute-, text-, cdata-section-, comment- and
  * processing-instruction-node.
  *
- * Returns: -1 in case of error, 1 if the current state in the stream is a
+ * @returns -1 in case of error, 1 if the current state in the stream is a
  *    match and 0 otherwise.
  */
 int
@@ -2046,12 +2024,11 @@ xmlStreamPushAttr(xmlStreamCtxtPtr stream,
 }
 
 /**
- * xmlStreamPop:
- * @stream: the stream context
+ * @param stream  the stream context
  *
  * push one level from the stream.
  *
- * Returns: -1 in case of error, 0 otherwise.
+ * @returns -1 in case of error, 0 otherwise.
  */
 int
 xmlStreamPop(xmlStreamCtxtPtr stream) {
@@ -2090,15 +2067,14 @@ xmlStreamPop(xmlStreamCtxtPtr stream) {
 }
 
 /**
- * xmlStreamWantsAnyNode:
- * @streamCtxt: the stream context
+ * @param streamCtxt  the stream context
  *
  * Query if the streaming pattern additionally needs to be fed with
  * text-, cdata-section-, comment- and processing-instruction-nodes.
  * If the result is 0 then only element-nodes and attribute-nodes
  * need to be pushed.
  *
- * Returns: 1 in case of need of nodes of the above described types,
+ * @returns 1 in case of need of nodes of the above described types,
  *          0 otherwise. -1 on API errors.
  */
 int
@@ -2121,18 +2097,17 @@ xmlStreamWantsAnyNode(xmlStreamCtxtPtr streamCtxt)
  ************************************************************************/
 
 /**
- * xmlPatternCompileSafe:
- * @pattern: the pattern to compile
- * @dict: an optional dictionary for interned strings
- * @flags: compilation flags, see xmlPatternFlags
- * @namespaces: the prefix definitions, array of [URI, prefix] or NULL
- * @patternOut: output pattern
+ * @param pattern  the pattern to compile
+ * @param dict  an optional dictionary for interned strings
+ * @param flags  compilation flags, see xmlPatternFlags
+ * @param namespaces  the prefix definitions, array of [URI, prefix] or NULL
+ * @param patternOut  output pattern
  *
  * Compile a pattern.
  *
  * Available since 2.13.0.
  *
- * Returns 0 on success, 1 on error, -1 if a memory allocation failed.
+ * @returns 0 on success, 1 on error, -1 if a memory allocation failed.
  */
 int
 xmlPatternCompileSafe(const xmlChar *pattern, xmlDict *dict, int flags,
@@ -2251,15 +2226,14 @@ error:
 }
 
 /**
- * xmlPatterncompile:
- * @pattern: the pattern to compile
- * @dict: an optional dictionary for interned strings
- * @flags: compilation flags, see xmlPatternFlags
- * @namespaces: the prefix definitions, array of [URI, prefix] or NULL
+ * @param pattern  the pattern to compile
+ * @param dict  an optional dictionary for interned strings
+ * @param flags  compilation flags, see xmlPatternFlags
+ * @param namespaces  the prefix definitions, array of [URI, prefix] or NULL
  *
  * Compile a pattern.
  *
- * Returns the compiled form of the pattern or NULL in case of error
+ * @returns the compiled form of the pattern or NULL in case of error
  */
 xmlPatternPtr
 xmlPatterncompile(const xmlChar *pattern, xmlDict *dict, int flags,
@@ -2270,13 +2244,12 @@ xmlPatterncompile(const xmlChar *pattern, xmlDict *dict, int flags,
 }
 
 /**
- * xmlPatternMatch:
- * @comp: the precompiled pattern
- * @node: a node
+ * @param comp  the precompiled pattern
+ * @param node  a node
  *
  * Test whether the node matches the pattern
  *
- * Returns 1 if it matches, 0 if it doesn't and -1 in case of failure
+ * @returns 1 if it matches, 0 if it doesn't and -1 in case of failure
  */
 int
 xmlPatternMatch(xmlPatternPtr comp, xmlNodePtr node)
@@ -2296,13 +2269,12 @@ xmlPatternMatch(xmlPatternPtr comp, xmlNodePtr node)
 }
 
 /**
- * xmlPatternGetStreamCtxt:
- * @comp: the precompiled pattern
+ * @param comp  the precompiled pattern
  *
  * Get a streaming context for that pattern
  * Use xmlFreeStreamCtxt to free the context.
  *
- * Returns a pointer to the context or NULL in case of failure
+ * @returns a pointer to the context or NULL in case of failure
  */
 xmlStreamCtxtPtr
 xmlPatternGetStreamCtxt(xmlPatternPtr comp)
@@ -2334,13 +2306,12 @@ failed:
 }
 
 /**
- * xmlPatternStreamable:
- * @comp: the precompiled pattern
+ * @param comp  the precompiled pattern
  *
  * Check if the pattern is streamable i.e. xmlPatternGetStreamCtxt()
  * should work.
  *
- * Returns 1 if streamable, 0 if not and -1 in case of error.
+ * @returns 1 if streamable, 0 if not and -1 in case of error.
  */
 int
 xmlPatternStreamable(xmlPatternPtr comp) {
@@ -2355,12 +2326,11 @@ xmlPatternStreamable(xmlPatternPtr comp) {
 }
 
 /**
- * xmlPatternMaxDepth:
- * @comp: the precompiled pattern
+ * @param comp  the precompiled pattern
  *
  * Check the maximum depth reachable by a pattern
  *
- * Returns -2 if no limit (using //), otherwise the depth,
+ * @returns -2 if no limit (using //), otherwise the depth,
  *         and -1 in case of error
  */
 int
@@ -2382,13 +2352,12 @@ xmlPatternMaxDepth(xmlPatternPtr comp) {
 }
 
 /**
- * xmlPatternMinDepth:
- * @comp: the precompiled pattern
+ * @param comp  the precompiled pattern
  *
  * Check the minimum depth reachable by a pattern, 0 mean the / or . are
  * part of the set.
  *
- * Returns -1 in case of error otherwise the depth,
+ * @returns -1 in case of error otherwise the depth,
  *
  */
 int
@@ -2409,12 +2378,11 @@ xmlPatternMinDepth(xmlPatternPtr comp) {
 }
 
 /**
- * xmlPatternFromRoot:
- * @comp: the precompiled pattern
+ * @param comp  the precompiled pattern
  *
  * Check if the pattern must be looked at from the root.
  *
- * Returns 1 if true, 0 if false and -1 in case of error
+ * @returns 1 if true, 0 if false and -1 in case of error
  */
 int
 xmlPatternFromRoot(xmlPatternPtr comp) {

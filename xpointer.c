@@ -11,7 +11,7 @@
  *
  * See Copyright for the status of this software.
  *
- * daniel@veillard.com
+ * Author: Daniel Veillard
  */
 
 /* To avoid EBCDIC trouble when parsing on zOS */
@@ -54,9 +54,10 @@
  ************************************************************************/
 
 /**
- * xmlXPtrErr:
- * @ctxt:  an XPTR evaluation context
- * @extra:  extra information
+ * @param ctxt  an XPTR evaluation context
+ * @param code  error code
+ * @param msg  error message
+ * @param extra  extra information
  *
  * Handle an XPointer error
  */
@@ -115,11 +116,10 @@ xmlXPtrErr(xmlXPathParserContextPtr ctxt, int code,
  ************************************************************************/
 
 /**
- * xmlXPtrGetNthChild:
- * @cur:  the node
- * @no:  the child number
+ * @param cur  the node
+ * @param no  the child number
  *
- * Returns the @no'th element child of @cur or NULL
+ * @returns the `no`'th element child of `cur` or NULL
  */
 static xmlNodePtr
 xmlXPtrGetNthChild(xmlNodePtr cur, int no) {
@@ -182,9 +182,8 @@ static void xmlXPtrEvalChildSeq(xmlXPathParserContextPtr ctxt, xmlChar *name);
 #define NEXT ((*ctxt->cur) ?  ctxt->cur++: ctxt->cur)
 
 /*
- * xmlXPtrGetChildNo:
- * @ctxt:  the XPointer Parser context
- * @index:  the child number
+ * @param ctxt  the XPointer Parser context
+ * @param index  the child number
  *
  * Move the current node of the nodeset on the stack to the
  * given child if found
@@ -214,9 +213,8 @@ xmlXPtrGetChildNo(xmlXPathParserContextPtr ctxt, int indx) {
 }
 
 /**
- * xmlXPtrEvalXPtrPart:
- * @ctxt:  the XPointer Parser context
- * @name:  the preparsed Scheme for the XPtrPart
+ * @param ctxt  the XPointer Parser context
+ * @param name  the preparsed Scheme for the XPtrPart
  *
  * XPtrPart ::= 'xpointer' '(' XPtrExpr ')'
  *            | Scheme '(' SchemeSpecificExpr ')'
@@ -382,9 +380,8 @@ xmlXPtrEvalXPtrPart(xmlXPathParserContextPtr ctxt, xmlChar *name) {
 }
 
 /**
- * xmlXPtrEvalFullXPtr:
- * @ctxt:  the XPointer Parser context
- * @name:  the preparsed Scheme for the first XPtrPart
+ * @param ctxt  the XPointer Parser context
+ * @param name  the preparsed Scheme for the first XPtrPart
  *
  * FullXPtr ::= XPtrPart (S? XPtrPart)*
  *
@@ -462,9 +459,8 @@ xmlXPtrEvalFullXPtr(xmlXPathParserContextPtr ctxt, xmlChar *name) {
 }
 
 /**
- * xmlXPtrEvalChildSeq:
- * @ctxt:  the XPointer Parser context
- * @name:  a possible ID name of the child sequence
+ * @param ctxt  the XPointer Parser context
+ * @param name  a possible ID name of the child sequence
  *
  *  ChildSeq ::= '/1' ('/' [0-9]*)*
  *             | Name ('/' [0-9]*)+
@@ -514,8 +510,7 @@ xmlXPtrEvalChildSeq(xmlXPathParserContextPtr ctxt, xmlChar *name) {
 
 
 /**
- * xmlXPtrEvalXPointer:
- * @ctxt:  the XPointer Parser context
+ * @param ctxt  the XPointer Parser context
  *
  *  XPointer ::= Name
  *             | ChildSeq
@@ -569,15 +564,14 @@ xmlXPtrEvalXPointer(xmlXPathParserContextPtr ctxt) {
  ************************************************************************/
 
 /**
- * xmlXPtrNewContext:
- * @doc:  the XML document
- * @here:  the node that directly contains the XPointer being evaluated or NULL
- * @origin:  the element from which a user or program initiated traversal of
+ * @param doc  the XML document
+ * @param here  the node that directly contains the XPointer being evaluated or NULL
+ * @param origin  the element from which a user or program initiated traversal of
  *           the link, or NULL.
  *
  * Create a new XPointer context
  *
- * Returns the xmlXPathContext just allocated.
+ * @returns the xmlXPathContext just allocated.
  */
 xmlXPathContextPtr
 xmlXPtrNewContext(xmlDocPtr doc, xmlNodePtr here, xmlNodePtr origin) {
@@ -593,13 +587,12 @@ xmlXPtrNewContext(xmlDocPtr doc, xmlNodePtr here, xmlNodePtr origin) {
 }
 
 /**
- * xmlXPtrEval:
- * @str:  the XPointer expression
- * @ctx:  the XPointer context
+ * @param str  the XPointer expression
+ * @param ctx  the XPointer context
  *
  * Evaluate the XPath Location Path in the given context.
  *
- * Returns the xmlXPathObjectPtr resulting from the evaluation or NULL.
+ * @returns the xmlXPathObjectPtr resulting from the evaluation or NULL.
  *         the caller has to free the object.
  */
 xmlXPathObjectPtr

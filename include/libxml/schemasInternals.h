@@ -1,13 +1,16 @@
-/*
- * Summary: internal interfaces for XML Schemas
- * Description: internal interfaces for the XML Schemas handling
+/**
+ * @file
+ * 
+ * @brief internal interfaces for XML Schemas
+ * 
+ * internal interfaces for the XML Schemas handling
  *              and schema validity checking
  *		The Schemas development is a Work In Progress.
  *              Some of those interfaces are not guaranteed to be API or ABI stable !
  *
- * Copy: See Copyright for the status of this software.
+ * @copyright See Copyright for the status of this software.
  *
- * Author: Daniel Veillard
+ * @author Daniel Veillard
  */
 
 
@@ -143,7 +146,7 @@ typedef xmlSchemaType *xmlSchemaTypePtr;
 typedef struct _xmlSchemaFacet xmlSchemaFacet;
 typedef xmlSchemaFacet *xmlSchemaFacetPtr;
 
-/**
+/*
  * Annotation
  */
 typedef struct _xmlSchemaAnnot xmlSchemaAnnot;
@@ -239,8 +242,7 @@ struct _xmlSchemaAnnot {
  */
 #define XML_SCHEMAS_ATTR_FIXED        1 << 9
 
-/**
- * xmlSchemaAttribute:
+/*
  * An attribute definition.
  */
 
@@ -269,8 +271,7 @@ struct _xmlSchemaAttribute {
     xmlSchemaAttributePtr refDecl; /* Deprecated; not used */
 };
 
-/**
- * xmlSchemaAttributeLink:
+/*
  * Used to build a list of attribute uses on complexType definitions.
  * WARNING: Deprecated; not used.
  */
@@ -288,8 +289,7 @@ struct _xmlSchemaAttributeLink {
  */
 #define XML_SCHEMAS_WILDCARD_COMPLETE 1 << 0
 
-/**
- * xmlSchemaCharValueLink:
+/*
  * Used to build a list of namespaces on wildcards.
  */
 typedef struct _xmlSchemaWildcardNs xmlSchemaWildcardNs;
@@ -299,7 +299,7 @@ struct _xmlSchemaWildcardNs {
     const xmlChar *value;/* the value */
 };
 
-/**
+/*
  * xmlSchemaWildcard.
  * A wildcard.
  */
@@ -351,7 +351,7 @@ struct _xmlSchemaWildcard {
  */
 #define XML_SCHEMAS_ATTRGROUP_HAS_REFS 1 << 4
 
-/**
+/*
  * An attribute group definition.
  *
  * xmlSchemaAttribute and xmlSchemaAttributeGroup start of structures
@@ -378,8 +378,7 @@ struct _xmlSchemaAttributeGroup {
     void *attrUses;
 };
 
-/**
- * xmlSchemaTypeLink:
+/*
  * Used to build a list of types (e.g. member types of
  * simpleType with variety "union").
  */
@@ -390,8 +389,7 @@ struct _xmlSchemaTypeLink {
     xmlSchemaTypePtr type;/* the linked type */
 };
 
-/**
- * xmlSchemaFacetLink:
+/*
  * Used to build a list of facets.
  */
 typedef struct _xmlSchemaFacetLink xmlSchemaFacetLink;
@@ -505,7 +503,7 @@ struct _xmlSchemaFacetLink {
  * XML_SCHEMAS_TYPE_BLOCK_DEFAULT:
  *
  * the complexType did not specify 'block' so use the default of the
- * <schema> item.
+ * `<schema>` item.
  */
 #define XML_SCHEMAS_TYPE_BLOCK_DEFAULT    1 << 17
 /**
@@ -588,14 +586,16 @@ struct _xmlSchemaFacetLink {
  * The type was redefined.
  */
 #define XML_SCHEMAS_TYPE_REDEFINED    1 << 30
+#if 0
 /**
  * XML_SCHEMAS_TYPE_REDEFINING:
  *
  * The type redefines an other type.
  */
-/* #define XML_SCHEMAS_TYPE_REDEFINING    1 << 31 */
+#define XML_SCHEMAS_TYPE_REDEFINING    1 << 31
+#endif
 
-/**
+/*
  * _xmlSchemaType:
  *
  * Schemas type definition.
@@ -636,7 +636,6 @@ struct _xmlSchemaType {
 };
 
 /*
- * xmlSchemaElement:
  * An element definition.
  *
  * xmlSchemaType, xmlSchemaFacet and xmlSchemaElement start of
@@ -818,7 +817,7 @@ struct _xmlSchemaElement {
  * collapse the types of the facet
  */
 #define XML_SCHEMAS_FACET_COLLAPSE        3
-/**
+/*
  * A facet definition.
  */
 struct _xmlSchemaFacet {
@@ -834,7 +833,7 @@ struct _xmlSchemaFacet {
     xmlRegexpPtr    regexp; /* The regex for patterns */
 };
 
-/**
+/*
  * A notation definition.
  */
 typedef struct _xmlSchemaNotation xmlSchemaNotation;
@@ -916,7 +915,7 @@ struct _xmlSchemaNotation {
  * no target namespace.
  */
 #define XML_SCHEMAS_INCLUDING_CONVERT_NS            1 << 9
-/**
+/*
  * _xmlSchema:
  *
  * A Schemas definition

@@ -4,7 +4,7 @@
  *
  * See Copyright for the status of this software.
  *
- * daniel@veillard.com
+ * Author: Daniel Veillard
  */
 
 #define IN_LIBXML
@@ -45,9 +45,7 @@ xmlValidateAttributeValueInternal(xmlDocPtr doc, xmlAttributeType type,
  ************************************************************************/
 
 /**
- * xmlVErrMemory:
- * @ctxt:  an XML validation parser context
- * @extra:  extra information
+ * @param ctxt  an XML validation parser context
  *
  * Handle an out of memory error
  */
@@ -105,10 +103,10 @@ xmlDoErrValid(xmlValidCtxtPtr ctxt, xmlNodePtr node,
 }
 
 /**
- * xmlErrValid:
- * @ctxt:  an XML validation parser context
- * @error:  the error number
- * @extra:  extra information
+ * @param ctxt  an XML validation parser context
+ * @param error  the error number
+ * @param msg  the error message
+ * @param extra  extra information
  *
  * Handle a validation error
  */
@@ -122,13 +120,13 @@ xmlErrValid(xmlValidCtxtPtr ctxt, xmlParserErrors error,
 
 #ifdef LIBXML_VALID_ENABLED
 /**
- * xmlErrValidNode:
- * @ctxt:  an XML validation parser context
- * @node:  the node raising the error
- * @error:  the error number
- * @str1:  extra information
- * @str2:  extra information
- * @str3:  extra information
+ * @param ctxt  an XML validation parser context
+ * @param node  the node raising the error
+ * @param error  the error number
+ * @param msg  the error message
+ * @param str1  extra information
+ * @param str2  extra information
+ * @param str3  extra information
  *
  * Handle a validation error, provide contextual information
  */
@@ -143,13 +141,13 @@ xmlErrValidNode(xmlValidCtxtPtr ctxt,
 }
 
 /**
- * xmlErrValidNodeNr:
- * @ctxt:  an XML validation parser context
- * @node:  the node raising the error
- * @error:  the error number
- * @str1:  extra information
- * @int2:  extra information
- * @str3:  extra information
+ * @param ctxt  an XML validation parser context
+ * @param node  the node raising the error
+ * @param error  the error number
+ * @param msg  the error message
+ * @param str1  extra information
+ * @param int2  extra information
+ * @param str3  extra information
  *
  * Handle a validation error, provide contextual information
  */
@@ -164,13 +162,13 @@ xmlErrValidNodeNr(xmlValidCtxtPtr ctxt,
 }
 
 /**
- * xmlErrValidWarning:
- * @ctxt:  an XML validation parser context
- * @node:  the node raising the error
- * @error:  the error number
- * @str1:  extra information
- * @str2:  extra information
- * @str3:  extra information
+ * @param ctxt  an XML validation parser context
+ * @param node  the node raising the error
+ * @param error  the error number
+ * @param msg  the error message
+ * @param str1  extra information
+ * @param str2  extra information
+ * @param str3  extra information
  *
  * Handle a validation error, provide contextual information
  */
@@ -419,14 +417,13 @@ nodeVPop(xmlValidCtxtPtr ctxt)
  ************************************************************************/
 
 /**
- * xmlValidBuildAContentModel:
- * @content:  the content model
- * @ctxt:  the schema parser context
- * @name:  the element name whose content is being built
+ * @param content  the content model
+ * @param ctxt  the schema parser context
+ * @param name  the element name whose content is being built
  *
  * Generate the automata sequence needed for that type
  *
- * Returns 1 if successful or 0 in case of error.
+ * @returns 1 if successful or 0 in case of error.
  */
 static int
 xmlValidBuildAContentModel(xmlElementContentPtr content,
@@ -577,16 +574,15 @@ xmlValidBuildAContentModel(xmlElementContentPtr content,
     return(1);
 }
 /**
- * xmlValidBuildContentModel:
- * @ctxt:  a validation context
- * @elem:  an element declaration node
+ * @param ctxt  a validation context
+ * @param elem  an element declaration node
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * (Re)Build the automata associated to the content model of this
  * element
  *
- * Returns 1 in case of success, 0 in case of error
+ * @returns 1 in case of success, 0 in case of error
  */
 int
 xmlValidBuildContentModel(xmlValidCtxtPtr ctxt, xmlElementPtr elem) {
@@ -651,11 +647,9 @@ done:
  ****************************************************************/
 
 /**
- * xmlNewValidCtxt:
- *
  * Allocate a validation context structure.
  *
- * Returns NULL if not, otherwise the new validation context structure
+ * @returns NULL if not, otherwise the new validation context structure
  */
 xmlValidCtxtPtr xmlNewValidCtxt(void) {
     xmlValidCtxtPtr ret;
@@ -670,8 +664,7 @@ xmlValidCtxtPtr xmlNewValidCtxt(void) {
 }
 
 /**
- * xmlFreeValidCtxt:
- * @cur:  the validation context to free
+ * @param cur  the validation context to free
  *
  * Free a validation context structure.
  */
@@ -689,16 +682,15 @@ xmlFreeValidCtxt(xmlValidCtxtPtr cur) {
 #endif /* LIBXML_VALID_ENABLED */
 
 /**
- * xmlNewDocElementContent:
- * @doc:  the document
- * @name:  the subelement name or NULL
- * @type:  the type of element content decl
+ * @param doc  the document
+ * @param name  the subelement name or NULL
+ * @param type  the type of element content decl
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Allocate an element content structure for the document.
  *
- * Returns NULL if not, otherwise the new element content structure
+ * @returns NULL if not, otherwise the new element content structure
  */
 xmlElementContentPtr
 xmlNewDocElementContent(xmlDocPtr doc, const xmlChar *name,
@@ -770,16 +762,15 @@ error:
 }
 
 /**
- * xmlNewElementContent:
- * @name:  the subelement name or NULL
- * @type:  the type of element content decl
+ * @param name  the subelement name or NULL
+ * @param type  the type of element content decl
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Allocate an element content structure.
  * Deprecated in favor of xmlNewDocElementContent
  *
- * Returns NULL if not, otherwise the new element content structure
+ * @returns NULL if not, otherwise the new element content structure
  */
 xmlElementContentPtr
 xmlNewElementContent(const xmlChar *name, xmlElementContentType type) {
@@ -787,15 +778,14 @@ xmlNewElementContent(const xmlChar *name, xmlElementContentType type) {
 }
 
 /**
- * xmlCopyDocElementContent:
- * @doc:  the document owning the element declaration
- * @cur:  An element content pointer.
+ * @param doc  the document owning the element declaration
+ * @param cur  An element content pointer.
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Build a copy of an element content description.
  *
- * Returns the new xmlElementContentPtr or NULL in case of error.
+ * @returns the new xmlElementContentPtr or NULL in case of error.
  */
 xmlElementContentPtr
 xmlCopyDocElementContent(xmlDocPtr doc, xmlElementContentPtr cur) {
@@ -883,15 +873,14 @@ error:
 }
 
 /**
- * xmlCopyElementContent:
- * @cur:  An element content pointer.
+ * @param cur  An element content pointer.
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Build a copy of an element content description.
  * Deprecated, use xmlCopyDocElementContent instead
  *
- * Returns the new xmlElementContentPtr or NULL in case of error.
+ * @returns the new xmlElementContentPtr or NULL in case of error.
  */
 xmlElementContentPtr
 xmlCopyElementContent(xmlElementContentPtr cur) {
@@ -899,11 +888,10 @@ xmlCopyElementContent(xmlElementContentPtr cur) {
 }
 
 /**
- * xmlFreeDocElementContent:
- * @doc: the document owning the element declaration
- * @cur:  the element content tree to free
+ * @param doc  the document owning the element declaration
+ * @param cur  the element content tree to free
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Free an element content structure. The whole subtree is removed.
  */
@@ -967,10 +955,9 @@ xmlFreeDocElementContent(xmlDocPtr doc, xmlElementContentPtr cur) {
 }
 
 /**
- * xmlFreeElementContent:
- * @cur:  the element content tree to free
+ * @param cur  the element content tree to free
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Free an element content structure. The whole subtree is removed.
  * Deprecated, use xmlFreeDocElementContent instead
@@ -982,12 +969,11 @@ xmlFreeElementContent(xmlElementContentPtr cur) {
 
 #ifdef LIBXML_OUTPUT_ENABLED
 /**
- * xmlSprintfElementContent:
- * @buf:  an output buffer
- * @content:  An element table
- * @englob: 1 if one must print the englobing parenthesis, 0 otherwise
+ * @param buf  an output buffer
+ * @param content  An element table
+ * @param englob  1 if one must print the englobing parenthesis, 0 otherwise
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Deprecated, unsafe, use xmlSnprintfElementContent
  */
@@ -999,13 +985,12 @@ xmlSprintfElementContent(char *buf ATTRIBUTE_UNUSED,
 #endif /* LIBXML_OUTPUT_ENABLED */
 
 /**
- * xmlSnprintfElementContent:
- * @buf:  an output buffer
- * @size:  the buffer size
- * @content:  An element table
- * @englob: 1 if one must print the englobing parenthesis, 0 otherwise
+ * @param buf  an output buffer
+ * @param size  the buffer size
+ * @param content  An element table
+ * @param englob  1 if one must print the englobing parenthesis, 0 otherwise
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * This will dump the content of the element content definition
  * Intended just for the debug routine
@@ -1109,8 +1094,7 @@ xmlSnprintfElementContent(char *buf, int size, xmlElementContentPtr content, int
  ****************************************************************/
 
 /**
- * xmlFreeElement:
- * @elem:  An element
+ * @param elem  An element
  *
  * Deallocate the memory used by an element definition
  */
@@ -1132,18 +1116,17 @@ xmlFreeElement(xmlElementPtr elem) {
 
 
 /**
- * xmlAddElementDecl:
- * @ctxt:  the validation context
- * @dtd:  pointer to the DTD
- * @name:  the entity name
- * @type:  the element type
- * @content:  the element content tree or NULL
+ * @param ctxt  the validation context
+ * @param dtd  pointer to the DTD
+ * @param name  the entity name
+ * @param type  the element type
+ * @param content  the element content tree or NULL
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Register a new element declaration
  *
- * Returns NULL if not, otherwise the entity
+ * @returns NULL if not, otherwise the entity
  */
 xmlElementPtr
 xmlAddElementDecl(xmlValidCtxtPtr ctxt,
@@ -1347,10 +1330,9 @@ xmlFreeElementTableEntry(void *elem, const xmlChar *name ATTRIBUTE_UNUSED) {
 }
 
 /**
- * xmlFreeElementTable:
- * @table:  An element table
+ * @param table  An element table
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Deallocate the memory used by an element hash table.
  */
@@ -1360,12 +1342,12 @@ xmlFreeElementTable(xmlElementTablePtr table) {
 }
 
 /**
- * xmlCopyElement:
- * @elem:  An element
+ * @param payload  an element
+ * @param name  unused
  *
  * Build a copy of an element.
  *
- * Returns the new xmlElementPtr or NULL in case of error.
+ * @returns the new xmlElementPtr or NULL in case of error.
  */
 static void *
 xmlCopyElement(void *payload, const xmlChar *name ATTRIBUTE_UNUSED) {
@@ -1403,14 +1385,13 @@ error:
 }
 
 /**
- * xmlCopyElementTable:
- * @table:  An element table
+ * @param table  An element table
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Build a copy of an element table.
  *
- * Returns the new xmlElementTablePtr or NULL in case of error.
+ * @returns the new xmlElementTablePtr or NULL in case of error.
  */
 xmlElementTablePtr
 xmlCopyElementTable(xmlElementTablePtr table) {
@@ -1419,11 +1400,10 @@ xmlCopyElementTable(xmlElementTablePtr table) {
 
 #ifdef LIBXML_OUTPUT_ENABLED
 /**
- * xmlDumpElementDecl:
- * @buf:  the XML buffer output
- * @elem:  An element table
+ * @param buf  the XML buffer output
+ * @param elem  An element table
  *
- * DEPRECATED: Use xmlSaveTree.
+ * @deprecated Use xmlSaveTree.
  *
  * This will dump the content of the element declaration as an XML
  * DTD definition
@@ -1442,9 +1422,9 @@ xmlDumpElementDecl(xmlBufferPtr buf, xmlElementPtr elem) {
 }
 
 /**
- * xmlDumpElementDeclScan:
- * @elem:  An element table
- * @buf:  the XML buffer output
+ * @param elem  an element declaration
+ * @param save  a save context
+ * @param name  unused
  *
  * This routine is used by the hash scan function.  It just reverses
  * the arguments.
@@ -1456,11 +1436,10 @@ xmlDumpElementDeclScan(void *elem, void *save,
 }
 
 /**
- * xmlDumpElementTable:
- * @buf:  the XML buffer output
- * @table:  An element table
+ * @param buf  the XML buffer output
+ * @param table  An element table
  *
- * DEPRECATED: Don't use.
+ * @deprecated Don't use.
  *
  * This will dump the content of the element table as an XML DTD definition
  */
@@ -1479,14 +1458,13 @@ xmlDumpElementTable(xmlBufferPtr buf, xmlElementTablePtr table) {
 #endif /* LIBXML_OUTPUT_ENABLED */
 
 /**
- * xmlCreateEnumeration:
- * @name:  the enumeration name or NULL
+ * @param name  the enumeration name or NULL
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * create and initialize an enumeration attribute node.
  *
- * Returns the xmlEnumerationPtr just created or NULL in case
+ * @returns the xmlEnumerationPtr just created or NULL in case
  *                of error.
  */
 xmlEnumerationPtr
@@ -1510,8 +1488,7 @@ xmlCreateEnumeration(const xmlChar *name) {
 }
 
 /**
- * xmlFreeEnumeration:
- * @cur:  the tree to free.
+ * @param cur  the tree to free.
  *
  * free an enumeration attribute node (recursive).
  */
@@ -1528,14 +1505,13 @@ xmlFreeEnumeration(xmlEnumerationPtr cur) {
 }
 
 /**
- * xmlCopyEnumeration:
- * @cur:  the tree to copy.
+ * @param cur  the tree to copy.
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Copy an enumeration attribute node (recursive).
  *
- * Returns the xmlEnumerationPtr just created or NULL in case
+ * @returns the xmlEnumerationPtr just created or NULL in case
  *                of error.
  */
 xmlEnumerationPtr
@@ -1566,15 +1542,14 @@ xmlCopyEnumeration(xmlEnumerationPtr cur) {
 
 #ifdef LIBXML_VALID_ENABLED
 /**
- * xmlScanIDAttributeDecl:
- * @ctxt:  the validation context
- * @elem:  the element name
- * @err: whether to raise errors here
+ * @param ctxt  the validation context
+ * @param elem  the element name
+ * @param err  whether to raise errors here
  *
  * Verify that the element don't have too many ID attributes
  * declared.
  *
- * Returns the number of ID attributes found.
+ * @returns the number of ID attributes found.
  */
 static int
 xmlScanIDAttributeDecl(xmlValidCtxtPtr ctxt, xmlElementPtr elem, int err) {
@@ -1598,8 +1573,7 @@ xmlScanIDAttributeDecl(xmlValidCtxtPtr ctxt, xmlElementPtr elem, int err) {
 #endif /* LIBXML_VALID_ENABLED */
 
 /**
- * xmlFreeAttribute:
- * @elem:  An attribute
+ * @param attr  an attribute
  *
  * Deallocate the memory used by an attribute definition
  */
@@ -1640,23 +1614,22 @@ xmlFreeAttribute(xmlAttributePtr attr) {
 
 
 /**
- * xmlAddAttributeDecl:
- * @ctxt:  the validation context
- * @dtd:  pointer to the DTD
- * @elem:  the element name
- * @name:  the attribute name
- * @ns:  the attribute namespace prefix
- * @type:  the attribute type
- * @def:  the attribute default type
- * @defaultValue:  the attribute default value
- * @tree:  if it's an enumeration, the associated list
+ * @param ctxt  the validation context
+ * @param dtd  pointer to the DTD
+ * @param elem  the element name
+ * @param name  the attribute name
+ * @param ns  the attribute namespace prefix
+ * @param type  the attribute type
+ * @param def  the attribute default type
+ * @param defaultValue  the attribute default value
+ * @param tree  if it's an enumeration, the associated list
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Register a new attribute declaration
- * Note that @tree becomes the ownership of the DTD
+ * Note that `tree` becomes the ownership of the DTD
  *
- * Returns NULL if not new, otherwise the attribute decl
+ * @returns NULL if not new, otherwise the attribute decl
  */
 xmlAttributePtr
 xmlAddAttributeDecl(xmlValidCtxtPtr ctxt,
@@ -1892,10 +1865,9 @@ xmlFreeAttributeTableEntry(void *attr, const xmlChar *name ATTRIBUTE_UNUSED) {
 }
 
 /**
- * xmlFreeAttributeTable:
- * @table:  An attribute table
+ * @param table  An attribute table
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Deallocate the memory used by an entities hash table.
  */
@@ -1905,12 +1877,12 @@ xmlFreeAttributeTable(xmlAttributeTablePtr table) {
 }
 
 /**
- * xmlCopyAttribute:
- * @attr:  An attribute
+ * @param payload  an attribute declaration
+ * @param name  unused
  *
- * Build a copy of an attribute.
+ * Build a copy of an attribute declaration.
  *
- * Returns the new xmlAttributePtr or NULL in case of error.
+ * @returns the new xmlAttributePtr or NULL in case of error.
  */
 static void *
 xmlCopyAttribute(void *payload, const xmlChar *name ATTRIBUTE_UNUSED) {
@@ -1957,14 +1929,13 @@ error:
 }
 
 /**
- * xmlCopyAttributeTable:
- * @table:  An attribute table
+ * @param table  An attribute table
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Build a copy of an attribute table.
  *
- * Returns the new xmlAttributeTablePtr or NULL in case of error.
+ * @returns the new xmlAttributeTablePtr or NULL in case of error.
  */
 xmlAttributeTablePtr
 xmlCopyAttributeTable(xmlAttributeTablePtr table) {
@@ -1974,11 +1945,10 @@ xmlCopyAttributeTable(xmlAttributeTablePtr table) {
 
 #ifdef LIBXML_OUTPUT_ENABLED
 /**
- * xmlDumpAttributeDecl:
- * @buf:  the XML buffer output
- * @attr:  An attribute declaration
+ * @param buf  the XML buffer output
+ * @param attr  An attribute declaration
  *
- * DEPRECATED: Use xmlSaveTree.
+ * @deprecated Use xmlSaveTree.
  *
  * This will dump the content of the attribute declaration as an XML
  * DTD definition
@@ -1997,9 +1967,9 @@ xmlDumpAttributeDecl(xmlBufferPtr buf, xmlAttributePtr attr) {
 }
 
 /**
- * xmlDumpAttributeDeclScan:
- * @attr:  An attribute declaration
- * @buf:  the XML buffer output
+ * @param attr  an attribute declaration
+ * @param save  a save context
+ * @param name  unused
  *
  * This is used with the hash scan function - just reverses arguments
  */
@@ -2010,11 +1980,10 @@ xmlDumpAttributeDeclScan(void *attr, void *save,
 }
 
 /**
- * xmlDumpAttributeTable:
- * @buf:  the XML buffer output
- * @table:  An attribute table
+ * @param buf  the XML buffer output
+ * @param table  An attribute table
  *
- * DEPRECATED: Don't use.
+ * @deprecated Don't use.
  *
  * This will dump the content of the attribute table as an XML DTD definition
  */
@@ -2038,8 +2007,7 @@ xmlDumpAttributeTable(xmlBufferPtr buf, xmlAttributeTablePtr table) {
  *									*
  ************************************************************************/
 /**
- * xmlFreeNotation:
- * @not:  A notation
+ * @param nota  A notation
  *
  * Deallocate the memory used by an notation definition
  */
@@ -2057,18 +2025,17 @@ xmlFreeNotation(xmlNotationPtr nota) {
 
 
 /**
- * xmlAddNotationDecl:
- * @dtd:  pointer to the DTD
- * @ctxt:  the validation context
- * @name:  the entity name
- * @PublicID:  the public identifier or NULL
- * @SystemID:  the system identifier or NULL
+ * @param dtd  pointer to the DTD
+ * @param ctxt  the validation context
+ * @param name  the entity name
+ * @param PublicID  the public identifier or NULL
+ * @param SystemID  the system identifier or NULL
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Register a new notation declaration
  *
- * Returns NULL if not, otherwise the entity
+ * @returns NULL if not, otherwise the entity
  */
 xmlNotationPtr
 xmlAddNotationDecl(xmlValidCtxtPtr ctxt, xmlDtdPtr dtd,
@@ -2154,10 +2121,9 @@ xmlFreeNotationTableEntry(void *nota, const xmlChar *name ATTRIBUTE_UNUSED) {
 }
 
 /**
- * xmlFreeNotationTable:
- * @table:  An notation table
+ * @param table  An notation table
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Deallocate the memory used by an entities hash table.
  */
@@ -2167,12 +2133,12 @@ xmlFreeNotationTable(xmlNotationTablePtr table) {
 }
 
 /**
- * xmlCopyNotation:
- * @nota:  A notation
+ * @param payload  a notation
+ * @param name  unused
  *
  * Build a copy of a notation.
  *
- * Returns the new xmlNotationPtr or NULL in case of error.
+ * @returns the new xmlNotationPtr or NULL in case of error.
  */
 static void *
 xmlCopyNotation(void *payload, const xmlChar *name ATTRIBUTE_UNUSED) {
@@ -2206,14 +2172,13 @@ error:
 }
 
 /**
- * xmlCopyNotationTable:
- * @table:  A notation table
+ * @param table  A notation table
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Build a copy of a notation table.
  *
- * Returns the new xmlNotationTablePtr or NULL in case of error.
+ * @returns the new xmlNotationTablePtr or NULL in case of error.
  */
 xmlNotationTablePtr
 xmlCopyNotationTable(xmlNotationTablePtr table) {
@@ -2222,11 +2187,10 @@ xmlCopyNotationTable(xmlNotationTablePtr table) {
 
 #ifdef LIBXML_OUTPUT_ENABLED
 /**
- * xmlDumpNotationDecl:
- * @buf:  the XML buffer output
- * @nota:  A notation declaration
+ * @param buf  the XML buffer output
+ * @param nota  A notation declaration
  *
- * DEPRECATED: Don't use.
+ * @deprecated Don't use.
  *
  * This will dump the content the notation declaration as an XML DTD definition
  */
@@ -2244,11 +2208,10 @@ xmlDumpNotationDecl(xmlBufferPtr buf, xmlNotationPtr nota) {
 }
 
 /**
- * xmlDumpNotationTable:
- * @buf:  the XML buffer output
- * @table:  A notation table
+ * @param buf  the XML buffer output
+ * @param table  A notation table
  *
- * DEPRECATED: Don't use.
+ * @deprecated Don't use.
  *
  * This will dump the content of the notation table as an XML DTD definition
  */
@@ -2273,7 +2236,7 @@ xmlDumpNotationTable(xmlBufferPtr buf, xmlNotationTablePtr table) {
  ************************************************************************/
 /**
  * DICT_FREE:
- * @str:  a string
+ * @param str  a string
  *
  * Free a string if it is not owned by the "dict" dictionary in the
  * current scope
@@ -2296,8 +2259,7 @@ xmlIsStreaming(xmlValidCtxtPtr ctxt) {
 }
 
 /**
- * xmlFreeID:
- * @not:  A id
+ * @param id  an id
  *
  * Deallocate the memory used by an id definition
  */
@@ -2324,14 +2286,13 @@ xmlFreeID(xmlIDPtr id) {
 
 
 /**
- * xmlAddIDInternal:
- * @attr:  the attribute holding the ID
- * @value:  the attribute (ID) value
- * @idPtr:  pointer to resulting ID
+ * @param attr  the attribute holding the ID
+ * @param value  the attribute (ID) value
+ * @param idPtr  pointer to resulting ID
  *
  * Register a new id declaration
  *
- * Returns 1 on success, 0 if the ID already exists, -1 if a memory
+ * @returns 1 on success, 0 if the ID already exists, -1 if a memory
  * allocation fails.
  */
 static int
@@ -2402,15 +2363,14 @@ xmlAddIDInternal(xmlAttrPtr attr, const xmlChar *value, xmlIDPtr *idPtr) {
 }
 
 /**
- * xmlAddIDSafe:
- * @attr:  the attribute holding the ID
- * @value:  the attribute (ID) value
+ * @param attr  the attribute holding the ID
+ * @param value  the attribute (ID) value
  *
  * Register a new id declaration
  *
  * Available since 2.13.0.
  *
- * Returns 1 on success, 0 if the ID already exists, -1 if a memory
+ * @returns 1 on success, 0 if the ID already exists, -1 if a memory
  * allocation fails.
  */
 int
@@ -2419,15 +2379,14 @@ xmlAddIDSafe(xmlAttrPtr attr, const xmlChar *value) {
 }
 
 /**
- * xmlAddID:
- * @ctxt:  the validation context
- * @doc:  pointer to the document
- * @value:  the value name
- * @attr:  the attribute holding the ID
+ * @param ctxt  the validation context
+ * @param doc  pointer to the document
+ * @param value  the value name
+ * @param attr  the attribute holding the ID
  *
  * Register a new id declaration
  *
- * Returns NULL if not, otherwise the new xmlIDPtr
+ * @returns NULL if not, otherwise the new xmlIDPtr
  */
 xmlIDPtr
 xmlAddID(xmlValidCtxtPtr ctxt, xmlDocPtr doc, const xmlChar *value,
@@ -2463,8 +2422,7 @@ xmlFreeIDTableEntry(void *id, const xmlChar *name ATTRIBUTE_UNUSED) {
 }
 
 /**
- * xmlFreeIDTable:
- * @table:  An id table
+ * @param table  An id table
  *
  * Deallocate the memory used by an ID hash table.
  */
@@ -2474,17 +2432,16 @@ xmlFreeIDTable(xmlIDTablePtr table) {
 }
 
 /**
- * xmlIsID:
- * @doc:  the document
- * @elem:  the element carrying the attribute
- * @attr:  the attribute
+ * @param doc  the document
+ * @param elem  the element carrying the attribute
+ * @param attr  the attribute
  *
  * Determine whether an attribute is of type ID. In case we have DTD(s)
  * then this is done if DTD loading has been requested. In the case
  * of HTML documents parsed with the HTML parser, then ID detection is
  * done systematically.
  *
- * Returns 0 or 1 depending on the lookup result or -1 if a memory allocation
+ * @returns 0 or 1 depending on the lookup result or -1 if a memory allocation
  * failed.
  */
 int
@@ -2549,13 +2506,12 @@ xmlIsID(xmlDocPtr doc, xmlNodePtr elem, xmlAttrPtr attr) {
 }
 
 /**
- * xmlRemoveID:
- * @doc:  the document
- * @attr:  the attribute
+ * @param doc  the document
+ * @param attr  the attribute
  *
  * Remove the given attribute from the ID table maintained internally.
  *
- * Returns -1 if the lookup failed and 0 otherwise
+ * @returns -1 if the lookup failed and 0 otherwise
  */
 int
 xmlRemoveID(xmlDocPtr doc, xmlAttrPtr attr) {
@@ -2575,13 +2531,12 @@ xmlRemoveID(xmlDocPtr doc, xmlAttrPtr attr) {
 }
 
 /**
- * xmlGetID:
- * @doc:  pointer to the document
- * @ID:  the ID value
+ * @param doc  pointer to the document
+ * @param ID  the ID value
  *
  * Search the attribute declaring the given ID
  *
- * Returns NULL if not found, otherwise the xmlAttrPtr defining the ID
+ * @returns NULL if not found, otherwise the xmlAttrPtr defining the ID
  */
 xmlAttrPtr
 xmlGetID(xmlDocPtr doc, const xmlChar *ID) {
@@ -2635,8 +2590,7 @@ typedef struct xmlValidateMemo_t
 typedef xmlValidateMemo *xmlValidateMemoPtr;
 
 /**
- * xmlFreeRef:
- * @lk:  A list link
+ * @param lk  A list link
  *
  * Deallocate the memory used by a ref definition
  */
@@ -2652,8 +2606,8 @@ xmlFreeRef(xmlLinkPtr lk) {
 }
 
 /**
- * xmlFreeRefTableEntry:
- * @list_ref:  A list of references.
+ * @param payload  A list of references.
+ * @param name  unused
  *
  * Deallocate the memory used by a list of references
  */
@@ -2665,11 +2619,10 @@ xmlFreeRefTableEntry(void *payload, const xmlChar *name ATTRIBUTE_UNUSED) {
 }
 
 /**
- * xmlWalkRemoveRef:
- * @data:  Contents of current link
- * @user:  Value supplied by the user
+ * @param data  Contents of current link
+ * @param user  Value supplied by the user
  *
- * Returns 0 to abort the walk or 1 to continue
+ * @returns 0 to abort the walk or 1 to continue
  */
 static int
 xmlWalkRemoveRef(const void *data, void *user)
@@ -2687,8 +2640,8 @@ xmlWalkRemoveRef(const void *data, void *user)
 
 /**
  * xmlDummyCompare
- * @data0:  Value supplied by the user
- * @data1:  Value supplied by the user
+ * @param data0  Value supplied by the user
+ * @param data1  Value supplied by the user
  *
  * Do nothing, return 0. Used to create unordered lists.
  */
@@ -2700,17 +2653,16 @@ xmlDummyCompare(const void *data0 ATTRIBUTE_UNUSED,
 }
 
 /**
- * xmlAddRef:
- * @ctxt:  the validation context
- * @doc:  pointer to the document
- * @value:  the value name
- * @attr:  the attribute holding the Ref
+ * @param ctxt  the validation context
+ * @param doc  pointer to the document
+ * @param value  the value name
+ * @param attr  the attribute holding the Ref
  *
- * DEPRECATED, do not use. This function will be removed from the public API.
+ * @deprecated, do not use. This function will be removed from the public API.
  *
  * Register a new ref declaration
  *
- * Returns NULL if not, otherwise the new xmlRefPtr
+ * @returns NULL if not, otherwise the new xmlRefPtr
  */
 xmlRefPtr
 xmlAddRef(xmlValidCtxtPtr ctxt, xmlDocPtr doc, const xmlChar *value,
@@ -2801,10 +2753,9 @@ failed:
 }
 
 /**
- * xmlFreeRefTable:
- * @table:  An ref table
+ * @param table  An ref table
  *
- * DEPRECATED, do not use. This function will be removed from the public API.
+ * @deprecated, do not use. This function will be removed from the public API.
  *
  * Deallocate the memory used by an Ref hash table.
  */
@@ -2814,18 +2765,17 @@ xmlFreeRefTable(xmlRefTablePtr table) {
 }
 
 /**
- * xmlIsRef:
- * @doc:  the document
- * @elem:  the element carrying the attribute
- * @attr:  the attribute
+ * @param doc  the document
+ * @param elem  the element carrying the attribute
+ * @param attr  the attribute
  *
- * DEPRECATED, do not use. This function will be removed from the public API.
+ * @deprecated, do not use. This function will be removed from the public API.
  *
  * Determine whether an attribute is of type Ref. In case we have DTD(s)
  * then this is simple, otherwise we use an heuristic: name Ref (upper
  * or lowercase).
  *
- * Returns 0 or 1 depending on the lookup result
+ * @returns 0 or 1 depending on the lookup result
  */
 int
 xmlIsRef(xmlDocPtr doc, xmlNodePtr elem, xmlAttrPtr attr) {
@@ -2862,15 +2812,14 @@ xmlIsRef(xmlDocPtr doc, xmlNodePtr elem, xmlAttrPtr attr) {
 }
 
 /**
- * xmlRemoveRef:
- * @doc:  the document
- * @attr:  the attribute
+ * @param doc  the document
+ * @param attr  the attribute
  *
- * DEPRECATED, do not use. This function will be removed from the public API.
+ * @deprecated, do not use. This function will be removed from the public API.
  *
  * Remove the given attribute from the Ref table maintained internally.
  *
- * Returns -1 if the lookup failed and 0 otherwise
+ * @returns -1 if the lookup failed and 0 otherwise
  */
 int
 xmlRemoveRef(xmlDocPtr doc, xmlAttrPtr attr) {
@@ -2920,15 +2869,14 @@ xmlRemoveRef(xmlDocPtr doc, xmlAttrPtr attr) {
 }
 
 /**
- * xmlGetRefs:
- * @doc:  pointer to the document
- * @ID:  the ID value
+ * @param doc  pointer to the document
+ * @param ID  the ID value
  *
- * DEPRECATED, do not use. This function will be removed from the public API.
+ * @deprecated, do not use. This function will be removed from the public API.
  *
  * Find the set of references for the supplied ID.
  *
- * Returns NULL if not found, otherwise node set for the ID.
+ * @returns NULL if not found, otherwise node set for the ID.
  */
 xmlListPtr
 xmlGetRefs(xmlDocPtr doc, const xmlChar *ID) {
@@ -2956,15 +2904,14 @@ xmlGetRefs(xmlDocPtr doc, const xmlChar *ID) {
  ************************************************************************/
 
 /**
- * xmlGetDtdElementDesc:
- * @dtd:  a pointer to the DtD to search
- * @name:  the element name
+ * @param dtd  a pointer to the DtD to search
+ * @param name  the element name
  *
  * Search the DTD for the description of this element
  *
  * NOTE: A NULL return value can also mean that a memory allocation failed.
  *
- * returns the xmlElementPtr if found or NULL
+ * @returns the xmlElementPtr if found or NULL
  */
 
 xmlElementPtr
@@ -2992,14 +2939,13 @@ xmlGetDtdElementDesc(xmlDtdPtr dtd, const xmlChar *name) {
 }
 
 /**
- * xmlGetDtdElementDesc2:
- * @dtd:  a pointer to the DtD to search
- * @name:  the element name
- * @create:  create an empty description if not found
+ * @param ctxt  a validation context
+ * @param dtd  a pointer to the DtD to search
+ * @param name  the element name
  *
  * Search the DTD for the description of this element
  *
- * returns the xmlElementPtr if found or NULL
+ * @returns the xmlElementPtr if found or NULL
  */
 
 static xmlElementPtr
@@ -3064,14 +3010,13 @@ mem_error:
 }
 
 /**
- * xmlGetDtdQElementDesc:
- * @dtd:  a pointer to the DtD to search
- * @name:  the element name
- * @prefix:  the element namespace prefix
+ * @param dtd  a pointer to the DtD to search
+ * @param name  the element name
+ * @param prefix  the element namespace prefix
  *
  * Search the DTD for the description of this element
  *
- * returns the xmlElementPtr if found or NULL
+ * @returns the xmlElementPtr if found or NULL
  */
 
 xmlElementPtr
@@ -3087,15 +3032,14 @@ xmlGetDtdQElementDesc(xmlDtdPtr dtd, const xmlChar *name,
 }
 
 /**
- * xmlGetDtdAttrDesc:
- * @dtd:  a pointer to the DtD to search
- * @elem:  the element name
- * @name:  the attribute name
+ * @param dtd  a pointer to the DtD to search
+ * @param elem  the element name
+ * @param name  the attribute name
  *
  * Search the DTD for the description of this attribute on
  * this element.
  *
- * returns the xmlAttributePtr if found or NULL
+ * @returns the xmlAttributePtr if found or NULL
  */
 
 xmlAttributePtr
@@ -3123,16 +3067,15 @@ xmlGetDtdAttrDesc(xmlDtdPtr dtd, const xmlChar *elem, const xmlChar *name) {
 }
 
 /**
- * xmlGetDtdQAttrDesc:
- * @dtd:  a pointer to the DtD to search
- * @elem:  the element name
- * @name:  the attribute name
- * @prefix:  the attribute namespace prefix
+ * @param dtd  a pointer to the DtD to search
+ * @param elem  the element name
+ * @param name  the attribute name
+ * @param prefix  the attribute namespace prefix
  *
  * Search the DTD for the description of this qualified attribute on
  * this element.
  *
- * returns the xmlAttributePtr if found or NULL
+ * @returns the xmlAttributePtr if found or NULL
  */
 
 xmlAttributePtr
@@ -3148,13 +3091,12 @@ xmlGetDtdQAttrDesc(xmlDtdPtr dtd, const xmlChar *elem, const xmlChar *name,
 }
 
 /**
- * xmlGetDtdNotationDesc:
- * @dtd:  a pointer to the DtD to search
- * @name:  the notation name
+ * @param dtd  a pointer to the DtD to search
+ * @param name  the notation name
  *
  * Search the DTD for the description of this notation
  *
- * returns the xmlNotationPtr if found or NULL
+ * @returns the xmlNotationPtr if found or NULL
  */
 
 xmlNotationPtr
@@ -3170,17 +3112,16 @@ xmlGetDtdNotationDesc(xmlDtdPtr dtd, const xmlChar *name) {
 
 #ifdef LIBXML_VALID_ENABLED
 /**
- * xmlValidateNotationUse:
- * @ctxt:  the validation context
- * @doc:  the document
- * @notationName:  the notation name to check
+ * @param ctxt  the validation context
+ * @param doc  the document
+ * @param notationName  the notation name to check
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Validate that the given name match a notation declaration.
  * - [ VC: Notation Declared ]
  *
- * returns 1 if valid or 0 otherwise
+ * @returns 1 if valid or 0 otherwise
  */
 
 int
@@ -3205,14 +3146,13 @@ xmlValidateNotationUse(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
 #endif /* LIBXML_VALID_ENABLED */
 
 /**
- * xmlIsMixedElement:
- * @doc:  the document
- * @name:  the element name
+ * @param doc  the document
+ * @param name  the element name
  *
  * Search in the DtDs whether an element accept Mixed content (or ANY)
  * basically if it is supposed to accept text childs
  *
- * returns 0 if no, 1 if yes, and -1 if no element description is available
+ * @returns 0 if no, 1 if yes, and -1 if no element description is available
  */
 
 int
@@ -3245,8 +3185,7 @@ xmlIsMixedElement(xmlDocPtr doc, const xmlChar *name) {
 #ifdef LIBXML_VALID_ENABLED
 
 /**
- * xmlValidNormalizeString:
- * @str: a string
+ * @param str  a string
  *
  * Normalize a string in-place.
  */
@@ -3342,13 +3281,12 @@ xmlIsDocNameChar(xmlDocPtr doc, int c) {
 }
 
 /**
- * xmlValidateNameValue:
- * @doc:  pointer to the document or NULL
- * @value:  an Name value
+ * @param doc  pointer to the document or NULL
+ * @param value  an Name value
  *
  * Validate that the given value match Name production
  *
- * returns 1 if valid or 0 otherwise
+ * @returns 1 if valid or 0 otherwise
  */
 
 static int
@@ -3376,12 +3314,11 @@ xmlValidateNameValueInternal(xmlDocPtr doc, const xmlChar *value) {
 }
 
 /**
- * xmlValidateNameValue:
- * @value:  an Name value
+ * @param value  an Name value
  *
  * Validate that the given value match Name production
  *
- * returns 1 if valid or 0 otherwise
+ * @returns 1 if valid or 0 otherwise
  */
 
 int
@@ -3390,13 +3327,12 @@ xmlValidateNameValue(const xmlChar *value) {
 }
 
 /**
- * xmlValidateNamesValueInternal:
- * @doc:  pointer to the document or NULL
- * @value:  an Names value
+ * @param doc  pointer to the document or NULL
+ * @param value  an Names value
  *
  * Validate that the given value match Names production
  *
- * returns 1 if valid or 0 otherwise
+ * @returns 1 if valid or 0 otherwise
  */
 
 static int
@@ -3444,12 +3380,11 @@ xmlValidateNamesValueInternal(xmlDocPtr doc, const xmlChar *value) {
 }
 
 /**
- * xmlValidateNamesValue:
- * @value:  an Names value
+ * @param value  an Names value
  *
  * Validate that the given value match Names production
  *
- * returns 1 if valid or 0 otherwise
+ * @returns 1 if valid or 0 otherwise
  */
 
 int
@@ -3458,15 +3393,14 @@ xmlValidateNamesValue(const xmlChar *value) {
 }
 
 /**
- * xmlValidateNmtokenValueInternal:
- * @doc:  pointer to the document or NULL
- * @value:  an Nmtoken value
+ * @param doc  pointer to the document or NULL
+ * @param value  an Nmtoken value
  *
  * Validate that the given value match Nmtoken production
  *
  * [ VC: Name Token ]
  *
- * returns 1 if valid or 0 otherwise
+ * @returns 1 if valid or 0 otherwise
  */
 
 static int
@@ -3495,14 +3429,13 @@ xmlValidateNmtokenValueInternal(xmlDocPtr doc, const xmlChar *value) {
 }
 
 /**
- * xmlValidateNmtokenValue:
- * @value:  an Nmtoken value
+ * @param value  an Nmtoken value
  *
  * Validate that the given value match Nmtoken production
  *
  * [ VC: Name Token ]
  *
- * returns 1 if valid or 0 otherwise
+ * @returns 1 if valid or 0 otherwise
  */
 
 int
@@ -3511,15 +3444,14 @@ xmlValidateNmtokenValue(const xmlChar *value) {
 }
 
 /**
- * xmlValidateNmtokensValueInternal:
- * @doc:  pointer to the document or NULL
- * @value:  an Nmtokens value
+ * @param doc  pointer to the document or NULL
+ * @param value  an Nmtokens value
  *
  * Validate that the given value match Nmtokens production
  *
  * [ VC: Name Token ]
  *
- * returns 1 if valid or 0 otherwise
+ * @returns 1 if valid or 0 otherwise
  */
 
 static int
@@ -3571,14 +3503,13 @@ xmlValidateNmtokensValueInternal(xmlDocPtr doc, const xmlChar *value) {
 }
 
 /**
- * xmlValidateNmtokensValue:
- * @value:  an Nmtokens value
+ * @param value  an Nmtokens value
  *
  * Validate that the given value match Nmtokens production
  *
  * [ VC: Name Token ]
  *
- * returns 1 if valid or 0 otherwise
+ * @returns 1 if valid or 0 otherwise
  */
 
 int
@@ -3587,12 +3518,11 @@ xmlValidateNmtokensValue(const xmlChar *value) {
 }
 
 /**
- * xmlValidateNotationDecl:
- * @ctxt:  the validation context
- * @doc:  a document instance
- * @nota:  a notation definition
+ * @param ctxt  the validation context
+ * @param doc  a document instance
+ * @param nota  a notation definition
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Try to validate a single notation definition
  * basically it does the following checks as described by the
@@ -3600,7 +3530,7 @@ xmlValidateNmtokensValue(const xmlChar *value) {
  *  - it seems that no validity constraint exists on notation declarations
  * But this function get called anyway ...
  *
- * returns 1 if valid or 0 otherwise
+ * @returns 1 if valid or 0 otherwise
  */
 
 int
@@ -3612,14 +3542,13 @@ xmlValidateNotationDecl(xmlValidCtxtPtr ctxt ATTRIBUTE_UNUSED, xmlDocPtr doc ATT
 }
 
 /**
- * xmlValidateAttributeValueInternal:
- * @doc: the document
- * @type:  an attribute type
- * @value:  an attribute value
+ * @param doc  the document
+ * @param type  an attribute type
+ * @param value  an attribute value
  *
  * Validate that the given attribute value match  the proper production
  *
- * returns 1 if valid or 0 otherwise
+ * @returns 1 if valid or 0 otherwise
  */
 
 static int
@@ -3646,11 +3575,10 @@ xmlValidateAttributeValueInternal(xmlDocPtr doc, xmlAttributeType type,
 }
 
 /**
- * xmlValidateAttributeValue:
- * @type:  an attribute type
- * @value:  an attribute value
+ * @param type  an attribute type
+ * @param value  an attribute value
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Validate that the given attribute value match  the proper production
  *
@@ -3669,7 +3597,7 @@ xmlValidateAttributeValueInternal(xmlDocPtr doc, xmlAttributeType type,
  * Values of type NMTOKEN must match the Nmtoken production; values
  * of type NMTOKENS must match Nmtokens.
  *
- * returns 1 if valid or 0 otherwise
+ * @returns 1 if valid or 0 otherwise
  */
 int
 xmlValidateAttributeValue(xmlAttributeType type, const xmlChar *value) {
@@ -3677,12 +3605,11 @@ xmlValidateAttributeValue(xmlAttributeType type, const xmlChar *value) {
 }
 
 /**
- * xmlValidateAttributeValue2:
- * @ctxt:  the validation context
- * @doc:  the document
- * @name:  the attribute name (used for error reporting only)
- * @type:  the attribute type
- * @value:  the attribute value
+ * @param ctxt  the validation context
+ * @param doc  the document
+ * @param name  the attribute name (used for error reporting only)
+ * @param type  the attribute type
+ * @param value  the attribute value
  *
  * Validate that the given attribute value match a given type.
  * This typically cannot be done before having finished parsing
@@ -3702,7 +3629,7 @@ xmlValidateAttributeValue(xmlAttributeType type, const xmlChar *value) {
  * [ VC: Notation Attributes ]
  * all notation names in the declaration must be declared.
  *
- * returns 1 if valid or 0 otherwise
+ * @returns 1 if valid or 0 otherwise
  */
 
 static int
@@ -3800,28 +3727,26 @@ xmlValidateAttributeValue2(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
 }
 
 /**
- * xmlValidCtxtNormalizeAttributeValue:
- * @ctxt: the validation context
- * @doc:  the document
- * @elem:  the parent
- * @name:  the attribute name
- * @value:  the attribute value
- * @ctxt:  the validation context or NULL
+ * @param ctxt  the validation context
+ * @param doc  the document
+ * @param elem  the parent
+ * @param name  the attribute name
+ * @param value  the attribute value
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Does the validation related extra step of the normalization of attribute
  * values:
  *
  * If the declared value is not CDATA, then the XML processor must further
  * process the normalized attribute value by discarding any leading and
- * trailing space (#x20) characters, and by replacing sequences of space
- * (#x20) characters by single space (#x20) character.
+ * trailing space (\#x20) characters, and by replacing sequences of space
+ * (\#x20) characters by single space (\#x20) character.
  *
  * Also  check VC: Standalone Document Declaration in P32, and update
  *  ctxt->valid accordingly
  *
- * returns a new normalized string if normalization is needed, NULL otherwise
+ * @returns a new normalized string if normalization is needed, NULL otherwise
  *      the caller must free the returned value.
  */
 
@@ -3900,23 +3825,22 @@ done:
 }
 
 /**
- * xmlValidNormalizeAttributeValue:
- * @doc:  the document
- * @elem:  the parent
- * @name:  the attribute name
- * @value:  the attribute value
+ * @param doc  the document
+ * @param elem  the parent
+ * @param name  the attribute name
+ * @param value  the attribute value
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Does the validation related extra step of the normalization of attribute
  * values:
  *
  * If the declared value is not CDATA, then the XML processor must further
  * process the normalized attribute value by discarding any leading and
- * trailing space (#x20) characters, and by replacing sequences of space
- * (#x20) characters by single space (#x20) character.
+ * trailing space (\#x20) characters, and by replacing sequences of space
+ * (\#x20) characters by single space (\#x20) character.
  *
- * Returns a new normalized string if normalization is needed, NULL otherwise
+ * @returns a new normalized string if normalization is needed, NULL otherwise
  *      the caller must free the returned value.
  */
 
@@ -3966,12 +3890,11 @@ xmlValidateAttributeIdCallback(void *payload, void *data,
 }
 
 /**
- * xmlValidateAttributeDecl:
- * @ctxt:  the validation context
- * @doc:  a document instance
- * @attr:  an attribute definition
+ * @param ctxt  the validation context
+ * @param doc  a document instance
+ * @param attr  an attribute definition
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Try to validate a single attribute definition
  * basically it does the following checks as described by the
@@ -3982,7 +3905,7 @@ xmlValidateAttributeIdCallback(void *payload, void *data,
  *
  * The ID/IDREF uniqueness and matching are done separately
  *
- * returns 1 if valid or 0 otherwise
+ * @returns 1 if valid or 0 otherwise
  */
 
 int
@@ -4097,12 +4020,11 @@ xmlValidateAttributeDecl(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
 }
 
 /**
- * xmlValidateElementDecl:
- * @ctxt:  the validation context
- * @doc:  a document instance
- * @elem:  an element definition
+ * @param ctxt  the validation context
+ * @param doc  a document instance
+ * @param elem  an element definition
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Try to validate a single element definition
  * basically it does the following checks as described by the
@@ -4111,7 +4033,7 @@ xmlValidateAttributeDecl(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
  *  - [ VC: No Duplicate Types ]
  *  - [ VC: Unique Element Type Declaration ]
  *
- * returns 1 if valid or 0 otherwise
+ * @returns 1 if valid or 0 otherwise
  */
 
 int
@@ -4222,14 +4144,13 @@ xmlValidateElementDecl(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
 }
 
 /**
- * xmlValidateOneAttribute:
- * @ctxt:  the validation context
- * @doc:  a document instance
- * @elem:  an element instance
- * @attr:  an attribute instance
- * @value:  the attribute value (without entities processing)
+ * @param ctxt  the validation context
+ * @param doc  a document instance
+ * @param elem  an element instance
+ * @param attr  an attribute instance
+ * @param value  the attribute value (without entities processing)
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Try to validate a single attribute for an element
  * basically it does the following checks as described by the
@@ -4245,7 +4166,7 @@ xmlValidateElementDecl(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
  *
  * The ID/IDREF uniqueness and matching are done separately
  *
- * returns 1 if valid or 0 otherwise
+ * @returns 1 if valid or 0 otherwise
  */
 
 int
@@ -4392,15 +4313,14 @@ xmlValidateOneAttribute(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
 }
 
 /**
- * xmlValidateOneNamespace:
- * @ctxt:  the validation context
- * @doc:  a document instance
- * @elem:  an element instance
- * @prefix:  the namespace prefix
- * @ns:  an namespace declaration instance
- * @value:  the attribute value (without entities processing)
+ * @param ctxt  the validation context
+ * @param doc  a document instance
+ * @param elem  an element instance
+ * @param prefix  the namespace prefix
+ * @param ns  an namespace declaration instance
+ * @param value  the attribute value (without entities processing)
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Try to validate a single namespace declaration for an element
  * basically it does the following checks as described by the
@@ -4416,7 +4336,7 @@ xmlValidateOneAttribute(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
  *
  * The ID/IDREF uniqueness and matching are done separately
  *
- * returns 1 if valid or 0 otherwise
+ * @returns 1 if valid or 0 otherwise
  */
 
 int
@@ -4609,13 +4529,12 @@ xmlNodePtr elem, const xmlChar *prefix, xmlNsPtr ns, const xmlChar *value) {
 
 #ifndef  LIBXML_REGEXP_ENABLED
 /**
- * xmlValidateSkipIgnorable:
- * @ctxt:  the validation context
- * @child:  the child list
+ * @param ctxt  the validation context
+ * @param child  the child list
  *
  * Skip ignorable elements w.r.t. the validation process
  *
- * returns the first element to consider for validation of the content model
+ * @returns the first element to consider for validation of the content model
  */
 
 static xmlNodePtr
@@ -4644,12 +4563,11 @@ xmlValidateSkipIgnorable(xmlNodePtr child) {
 }
 
 /**
- * xmlValidateElementType:
- * @ctxt:  the validation context
+ * @param ctxt  the validation context
  *
  * Try to validate the content model of an element internal function
  *
- * returns 1 if valid or 0 ,-1 in case of error, -2 if an entity
+ * @returns 1 if valid or 0 ,-1 in case of error, -2 if an entity
  *           reference is found and -3 if the validation succeeded but
  *           the content model is not determinist.
  */
@@ -4972,11 +4890,10 @@ analyze:
 #endif
 
 /**
- * xmlSnprintfElements:
- * @buf:  an output buffer
- * @size:  the size of the buffer
- * @content:  An element
- * @glob: 1 if one must print the englobing parenthesis, 0 otherwise
+ * @param buf  an output buffer
+ * @param size  the size of the buffer
+ * @param node  an element
+ * @param glob  1 if one must print the englobing parenthesis, 0 otherwise
  *
  * This will dump the list of elements to the buffer
  * Intended just for the debug routine
@@ -5055,16 +4972,15 @@ xmlSnprintfElements(char *buf, int size, xmlNodePtr node, int glob) {
 }
 
 /**
- * xmlValidateElementContent:
- * @ctxt:  the validation context
- * @child:  the child list
- * @elemDecl:  pointer to the element declaration
- * @warn:  emit the error message
- * @parent: the parent element (for error reporting)
+ * @param ctxt  the validation context
+ * @param child  the child list
+ * @param elemDecl  pointer to the element declaration
+ * @param warn  emit the error message
+ * @param parent  the parent element (for error reporting)
  *
  * Try to validate the content model of an element
  *
- * returns 1 if valid or 0 if not and -1 in case of error
+ * @returns 1 if valid or 0 if not and -1 in case of error
  */
 
 static int
@@ -5363,14 +5279,13 @@ done:
 }
 
 /**
- * xmlValidateCdataElement:
- * @ctxt:  the validation context
- * @doc:  a document instance
- * @elem:  an element instance
+ * @param ctxt  the validation context
+ * @param doc  a document instance
+ * @param elem  an element instance
  *
- * Check that an element follows #CDATA
+ * Check that an element follows \#CDATA
  *
- * returns 1 if valid or 0 otherwise
+ * @returns 1 if valid or 0 otherwise
  */
 static int
 xmlValidateOneCdataElement(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
@@ -5434,14 +5349,13 @@ done:
 
 #ifdef LIBXML_REGEXP_ENABLED
 /**
- * xmlValidateCheckMixed:
- * @ctxt:  the validation context
- * @cont:  the mixed content model
- * @qname:  the qualified name as appearing in the serialization
+ * @param ctxt  the validation context
+ * @param cont  the mixed content model
+ * @param qname  the qualified name as appearing in the serialization
  *
  * Check if the given node is part of the content model.
  *
- * Returns 1 if yes, 0 if no, -1 in case of error
+ * @returns 1 if yes, 0 if no, -1 in case of error
  */
 static int
 xmlValidateCheckMixed(xmlValidCtxtPtr ctxt,
@@ -5501,16 +5415,15 @@ xmlValidateCheckMixed(xmlValidCtxtPtr ctxt,
 #endif /* LIBXML_REGEXP_ENABLED */
 
 /**
- * xmlValidGetElemDecl:
- * @ctxt:  the validation context
- * @doc:  a document instance
- * @elem:  an element instance
- * @extsubset:  pointer, (out) indicate if the declaration was found
+ * @param ctxt  the validation context
+ * @param doc  a document instance
+ * @param elem  an element instance
+ * @param extsubset  pointer, (out) indicate if the declaration was found
  *              in the external subset.
  *
  * Finds a declaration associated to an element in the document.
  *
- * returns the pointer to the declaration or NULL if not found.
+ * @returns the pointer to the declaration or NULL if not found.
  */
 static xmlElementPtr
 xmlValidGetElemDecl(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
@@ -5565,17 +5478,16 @@ xmlValidGetElemDecl(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
 
 #ifdef LIBXML_REGEXP_ENABLED
 /**
- * xmlValidatePushElement:
- * @ctxt:  the validation context
- * @doc:  a document instance
- * @elem:  an element instance
- * @qname:  the qualified name as appearing in the serialization
+ * @param ctxt  the validation context
+ * @param doc  a document instance
+ * @param elem  an element instance
+ * @param qname  the qualified name as appearing in the serialization
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Push a new element start on the validation stack.
  *
- * returns 1 if no validation problem was found or 0 otherwise
+ * @returns 1 if no validation problem was found or 0 otherwise
  */
 int
 xmlValidatePushElement(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
@@ -5665,16 +5577,15 @@ xmlValidatePushElement(xmlValidCtxtPtr ctxt, xmlDocPtr doc,
 }
 
 /**
- * xmlValidatePushCData:
- * @ctxt:  the validation context
- * @data:  some character data read
- * @len:  the length of the data
+ * @param ctxt  the validation context
+ * @param data  some character data read
+ * @param len  the length of the data
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * check the CData parsed for validation in the current stack
  *
- * returns 1 if no validation problem was found or 0 otherwise
+ * @returns 1 if no validation problem was found or 0 otherwise
  */
 int
 xmlValidatePushCData(xmlValidCtxtPtr ctxt, const xmlChar *data, int len) {
@@ -5738,17 +5649,16 @@ done:
 }
 
 /**
- * xmlValidatePopElement:
- * @ctxt:  the validation context
- * @doc:  a document instance
- * @elem:  an element instance
- * @qname:  the qualified name as appearing in the serialization
+ * @param ctxt  the validation context
+ * @param doc  a document instance
+ * @param elem  an element instance
+ * @param qname  the qualified name as appearing in the serialization
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Pop the element end from the validation stack.
  *
- * returns 1 if no validation problem was found or 0 otherwise
+ * @returns 1 if no validation problem was found or 0 otherwise
  */
 int
 xmlValidatePopElement(xmlValidCtxtPtr ctxt, xmlDocPtr doc ATTRIBUTE_UNUSED,
@@ -5798,12 +5708,11 @@ xmlValidatePopElement(xmlValidCtxtPtr ctxt, xmlDocPtr doc ATTRIBUTE_UNUSED,
 #endif /* LIBXML_REGEXP_ENABLED */
 
 /**
- * xmlValidateOneElement:
- * @ctxt:  the validation context
- * @doc:  a document instance
- * @elem:  an element instance
+ * @param ctxt  the validation context
+ * @param doc  a document instance
+ * @param elem  an element instance
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Try to validate a single element and it's attributes,
  * basically it does the following checks as described by the
@@ -5814,7 +5723,7 @@ xmlValidatePopElement(xmlValidCtxtPtr ctxt, xmlDocPtr doc ATTRIBUTE_UNUSED,
  *
  * The ID/IDREF checkings are done separately
  *
- * returns 1 if valid or 0 otherwise
+ * @returns 1 if valid or 0 otherwise
  */
 
 int
@@ -6129,11 +6038,10 @@ found:
 }
 
 /**
- * xmlValidateRoot:
- * @ctxt:  the validation context
- * @doc:  a document instance
+ * @param ctxt  the validation context
+ * @param doc  a document instance
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Try to validate a the root element
  * basically it does the following check as described by the
@@ -6141,7 +6049,7 @@ found:
  *  - [ VC: Root Element Type ]
  * it doesn't try to recurse or apply other check to the element
  *
- * returns 1 if valid or 0 otherwise
+ * @returns 1 if valid or 0 otherwise
  */
 
 int
@@ -6198,14 +6106,13 @@ name_ok:
 
 
 /**
- * xmlValidateElement:
- * @ctxt:  the validation context
- * @doc:  a document instance
- * @root:  an element instance
+ * @param ctxt  the validation context
+ * @param doc  a document instance
+ * @param root  an element instance
  *
  * Try to validate the subtree under an element
  *
- * returns 1 if valid or 0 otherwise
+ * @returns 1 if valid or 0 otherwise
  */
 
 int
@@ -6274,10 +6181,9 @@ done:
 }
 
 /**
- * xmlValidateRef:
- * @ref:   A reference to be validated
- * @ctxt:  Validation context
- * @name:  Name of ID we are searching for
+ * @param ref  A reference to be validated
+ * @param ctxt  Validation context
+ * @param name  Name of ID we are searching for
  *
  */
 static void
@@ -6358,11 +6264,10 @@ xmlValidateRef(xmlRefPtr ref, xmlValidCtxtPtr ctxt,
 }
 
 /**
- * xmlWalkValidateList:
- * @data:  Contents of current link
- * @user:  Value supplied by the user
+ * @param data  Contents of current link
+ * @param user  Value supplied by the user
  *
- * Returns 0 to abort the walk or 1 to continue
+ * @returns 0 to abort the walk or 1 to continue
  */
 static int
 xmlWalkValidateList(const void *data, void *user)
@@ -6373,11 +6278,9 @@ xmlWalkValidateList(const void *data, void *user)
 }
 
 /**
- * xmlValidateCheckRefCallback:
- * @ref_list:  List of references
- * @ctxt:  Validation context
- * @name:  Name of ID we are searching for
- *
+ * @param payload  list of references
+ * @param data  validation context
+ * @param name  name of ID we are searching for
  */
 static void
 xmlValidateCheckRefCallback(void *payload, void *data, const xmlChar *name) {
@@ -6395,11 +6298,10 @@ xmlValidateCheckRefCallback(void *payload, void *data, const xmlChar *name) {
 }
 
 /**
- * xmlValidateDocumentFinal:
- * @ctxt:  the validation context
- * @doc:  a document instance
+ * @param ctxt  the validation context
+ * @param doc  a document instance
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Does the final step for the document validation once all the
  * incremental validation steps have been completed
@@ -6408,7 +6310,7 @@ xmlValidateCheckRefCallback(void *payload, void *data, const xmlChar *name) {
  *
  * Check all the IDREF/IDREFS attributes definition for validity
  *
- * returns 1 if valid or 0 otherwise
+ * @returns 1 if valid or 0 otherwise
  */
 
 int
@@ -6456,10 +6358,9 @@ xmlValidateDocumentFinal(xmlValidCtxtPtr ctxt, xmlDocPtr doc) {
 }
 
 /**
- * xmlValidateDtd:
- * @ctxt:  the validation context
- * @doc:  a document instance
- * @dtd:  a dtd instance
+ * @param ctxt  the validation context
+ * @param doc  a document instance
+ * @param dtd  a dtd instance
  *
  * Try to validate the document against the dtd instance
  *
@@ -6468,7 +6369,7 @@ xmlValidateDocumentFinal(xmlValidCtxtPtr ctxt, xmlDocPtr doc) {
  * (i.e. not used), which could give problems if ID or IDREF
  * is present.
  *
- * returns 1 if valid or 0 otherwise
+ * @returns 1 if valid or 0 otherwise
  */
 
 int
@@ -6517,10 +6418,9 @@ xmlValidateDtd(xmlValidCtxtPtr ctxt, xmlDocPtr doc, xmlDtdPtr dtd) {
 }
 
 /**
- * xmlCtxtValidateDtd:
- * @ctxt:  a parser context
- * @doc:  a document instance
- * @dtd:  a dtd instance
+ * @param ctxt  a parser context
+ * @param doc  a document instance
+ * @param dtd  a dtd instance
  *
  * Validate a document against a DTD.
  *
@@ -6528,7 +6428,7 @@ xmlValidateDtd(xmlValidCtxtPtr ctxt, xmlDocPtr doc, xmlDtdPtr dtd) {
  *
  * Availabe since 2.14.0.
  *
- * Returns 1 if valid or 0 otherwise.
+ * @returns 1 if valid or 0 otherwise.
  */
 int
 xmlCtxtValidateDtd(xmlParserCtxtPtr ctxt, xmlDocPtr doc, xmlDtdPtr dtd) {
@@ -6649,11 +6549,10 @@ xmlValidateAttributeCallback(void *payload, void *data,
 }
 
 /**
- * xmlValidateDtdFinal:
- * @ctxt:  the validation context
- * @doc:  a document instance
+ * @param ctxt  the validation context
+ * @param doc  a document instance
  *
- * DEPRECATED: Internal function, don't use.
+ * @deprecated Internal function, don't use.
  *
  * Does the final step for the dtds validation once all the
  * subsets have been parsed
@@ -6664,7 +6563,7 @@ xmlValidateAttributeCallback(void *payload, void *data,
  * - check that NOTATION type attributes default or
  *   possible values matches one of the defined notations.
  *
- * returns 1 if valid or 0 if invalid and -1 if not well-formed
+ * @returns 1 if valid or 0 if invalid and -1 if not well-formed
  */
 
 int
@@ -6700,14 +6599,13 @@ xmlValidateDtdFinal(xmlValidCtxtPtr ctxt, xmlDocPtr doc) {
 }
 
 /**
- * xmlValidateDocumentInternal:
- * @ctxt:  parser context (optional)
- * @vctxt:  validation context (optional)
- * @doc:  document
+ * @param ctxt  parser context (optional)
+ * @param vctxt  validation context (optional)
+ * @param doc  document
  *
  * Validate a document.
  *
- * Returns 1 if valid or 0 otherwise
+ * @returns 1 if valid or 0 otherwise
  */
 static int
 xmlValidateDocumentInternal(xmlParserCtxtPtr ctxt, xmlValidCtxtPtr vctxt,
@@ -6794,11 +6692,10 @@ xmlValidateDocumentInternal(xmlParserCtxtPtr ctxt, xmlValidCtxtPtr vctxt,
 }
 
 /**
- * xmlValidateDocument:
- * @vctxt:  the validation context
- * @doc:  a document instance
+ * @param vctxt  the validation context
+ * @param doc  a document instance
  *
- * DEPRECATED: This function can't report malloc or other failures.
+ * @deprecated This function can't report malloc or other failures.
  * Use xmlCtxtValidateDocument.
  *
  * Try to validate the document instance
@@ -6807,7 +6704,7 @@ xmlValidateDocumentInternal(xmlParserCtxtPtr ctxt, xmlValidCtxtPtr vctxt,
  * i.e. validates the internal and external subset (if present)
  * and validate the document tree.
  *
- * returns 1 if valid or 0 otherwise
+ * @returns 1 if valid or 0 otherwise
  */
 int
 xmlValidateDocument(xmlValidCtxtPtr vctxt, xmlDocPtr doc) {
@@ -6815,9 +6712,8 @@ xmlValidateDocument(xmlValidCtxtPtr vctxt, xmlDocPtr doc) {
 }
 
 /**
- * xmlCtxtValidateDocument:
- * @ctxt:  a parser context
- * @doc:  a document instance
+ * @param ctxt  a parser context
+ * @param doc  a document instance
  *
  * Validate a document.
  *
@@ -6828,7 +6724,7 @@ xmlValidateDocument(xmlValidCtxtPtr vctxt, xmlDocPtr doc) {
  *
  * Availabe since 2.14.0.
  *
- * Returns 1 if valid or 0 otherwise.
+ * @returns 1 if valid or 0 otherwise.
  */
 int
 xmlCtxtValidateDocument(xmlParserCtxtPtr ctxt, xmlDocPtr doc) {
@@ -6847,15 +6743,14 @@ xmlCtxtValidateDocument(xmlParserCtxtPtr ctxt, xmlDocPtr doc) {
  ************************************************************************/
 
 /**
- * xmlValidGetPotentialChildren:
- * @ctree:  an element content tree
- * @names:  an array to store the list of child names
- * @len:  a pointer to the number of element in the list
- * @max:  the size of the array
+ * @param ctree  an element content tree
+ * @param names  an array to store the list of child names
+ * @param len  a pointer to the number of element in the list
+ * @param max  the size of the array
  *
  * Build/extend a list of  potential children allowed by the content tree
  *
- * returns the number of element in the list, or -1 in case of error.
+ * @returns the number of element in the list, or -1 in case of error.
  */
 
 int
@@ -6900,16 +6795,15 @@ static void xmlNoValidityErr(void *ctx ATTRIBUTE_UNUSED,
 }
 
 /**
- * xmlValidGetValidElements:
- * @prev:  an element to insert after
- * @next:  an element to insert next
- * @names:  an array to store the list of child names
- * @max:  the size of the array
+ * @param prev  an element to insert after
+ * @param next  an element to insert next
+ * @param names  an array to store the list of child names
+ * @param max  the size of the array
  *
  * This function returns the list of authorized children to insert
  * within an existing tree while respecting the validity constraints
- * forced by the Dtd. The insertion point is defined using @prev and
- * @next in the following ways:
+ * forced by the Dtd. The insertion point is defined using `prev` and
+ * `next` in the following ways:
  *  to insert before 'node': xmlValidGetValidElements(node->prev, node, ...
  *  to insert next 'node': xmlValidGetValidElements(node, node->next, ...
  *  to replace 'node': xmlValidGetValidElements(node->prev, node->next, ...
@@ -6919,8 +6813,8 @@ static void xmlNoValidityErr(void *ctx ATTRIBUTE_UNUSED,
  * pointers to the element names are inserted at the beginning of the array
  * and do not need to be freed.
  *
- * returns the number of element in the list, or -1 in case of error. If
- *    the function returns the value @max the caller is invited to grow the
+ * @returns the number of element in the list, or -1 in case of error. If
+ *    the function returns the value `max` the caller is invited to grow the
  *    receiving array and retry.
  */
 

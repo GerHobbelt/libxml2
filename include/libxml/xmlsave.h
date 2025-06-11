@@ -1,10 +1,13 @@
-/*
- * Summary: the XML document serializer
- * Description: API to save document or subtree of document
+/**
+ * @file
+ * 
+ * @brief the XML document serializer
+ * 
+ * API to save document or subtree of document
  *
- * Copy: See Copyright for the status of this software.
+ * @copyright See Copyright for the status of this software.
  *
- * Author: Daniel Veillard
+ * @author Daniel Veillard
  */
 
 #ifndef __XML_XMLSAVE_H__
@@ -21,24 +24,32 @@ extern "C" {
 #endif
 
 /**
- * xmlSaveOption:
- *
  * This is the set of XML save options that can be passed down
  * to the xmlSaveToFd() and similar calls.
  */
 typedef enum {
-    XML_SAVE_FORMAT     = 1<<0,	/* format save output */
-    XML_SAVE_NO_DECL    = 1<<1,	/* drop the xml declaration */
-    XML_SAVE_NO_EMPTY	= 1<<2, /* no empty tags */
-    XML_SAVE_NO_XHTML	= 1<<3, /* disable XHTML1 specific rules */
-    XML_SAVE_XHTML	= 1<<4, /* force XHTML1 specific rules */
-    XML_SAVE_AS_XML     = 1<<5, /* force XML serialization on HTML doc */
-    XML_SAVE_AS_HTML    = 1<<6, /* force HTML serialization on XML doc */
-    XML_SAVE_WSNONSIG   = 1<<7, /* format with non-significant whitespace */
-    /* Available since 2.14.0 */
-    XML_SAVE_EMPTY      = 1<<8, /* force empty tags, overriding global */
-    XML_SAVE_NO_INDENT  = 1<<9, /* disable indenting */
-    XML_SAVE_INDENT     = 1<<10 /* force indenting, overriding global */
+    /** format save output */
+    XML_SAVE_FORMAT     = 1<<0,
+    /** drop the xml declaration */
+    XML_SAVE_NO_DECL    = 1<<1,
+    /** no empty tags */
+    XML_SAVE_NO_EMPTY	= 1<<2,
+    /** disable XHTML1 specific rules */
+    XML_SAVE_NO_XHTML	= 1<<3,
+    /** force XHTML1 specific rules */
+    XML_SAVE_XHTML	= 1<<4,
+    /** force XML serialization on HTML doc */
+    XML_SAVE_AS_XML     = 1<<5,
+    /** force HTML serialization on XML doc */
+    XML_SAVE_AS_HTML    = 1<<6,
+    /** format with non-significant whitespace */
+    XML_SAVE_WSNONSIG   = 1<<7,
+    /** force empty tags, overriding global, available since 2.14 */
+    XML_SAVE_EMPTY      = 1<<8,
+    /** disable indenting, available since 2.14 */
+    XML_SAVE_NO_INDENT  = 1<<9,
+    /** force indenting, overriding global, available since 2.14 */
+    XML_SAVE_INDENT     = 1<<10
 } xmlSaveOption;
 
 

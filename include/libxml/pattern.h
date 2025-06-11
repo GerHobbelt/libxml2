@@ -1,11 +1,14 @@
-/*
- * Summary: pattern expression handling
- * Description: allows to compile and test pattern expressions for nodes
+/**
+ * @file
+ * 
+ * @brief pattern expression handling
+ * 
+ * allows to compile and test pattern expressions for nodes
  *              either in a tree or based on a parser state.
  *
- * Copy: See Copyright for the status of this software.
+ * @copyright See Copyright for the status of this software.
  *
- * Author: Daniel Veillard
+ * @author Daniel Veillard
  */
 
 #ifndef __XML_PATTERN_H__
@@ -22,19 +25,14 @@ extern "C" {
 #endif
 
 /**
- * xmlPattern:
- *
  * A compiled (XPath based) pattern to select nodes
  */
 typedef struct _xmlPattern xmlPattern;
 typedef xmlPattern *xmlPatternPtr;
 
-/**
- * xmlPatternFlags:
- *
- * This is the set of options affecting the behaviour of pattern
- * matching with this module
- *
+/*
+ * Internal type. This is the set of options affecting the behaviour
+ * of pattern matching with this module.
  */
 typedef enum {
     XML_PATTERN_DEFAULT		= 0,	/* simple pattern match */

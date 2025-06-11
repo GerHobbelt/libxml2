@@ -1,14 +1,15 @@
-/*
- * Summary: macros for marking symbols as exportable/importable.
- * Description: macros for marking symbols as exportable/importable.
+/**
+ * @file
+ * 
+ * @brief macros for marking symbols as exportable/importable.
+ * 
+ * macros for marking symbols as exportable/importable.
  *
- * Copy: See Copyright for the status of this software.
+ * @copyright See Copyright for the status of this software.
  */
 
 #ifndef __XML_EXPORTS_H__
 #define __XML_EXPORTS_H__
-
-/** DOC_DISABLE */
 
 /*
  * Symbol visibility

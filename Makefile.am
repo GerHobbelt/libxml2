@@ -2,7 +2,10 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = include . doc example xstc
+SUBDIRS = include . example xstc
+if WITH_DOXYGEN
+SUBDIRS += doc
+endif
 if WITH_PYTHON
 SUBDIRS += python
 endif
@@ -150,10 +153,8 @@ testdso_la_SOURCES = testdso.c
 testdso_la_LDFLAGS = $(AM_LDFLAGS) \
 		     -module -no-undefined -avoid-version -rpath $(libdir)
 
-# that one forces the rebuild when "make rebuild" is run on doc/
 rebuild_testapi:
-	-@(if [ "$(PYTHON)" != "" ] ; then \
-	    $(PYTHON) $(srcdir)/tools/gentest.py $(srcdir) ; fi )
+	cd $(srcdir) && python3 tools/gentest.py $(abs_builddir)
 
 testapi_SOURCES=testapi.c
 testapi_DEPENDENCIES = $(DEPS)
@@ -201,13 +202,13 @@ CLEANFILES = missing.lst runsuite.log runxmlconf.log test.out \
 EXTRA_DIST = Copyright libxml2-config.cmake.in autogen.sh \
 	     libxml.h \
 	     html5ent.inc iso8859x.inc \
-	     tools/gentest.py \
+	     tools/gentest.py tools/xmlmod.py \
 	     tools/genChRanges.py tools/genEscape.py tools/genUnicode.py \
 	     timsort.h \
 	     README.zOS README.md \
 	     CMakeLists.txt config.h.cmake.in libxml2-config.cmake.cmake.in \
-	     meson.build meson_options.txt xml2-config-meson
-
+	     meson.build meson_options.txt xml2-config-meson \
+	     Doxyfile
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libxml-2.0.pc
