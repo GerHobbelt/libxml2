@@ -48,7 +48,7 @@ static int lineNumbersDefaultValue = 1;
  * thread-local storage:
  *
  *     xmlError *__xmlLastError(void);
- *     \#define xmlError (*__xmlLastError());
+ *     #define xmlError (*__xmlLastError());
  *
  * The code can operate in a multitude of ways depending on the environment.
  * First we support POSIX and Windows threads. Then we support both
@@ -790,8 +790,7 @@ xmlGetLastErrorInternal(void) {
     return(&xmlGetThreadLocalStorage(0)->lastError);
 }
 
-/** @cond IGNORE */
-
+#ifdef USE_DLL_MAIN
 /**
  * Entry point for Windows library. It is being used to free thread-specific
  * storage.
@@ -801,7 +800,6 @@ xmlGetLastErrorInternal(void) {
  * @param lpvReserved  generic pointer (depends upon reason code)
  * @returns TRUE always
  */
-#ifdef USE_DLL_MAIN
 #if defined(LIBXML_STATIC_FOR_DLL)
 int
 xmlDllMain(ATTRIBUTE_UNUSED void *hinstDLL, unsigned long fdwReason,
@@ -858,6 +856,9 @@ DllMain(ATTRIBUTE_UNUSED HINSTANCE hinstDLL, DWORD fdwReason,
  * Set per-thread default value.
  *
  * @deprecated Call #xmlSetGenericErrorFunc in each thread.
+ *
+ * @param ctx  user data
+ * @param handler  error handler
  */
 void
 xmlThrDefSetGenericErrorFunc(void *ctx, xmlGenericErrorFunc handler) {
@@ -874,6 +875,9 @@ xmlThrDefSetGenericErrorFunc(void *ctx, xmlGenericErrorFunc handler) {
  * Set per-thread default value.
  *
  * @deprecated Call #xmlSetStructuredErrorFunc in each thread.
+ *
+ * @param ctx  user data
+ * @param handler  error handler
  */
 void
 xmlThrDefSetStructuredErrorFunc(void *ctx, xmlStructuredErrorFunc handler) {
@@ -887,6 +891,9 @@ xmlThrDefSetStructuredErrorFunc(void *ctx, xmlStructuredErrorFunc handler) {
  * Set per-thread default value.
  *
  * @deprecated Use xmlParserOption XML_PARSE_DTDVALID.
+ *
+ * @param v  new value
+ * @returns the old value
  */
 int xmlThrDefDoValidityCheckingDefaultValue(int v) {
     int ret;
@@ -901,6 +908,9 @@ int xmlThrDefDoValidityCheckingDefaultValue(int v) {
  * Set per-thread default value.
  *
  * @deprecated Use xmlParserOption XML_PARSE_NOWARNING.
+ *
+ * @param v  new value
+ * @returns the old value
  */
 int xmlThrDefGetWarningsDefaultValue(int v) {
     int ret;
@@ -917,6 +927,9 @@ int xmlThrDefGetWarningsDefaultValue(int v) {
  *
  * @deprecated Indenting is enabled by default. Use the xmlsave.h API
  * and xmlSaveOption XML_SAVE_NO_INDENT to disable indenting.
+ *
+ * @param v  new value
+ * @returns the old value
  */
 int xmlThrDefIndentTreeOutput(int v) {
     int ret;
@@ -931,6 +944,9 @@ int xmlThrDefIndentTreeOutput(int v) {
  * Set per-thread default value.
  *
  * @deprecated Use the xmlsave.h API and #xmlSaveSetIndentString.
+ *
+ * @param v  new value
+ * @returns the old value
  */
 const char * xmlThrDefTreeIndentString(const char * v) {
     const char * ret;
@@ -945,6 +961,9 @@ const char * xmlThrDefTreeIndentString(const char * v) {
  * Set per-thread default value.
  *
  * @deprecated Use the xmlsave.h API and xmlSaveOption XML_SAVE_NO_EMPTY.
+ *
+ * @param v  new value
+ * @returns the old value
  */
 int xmlThrDefSaveNoEmptyTags(int v) {
     int ret;
@@ -961,6 +980,9 @@ int xmlThrDefSaveNoEmptyTags(int v) {
  *
  * @deprecated Whitespace is kept by default. Use xmlParserOption
  * XML_PARSE_NOBLANKS to remove whitespace.
+ *
+ * @param v  new value
+ * @returns the old value
  */
 int xmlThrDefKeepBlanksDefaultValue(int v) {
     int ret;
@@ -975,6 +997,9 @@ int xmlThrDefKeepBlanksDefaultValue(int v) {
  * Set per-thread default value.
  *
  * @deprecated Has no effect.
+ *
+ * @param v  unused
+ * @returns 1
  */
 int xmlThrDefLineNumbersDefaultValue(int v ATTRIBUTE_UNUSED) {
     return 1;
@@ -984,6 +1009,9 @@ int xmlThrDefLineNumbersDefaultValue(int v ATTRIBUTE_UNUSED) {
  * Set per-thread default value.
  *
  * @deprecated Use xmlParserOption XML_PARSE_DTDLOAD.
+ *
+ * @param v  new value
+ * @returns the old value
  */
 int xmlThrDefLoadExtDtdDefaultValue(int v) {
     int ret;
@@ -998,6 +1026,9 @@ int xmlThrDefLoadExtDtdDefaultValue(int v) {
  * Set per-thread default value.
  *
  * @deprecated Use xmlParserOption XML_PARSE_PEDANTIC.
+ *
+ * @param v  new value
+ * @returns the old value
  */
 int xmlThrDefPedanticParserDefaultValue(int v) {
     int ret;
@@ -1012,6 +1043,9 @@ int xmlThrDefPedanticParserDefaultValue(int v) {
  * Set per-thread default value.
  *
  * @deprecated Use xmlParserOption XML_PARSE_NOENT.
+ *
+ * @param v  new value
+ * @returns the old value
  */
 int xmlThrDefSubstituteEntitiesDefaultValue(int v) {
     int ret;
@@ -1026,6 +1060,9 @@ int xmlThrDefSubstituteEntitiesDefaultValue(int v) {
  * Set per-thread default value.
  *
  * @deprecated This feature will be removed.
+ *
+ * @param func  new value
+ * @returns the old value
  */
 xmlRegisterNodeFunc
 xmlThrDefRegisterNodeDefault(xmlRegisterNodeFunc func)
@@ -1046,6 +1083,9 @@ xmlThrDefRegisterNodeDefault(xmlRegisterNodeFunc func)
  * Set per-thread default value.
  *
  * @deprecated This feature will be removed.
+ *
+ * @param func  new value
+ * @returns the old value
  */
 xmlDeregisterNodeFunc
 xmlThrDefDeregisterNodeDefault(xmlDeregisterNodeFunc func)
@@ -1067,6 +1107,9 @@ xmlThrDefDeregisterNodeDefault(xmlDeregisterNodeFunc func)
  *
  * @deprecated Call #xmlParserInputBufferCreateFilenameDefault
  * in each thread.
+ *
+ * @param func  new value
+ * @returns the old value
  */
 xmlParserInputBufferCreateFilenameFunc
 xmlThrDefParserInputBufferCreateFilenameDefault(xmlParserInputBufferCreateFilenameFunc func)
@@ -1090,6 +1133,9 @@ xmlThrDefParserInputBufferCreateFilenameDefault(xmlParserInputBufferCreateFilena
  *
  * @deprecated Call #xmlOutputBufferCreateFilenameDefault
  * in each thread.
+ *
+ * @param func  new value
+ * @returns the old value
  */
 xmlOutputBufferCreateFilenameFunc
 xmlThrDefOutputBufferCreateFilenameDefault(xmlOutputBufferCreateFilenameFunc func)
@@ -1108,6 +1154,4 @@ xmlThrDefOutputBufferCreateFilenameDefault(xmlOutputBufferCreateFilenameFunc fun
 
     return(old);
 }
-
-/** @endcond */
 

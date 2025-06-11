@@ -3380,6 +3380,10 @@ htmlParseComment(htmlParserCtxtPtr ctxt, int bogus) {
             SKIP(1);
         comment = buf;
     } else {
+        if ((!PARSER_PROGRESSIVE(ctxt)) &&
+            (ctxt->input->end - ctxt->input->cur < 2))
+            xmlParserGrow(ctxt);
+
         if (CUR == '>') {
             SKIP(1);
         } else if ((CUR == '-') && (NXT(1) == '>')) {
@@ -3628,10 +3632,6 @@ htmlCharEncCheckAsciiCompatible(htmlParserCtxt *ctxt,
             XML_ENC_INPUT | XML_ENC_HTML,
             ctxt->convImpl, ctxt->convCtxt,
             &handler);
-    /*
-     * TODO: Unlike the XML parser, we shouldn't raise a fatal
-     * if the encoding is unsupported.
-     */
     if (res != XML_ERR_OK) {
         xmlFatalErr(ctxt, res, (const char *) encoding);
         return(-1);
@@ -3711,10 +3711,6 @@ htmlCheckMeta(htmlParserCtxtPtr ctxt, const xmlChar **atts) {
             return;
         }
 
-        /*
-         * TODO: Unlike the XML parser, we shouldn't raise a fatal
-         * if the encoding is unsupported.
-         */
         xmlSetDeclaredEncoding(ctxt, encoding);
     }
 }
@@ -5518,96 +5514,14 @@ htmlNodeStatus(xmlNode *node ATTRIBUTE_UNUSED,
 /**
  * Reset a parser context
  *
+ * Same as #xmlCtxtReset.
+ *
  * @param ctxt  an HTML parser context
  */
 void
 htmlCtxtReset(htmlParserCtxt *ctxt)
 {
-    xmlParserInputPtr input;
-    xmlDictPtr dict;
-
-    if (ctxt == NULL)
-        return;
-
-    dict = ctxt->dict;
-
-    while ((input = xmlCtxtPopInput(ctxt)) != NULL) { /* Non consuming */
-        xmlFreeInputStream(input);
-    }
-    ctxt->inputNr = 0;
-    ctxt->input = NULL;
-
-    ctxt->spaceNr = 0;
-    if (ctxt->spaceTab != NULL) {
-	ctxt->spaceTab[0] = -1;
-	ctxt->space = &ctxt->spaceTab[0];
-    } else {
-	ctxt->space = NULL;
-    }
-
-
-    ctxt->nodeNr = 0;
-    ctxt->node = NULL;
-
-    ctxt->nameNr = 0;
-    ctxt->name = NULL;
-
-    ctxt->nsNr = 0;
-
-    DICT_FREE(ctxt->version);
-    ctxt->version = NULL;
-    DICT_FREE(ctxt->encoding);
-    ctxt->encoding = NULL;
-    DICT_FREE(ctxt->extSubURI);
-    ctxt->extSubURI = NULL;
-    DICT_FREE(ctxt->extSubSystem);
-    ctxt->extSubSystem = NULL;
-
-    if (ctxt->directory != NULL) {
-        xmlFree(ctxt->directory);
-        ctxt->directory = NULL;
-    }
-
-    if (ctxt->myDoc != NULL)
-        xmlFreeDoc(ctxt->myDoc);
-    ctxt->myDoc = NULL;
-
-    ctxt->standalone = -1;
-    ctxt->hasExternalSubset = 0;
-    ctxt->hasPErefs = 0;
-    ctxt->html = INSERT_INITIAL;
-    ctxt->instate = XML_PARSER_START;
-
-    ctxt->wellFormed = 1;
-    ctxt->nsWellFormed = 1;
-    ctxt->disableSAX = 0;
-    ctxt->valid = 1;
-    ctxt->vctxt.userData = ctxt;
-    ctxt->vctxt.flags = XML_VCTXT_USE_PCTXT;
-    ctxt->vctxt.error = xmlParserValidityError;
-    ctxt->vctxt.warning = xmlParserValidityWarning;
-    ctxt->record_info = 0;
-    ctxt->checkIndex = 0;
-    ctxt->endCheckState = 0;
-    ctxt->inSubset = 0;
-    ctxt->errNo = XML_ERR_OK;
-    ctxt->depth = 0;
-    ctxt->catalogs = NULL;
-    xmlInitNodeInfoSeq(&ctxt->node_seq);
-
-    if (ctxt->attsDefault != NULL) {
-        xmlHashFree(ctxt->attsDefault, xmlHashDefaultDeallocator);
-        ctxt->attsDefault = NULL;
-    }
-    if (ctxt->attsSpecial != NULL) {
-        xmlHashFree(ctxt->attsSpecial, NULL);
-        ctxt->attsSpecial = NULL;
-    }
-
-    ctxt->nbErrors = 0;
-    ctxt->nbWarnings = 0;
-    if (ctxt->lastError.code != XML_ERR_OK)
-        xmlResetError(&ctxt->lastError);
+    xmlCtxtReset(ctxt);
 }
 
 static int
