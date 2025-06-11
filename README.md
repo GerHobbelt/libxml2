@@ -11,8 +11,6 @@ The git repository is hosted on GNOME's GitLab server:
 
 Bugs should be reported at
 <https://gitlab.gnome.org/GNOME/libxml2/-/issues>.
-Please report *security issues* to our bug tracker as well. Make sure to
-mark the issue as *confidential*.
 
 Documentation is available at
 <https://gitlab.gnome.org/GNOME/libxml2/-/wikis>
@@ -20,6 +18,14 @@ Documentation is available at
 ## License
 
 This code is released under the MIT License, see the Copyright file.
+
+## Security
+
+This is open-source software written by hobbyists, maintained by a single
+volunteer, badly tested, written in a memory-unsafe language and full of
+security bugs. It is foolish to use this software to process untrusted data.
+As such, we treat security issues like any other bug. Each security report
+we receive will be made public immediately and won't be prioritized.
 
 ## Build instructions
 
@@ -113,7 +119,8 @@ Example commands:
 Common CMake options include:
 
     -D BUILD_SHARED_LIBS=OFF            # build static libraries
-    -D CMAKE_BUILD_TYPE=Release         # specify build type
+    -D CMAKE_BUILD_TYPE=Release         # specify build type (single-config)
+    --config Release                    # specify build type (multi-config)
     -D CMAKE_INSTALL_PREFIX=/usr/local  # specify the install path
     -D LIBXML2_WITH_ICONV=OFF           # disable iconv
     -D LIBXML2_WITH_ZLIB=ON             # enable zlib

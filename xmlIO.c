@@ -1309,32 +1309,6 @@ xmlInputFromFd(xmlParserInputBuffer *buf, int fd,
     return(XML_ERR_OK);
 }
 
-/**
- * @param buf  input buffer to be filled
- * @param filename  filename or URI
- * @param flags  XML_INPUT flags
- * @returns an xmlParserErrors code.
- */
-static xmlParserErrors
-xmlInputDefaultOpen(xmlParserInputBufferPtr buf, const char *filename,
-                    xmlParserInputFlags flags) {
-    xmlParserErrors ret;
-    int fd;
-
-    if (!xmlFileMatch(filename))
-        return(XML_IO_ENOENT);
-
-    ret = xmlFdOpen(filename, 0, &fd);
-    if (ret != XML_ERR_OK)
-        return(ret);
-
-    ret = xmlInputFromFd(buf, fd, flags);
-
-    close(fd);
-
-    return(ret);
-}
-
 #ifdef LIBXML_OUTPUT_ENABLED
 /**
  * @param buf  input buffer to be filled
@@ -1405,7 +1379,7 @@ xmlOutputDefaultOpen(xmlOutputBufferPtr buf, const char *filename,
  *
  * The encoding argument is deprecated and should be set to
  * XML_CHAR_ENCODING_NONE. The encoding can be changed with
- * xmlSwitchEncoding() or xmlSwitchEncodingName() later on.
+ * #xmlSwitchEncoding or #xmlSwitchEncodingName later on.
  *
  * @param enc  the charset encoding if known (deprecated)
  * @returns the new parser input or NULL
@@ -1611,10 +1585,17 @@ xmlParserInputBufferCreateUrl(const char *URI, xmlCharEncoding enc,
         xmlInputCallback *cb = &xmlInputCallbackTable[i];
 
         if (cb->matchcallback == xmlIODefaultMatch) {
-            ret = xmlInputDefaultOpen(buf, URI, flags);
+            int fd;
 
-            if ((ret == XML_ERR_OK) || (ret != XML_IO_ENOENT))
+            ret = xmlFdOpen(URI, 0, &fd);
+
+            if (ret == XML_ERR_OK) {
+                ret = xmlInputFromFd(buf, fd, flags);
+                close(fd);
                 break;
+            } else if (ret != XML_IO_ENOENT) {
+                break;
+            }
         } else if ((cb->matchcallback != NULL) &&
                    (cb->matchcallback(URI) != 0)) {
             buf->context = cb->opencallback(URI);
@@ -1643,9 +1624,9 @@ xmlParserInputBufferCreateUrl(const char *URI, xmlCharEncoding enc,
  * Do an encoding check if enc == XML_CHAR_ENCODING_NONE
  *
  * Internal implementation, never uses the callback installed with
- * xmlParserInputBufferCreateFilenameDefault().
+ * #xmlParserInputBufferCreateFilenameDefault.
  *
- * @deprecated Use xmlNewInputFromUrl().
+ * @deprecated Use #xmlNewInputFromUrl.
  *
  * @param URI  a C string containing the URI or filename
  * @param enc  the charset encoding if known
@@ -1666,9 +1647,9 @@ __xmlParserInputBufferCreateFilename(const char *URI, xmlCharEncoding enc) {
  * Do an encoding check if enc == XML_CHAR_ENCODING_NONE
  *
  * Allows the actual function to be overridden with
- * xmlParserInputBufferCreateFilenameDefault().
+ * #xmlParserInputBufferCreateFilenameDefault.
  *
- * @deprecated Use xmlNewInputFromUrl().
+ * @deprecated Use #xmlNewInputFromUrl.
  *
  * @param URI  a C string containing the URI or filename
  * @param enc  the charset encoding if known
@@ -1709,7 +1690,7 @@ xmlParserInputBufferCreateFilename(const char *URI, xmlCharEncoding enc) {
  * Consumes `encoder` but not in error case.
  *
  * Internal implementation, never uses the callback installed with
- * xmlOutputBufferCreateFilenameDefault().
+ * #xmlOutputBufferCreateFilenameDefault.
  *
  * @param URI  a C string containing the URI or filename
  * @param encoder  the encoding converter or NULL
@@ -1798,7 +1779,7 @@ error:
  * Consumes `encoder` but not in error case.
  *
  * Allows the actual function to be overridden with
- * xmlOutputBufferCreateFilenameDefault().
+ * #xmlOutputBufferCreateFilenameDefault.
  *
  * @param URI  a C string containing the URI or filename
  * @param encoder  the encoding converter or NULL
@@ -1824,7 +1805,7 @@ xmlOutputBufferCreateFilename(const char *URI,
  *
  * The encoding argument is deprecated and should be set to
  * XML_CHAR_ENCODING_NONE. The encoding can be changed with
- * xmlSwitchEncoding() or xmlSwitchEncodingName() later on.
+ * #xmlSwitchEncoding or #xmlSwitchEncodingName later on.
  *
  * @param file  a FILE*
  * @param enc  the charset encoding if known (deprecated)
@@ -1934,11 +1915,11 @@ xmlOutputBufferGetSize(xmlOutputBuffer *out) {
  * Create a buffered parser input for the progressive parsing for the input
  * from a file descriptor
  *
- * @deprecated Use xmlNewInputFromFd().
+ * @deprecated Use #xmlNewInputFromFd.
  *
  * The encoding argument is deprecated and should be set to
  * XML_CHAR_ENCODING_NONE. The encoding can be changed with
- * xmlSwitchEncoding() or xmlSwitchEncodingName() later on.
+ * #xmlSwitchEncoding or #xmlSwitchEncodingName later on.
  *
  * @param fd  a file descriptor number
  * @param enc  the charset encoding if known (deprecated)
@@ -2054,16 +2035,16 @@ xmlNewInputBufferMemory(const void *mem, size_t size,
 /**
  * Create a parser input buffer for parsing from a memory area.
  *
- * @deprecated Use xmlNewInputFromMemory().
+ * @deprecated Use #xmlNewInputFromMemory.
  *
  * This function makes a copy of the whole input buffer. If you are sure
  * that the contents of the buffer will remain valid until the document
  * was parsed, you can avoid the copy by using
- * xmlParserInputBufferCreateStatic().
+ * #xmlParserInputBufferCreateStatic.
  *
  * The encoding argument is deprecated and should be set to
  * XML_CHAR_ENCODING_NONE. The encoding can be changed with
- * xmlSwitchEncoding() or xmlSwitchEncodingName() later on.
+ * #xmlSwitchEncoding or #xmlSwitchEncodingName later on.
  *
  * @param mem  the memory input
  * @param size  the length of the memory block
@@ -2081,15 +2062,15 @@ xmlParserInputBufferCreateMem(const char *mem, int size, xmlCharEncoding enc) {
 /**
  * Create a parser input buffer for parsing from a memory area.
  *
- * @deprecated Use xmlNewInputFromMemory().
+ * @deprecated Use #xmlNewInputFromMemory.
  *
  * This functions assumes that the contents of the input buffer remain
- * valid until the document was parsed. Use xmlParserInputBufferCreateMem()
+ * valid until the document was parsed. Use #xmlParserInputBufferCreateMem
  * otherwise.
  *
  * The encoding argument is deprecated and should be set to
  * XML_CHAR_ENCODING_NONE. The encoding can be changed with
- * xmlSwitchEncoding() or xmlSwitchEncodingName() later on.
+ * #xmlSwitchEncoding or #xmlSwitchEncodingName later on.
  *
  * @param mem  the memory input
  * @param size  the length of the memory block
@@ -2108,7 +2089,7 @@ xmlParserInputBufferCreateStatic(const char *mem, int size,
 /**
  * Create an input buffer for a null-terminated C string.
  *
- * @deprecated Use xmlNewInputFromString().
+ * @deprecated Use #xmlNewInputFromString.
  *
  * @param str  C string
  * @param flags  flags
@@ -2176,11 +2157,11 @@ xmlOutputBufferCreateFd(int fd, xmlCharEncodingHandler *encoder) {
  * Create a buffered parser input for the progressive parsing for the input
  * from an I/O handler
  *
- * @deprecated Use xmlNewInputFromIO().
+ * @deprecated Use #xmlNewInputFromIO.
  *
  * The encoding argument is deprecated and should be set to
  * XML_CHAR_ENCODING_NONE. The encoding can be changed with
- * xmlSwitchEncoding() or xmlSwitchEncodingName() later on.
+ * #xmlSwitchEncoding or #xmlSwitchEncodingName later on.
  *
  * @param ioread  an I/O read function
  * @param ioclose  an I/O close function
@@ -2242,7 +2223,7 @@ xmlOutputBufferCreateIO(xmlOutputWriteCallback   iowrite,
 /**
  * Registers a callback for URI input file handling
  *
- * @deprecated Use xmlCtxtSetResourceLoader() or similar functions.
+ * @deprecated Use #xmlCtxtSetResourceLoader or similar functions.
  *
  * @param func  function pointer to the new ParserInputBufferCreateFilenameFunc
  * @returns the old value of the registration function
@@ -2441,7 +2422,7 @@ xmlParserInputBufferGrow(xmlParserInputBuffer *in, int len) {
 }
 
 /**
- * Same as xmlParserInputBufferGrow().
+ * Same as #xmlParserInputBufferGrow.
  *
  * @deprecated Internal function, don't use.
  *
@@ -2803,7 +2784,7 @@ xmlParserGetDirectory(const char *filename) {
 }
 
 /**
- * Like xmlCheckFilename() but handles file URIs.
+ * Like #xmlCheckFilename but handles file URIs.
  *
  * @deprecated Internal function, don't use.
  *
@@ -2854,7 +2835,7 @@ xmlInitIOCallbacks(void)
 /**
  * Register a new set of I/O callback for handling parser input.
  *
- * @deprecated Use xmlCtxtSetResourceLoader() or similar functions.
+ * @deprecated Use #xmlCtxtSetResourceLoader or similar functions.
  *
  * @param matchFunc  the xmlInputMatchCallback
  * @param openFunc  the xmlInputOpenCallback

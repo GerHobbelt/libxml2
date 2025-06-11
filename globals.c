@@ -33,6 +33,11 @@
 static xmlMutex xmlThrDefMutex;
 
 /*
+ * Deprecated global setting which is unused since 2.15.0
+ */
+static int lineNumbersDefaultValue = 1;
+
+/*
  * Thread-local storage emulation.
  *
  * This works by replacing a global variable
@@ -141,7 +146,6 @@ struct _xmlGlobalState {
     int doValidityCheckingDefaultValue;
     int getWarningsDefaultValue;
     int keepBlanksDefaultValue;
-    int lineNumbersDefaultValue;
     int loadExtDtdDefaultValue;
     int pedanticParserDefaultValue;
     int substituteEntitiesDefaultValue;
@@ -367,7 +371,7 @@ xmlInitGlobalState(xmlGlobalStatePtr gs);
  ************************************************************************/
 
 /**
- * @deprecated Alias for xmlInitParser().
+ * @deprecated Alias for #xmlInitParser.
  */
 void xmlInitGlobals(void) {
     xmlInitParser();
@@ -392,8 +396,8 @@ void xmlInitGlobalsInternal(void) {
 }
 
 /**
- * @deprecated This function is a no-op. Call xmlCleanupParser()
- * to free global state but see the warnings there. xmlCleanupParser()
+ * @deprecated This function is a no-op. Call #xmlCleanupParser
+ * to free global state but see the warnings there. #xmlCleanupParser
  * should be only called once at program exit. In most cases, you don't
  * have call cleanup functions at all.
  */
@@ -486,7 +490,7 @@ xmlRegisterGlobalStateDtor(xmlGlobalState *gs) {
 
 #ifndef USE_TLS
 /**
- * xmlNewGlobalState() allocates a global state. This structure is used to
+ * Allocates a global state. This structure is used to
  * hold all data for use by a thread when supporting backwards compatibility
  * of libxml2 to pre-thread-safe behaviour.
  *
@@ -646,7 +650,7 @@ __xmlKeepBlanksDefaultValue(void) {
 
 int *
 __xmlLineNumbersDefaultValue(void) {
-    return(&xmlGetThreadLocalStorage(0)->lineNumbersDefaultValue);
+    return(&lineNumbersDefaultValue);
 }
 
 int *
@@ -818,34 +822,34 @@ DllMain(ATTRIBUTE_UNUSED HINSTANCE hinstDLL, DWORD fdwReason,
         ATTRIBUTE_UNUSED LPVOID lpvReserved)
 #endif
 {
-    switch (fdwReason) {
-        case DLL_THREAD_DETACH:
+    if ((fdwReason == DLL_THREAD_DETACH) ||
+        (fdwReason == DLL_PROCESS_DETACH)) {
 #ifdef USE_TLS
-            xmlFreeGlobalState(&globalState);
+        xmlFreeGlobalState(&globalState);
 #else
-            if (globalkey != TLS_OUT_OF_INDEXES) {
-                xmlGlobalState *globalval;
+        if (globalkey != TLS_OUT_OF_INDEXES) {
+            xmlGlobalState *globalval;
 
-                globalval = (xmlGlobalState *) TlsGetValue(globalkey);
-                if (globalval) {
-                    xmlFreeGlobalState(globalval);
-                    TlsSetValue(globalkey, NULL);
-                }
+            globalval = (xmlGlobalState *) TlsGetValue(globalkey);
+            if (globalval) {
+                xmlFreeGlobalState(globalval);
+                TlsSetValue(globalkey, NULL);
             }
-#endif
-            break;
-
-#ifndef LIBXML_THREAD_ALLOC_ENABLED
-        case DLL_PROCESS_DETACH:
-            if (xmlFree == free)
-                xmlCleanupParser();
-            if (globalkey != TLS_OUT_OF_INDEXES) {
-                TlsFree(globalkey);
-                globalkey = TLS_OUT_OF_INDEXES;
-            }
-            break;
+        }
 #endif
     }
+
+#ifndef LIBXML_THREAD_ALLOC_ENABLED
+    if (fdwReason == DLL_PROCESS_DETACH) {
+        if (xmlFree == free)
+            xmlCleanupParser();
+        if (globalkey != TLS_OUT_OF_INDEXES) {
+            TlsFree(globalkey);
+            globalkey = TLS_OUT_OF_INDEXES;
+        }
+    }
+#endif
+
     return TRUE;
 }
 #endif /* USE_DLL_MAIN */
@@ -853,7 +857,7 @@ DllMain(ATTRIBUTE_UNUSED HINSTANCE hinstDLL, DWORD fdwReason,
 /**
  * Set per-thread default value.
  *
- * @deprecated Call xmlSetGenericErrorFunc() in each thread.
+ * @deprecated Call #xmlSetGenericErrorFunc in each thread.
  */
 void
 xmlThrDefSetGenericErrorFunc(void *ctx, xmlGenericErrorFunc handler) {
@@ -869,7 +873,7 @@ xmlThrDefSetGenericErrorFunc(void *ctx, xmlGenericErrorFunc handler) {
 /**
  * Set per-thread default value.
  *
- * @deprecated Call xmlSetStructuredErrorFunc() in each thread.
+ * @deprecated Call #xmlSetStructuredErrorFunc in each thread.
  */
 void
 xmlThrDefSetStructuredErrorFunc(void *ctx, xmlStructuredErrorFunc handler) {
@@ -926,7 +930,7 @@ int xmlThrDefIndentTreeOutput(int v) {
 /**
  * Set per-thread default value.
  *
- * @deprecated Use the xmlsave.h API and xmlSaveSetIndentString().
+ * @deprecated Use the xmlsave.h API and #xmlSaveSetIndentString.
  */
 const char * xmlThrDefTreeIndentString(const char * v) {
     const char * ret;
@@ -1061,7 +1065,7 @@ xmlThrDefDeregisterNodeDefault(xmlDeregisterNodeFunc func)
 /**
  * Set per-thread default value.
  *
- * @deprecated Call xmlParserInputBufferCreateFilenameDefault()
+ * @deprecated Call #xmlParserInputBufferCreateFilenameDefault
  * in each thread.
  */
 xmlParserInputBufferCreateFilenameFunc
@@ -1084,7 +1088,7 @@ xmlThrDefParserInputBufferCreateFilenameDefault(xmlParserInputBufferCreateFilena
 /**
  * Set per-thread default value.
  *
- * @deprecated Call xmlOutputBufferCreateFilenameDefault()
+ * @deprecated Call #xmlOutputBufferCreateFilenameDefault
  * in each thread.
  */
 xmlOutputBufferCreateFilenameFunc

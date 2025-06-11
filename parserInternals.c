@@ -42,6 +42,7 @@
 #include "private/buf.h"
 #include "private/enc.h"
 #include "private/error.h"
+#include "private/globals.h"
 #include "private/io.h"
 #include "private/memory.h"
 #include "private/parser.h"
@@ -100,11 +101,11 @@ xmlCheckVersion(int version) {
  * takes precedence over all other error reporting mechanisms.
  * These are (in order of precedence):
  *
- * - per-context structured handler (xmlCtxtSetErrorHandler())
+ * - per-context structured handler (#xmlCtxtSetErrorHandler)
  * - per-context structured "serror" SAX handler
- * - global structured handler (xmlSetStructuredErrorFunc())
+ * - global structured handler (#xmlSetStructuredErrorFunc)
  * - per-context generic "error" and "warning" SAX handlers
- * - global generic handler (xmlSetGenericErrorFunc())
+ * - global generic handler (#xmlSetGenericErrorFunc)
  * - print to stderr
  *
  * @since 2.13.0
@@ -1187,7 +1188,7 @@ done:
  * the encoding found in the XML declaration.
  *
  * This function can also be used to override the encoding of chunks
- * passed to xmlParseChunk().
+ * passed to #xmlParseChunk.
  *
  * @param ctxt  the parser context
  * @param enc  the encoding value (number)
@@ -1258,7 +1259,7 @@ xmlSwitchInputEncodingName(xmlParserCtxtPtr ctxt, xmlParserInputPtr input,
  * encoding found in the XML declaration.
  *
  * This function can also be used to override the encoding of chunks
- * passed to xmlParseChunk().
+ * passed to #xmlParseChunk.
  *
  * @since 2.13.0
  *
@@ -1399,7 +1400,7 @@ xmlSwitchInputEncoding(xmlParserCtxt *ctxt, xmlParserInput *input,
  * Use encoding handler to decode input data.
  *
  * This function can be used to enforce the encoding of chunks passed
- * to xmlParseChunk().
+ * to #xmlParseChunk.
  *
  * @param ctxt  the parser context
  * @param handler  the encoding handler
@@ -1715,7 +1716,7 @@ xmlFreeInputStream(xmlParserInput *input) {
 /**
  * Create a new input stream structure.
  *
- * @deprecated Use xmlNewInputFromUrl() or similar functions.
+ * @deprecated Use #xmlNewInputFromUrl or similar functions.
  *
  * @param ctxt  an XML parser context
  * @returns the new input stream or NULL
@@ -2190,7 +2191,7 @@ xmlNewEntityInputStream(xmlParserCtxt *ctxt, xmlEntity *ent) {
 /**
  * Create a new input stream based on a memory buffer.
  *
- * @deprecated Use xmlNewInputFromString().
+ * @deprecated Use #xmlNewInputFromString.
  *
  * @param ctxt  an XML parser context
  * @param buffer  an memory buffer
@@ -2212,86 +2213,129 @@ xmlNewStringInputStream(xmlParserCtxt *ctxt, const xmlChar *buffer) {
 #ifdef LIBXML_CATALOG_ENABLED
 
 /**
- * Resolves the URL and ID against the appropriate catalog.
- * This function is used by xmlDefaultExternalEntityLoader() and
- * xmlNoNetExternalEntityLoader().
+ * Resolves an external ID or URL against the appropriate catalog.
  *
- * @param URL  the URL for the entity to load
- * @param ID  the System ID for the entity to load
- * @param ctxt  the context in which the entity is called or NULL
- * @returns a new allocated URL, or NULL.
+ * @param url  the URL or system ID for the entity to load
+ * @param publicId  the public ID for the entity to load (optional)
+ * @param localCatalogs  local catalogs (optional)
+ * @param allowGlobal  allow global system catalog
+ * @param out  resulting resource or NULL
+ * @returns an xmlParserErrors code
  */
-static xmlChar *
-xmlResolveResourceFromCatalog(const char *URL, const char *ID,
-                              xmlParserCtxtPtr ctxt) {
-    xmlChar *resource = NULL;
-    xmlCatalogAllow pref;
-    int allowLocal = 0;
-    int allowGlobal = 0;
+static xmlParserErrors
+xmlResolveFromCatalog(const char *url, const char *publicId,
+                      void *localCatalogs, int allowGlobal, char **out) {
+    xmlError oldError;
+    xmlError *lastError;
+    char *resource = NULL;
+    xmlParserErrors code;
+
+    if (out == NULL)
+        return(XML_ERR_ARGUMENT);
+    *out = NULL;
+    if ((localCatalogs == NULL) && (!allowGlobal))
+        return(XML_ERR_OK);
 
     /*
-     * Loading of HTML documents shouldn't use XML catalogs.
+     * Don't try to resolve if local file exists.
+     *
+     * TODO: This is somewhat non-deterministic.
      */
-    if ((ctxt != NULL) && (ctxt->html))
-        return(NULL);
+    if (xmlNoNetExists(url))
+        return(XML_ERR_OK);
+
+    /* Backup and reset last error */
+    lastError = xmlGetLastErrorInternal();
+    oldError = *lastError;
+    lastError->code = XML_ERR_OK;
 
     /*
-     * If the resource doesn't exists as a file,
-     * try to load it from the resource pointed in the catalogs
+     * Do a local lookup
      */
-    pref = xmlCatalogGetDefaults();
-
-    if ((ctxt != NULL) && (ctxt->catalogs != NULL) &&
-        ((pref == XML_CATA_ALLOW_ALL) ||
-         (pref == XML_CATA_ALLOW_DOCUMENT)))
-        allowLocal = 1;
-
-    if (((ctxt == NULL) ||
-         ((ctxt->options & XML_PARSE_NO_SYS_CATALOG) == 0)) &&
-        ((pref == XML_CATA_ALLOW_ALL) ||
-         (pref == XML_CATA_ALLOW_GLOBAL)))
-        allowGlobal = 1;
-
-    if ((pref != XML_CATA_ALLOW_NONE) && (!xmlNoNetExists(URL))) {
-	/*
-	 * Do a local lookup
-	 */
-        if (allowLocal) {
-	    resource = xmlCatalogLocalResolve(ctxt->catalogs,
-					      (const xmlChar *)ID,
-					      (const xmlChar *)URL);
-        }
-	/*
-	 * Try a global lookup
-	 */
-	if ((resource == NULL) && (allowGlobal)) {
-	    resource = xmlCatalogResolve((const xmlChar *)ID,
-					 (const xmlChar *)URL);
-	}
-	if ((resource == NULL) && (URL != NULL))
-	    resource = xmlStrdup((const xmlChar *) URL);
-
-	/*
-	 * TODO: do an URI lookup on the reference
-	 */
-	if ((resource != NULL) && (!xmlNoNetExists((const char *)resource))) {
-	    xmlChar *tmp = NULL;
-
-	    if (allowLocal) {
-		tmp = xmlCatalogLocalResolveURI(ctxt->catalogs, resource);
-	    }
-	    if ((tmp == NULL) && (allowGlobal)) {
-		tmp = xmlCatalogResolveURI(resource);
-	    }
-
-	    if (tmp != NULL) {
-		xmlFree(resource);
-		resource = tmp;
-	    }
-	}
+    if (localCatalogs != NULL) {
+        resource = (char *) xmlCatalogLocalResolve(localCatalogs,
+                                                   BAD_CAST publicId,
+                                                   BAD_CAST url);
+    }
+    /*
+     * Try a global lookup
+     */
+    if ((resource == NULL) && (allowGlobal)) {
+        resource = (char *) xmlCatalogResolve(BAD_CAST publicId,
+                                              BAD_CAST url);
     }
 
-    return resource;
+    /*
+     * Try to resolve url using URI rules.
+     *
+     * TODO: We should consider using only a single resolution
+     * mechanism depending on resource type. Either by external ID
+     * or by URI.
+     */
+    if ((resource == NULL) && (url != NULL)) {
+        if (localCatalogs != NULL) {
+            resource = (char *) xmlCatalogLocalResolveURI(localCatalogs,
+                                                          BAD_CAST url);
+        }
+        if ((resource == NULL) && (allowGlobal)) {
+            resource = (char *) xmlCatalogResolveURI(BAD_CAST url);
+        }
+    }
+
+    code = lastError->code;
+    if (code == XML_ERR_OK) {
+        *out = resource;
+    } else {
+        xmlFree(resource);
+    }
+
+    *lastError = oldError;
+
+    return(code);
+}
+
+static char *
+xmlCtxtResolveFromCatalog(xmlParserCtxtPtr ctxt, const char *url,
+                          const char *publicId) {
+    char *resource;
+    void *localCatalogs = NULL;
+    int allowGlobal = 1;
+    xmlParserErrors code;
+
+    if (ctxt != NULL) {
+        /*
+         * Loading of HTML documents shouldn't use XML catalogs.
+         */
+        if (ctxt->html)
+            return(NULL);
+
+        localCatalogs = ctxt->catalogs;
+
+        if (ctxt->options & XML_PARSE_NO_SYS_CATALOG)
+            allowGlobal = 0;
+    }
+
+    switch (xmlCatalogGetDefaults()) {
+        case XML_CATA_ALLOW_NONE:
+            return(NULL);
+        case XML_CATA_ALLOW_DOCUMENT:
+            allowGlobal = 0;
+            break;
+        case XML_CATA_ALLOW_GLOBAL:
+            localCatalogs = NULL;
+            break;
+        case XML_CATA_ALLOW_ALL:
+            break;
+    }
+
+    code = xmlResolveFromCatalog(url, publicId, localCatalogs,
+                                 allowGlobal, &resource);
+    if (code != XML_ERR_OK)
+        xmlCtxtErr(ctxt, NULL, XML_FROM_CATALOG, code, XML_ERR_ERROR,
+                   BAD_CAST url, BAD_CAST publicId, NULL, 0,
+                   "%s\n", xmlErrString(code), NULL);
+
+    return(resource);
 }
 
 #endif
@@ -2319,24 +2363,25 @@ xmlCheckHTTPInput(xmlParserCtxt *ctxt ATTRIBUTE_UNUSED,
  * The following resource loaders will be called if they were
  * registered (in order of precedence):
  *
- * - the per-thread xmlParserInputBufferCreateFilenameFunc() set with
- *   xmlParserInputBufferCreateFilenameDefault() (deprecated)
+ * - the per-thread #xmlParserInputBufferCreateFilenameFunc set with
+ *   #xmlParserInputBufferCreateFilenameDefault (deprecated)
  * - the default loader which will return
  *   - the result from a matching global input callback set with
- *     xmlRegisterInputCallbacks() (deprecated)
+ *     #xmlRegisterInputCallbacks (deprecated)
  *   - a file opened from the filesystem, with automatic detection
  *     of compressed files if support is compiled in.
  *
  * @since 2.14.0
  *
- * @param filename  the filename to use as entity
+ * @param url  the filename to use as entity
  * @param flags  XML_INPUT flags
  * @param out  pointer to new parser input
  * @returns an xmlParserErrors code.
  */
 xmlParserErrors
-xmlNewInputFromUrl(const char *filename, xmlParserInputFlags flags,
+xmlNewInputFromUrl(const char *url, xmlParserInputFlags flags,
                    xmlParserInput **out) {
+    char *resource = NULL;
     xmlParserInputBufferPtr buf;
     xmlParserInputPtr input;
     xmlParserErrors code = XML_ERR_OK;
@@ -2344,33 +2389,49 @@ xmlNewInputFromUrl(const char *filename, xmlParserInputFlags flags,
     if (out == NULL)
         return(XML_ERR_ARGUMENT);
     *out = NULL;
-    if (filename == NULL)
+    if (url == NULL)
         return(XML_ERR_ARGUMENT);
 
+#ifdef LIBXML_CATALOG_ENABLED
+    if (flags & XML_INPUT_USE_SYS_CATALOG) {
+        code = xmlResolveFromCatalog(url, NULL, NULL, 1, &resource);
+        if (code != XML_ERR_OK)
+            return(code);
+        if (resource != NULL)
+            url = resource;
+    }
+#endif
+
     if (xmlParserInputBufferCreateFilenameValue != NULL) {
-        buf = xmlParserInputBufferCreateFilenameValue(filename,
+        buf = xmlParserInputBufferCreateFilenameValue(url,
                 XML_CHAR_ENCODING_NONE);
         if (buf == NULL)
             code = XML_IO_ENOENT;
     } else {
-        code = xmlParserInputBufferCreateUrl(filename, XML_CHAR_ENCODING_NONE,
+        code = xmlParserInputBufferCreateUrl(url, XML_CHAR_ENCODING_NONE,
                                              flags, &buf);
     }
-    if (code != XML_ERR_OK)
-	return(code);
 
-    input = xmlNewInputInternal(buf, filename);
-    if (input == NULL)
-	return(XML_ERR_NO_MEMORY);
+    if (code == XML_ERR_OK) {
+        input = xmlNewInputInternal(buf, url);
+        if (input == NULL)
+            code = XML_ERR_NO_MEMORY;
 
-    *out = input;
-    return(XML_ERR_OK);
+        *out = input;
+    }
+
+    if (resource != NULL)
+        xmlFree(resource);
+    return(code);
 }
 
 /**
  * Create a new input stream based on a file or an URL.
  *
- * @deprecated Use xmlNewInputFromUrl().
+ * Unlike the default external entity loader, this function
+ * doesn't use XML catalogs.
+ *
+ * @deprecated Use #xmlNewInputFromUrl.
  *
  * @param ctxt  an XML parser context
  * @param filename  the filename to use as entity
@@ -2402,25 +2463,25 @@ xmlNewInputFromFile(xmlParserCtxt *ctxt, const char *filename) {
 /**
  * By default we don't load external entities, yet.
  *
- * @param url  the URL for the entity to load
- * @param ID  the System ID for the entity to load
+ * @param url  the URL or system ID for the entity to load
+ * @param publicId  the public ID for the entity to load (optional)
  * @param ctxt  the context in which the entity is called or NULL
  * @returns a new allocated xmlParserInput, or NULL.
  */
 static xmlParserInputPtr
-xmlDefaultExternalEntityLoader(const char *url, const char *ID,
+xmlDefaultExternalEntityLoader(const char *url, const char *publicId,
                                xmlParserCtxtPtr ctxt)
 {
     xmlParserInputPtr input = NULL;
     char *resource = NULL;
 
-    (void) ID;
+    (void) publicId;
 
     if (url == NULL)
         return(NULL);
 
 #ifdef LIBXML_CATALOG_ENABLED
-    resource = (char *) xmlResolveResourceFromCatalog(url, ID, ctxt);
+    resource = xmlCtxtResolveFromCatalog(ctxt, url, publicId);
     if (resource != NULL)
 	url = resource;
 #endif
@@ -2448,13 +2509,13 @@ xmlDefaultExternalEntityLoader(const char *url, const char *ID,
  *
  * @deprecated Use XML_PARSE_NONET.
  *
- * @param URL  the URL for the entity to load
- * @param ID  the System ID for the entity to load
+ * @param URL  the URL or system ID for the entity to load
+ * @param publicId  the public ID for the entity to load
  * @param ctxt  the context in which the entity is called or NULL
  * @returns a new allocated xmlParserInput, or NULL.
  */
 xmlParserInput *
-xmlNoNetExternalEntityLoader(const char *URL, const char *ID,
+xmlNoNetExternalEntityLoader(const char *URL, const char *publicId,
                              xmlParserCtxt *ctxt) {
     int oldOptions = 0;
     xmlParserInputPtr input;
@@ -2464,7 +2525,7 @@ xmlNoNetExternalEntityLoader(const char *URL, const char *ID,
         ctxt->options |= XML_PARSE_NONET;
     }
 
-    input = xmlDefaultExternalEntityLoader(URL, ID, ctxt);
+    input = xmlDefaultExternalEntityLoader(URL, publicId, ctxt);
 
     if (ctxt != NULL)
         ctxt->options = oldOptions;
@@ -2483,7 +2544,7 @@ xmlCurrentExternalEntityLoader = xmlDefaultExternalEntityLoader;
  * application.
  *
  * @deprecated This is a global setting and not thread-safe. Use
- * xmlCtxtSetResourceLoader() or similar functions.
+ * #xmlCtxtSetResourceLoader or similar functions.
  *
  * @param f  the new entity resolver function
  */
@@ -2495,9 +2556,9 @@ xmlSetExternalEntityLoader(xmlExternalEntityLoader f) {
 /**
  * Get the default external entity resolver function for the application
  *
- * @deprecated See xmlSetExternalEntityLoader().
+ * @deprecated See #xmlSetExternalEntityLoader.
  *
- * @returns the xmlExternalEntityLoader() function pointer
+ * @returns the #xmlExternalEntityLoader function pointer
  */
 xmlExternalEntityLoader
 xmlGetExternalEntityLoader(void) {
@@ -2508,10 +2569,12 @@ xmlGetExternalEntityLoader(void) {
  * Installs a custom callback to load documents, DTDs or external
  * entities.
  *
+ * If `vctxt` is NULL, the parser context will be passed.
+ *
  * @since 2.14.0
  * @param ctxt  parser context
  * @param loader  callback
- * @param vctxt  user data
+ * @param vctxt  user data (optional)
  */
 void
 xmlCtxtSetResourceLoader(xmlParserCtxt *ctxt, xmlResourceLoader loader,
@@ -2525,8 +2588,8 @@ xmlCtxtSetResourceLoader(xmlParserCtxt *ctxt, xmlResourceLoader loader,
 
 /**
  * @param ctxt  parser context
- * @param url  the URL for the entity to load
- * @param publicId  the Public ID for the entity to load
+ * @param url  the URL or system ID for the entity to load
+ * @param publicId  the public ID for the entity to load (optional)
  * @param type  resource type
  * @returns the xmlParserInput or NULL in case of error.
  */
@@ -2541,11 +2604,12 @@ xmlLoadResource(xmlParserCtxt *ctxt, const char *url, const char *publicId,
 
     if ((ctxt != NULL) && (ctxt->resourceLoader != NULL)) {
         char *resource = NULL;
+        void *userData;
         xmlParserInputFlags flags = 0;
         int code;
 
 #ifdef LIBXML_CATALOG_ENABLED
-        resource = (char *) xmlResolveResourceFromCatalog(url, publicId, ctxt);
+        resource = xmlCtxtResolveFromCatalog(ctxt, url, publicId);
         if (resource != NULL)
             url = resource;
 #endif
@@ -2555,7 +2619,11 @@ xmlLoadResource(xmlParserCtxt *ctxt, const char *url, const char *publicId,
         if ((ctxt->options & XML_PARSE_NONET) == 0)
             flags |= XML_INPUT_NETWORK;
 
-        code = ctxt->resourceLoader(ctxt->resourceCtxt, url, publicId, type,
+        userData = ctxt->resourceCtxt;
+        if (userData == NULL)
+            userData = ctxt;
+
+        code = ctxt->resourceLoader(userData, url, publicId, type,
                                     flags, &ret);
         if (code != XML_ERR_OK) {
             xmlCtxtErrIO(ctxt, code, url);
@@ -2582,7 +2650,7 @@ xmlLoadResource(xmlParserCtxt *ctxt, const char *url, const char *publicId,
  * it is assumed to be a Legacy Extended IRI. Otherwise, it is
  * treated as a filesystem path.
  *
- * `ID` is an optional XML public ID, typically from a doctype
+ * `publicId` is an optional XML public ID, typically from a doctype
  * declaration. It is used for catalog lookups.
  *
  * If catalog lookup is enabled (default is yes) and URL or ID are
@@ -2590,27 +2658,27 @@ xmlLoadResource(xmlParserCtxt *ctxt, const char *url, const char *publicId,
  * result. Then the following resource loaders will be called if
  * they were registered (in order of precedence):
  *
- * - the resource loader set with xmlCtxtSetResourceLoader()
+ * - the resource loader set with #xmlCtxtSetResourceLoader
  * - the global external entity loader set with
- *   xmlSetExternalEntityLoader() (without catalog resolution,
+ *   #xmlSetExternalEntityLoader (without catalog resolution,
  *   deprecated)
- * - the per-thread xmlParserInputBufferCreateFilenameFunc() set with
- *   xmlParserInputBufferCreateFilenameDefault() (deprecated)
+ * - the per-thread #xmlParserInputBufferCreateFilenameFunc set with
+ *   #xmlParserInputBufferCreateFilenameDefault (deprecated)
  * - the default loader which will return
  *   - the result from a matching global input callback set with
- *     xmlRegisterInputCallbacks() (deprecated)
+ *     #xmlRegisterInputCallbacks (deprecated)
  *   - a file opened from the filesystem, with automatic detection
  *     of compressed files if support is compiled in.
  *
- * @param URL  the URL for the entity to load
- * @param ID  the Public ID for the entity to load
+ * @param URL  the URL or system ID for the entity to load
+ * @param publicId  the public ID for the entity to load (optional)
  * @param ctxt  the context in which the entity is called or NULL
  * @returns the xmlParserInput or NULL
  */
 xmlParserInput *
-xmlLoadExternalEntity(const char *URL, const char *ID,
+xmlLoadExternalEntity(const char *URL, const char *publicId,
                       xmlParserCtxt *ctxt) {
-    return(xmlLoadResource(ctxt, URL, ID, XML_RESOURCE_UNKNOWN));
+    return(xmlLoadResource(ctxt, URL, publicId, XML_RESOURCE_UNKNOWN));
 }
 
 /************************************************************************
@@ -2909,7 +2977,7 @@ xmlNewParserCtxt(void)
  * @since 2.11.0
  *
  * If you want support older versions,
- * it's best to invoke xmlNewParserCtxt() and set ctxt->sax with
+ * it's best to invoke #xmlNewParserCtxt and set ctxt->sax with
  * struct assignment.
  *
  * @param sax  SAX handler
@@ -3153,9 +3221,9 @@ xmlCtxtGetValidCtxt(xmlParserCtxt *ctxt) {
  ************************************************************************/
 
 /**
- * Same as xmlCtxtReset()
+ * Same as #xmlCtxtReset
  *
- * @deprecated Use xmlCtxtReset()
+ * @deprecated Use #xmlCtxtReset
  *
  * @param ctxt  an XML parser context
  */

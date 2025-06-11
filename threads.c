@@ -68,7 +68,7 @@ xmlInitMutex(xmlMutex *mutex)
 }
 
 /**
- * xmlNewMutex() is used to allocate a libxml2 token struct for use in
+ * #xmlNewMutex is used to allocate a libxml2 token struct for use in
  * synchronizing access to data.
  *
  * @returns a new simple mutex pointer or NULL in case of error
@@ -118,7 +118,7 @@ xmlFreeMutex(xmlMutex *tok)
 }
 
 /**
- * xmlMutexLock() is used to lock a libxml2 token.
+ * #xmlMutexLock is used to lock a libxml2 token.
  *
  * @param tok  the simple mutex
  */
@@ -140,7 +140,7 @@ xmlMutexLock(xmlMutex *tok)
 }
 
 /**
- * xmlMutexUnlock() is used to unlock a libxml2 token.
+ * #xmlMutexUnlock is used to unlock a libxml2 token.
  *
  * @param tok  the simple mutex
  */
@@ -176,7 +176,7 @@ xmlInitRMutex(xmlRMutex *tok) {
 }
 
 /**
- * xmlRNewMutex() is used to allocate a reentrant mutex for use in
+ * Used to allocate a reentrant mutex for use in
  * synchronizing access to data. token_r is a re-entrant lock and thus useful
  * for synchronizing access to data structures that may be manipulated in a
  * recursive fashion.
@@ -213,7 +213,7 @@ xmlCleanupRMutex(xmlRMutex *tok) {
 }
 
 /**
- * xmlRFreeMutex() is used to reclaim resources associated with a
+ * Used to reclaim resources associated with a
  * reentrant mutex.
  *
  * @param tok  the reentrant mutex
@@ -228,7 +228,7 @@ xmlFreeRMutex(xmlRMutex *tok)
 }
 
 /**
- * xmlRMutexLock() is used to lock a libxml2 token_r.
+ * #xmlRMutexLock is used to lock a libxml2 token_r.
  *
  * @param tok  the reentrant mutex
  */
@@ -260,7 +260,7 @@ xmlRMutexLock(xmlRMutex *tok)
 }
 
 /**
- * xmlRMutexUnlock() is used to unlock a libxml2 token_r.
+ * #xmlRMutexUnlock is used to unlock a libxml2 token_r.
  *
  * @param tok  the reentrant mutex
  */
@@ -290,7 +290,7 @@ xmlRMutexUnlock(xmlRMutex *tok ATTRIBUTE_UNUSED)
  ************************************************************************/
 
 /**
- * xmlLockLibrary() is used to take out a re-entrant lock on the libxml2
+ * #xmlLockLibrary is used to take out a re-entrant lock on the libxml2
  * library.
  */
 void
@@ -300,7 +300,7 @@ xmlLockLibrary(void)
 }
 
 /**
- * xmlUnlockLibrary() is used to release a re-entrant lock on the libxml2
+ * #xmlUnlockLibrary is used to release a re-entrant lock on the libxml2
  * library.
  */
 void
@@ -310,7 +310,7 @@ xmlUnlockLibrary(void)
 }
 
 /**
- * @deprecated Alias for xmlInitParser().
+ * @deprecated Alias for #xmlInitParser.
  */
 void
 xmlInitThreads(void)
@@ -319,8 +319,8 @@ xmlInitThreads(void)
 }
 
 /**
- * @deprecated This function is a no-op. Call xmlCleanupParser()
- * to free global state but see the warnings there. xmlCleanupParser()
+ * @deprecated This function is a no-op. Call #xmlCleanupParser
+ * to free global state but see the warnings there. #xmlCleanupParser
  * should be only called once at program exit. In most cases, you don't
  * have call cleanup functions at all.
  */
@@ -420,7 +420,7 @@ xmlInitParser(void) {
  * be used to avoid false positives from memory leak checkers in
  * static builds.
  *
- * WARNING: xmlCleanupParser() assumes that all other threads that called
+ * WARNING: #xmlCleanupParser assumes that all other threads that called
  * libxml2 functions have terminated. No library calls must be made
  * after calling this function. In general, THIS FUNCTION SHOULD ONLY
  * BE CALLED RIGHT BEFORE THE WHOLE PROCESS EXITS.

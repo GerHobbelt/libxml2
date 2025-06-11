@@ -87,7 +87,9 @@ typedef enum {
     /** Uncompress gzipped file input */
     XML_INPUT_UNZIP                 = (1 << 3),
     /** Allow network access. Unused internally. */
-    XML_INPUT_NETWORK               = (1 << 4)
+    XML_INPUT_NETWORK               = (1 << 4),
+    /** Allow system catalog to resolve URIs. */
+    XML_INPUT_USE_SYS_CATALOG       = (1 << 5)
 } xmlParserInputFlags;
 
 /* Deprecated */
@@ -125,7 +127,7 @@ struct _xmlParserInput {
     const xmlChar *version XML_DEPRECATED_MEMBER;
     /* Flags */
     int flags XML_DEPRECATED_MEMBER;
-    /* an unique identifier for the entity */
+    /* an unique identifier for the entity, unused internally */
     int id XML_DEPRECATED_MEMBER;
     /* unused */
     unsigned long parentConsumed XML_DEPRECATED_MEMBER;
@@ -216,11 +218,14 @@ typedef struct _xmlAttrHashBucket xmlAttrHashBucket;
  *
  * `flags` can contain XML_INPUT_UNZIP and XML_INPUT_NETWORK.
  *
+ * The URL is resolved using XML catalogs before being passed to
+ * the callback.
+ *
  * On success, `out` should be set to a new parser input object and
  * XML_ERR_OK should be returned.
  *
  * @param ctxt  parser context
- * @param url  URL to load
+ * @param url  URL or system ID to load
  * @param publicId  publid ID from DTD (optional)
  * @param type  resource type
  * @param flags  flags
@@ -643,7 +648,7 @@ struct _xmlSAXLocator {
  * SAX callback to resolve external entities.
  *
  * This is only used to load DTDs. The preferred way to install
- * custom resolvers is xmlCtxtSetResourceLoader().
+ * custom resolvers is #xmlCtxtSetResourceLoader.
  *
  * @param ctx  the user data (XML parser context)
  * @param publicId  The public identifier of the entity
@@ -1215,15 +1220,18 @@ struct _xmlSAXHandlerV1 {
 
 
 /**
- * External entity loader.
+ * Callback for external entity loader.
  *
- * @param URL  The System ID of the resource requested
- * @param ID  The Public ID of the resource requested
+ * The URL is not resolved using XML catalogs before being passed
+ * to the callback.
+ *
+ * @param URL  The URL or system ID of the resource requested
+ * @param publicId  The public ID of the resource requested (optional)
  * @param context  the XML parser context
- * @returns the entity input parser.
+ * @returns the entity input parser or NULL on error.
  */
 typedef xmlParserInput *(*xmlExternalEntityLoader) (const char *URL,
-					 const char *ID,
+					 const char *publicId,
 					 xmlParserCtxt *context);
 
 /*
@@ -1668,7 +1676,7 @@ XMLPUBFUN long
 
 /**
  * This is the set of XML parser options that can be passed to
- * xmlReadDoc(), xmlCtxtSetOptions() and other functions.
+ * #xmlReadDoc, #xmlCtxtSetOptions and other functions.
  */
 typedef enum {
     /**

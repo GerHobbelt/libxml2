@@ -67,7 +67,7 @@
 /**
  * Use the Timsort algorithm provided in timsort.h to sort
  * nodeset as this is a great improvement over the old Shell sort
- * used in xmlXPathNodeSetSort()
+ * used in #xmlXPathNodeSetSort
  */
 #define WITH_TIM_SORT
 
@@ -187,7 +187,7 @@ double xmlXPathNINF = 0.0;
 #endif
 
 /**
- * @deprecated Alias for xmlInitParser().
+ * @deprecated Alias for #xmlInitParser.
  */
 void
 xmlXPathInit(void) {
@@ -1617,7 +1617,7 @@ xmlXPathContextSetCache(xmlXPathContext *ctxt,
 }
 
 /**
- * This is the cached version of xmlXPathWrapNodeSet().
+ * This is the cached version of #xmlXPathWrapNodeSet.
  * Wrap the Nodeset `val` in a new xmlXPathObject
  *
  * In case of error the node set is destroyed and NULL is returned.
@@ -1654,7 +1654,7 @@ xmlXPathCacheWrapNodeSet(xmlXPathParserContextPtr pctxt, xmlNodeSetPtr val)
 }
 
 /**
- * This is the cached version of xmlXPathWrapString().
+ * This is the cached version of #xmlXPathWrapString.
  * Wraps the `val` string into an XPath object.
  *
  * @param pctxt  the XPath context
@@ -1687,7 +1687,7 @@ xmlXPathCacheWrapString(xmlXPathParserContextPtr pctxt, xmlChar *val)
 }
 
 /**
- * This is the cached version of xmlXPathNewNodeSet().
+ * This is the cached version of #xmlXPathNewNodeSet.
  * Acquire an xmlXPathObject of type NodeSet and initialize
  * it with the single Node `val`
  *
@@ -1755,7 +1755,7 @@ xmlXPathCacheNewNodeSet(xmlXPathParserContextPtr pctxt, xmlNodePtr val)
 }
 
 /**
- * This is the cached version of xmlXPathNewString().
+ * This is the cached version of #xmlXPathNewString.
  * Acquire an xmlXPathObject of type string and of value `val`
  *
  * @param pctxt  the XPath context
@@ -1798,7 +1798,7 @@ xmlXPathCacheNewString(xmlXPathParserContextPtr pctxt, const xmlChar *val)
 }
 
 /**
- * This is the cached version of xmlXPathNewCString().
+ * This is the cached version of #xmlXPathNewCString.
  * Acquire an xmlXPathObject of type string and of value `val`
  *
  * @param pctxt  the XPath context
@@ -1812,7 +1812,7 @@ xmlXPathCacheNewCString(xmlXPathParserContextPtr pctxt, const char *val)
 }
 
 /**
- * This is the cached version of xmlXPathNewBoolean().
+ * This is the cached version of #xmlXPathNewBoolean.
  * Acquires an xmlXPathObject of type boolean and of value `val`
  *
  * @param pctxt  the XPath context
@@ -1846,7 +1846,7 @@ xmlXPathCacheNewBoolean(xmlXPathParserContextPtr pctxt, int val)
 }
 
 /**
- * This is the cached version of xmlXPathNewFloat().
+ * This is the cached version of #xmlXPathNewFloat.
  * Acquires an xmlXPathObject of type double and of value `val`
  *
  * @param pctxt  the XPath context
@@ -1880,7 +1880,7 @@ xmlXPathCacheNewFloat(xmlXPathParserContextPtr pctxt, double val)
 }
 
 /**
- * This is the cached version of xmlXPathObjectCopy().
+ * This is the cached version of #xmlXPathObjectCopy.
  * Acquire a copy of a given object
  *
  * @param pctxt  the XPath context
@@ -3291,7 +3291,7 @@ xmlXPathWrapNodeSet(xmlNodeSet *val) {
 
 /**
  * Free up the xmlXPathObject `obj` but don't deallocate the objects in
- * the list contrary to xmlXPathFreeObject().
+ * the list contrary to #xmlXPathFreeObject.
  *
  * @param obj  an existing NodeSetList object
  */
@@ -3610,7 +3610,7 @@ xmlXPathNodeTrailingSorted (xmlNodeSet *nodes, xmlNode *node) {
 /**
  * Implements the EXSLT - Sets trailing() function:
  *    node-set set:trailing (node-set, node-set)
- * `nodes` is sorted by document order, then xmlXPathNodeTrailingSorted()
+ * `nodes` is sorted by document order, then #xmlXPathNodeTrailingSorted
  * is called.
  *
  * @param nodes  a node-set
@@ -3647,7 +3647,7 @@ xmlXPathTrailingSorted (xmlNodeSet *nodes1, xmlNodeSet *nodes2) {
  * Implements the EXSLT - Sets trailing() function:
  *    node-set set:trailing (node-set, node-set)
  * `nodes1` and `nodes2` are sorted by document order, then
- * xmlXPathTrailingSorted() is called.
+ * #xmlXPathTrailingSorted is called.
  *
  * @param nodes1  a node-set
  * @param nodes2  a node-set
@@ -4436,7 +4436,7 @@ xmlXPathCastNodeSetToString (xmlNodeSet *ns) {
  *
  * @param val  an XPath object
  * @returns the allocated string value of the object, NULL in case of error.
- *         It's up to the caller to free the string memory with xmlFree().
+ *         It's up to the caller to free the string memory with #xmlFree.
  */
 xmlChar *
 xmlXPathCastToString(xmlXPathObject *val) {
@@ -6131,7 +6131,7 @@ typedef xmlNode *(*xmlXPathTraversalFunctionExt)
                     (xmlNode *cur, xmlNode *contextNode);
 
 /*
- * Used for merging node sets in xmlXPathCollectAndTest().
+ * Used for merging node sets in #xmlXPathCollectAndTest.
  */
 typedef xmlNodeSet *(*xmlXPathNodeSetMergeFunction)
 		    (xmlNodeSet *, xmlNodeSet *);
@@ -8449,7 +8449,7 @@ xmlXPathParseLiteral(xmlXPathParserContextPtr ctxt) {
  *  [29]   Literal ::=   '"' [^"]* '"'
  *                    | "'" [^']* "'"
  *
- * TODO: xmlXPathCompLiteral() memory allocation could be improved.
+ * TODO: Memory allocation could be improved.
  *
  * @param ctxt  the XPath Parser context
  */
@@ -12080,7 +12080,7 @@ xmlXPathNodeEval(xmlNode *node, const xmlChar *str, xmlXPathContext *ctx) {
 }
 
 /**
- * Alias for xmlXPathEval().
+ * Alias for #xmlXPathEval.
  *
  * @param str  the XPath expression
  * @param ctxt  the XPath context

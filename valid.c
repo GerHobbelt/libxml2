@@ -740,7 +740,7 @@ error:
 
 /**
  * Allocate an element content structure.
- * Deprecated in favor of xmlNewDocElementContent()
+ * Deprecated in favor of #xmlNewDocElementContent
  *
  * @deprecated Internal function, don't use.
  *
@@ -850,7 +850,7 @@ error:
 
 /**
  * Build a copy of an element content description.
- * Deprecated, use xmlCopyDocElementContent() instead
+ * Deprecated, use #xmlCopyDocElementContent instead
  *
  * @deprecated Internal function, don't use.
  *
@@ -919,7 +919,7 @@ xmlFreeDocElementContent(xmlDoc *doc, xmlElementContent *cur) {
 
 /**
  * Free an element content structure. The whole subtree is removed.
- * Deprecated, use xmlFreeDocElementContent() instead
+ * Deprecated, use #xmlFreeDocElementContent instead
  *
  * @deprecated Internal function, don't use.
  *
@@ -932,7 +932,7 @@ xmlFreeElementContent(xmlElementContent *cur) {
 
 #ifdef LIBXML_OUTPUT_ENABLED
 /**
- * Deprecated, unsafe, use xmlSnprintfElementContent()
+ * Deprecated, unsafe, use #xmlSnprintfElementContent
  *
  * @deprecated Internal function, don't use.
  *
@@ -1101,11 +1101,22 @@ xmlAddElementDecl(xmlValidCtxt *ctxt,
     const xmlChar *localName;
     xmlChar *prefix = NULL;
 
-    if (dtd == NULL) {
+    if ((dtd == NULL) || (name == NULL))
 	return(NULL);
-    }
-    if (name == NULL) {
-	return(NULL);
+
+    switch (type) {
+        case XML_ELEMENT_TYPE_EMPTY:
+        case XML_ELEMENT_TYPE_ANY:
+            if (content != NULL)
+                return(NULL);
+            break;
+        case XML_ELEMENT_TYPE_MIXED:
+        case XML_ELEMENT_TYPE_ELEMENT:
+            if (content == NULL)
+                return(NULL);
+            break;
+        default:
+            return(NULL);
     }
 
     /*
@@ -1325,7 +1336,7 @@ xmlCopyElementTable(xmlElementTable *table) {
  * This will dump the content of the element declaration as an XML
  * DTD definition.
  *
- * @deprecated Use xmlSaveTree().
+ * @deprecated Use #xmlSaveTree.
  *
  * @param buf  the XML buffer output
  * @param elem  An element table
@@ -1686,22 +1697,6 @@ xmlAddAttributeDecl(xmlValidCtxt *ctxt,
     }
 
     /*
-     * Validity Check:
-     * Multiple ID per element
-     */
-#ifdef LIBXML_VALID_ENABLED
-    if ((ctxt != NULL) && (ctxt->flags & XML_VCTXT_VALIDATE) &&
-        (type == XML_ATTRIBUTE_ID) &&
-        (xmlScanIDAttributeDecl(ctxt, elemDef, 1) != 0)) {
-        xmlErrValidNode(ctxt, (xmlNodePtr) dtd, XML_DTD_MULTIPLE_ID,
-       "Element %s has too may ID attributes defined : %s\n",
-               elem, name, NULL);
-        if (ctxt != NULL)
-            ctxt->valid = 0;
-    }
-#endif /* LIBXML_VALID_ENABLED */
-
-    /*
      * Insert namespace default def first they need to be
      * processed first.
      */
@@ -1837,7 +1832,7 @@ xmlCopyAttributeTable(xmlAttributeTable *table) {
  * This will dump the content of the attribute declaration as an XML
  * DTD definition.
  *
- * @deprecated Use xmlSaveTree().
+ * @deprecated Use #xmlSaveTree.
  *
  * @param buf  the XML buffer output
  * @param attr  An attribute declaration
@@ -3865,12 +3860,6 @@ xmlValidateElementDecl(xmlValidCtxt *ctxt, xmlDoc *doc,
         }
     }
 
-    /* One ID per Element Type
-     * already done when registering the attribute
-    if (xmlScanIDAttributeDecl(ctxt, elem) > 1) {
-	ret = 0;
-    } */
-
     xmlFree(prefix);
     return(ret);
 }
@@ -5440,7 +5429,7 @@ xmlValidatePopElement(xmlValidCtxt *ctxt, xmlDoc *doc ATTRIBUTE_UNUSED,
  * - [ VC: Element Valid ]
  * - [ VC: Required Attribute ]
  *
- * Then calls xmlValidateOneAttribute() for each attribute present.
+ * Then calls #xmlValidateOneAttribute for each attribute present.
  *
  * ID/IDREF checks are handled separately.
  *
@@ -5663,8 +5652,6 @@ child_ok:
 			if (attr->prefix != NULL) {
 			    xmlNsPtr nameSpace = attrib->ns;
 
-			    if (nameSpace == NULL)
-				nameSpace = elem->ns;
 			    /*
 			     * qualified names handling is problematic, having a
 			     * different prefix should be possible but DTDs don't
@@ -5712,47 +5699,6 @@ child_ok:
 		xmlErrValidWarning(ctxt, elem, XML_DTD_DIFFERENT_PREFIX,
 		   "Element %s required attribute %s:%s has different prefix\n",
 		       elem->name, attr->prefix, attr->name);
-	    }
-	} else if (attr->def == XML_ATTRIBUTE_FIXED) {
-	    /*
-	     * Special tests checking #FIXED namespace declarations
-	     * have the right value since this is not done as an
-	     * attribute checking
-	     */
-	    if ((attr->prefix == NULL) &&
-		(xmlStrEqual(attr->name, BAD_CAST "xmlns"))) {
-		xmlNsPtr ns;
-
-		ns = elem->nsDef;
-		while (ns != NULL) {
-		    if (ns->prefix == NULL) {
-			if (!xmlStrEqual(attr->defaultValue, ns->href)) {
-			    xmlErrValidNode(ctxt, elem,
-			           XML_DTD_ELEM_DEFAULT_NAMESPACE,
-   "Element %s namespace name for default namespace does not match the DTD\n",
-				   elem->name, NULL, NULL);
-			    ret = 0;
-			}
-			goto found;
-		    }
-		    ns = ns->next;
-		}
-	    } else if (xmlStrEqual(attr->prefix, BAD_CAST "xmlns")) {
-		xmlNsPtr ns;
-
-		ns = elem->nsDef;
-		while (ns != NULL) {
-		    if (xmlStrEqual(attr->name, ns->prefix)) {
-			if (!xmlStrEqual(attr->defaultValue, ns->href)) {
-			    xmlErrValidNode(ctxt, elem, XML_DTD_ELEM_NAMESPACE,
-		   "Element %s namespace name for %s does not match the DTD\n",
-				   elem->name, ns->prefix, NULL);
-			    ret = 0;
-			}
-			goto found;
-		    }
-		    ns = ns->next;
-		}
 	    }
 	}
 found:
@@ -6139,7 +6085,7 @@ xmlValidateDtd(xmlValidCtxt *ctxt, xmlDoc *doc, xmlDtd *dtd) {
 /**
  * Validate a document against a DTD.
  *
- * Like xmlValidateDtd() but uses the parser context's error handler.
+ * Like #xmlValidateDtd but uses the parser context's error handler.
  *
  * @since 2.14.0
  *
@@ -6381,7 +6327,7 @@ xmlValidateDocumentInternal(xmlParserCtxtPtr ctxt, xmlValidCtxtPtr vctxt,
  * Try to validate the document instance.
  *
  * @deprecated This function can't report malloc or other failures.
- * Use xmlCtxtValidateDocument().
+ * Use #xmlCtxtValidateDocument.
  *
  * Performs the all the checks described by the XML Rec,
  * i.e. validates the internal and external subset (if present)
@@ -6399,7 +6345,7 @@ xmlValidateDocument(xmlValidCtxt *vctxt, xmlDoc *doc) {
 /**
  * Validate a document.
  *
- * Like xmlValidateDocument() but uses the parser context's error handler.
+ * Like #xmlValidateDocument but uses the parser context's error handler.
  *
  * Option XML_PARSE_DTDLOAD should be enabled in the parser context
  * to make external entities work.

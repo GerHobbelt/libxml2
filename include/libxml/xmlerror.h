@@ -22,9 +22,10 @@ extern "C" {
 /**
  * Set generic error callback.
  *
- * @deprecated Use xmlSetGenericErrorFunc()
+ * @deprecated Use #xmlSetGenericErrorFunc
  */
-#define initGenericErrorDefaultFunc(h) xmlSetGenericErrorFunc(NULL, *(h))
+#define initGenericErrorDefaultFunc(h) \
+    xmlSetGenericErrorFunc(NULL, (h) ? *(h) : NULL)
 
 /**
  * Indicates the level of an error

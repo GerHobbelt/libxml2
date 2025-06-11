@@ -180,10 +180,10 @@ xmlGetParameterEntityFromDtd(const xmlDtd *dtd, const xmlChar *name) {
 xmlChar *
 xmlBuildQName(const xmlChar *ncname, const xmlChar *prefix,
 	      xmlChar *memory, int len) {
-    int lenn, lenp;
+    size_t lenn, lenp;
     xmlChar *ret;
 
-    if (ncname == NULL) return(NULL);
+    if ((ncname == NULL) || (len < 0)) return(NULL);
     if (prefix == NULL) return((xmlChar *) ncname);
 
 #ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
@@ -194,8 +194,10 @@ xmlBuildQName(const xmlChar *ncname, const xmlChar *prefix,
 
     lenn = strlen((char *) ncname);
     lenp = strlen((char *) prefix);
+    if (lenn >= SIZE_MAX - lenp - 1)
+        return(NULL);
 
-    if ((memory == NULL) || (len < lenn + lenp + 2)) {
+    if ((memory == NULL) || ((size_t) len < lenn + lenp + 2)) {
 	ret = xmlMalloc(lenn + lenp + 2);
 	if (ret == NULL)
 	    return(NULL);
@@ -636,7 +638,7 @@ xmlFreeNsList(xmlNs *cur) {
  * external subset. If the document has no external subset, it
  * will be set to the created DTD.
  *
- * To create an internal subset, use xmlCreateIntSubset().
+ * To create an internal subset, use #xmlCreateIntSubset.
  *
  * @param doc  the document pointer (optional)
  * @param name  the DTD name (optional)
@@ -972,7 +974,7 @@ xmlFreeDoc(xmlDoc *cur) {
 }
 
 /**
- * See xmlNodeParseContent().
+ * See xmlNodeParseContent.
  *
  * @param doc  a document (optional)
  * @param parent  an element or attribute (optional)
@@ -1256,9 +1258,9 @@ xmlNodeParseContent(xmlNode *node, const xmlChar *content, int len) {
 }
 
 /**
- * See xmlStringGetNodeList().
+ * See #xmlStringGetNodeList.
  *
- * @deprecated Use xmlNodeSetContentLen().
+ * @deprecated Use #xmlNodeSetContentLen.
  *
  * @param doc  a document (optional)
  * @param value  an attribute value
@@ -1280,7 +1282,7 @@ xmlStringLenGetNodeList(const xmlDoc *doc, const xmlChar *value, int len) {
  * associated with the document if provided. The document is also
  * used to look up entities.
  *
- * @deprecated Use xmlNodeSetContent().
+ * @deprecated Use #xmlNodeSetContent.
  *
  * The input is not validated. Syntax errors or references to
  * undeclared entities will be ignored silently with unspecified
@@ -1371,10 +1373,10 @@ error:
  * If `inLine` is true, entity references will be substituted.
  * Otherwise, entity references will be kept and special characters
  * like `&` as well as non-ASCII chars will be escaped. See
- * xmlEncodeEntitiesReentrant() for details. If `list` is the child
+ * #xmlEncodeEntitiesReentrant for details. If `list` is the child
  * of an attribute, escaping rules apply are adjusted.
  *
- * See xmlNodeListGetRawString() for an alternative option.
+ * See #xmlNodeListGetRawString for an alternative option.
  *
  * @param doc  a document (optional)
  * @param list  a node list of attribute children
@@ -1413,7 +1415,7 @@ xmlNodeListGetString(xmlDoc *doc, const xmlNode *list, int inLine)
  *
  * If `inLine` is true, entity references will be substituted.
  * Otherwise, entity references will be kept and special characters
- * like `&` will be escaped. See xmlEncodeSpecialChars() for
+ * like `&` will be escaped. See #xmlEncodeSpecialChars for
  * details.
  *
  * @param doc  a document (unused)
@@ -1593,7 +1595,7 @@ xmlNewNsProp(xmlNode *node, xmlNs *ns, const xmlChar *name,
 /**
  * Create an attribute node.
  *
- * Like xmlNewNsProp(), but the `name` string will be used directly
+ * Like #xmlNewNsProp, but the `name` string will be used directly
  * without making a copy. Takes ownership of `name` which will also
  * be freed on error.
  *
@@ -1621,7 +1623,7 @@ xmlNewNsPropEatName(xmlNode *node, xmlNs *ns, xmlChar *name,
  * If provided, `value` is expected to be a valid XML attribute value
  * possibly containing character and entity references. Syntax errors
  * and references to undeclared entities are ignored silently.
- * If you want to pass a raw string, see xmlNewProp().
+ * If you want to pass a raw string, see #xmlNewProp.
  *
  * @param doc  the target document (optional)
  * @param name  the name of the attribute
@@ -1799,7 +1801,7 @@ error:
 /**
  * Create a processing instruction node.
  *
- * Use of this function is DISCOURAGED in favor of xmlNewDocPI().
+ * Use of this function is DISCOURAGED in favor of #xmlNewDocPI.
  *
  * @param name  the processing instruction target
  * @param content  the PI content (optional)
@@ -1814,7 +1816,7 @@ xmlNewPI(const xmlChar *name, const xmlChar *content) {
 /**
  * Create an element node.
  *
- * Use of this function is DISCOURAGED in favor of xmlNewDocNode().
+ * Use of this function is DISCOURAGED in favor of #xmlNewDocNode.
  *
  * @param ns  namespace (optional)
  * @param name  the node name
@@ -1829,9 +1831,9 @@ xmlNewNode(xmlNs *ns, const xmlChar *name) {
 /**
  * Create an element node.
  *
- * Use of this function is DISCOURAGED in favor of xmlNewDocNodeEatName().
+ * Use of this function is DISCOURAGED in favor of #xmlNewDocNodeEatName.
  *
- * Like xmlNewNode(), but the `name` string will be used directly
+ * Like #xmlNewNode, but the `name` string will be used directly
  * without making a copy. Takes ownership of `name` which will also
  * be freed on error.
  *
@@ -1881,7 +1883,7 @@ xmlNewElem(xmlDocPtr doc, xmlNsPtr ns, const xmlChar *name,
  * possibly containing character and entity references. Syntax errors
  * and references to undeclared entities are ignored silently.
  * Only references are handled, nested elements, comments or PIs are
- * not. See xmlNewDocRawNode() for an alternative.
+ * not. See #xmlNewDocRawNode for an alternative.
  *
  * General notes on object creation:
  *
@@ -1931,7 +1933,7 @@ xmlNewDocNode(xmlDoc *doc, xmlNs *ns,
 /**
  * Create an element node.
  *
- * Like xmlNewDocNode(), but the `name` string will be used directly
+ * Like #xmlNewDocNode, but the `name` string will be used directly
  * without making a copy. Takes ownership of `name` which will also
  * be freed on error.
  *
@@ -2030,7 +2032,7 @@ xmlNewDocFragment(xmlDoc *doc) {
 /**
  * Create a text node.
  *
- * Use of this function is DISCOURAGED in favor of xmlNewDocText().
+ * Use of this function is DISCOURAGED in favor of #xmlNewDocText.
  *
  * @param content  raw text content (optional)
  * @returns a pointer to the new node object or NULL if a memory
@@ -2072,7 +2074,7 @@ error:
  * of the parent.
  *
  * If `content` is provided, a text node will be added to the child
- * element, see xmlNewDocRawNode().
+ * element, see #xmlNewDocRawNode.
  *
  * @param parent  the parent node
  * @param ns  a namespace (optional)
@@ -2280,7 +2282,7 @@ xmlNewDocText(const xmlDoc *doc, const xmlChar *content) {
 /**
  * Create a new text node.
  *
- * Use of this function is DISCOURAGED in favor of xmlNewDocTextLen().
+ * Use of this function is DISCOURAGED in favor of #xmlNewDocTextLen.
  *
  * @param content  raw text content (optional)
  * @param len  size of text content
@@ -2333,7 +2335,7 @@ xmlNewDocTextLen(xmlDoc *doc, const xmlChar *content, int len) {
 }
 
 /**
- * Use of this function is DISCOURAGED in favor of xmlNewDocComment().
+ * Use of this function is DISCOURAGED in favor of #xmlNewDocComment.
  *
  * Create a comment node.
  *
@@ -2573,8 +2575,8 @@ xmlNodeSetDoc(xmlNodePtr node, xmlDocPtr doc) {
  * Associate all nodes in a tree with a new document.
  *
  * This is an internal function which shouldn't be used. It is
- * invoked by functions like xmlAddChild(), xmlAddSibling() or
- * xmlReplaceNode(). `tree` must be the root node of an unlinked
+ * invoked by functions like #xmlAddChild, #xmlAddSibling or
+ * #xmlReplaceNode. `tree` must be the root node of an unlinked
  * subtree.
  *
  * Also copy strings from the old document's dictionary and
@@ -2638,7 +2640,7 @@ xmlSetTreeDoc(xmlNode *tree, xmlDoc *doc) {
 /**
  * Associate all subtrees in `list` with a new document.
  *
- * Internal function, see xmlSetTreeDoc().
+ * Internal function, see #xmlSetTreeDoc.
  *
  * @param list  a node list
  * @param doc  new document
@@ -2675,7 +2677,7 @@ xmlSetListDoc(xmlNode *list, xmlDoc *doc) {
  * If provided, `content` is expected to be a valid XML attribute
  * value possibly containing character and entity references. Text
  * and entity reference node will be added to the child element,
- * see xmlNewDocNode().
+ * see #xmlNewDocNode.
  *
  * @param parent  the parent node
  * @param ns  a namespace (optional)
@@ -2891,13 +2893,13 @@ xmlInsertNode(xmlDocPtr doc, xmlNodePtr cur, xmlNodePtr parent,
 /**
  * Unlinks `cur` and inserts it as next sibling after `prev`.
  *
- * Unlike xmlAddChild() this function does not merge text nodes.
+ * Unlike #xmlAddChild this function does not merge text nodes.
  *
  * If `cur` is an attribute node, it is inserted after attribute
  * `prev`. If the attribute list contains an attribute with a name
  * matching `cur`, the old attribute is destroyed.
  *
- * See the notes in xmlAddChild().
+ * See the notes in #xmlAddChild.
  *
  * @param prev  the target node
  * @param cur  the new node
@@ -2920,13 +2922,13 @@ xmlAddNextSibling(xmlNode *prev, xmlNode *cur) {
 /**
  * Unlinks `cur` and inserts it as previous sibling before `next`.
  *
- * Unlike xmlAddChild() this function does not merge text nodes.
+ * Unlike #xmlAddChild this function does not merge text nodes.
  *
  * If `cur` is an attribute node, it is inserted before attribute
  * `next`. If the attribute list contains an attribute with a name
  * matching `cur`, the old attribute is destroyed.
  *
- * See the notes in xmlAddChild().
+ * See the notes in #xmlAddChild.
  *
  * @param next  the target node
  * @param cur  the new node
@@ -2957,7 +2959,7 @@ xmlAddPrevSibling(xmlNode *next, xmlNode *cur) {
  * list containing `node`. If the attribute list contains an attribute
  * with a name matching `cur`, the old attribute is destroyed.
  *
- * See the notes in xmlAddChild().
+ * See the notes in #xmlAddChild.
  *
  * @param node  the target node
  * @param cur  the new node
@@ -2992,7 +2994,7 @@ xmlAddSibling(xmlNode *node, xmlNode *cur) {
 /**
  * Append a node list to another node.
  *
- * See xmlAddChild().
+ * See #xmlAddChild.
  *
  * @param parent  the parent node
  * @param cur  the first node in the list
@@ -3077,14 +3079,14 @@ xmlAddChildList(xmlNode *parent, xmlNode *cur) {
  *
  * General notes:
  *
- * Move operations like xmlAddChild() can cause element or attribute
+ * Move operations like #xmlAddChild can cause element or attribute
  * nodes to reference namespaces that aren't declared in one of
  * their ancestors. This can lead to use-after-free errors if the
  * elements containing the declarations are freed later, especially
  * when moving nodes from one document to another. You should
- * consider calling xmlReconciliateNs() after a move operation to
+ * consider calling #xmlReconciliateNs after a move operation to
  * normalize namespaces. Another option is to call
- * xmlDOMWrapAdoptNode() with the target parent before moving a node.
+ * #xmlDOMWrapAdoptNode with the target parent before moving a node.
  *
  * For the most part, move operations don't check whether the
  * resulting tree structure is valid. Users must make sure that
@@ -3419,7 +3421,7 @@ xmlFreeNodeList(xmlNode *cur) {
 /**
  * Free a node including all the children.
  *
- * This doesn't unlink the node from the tree. Call xmlUnlinkNode() first
+ * This doesn't unlink the node from the tree. Call #xmlUnlinkNode first
  * unless `cur` is a root node.
  *
  * @param cur  the node
@@ -3520,7 +3522,7 @@ xmlUnlinkNodeInternal(xmlNodePtr cur) {
  * Unlink a node from its tree.
  *
  * The node is not freed. Unless it is reinserted, it must be managed
- * manually and freed eventually by calling xmlFreeNode().
+ * manually and freed eventually by calling #xmlFreeNode.
  *
  * @param cur  the node
  */
@@ -3555,10 +3557,10 @@ xmlUnlinkNode(xmlNode *cur) {
  *
  * It is an error if `old` has no parent.
  *
- * Unlike xmlAddChild(), this function doesn't merge text nodes or
+ * Unlike #xmlAddChild, this function doesn't merge text nodes or
  * delete duplicate attributes.
  *
- * See the notes in xmlAddChild().
+ * See the notes in #xmlAddChild.
  *
  * @param old  the old node
  * @param cur  the node (optional)
@@ -3790,7 +3792,7 @@ error:
  * Create a copy of the attribute. This function sets the parent
  * pointer of the copy to `target` but doesn't set the attribute on
  * the target element. Users should consider to set the attribute
- * by calling xmlAddChild() afterwards or reset the parent pointer to
+ * by calling #xmlAddChild afterwards or reset the parent pointer to
  * NULL.
  *
  * @param target  the element where the attribute will be grafted
@@ -4147,7 +4149,7 @@ error:
  * If `extended` is 2, make a shallow copy including properties and
  * namespaces of elements.
  *
- * Use of this function is DISCOURAGED in favor of xmlDocCopyNode().
+ * Use of this function is DISCOURAGED in favor of #xmlDocCopyNode.
  *
  * @param node  the node
  * @param extended  mode of operation
@@ -4201,7 +4203,7 @@ xmlNode *xmlDocCopyNodeList(xmlDoc *doc, xmlNode *node) {
 /**
  * Copy a node list and all children.
  *
- * Use of this function is DISCOURAGED in favor of xmlDocCopyNodeList().
+ * Use of this function is DISCOURAGED in favor of #xmlDocCopyNodeList.
  *
  * @param node  the first node in the list.
  * @returns the head of the copied list or NULL if a memory
@@ -4737,7 +4739,7 @@ xmlDocGetRootElement(const xmlDoc *doc) {
 
 /**
  * If `root` is NULL no action is taken. To remove a node from a
- * document, use xmlUnlinkNode() instead.
+ * document, use #xmlUnlinkNode instead.
  *
  * Set the root element of the document (`doc->children` is a list
  * containing possibly comments, PIs, etc ...).
@@ -4816,7 +4818,7 @@ xmlNodeSetLang(xmlNode *cur, const xmlChar *lang) {
  *
  * @param cur  the node being checked
  * @returns a pointer to the lang value, or NULL if not found
- *     It's up to the caller to free the memory with xmlFree().
+ *     It's up to the caller to free the memory with #xmlFree.
  */
 xmlChar *
 xmlNodeGetLang(const xmlNode *cur) {
@@ -5130,13 +5132,13 @@ found:
 }
 
 /**
- * See xmlNodeGetBaseSafe(). This function doesn't allow to distinguish
+ * See #xmlNodeGetBaseSafe. This function doesn't allow to distinguish
  * memory allocation failures from a non-existing base.
  *
  * @param doc  the document the node pertains to
  * @param cur  the node being checked
  * @returns a pointer to the base URL, or NULL if not found
- *     It's up to the caller to free the memory with xmlFree().
+ *     It's up to the caller to free the memory with #xmlFree.
  */
 xmlChar *
 xmlNodeGetBase(const xmlDoc *doc, const xmlNode *cur) {
@@ -5293,7 +5295,7 @@ xmlBufGetNodeContent(xmlBuf *buf, const xmlNode *cur)
  *
  * Entity references are substituted.
  *
- * It's up to the caller to free the result with xmlFree().
+ * It's up to the caller to free the result with #xmlFree.
  *
  * @param cur  the node being read
  * @returns a new string or NULL if arguments are invalid or a
@@ -5411,11 +5413,11 @@ xmlNodeSetContentInternal(xmlNodePtr cur, const xmlChar *content, int len) {
  * entity references. Syntax errors and references to undeclared
  * entities are ignored silently. Unfortunately, there isn't an
  * API to pass raw content directly. An inefficient work-around
- * is to escape the content with xmlEncodeSpecialChars() before
+ * is to escape the content with #xmlEncodeSpecialChars before
  * passing it. A better trick is clearing the old content
  * with `xmlNodeSetContent(node, NULL)` first and then calling
  * `xmlNodeAddContent(node, content)`. Unlike this function,
- * xmlNodeAddContent() accepts raw text.
+ * #xmlNodeAddContent accepts raw text.
  *
  * @param cur  the node being modified
  * @param content  the new value of the content
@@ -5427,7 +5429,7 @@ xmlNodeSetContent(xmlNode *cur, const xmlChar *content) {
 }
 
 /**
- * See xmlNodeSetContent().
+ * See #xmlNodeSetContent.
  *
  * @param cur  the node being modified
  * @param content  the new value of the content
@@ -5442,7 +5444,7 @@ xmlNodeSetContentLen(xmlNode *cur, const xmlChar *content, int len) {
 /**
  * Append the extra substring to the node content.
  *
- * NOTE: In contrast to xmlNodeSetContentLen(), `content` is supposed
+ * NOTE: In contrast to #xmlNodeSetContentLen, `content` is supposed
  * to be raw text, so unescaped XML special chars are allowed, entity
  * references are not supported.
  *
@@ -5490,7 +5492,7 @@ xmlNodeAddContentLen(xmlNode *cur, const xmlChar *content, int len) {
 /**
  * Append the extra substring to the node content.
  *
- * NOTE: In contrast to xmlNodeSetContent(), `content` is supposed
+ * NOTE: In contrast to #xmlNodeSetContent, `content` is supposed
  * to be raw text, so unescaped XML special chars are allowed, entity
  * references are not supported.
  *
@@ -5612,7 +5614,7 @@ xmlGetNsListSafe(const xmlDoc *doc ATTRIBUTE_UNUSED, const xmlNode *node,
 /**
  * Find all in-scope namespaces of a node.
  *
- * Use xmlGetNsListSafe() for better error reporting.
+ * Use #xmlGetNsListSafe for better error reporting.
  *
  * @param doc  the document
  * @param node  the current node
@@ -6413,8 +6415,8 @@ xmlNodeGetAttrValue(const xmlNode *node, const xmlChar *name,
  * This function looks in DTD attribute declarations for \#FIXED or
  * default declaration values.
  *
- * NOTE: This function is ignores namespaces. Use xmlGetNsProp() or
- * xmlGetNoNsProp() for namespace aware processing.
+ * NOTE: This function is ignores namespaces. Use #xmlGetNsProp or
+ * #xmlGetNoNsProp for namespace aware processing.
  *
  * NOTE: This function doesn't allow to distinguish malloc failures from
  * missing attributes.
@@ -6443,11 +6445,11 @@ xmlGetProp(const xmlNode *node, const xmlChar *name) {
  * This function looks in DTD attribute declarations for \#FIXED or
  * default declaration values.
  *
- * This function is similar to xmlGetProp() except it will accept only
+ * This function is similar to #xmlGetProp except it will accept only
  * an attribute in no namespace.
  *
  * NOTE: This function doesn't allow to distinguish malloc failures from
- * missing attributes. It's more robust to use xmlNodeGetAttrValue().
+ * missing attributes. It's more robust to use #xmlNodeGetAttrValue.
  *
  * @param node  the element
  * @param name  the attribute name
@@ -6477,7 +6479,7 @@ xmlGetNoNsProp(const xmlNode *node, const xmlChar *name) {
  * default declaration values.
  *
  * NOTE: This function doesn't allow to distinguish malloc failures from
- * missing attributes. It's more robust to use xmlNodeGetAttrValue().
+ * missing attributes. It's more robust to use #xmlNodeGetAttrValue.
  *
  * @param node  the element
  * @param name  the attribute name
@@ -6739,7 +6741,7 @@ xmlSetDocCompressMode (xmlDoc *doc, int mode) {
 /**
  * Get the global compression level, ZLIB based.
  *
- * @deprecated Use xmlGetDocCompressMode()
+ * @deprecated Use #xmlGetDocCompressMode
  *
  * @returns 0 (uncompressed) to 9 (max compression)
  */
@@ -6752,7 +6754,7 @@ xmlGetCompressMode(void)
 /**
  * Set the global compression level, ZLIB based.
  *
- * @deprecated Use xmlSetDocCompressMode()
+ * @deprecated Use #xmlSetDocCompressMode
  *
  * Correct values: 0 (uncompressed) to 9 (max compression)
  *

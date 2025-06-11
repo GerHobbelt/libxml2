@@ -172,13 +172,13 @@ static int glob(const char *pattern, ATTRIBUTE_UNUSED int flags,
     if (hFind == INVALID_HANDLE_VALUE)
         return(0);
     nb_paths = 20;
-    ret->gl_pathv = (char **) malloc(nb_paths * sizeof(char *));
+    ret->gl_pathv = (char **) xmlMalloc(nb_paths * sizeof(char *));
     if (ret->gl_pathv == NULL) {
 	FindClose(hFind);
         return(-1);
     }
     strncpy(directory + len, FindFileData.cFileName, 499 - len);
-    ret->gl_pathv[ret->gl_pathc] = strdup(directory);
+    ret->gl_pathv[ret->gl_pathc] = xmlMemStrdup(directory);
     if (ret->gl_pathv[ret->gl_pathc] == NULL)
         goto done;
     ret->gl_pathc++;
@@ -186,14 +186,14 @@ static int glob(const char *pattern, ATTRIBUTE_UNUSED int flags,
         if (FindFileData.cFileName[0] == '.')
 	    continue;
         if (ret->gl_pathc + 2 > nb_paths) {
-            char **tmp = realloc(ret->gl_pathv, nb_paths * 2 * sizeof(char *));
+            char **tmp = xmlRealloc(ret->gl_pathv, nb_paths * 2 * sizeof(char *));
             if (tmp == NULL)
                 break;
             ret->gl_pathv = tmp;
             nb_paths *= 2;
 	}
 	strncpy(directory + len, FindFileData.cFileName, 499 - len);
-	ret->gl_pathv[ret->gl_pathc] = strdup(directory);
+	ret->gl_pathv[ret->gl_pathc] = xmlMemStrdup(directory);
         if (ret->gl_pathv[ret->gl_pathc] == NULL)
             break;
         ret->gl_pathc++;
@@ -214,8 +214,9 @@ static void globfree(glob_t *pglob) {
 
     for (i = 0;i < pglob->gl_pathc;i++) {
          if (pglob->gl_pathv[i] != NULL)
-             free(pglob->gl_pathv[i]);
+             xmlFree(pglob->gl_pathv[i]);
     }
+    xmlFree(pglob->gl_pathv);
 }
 
 #elif HAVE_DECL_GLOB
@@ -372,7 +373,7 @@ static char *resultFilename(const char *filename, const char *out,
 
     if (snprintf(res, 499, "%s%s%s", out, base, suffixbuff) >= 499)
         res[499] = 0;
-    return(strdup(res));
+    return(xmlMemStrdup(res));
 }
 
 static int checkTestFile(const char *filename) {
@@ -553,12 +554,12 @@ static int loadMem(const char *filename, const char **mem, int *size) {
 	return(-1);
     if (sizeof(info.st_size) > sizeof(siz) && info.st_size > INT_MAX)
 	return(-1); /* File size too big */
-    base = malloc(info.st_size + 1);
+    base = xmlMalloc(info.st_size + 1);
     if (base == NULL)
 	return(-1);
     fd = open(filename, RD_FLAGS);
     if (fd  < 0) {
-        free(base);
+        xmlFree(base);
 	return(-1);
     }
     while ((res = read(fd, &base[siz], info.st_size - siz)) > 0) {
@@ -567,7 +568,7 @@ static int loadMem(const char *filename, const char **mem, int *size) {
     close(fd);
 #if !defined(_WIN32)
     if (siz != info.st_size) {
-        free(base);
+        xmlFree(base);
 	return(-1);
     }
 #endif
@@ -578,7 +579,7 @@ static int loadMem(const char *filename, const char **mem, int *size) {
 }
 
 static int unloadMem(const char *mem) {
-    free((char *)mem);
+    xmlFree((char *)mem);
     return(0);
 }
 
@@ -1524,7 +1525,7 @@ saxParseTest(const char *filename, const char *result,
     SAXdebug = fopen(temp, "wb");
     if (SAXdebug == NULL) {
         fprintf(stderr, "Failed to write to %s\n", temp);
-	free(temp);
+	xmlFree(temp);
 	return(-1);
     }
 
@@ -1597,7 +1598,7 @@ saxParseTest(const char *filename, const char *result,
 done:
     if (temp != NULL) {
         unlink(temp);
-        free(temp);
+        xmlFree(temp);
     }
 
     return(ret);
@@ -1769,7 +1770,7 @@ htmlTokenizerTest(const char *filename, const char *result,
     SAXdebug = fopen(temp, "wb");
     if (SAXdebug == NULL) {
         fprintf(stderr, "Failed to write to %s\n", temp);
-	free(temp);
+	xmlFree(temp);
 	return(-1);
     }
 
@@ -1821,7 +1822,7 @@ htmlTokenizerTest(const char *filename, const char *result,
 
     if (temp != NULL) {
         unlink(temp);
-        free(temp);
+        xmlFree(temp);
     }
 
     return(ret);
@@ -1834,7 +1835,7 @@ htmlTokenizerTest(const char *filename, const char *result,
  *									*
  ************************************************************************/
 /**
- * Parse a file using the old xmlParseFile() API, then serialize back
+ * Parse a file using the old #xmlParseFile API, then serialize back
  * reparse the result and serialize again, then check for deviation
  * in serialization.
  *
@@ -1895,7 +1896,7 @@ oldParseTest(const char *filename, const char *result,
 
     if (temp != NULL) {
         unlink(temp);
-        free(temp);
+        xmlFree(temp);
     }
 
     return(res);
@@ -1972,7 +1973,7 @@ pushParseTest(const char *filename, const char *result,
 #endif
     res = ctxt->wellFormed;
     xmlFreeParserCtxt(ctxt);
-    free((char *)base);
+    xmlFree((char *)base);
     if (!res) {
 	xmlFreeDoc(doc);
 	fprintf(stderr, "Failed to parse %s\n", filename);
@@ -2276,7 +2277,7 @@ pushBoundaryTest(const char *filename, const char *result,
 #endif
     res = ctxt->wellFormed;
     xmlFreeParserCtxt(ctxt);
-    free((char *)base);
+    xmlFree((char *)base);
     if (numCallbacks > 1) {
 	xmlFreeDoc(doc);
 	fprintf(stderr, "Failed push boundary callback test (%d@%lu-%lu): %s\n",
@@ -2401,7 +2402,7 @@ testParseContent(xmlParserCtxtPtr ctxt, xmlDocPtr doc, const char *filename) {
 }
 
 /**
- * Parse a file using the old xmlReadMemory() API, then serialize back
+ * Parse a file using the old #xmlReadMemory API, then serialize back
  * reparse the result and serialize again, then check for deviation
  * in serialization.
  *
@@ -2505,13 +2506,13 @@ noentParseTest(const char *filename, const char *result,
 
     if (temp != NULL) {
         unlink(temp);
-        free(temp);
+        xmlFree(temp);
     }
     return(res);
 }
 
 /**
- * Parse a file using the xmlReadFile() API and check for errors.
+ * Parse a file using the #xmlReadFile API and check for errors.
  *
  * @param filename  the file to parse
  * @param result  the file with expected result
@@ -2598,7 +2599,7 @@ errParseTest(const char *filename, const char *result, const char *err,
 
 #if defined(LIBXML_VALID_ENABLED) || defined(LIBXML_HTML_ENABLED)
 /**
- * Parse a file using the xmlReadFd() API and check for errors.
+ * Parse a file using the #xmlReadFd API and check for errors.
  *
  * @param filename  the file to parse
  * @param result  the file with expected result
@@ -2723,7 +2724,7 @@ streamProcessTest(const char *filename, const char *result, const char *err,
 	t = fopen(temp, "wb");
 	if (t == NULL) {
 	    fprintf(stderr, "Can't open temp file %s\n", temp);
-	    free(temp);
+	    xmlFree(temp);
 	    return(-1);
 	}
     }
@@ -2736,7 +2737,7 @@ streamProcessTest(const char *filename, const char *result, const char *err,
 	    fclose(t);
             if (temp != NULL) {
                 unlink(temp);
-                free(temp);
+                xmlFree(temp);
             }
 	    return(0);
 	}
@@ -2763,7 +2764,7 @@ streamProcessTest(const char *filename, const char *result, const char *err,
 	ret = compareFiles(temp, result);
         if (temp != NULL) {
             unlink(temp);
-            free(temp);
+            xmlFree(temp);
         }
 	if (ret) {
 	    fprintf(stderr, "Result for %s failed in %s\n", filename, result);
@@ -2858,7 +2859,7 @@ streamMemParseTest(const char *filename, const char *result, const char *err,
     xmlTextReaderSetStructuredErrorHandler(reader, testStructuredErrorHandler,
                                            NULL);
     ret = streamProcessTest(filename, result, err, reader, NULL, options);
-    free((char *)base);
+    xmlFree((char *)base);
     xmlFreeTextReader(reader);
     return(ret);
 }
@@ -2936,7 +2937,7 @@ xpathCommonTest(const char *filename, const char *result,
     xpathOutput = fopen(temp, "wb");
     if (xpathOutput == NULL) {
 	fprintf(stderr, "failed to open output file %s\n", temp);
-        free(temp);
+        xmlFree(temp);
 	return(-1);
     }
 
@@ -2944,7 +2945,7 @@ xpathCommonTest(const char *filename, const char *result,
     if (input == NULL) {
         fprintf(stderr,
 		"Cannot open %s for reading\n", filename);
-        free(temp);
+        xmlFree(temp);
 	return(-1);
     }
     while (fgets(expression, 4500, input) != NULL) {
@@ -2973,7 +2974,7 @@ xpathCommonTest(const char *filename, const char *result,
 
     if (temp != NULL) {
         unlink(temp);
-        free(temp);
+        xmlFree(temp);
     }
     return(ret);
 }
@@ -3132,7 +3133,7 @@ xmlidDocTest(const char *filename,
     if (xpathOutput == NULL) {
 	fprintf(stderr, "failed to open output file %s\n", temp);
         xmlFreeDoc(xpathDocument);
-        free(temp);
+        xmlFree(temp);
 	return(-1);
     }
 
@@ -3149,7 +3150,7 @@ xmlidDocTest(const char *filename,
 
     if (temp != NULL) {
         unlink(temp);
-        free(temp);
+        xmlFree(temp);
     }
     xmlFreeDoc(xpathDocument);
 
@@ -3228,7 +3229,7 @@ uriCommonTest(const char *filename,
     o = fopen(temp, "wb");
     if (o == NULL) {
 	fprintf(stderr, "failed to open output file %s\n", temp);
-        free(temp);
+        xmlFree(temp);
 	return(-1);
     }
     f = fopen(filename, "rb");
@@ -3237,7 +3238,7 @@ uriCommonTest(const char *filename,
 	fclose(o);
         if (temp != NULL) {
             unlink(temp);
-            free(temp);
+            xmlFree(temp);
         }
 	return(-1);
     }
@@ -3283,7 +3284,7 @@ uriCommonTest(const char *filename,
 
     if (temp != NULL) {
         unlink(temp);
-        free(temp);
+        xmlFree(temp);
     }
     return(res);
 }
@@ -4117,7 +4118,7 @@ patternTest(const char *filename,
     if (o == NULL) {
 	fprintf(stderr, "failed to open output file %s\n", temp);
 	fclose(f);
-        free(temp);
+        xmlFree(temp);
 	return(-1);
     }
     while (1) {
@@ -4203,7 +4204,7 @@ patternTest(const char *filename,
     }
     if (temp != NULL) {
         unlink(temp);
-        free(temp);
+        xmlFree(temp);
     }
     return(ret);
 }
@@ -4311,7 +4312,7 @@ xmlFree(expr);
     buffer = (xmlChar **)						\
 	xmlRealloc(buffer, buffer_size * sizeof(xmlChar*));	\
     if (buffer == NULL) {						\
-	perror("realloc failed");					\
+	perror("xmlRealloc failed");					\
 	return(NULL);							\
     }									\
 }
@@ -4338,7 +4339,7 @@ parse_list(xmlChar *str) {
     buffer_size = 1000;
     buffer = (xmlChar **) xmlMalloc(buffer_size * sizeof(xmlChar*));
     if (buffer == NULL) {
-	perror("malloc failed");
+	perror("xmlMalloc failed");
 	return(NULL);
     }
     out = buffer;
@@ -4440,7 +4441,7 @@ c14nRunTest(const char* xml_filename, int with_comments, int mode,
     if (result != NULL) xmlFree(result);
     if(xpath != NULL) xmlXPathFreeObject(xpath);
     if (inclusive_namespaces != NULL) xmlFree(inclusive_namespaces);
-    if (nslist != NULL) free((char *) nslist);
+    if (nslist != NULL) xmlFree((char *) nslist);
     xmlFreeDoc(doc);
 
     return(ret);
@@ -4466,16 +4467,16 @@ c14nCommonTest(const char *filename, int with_comments, int mode,
 
     if (snprintf(buf, 499, "result/c14n/%s/%s", subdir, prefix) >= 499)
         buf[499] = 0;
-    result = strdup(buf);
+    result = xmlMemStrdup(buf);
     if (snprintf(buf, 499, "test/c14n/%s/%s.xpath", subdir, prefix) >= 499)
         buf[499] = 0;
     if (checkTestFile(buf)) {
-	xpath = strdup(buf);
+	xpath = xmlMemStrdup(buf);
     }
     if (snprintf(buf, 499, "test/c14n/%s/%s.ns", subdir, prefix) >= 499)
         buf[499] = 0;
     if (checkTestFile(buf)) {
-	ns = strdup(buf);
+	ns = xmlMemStrdup(buf);
     }
 
     nb_tests++;
@@ -4483,9 +4484,9 @@ c14nCommonTest(const char *filename, int with_comments, int mode,
                     xpath, ns, result) < 0)
         ret = 1;
 
-    if (result != NULL) free(result);
-    if (xpath != NULL) free(xpath);
-    if (ns != NULL) free(ns);
+    if (result != NULL) xmlFree(result);
+    if (xpath != NULL) xmlFree(xpath);
+    if (ns != NULL) xmlFree(ns);
     return(ret);
 }
 
@@ -4756,7 +4757,7 @@ regexpTest(const char *filename, const char *result, const char *err,
     output = fopen(temp, "wb");
     if (output == NULL) {
 	fprintf(stderr, "failed to open output file %s\n", temp);
-        free(temp);
+        xmlFree(temp);
 	ret = -1;
         goto done;
     }
@@ -4807,7 +4808,7 @@ regexpTest(const char *filename, const char *result, const char *err,
     }
     if (temp != NULL) {
         unlink(temp);
-        free(temp);
+        xmlFree(temp);
     }
 
     ret = compareFileMem(err, testErrors, testErrorsSize);
@@ -4875,7 +4876,7 @@ automataTest(const char *filename, const char *result,
     output = fopen(temp, "wb");
     if (output == NULL) {
 	fprintf(stderr, "failed to open output file %s\n", temp);
-        free(temp);
+        xmlFree(temp);
 	return(-1);
     }
 
@@ -5052,7 +5053,7 @@ automataTest(const char *filename, const char *result,
     }
     if (temp != NULL) {
         unlink(temp);
-        free(temp);
+        xmlFree(temp);
     }
 
     return(res);
@@ -5381,9 +5382,9 @@ launchTests(testDescPtr tst) {
             }
             testErrorsSize = 0;
 	    if (result)
-		free(result);
+		xmlFree(result);
 	    if (error)
-		free(error);
+		xmlFree(error);
 	}
 	globfree(&globbuf);
     } else {
