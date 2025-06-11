@@ -51,9 +51,9 @@
 static xmlRMutex xmlLibraryLock;
 
 /**
- * @param mutex  the mutex
- *
  * Initialize a mutex.
+ *
+ * @param mutex  the mutex
  */
 void
 xmlInitMutex(xmlMutexPtr mutex)
@@ -86,9 +86,9 @@ xmlNewMutex(void)
 }
 
 /**
- * @param mutex  the simple mutex
- *
  * Reclaim resources associated with a mutex.
+ *
+ * @param mutex  the simple mutex
  */
 void
 xmlCleanupMutex(xmlMutexPtr mutex)
@@ -103,9 +103,9 @@ xmlCleanupMutex(xmlMutexPtr mutex)
 }
 
 /**
- * @param tok  the simple mutex
- *
  * Free a mutex.
+ *
+ * @param tok  the simple mutex
  */
 void
 xmlFreeMutex(xmlMutexPtr tok)
@@ -118,9 +118,9 @@ xmlFreeMutex(xmlMutexPtr tok)
 }
 
 /**
- * @param tok  the simple mutex
- *
  * xmlMutexLock() is used to lock a libxml2 token.
+ *
+ * @param tok  the simple mutex
  */
 void
 xmlMutexLock(xmlMutexPtr tok)
@@ -140,9 +140,9 @@ xmlMutexLock(xmlMutexPtr tok)
 }
 
 /**
- * @param tok  the simple mutex
- *
  * xmlMutexUnlock() is used to unlock a libxml2 token.
+ *
+ * @param tok  the simple mutex
  */
 void
 xmlMutexUnlock(xmlMutexPtr tok)
@@ -157,9 +157,9 @@ xmlMutexUnlock(xmlMutexPtr tok)
 }
 
 /**
- * @param tok  mutex
- *
  * Initialize the mutex.
+ *
+ * @param tok  mutex
  */
 void
 xmlInitRMutex(xmlRMutexPtr tok) {
@@ -196,9 +196,9 @@ xmlNewRMutex(void)
 }
 
 /**
- * @param tok  mutex
- *
  * Cleanup the mutex.
+ *
+ * @param tok  mutex
  */
 void
 xmlCleanupRMutex(xmlRMutexPtr tok) {
@@ -213,10 +213,10 @@ xmlCleanupRMutex(xmlRMutexPtr tok) {
 }
 
 /**
- * @param tok  the reentrant mutex
- *
  * xmlRFreeMutex() is used to reclaim resources associated with a
  * reentrant mutex.
+ *
+ * @param tok  the reentrant mutex
  */
 void
 xmlFreeRMutex(xmlRMutexPtr tok)
@@ -228,9 +228,9 @@ xmlFreeRMutex(xmlRMutexPtr tok)
 }
 
 /**
- * @param tok  the reentrant mutex
- *
  * xmlRMutexLock() is used to lock a libxml2 token_r.
+ *
+ * @param tok  the reentrant mutex
  */
 void
 xmlRMutexLock(xmlRMutexPtr tok)
@@ -260,9 +260,9 @@ xmlRMutexLock(xmlRMutexPtr tok)
 }
 
 /**
- * @param tok  the reentrant mutex
- *
  * xmlRMutexUnlock() is used to unlock a libxml2 token_r.
+ *
+ * @param tok  the reentrant mutex
  */
 void
 xmlRMutexUnlock(xmlRMutexPtr tok ATTRIBUTE_UNUSED)

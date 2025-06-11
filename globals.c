@@ -196,43 +196,39 @@ static void * XMLCALL lcl_xmlReallocFunc(void *mem, size_t size) { return reallo
 static char * XMLCALL lcl_xmlStrdupFunc(const char *str) { return strdup(str); }
 
 /**
- * @param mem  an already allocated block of memory
- *
  * The variable holding the libxml free() implementation
+ *
+ * @param mem  an already allocated block of memory
  */
 xmlFreeFunc xmlFree = lcl_xmlFreeFunc;
 /**
- * @param size  the size requested in bytes
- *
  * The variable holding the libxml malloc() implementation
  *
+ * @param size  the size requested in bytes
  * @returns a pointer to the newly allocated block or NULL in case of error
  */
 xmlMallocFunc xmlMalloc = lcl_xmlMallocFunc;
 /**
- * @param size  the size requested in bytes
- *
  * The variable holding the libxml malloc() implementation for atomic
  * data (i.e. blocks not containing pointers), useful when using a
  * garbage collecting allocator.
  *
+ * @param size  the size requested in bytes
  * @returns a pointer to the newly allocated block or NULL in case of error
  */
 xmlMallocFunc xmlMallocAtomic = lcl_xmlMallocFunc;
 /**
- * @param mem  an already allocated block of memory
- * @param size  the new size requested in bytes
- *
  * The variable holding the libxml realloc() implementation
  *
+ * @param mem  an already allocated block of memory
+ * @param size  the new size requested in bytes
  * @returns a pointer to the newly reallocated block or NULL in case of error
  */
 xmlReallocFunc xmlRealloc = lcl_xmlReallocFunc;
 /**
- * @param str  a zero terminated string
- *
  * The variable holding the libxml strdup() implementation
  *
+ * @param str  a zero terminated string
  * @returns the copy of the string or NULL in case of error
  */
 xmlStrdupFunc xmlMemStrdup = lcl_xmlStrdupFunc;
@@ -270,10 +266,11 @@ static int xmlSaveNoEmptyTagsThrDef = 0;
 
 #ifdef LIBXML_SAX1_ENABLED
 /**
+ * Default SAX version1 handler for XML, builds the DOM tree
+ *
  * @deprecated This handler is unused and will be removed from future
  * versions.
  *
- * Default SAX version1 handler for XML, builds the DOM tree
  */
 /* const */ xmlSAXHandlerV1 xmlDefaultSAXHandler = {
     xmlSAX2InternalSubset,
@@ -308,10 +305,11 @@ static int xmlSaveNoEmptyTagsThrDef = 0;
 #endif /* LIBXML_SAX1_ENABLED */
 
 /**
- * @deprecated Don't use
- *
  * The default SAX Locator
  * { getPublicId, getSystemId, getLineNumber, getColumnNumber}
+ *
+ * @deprecated Don't use
+ *
  */
 const xmlSAXLocator xmlDefaultSAXLocator = {
     xmlSAX2GetPublicId,
@@ -322,10 +320,11 @@ const xmlSAXLocator xmlDefaultSAXLocator = {
 
 #if defined(LIBXML_HTML_ENABLED) && defined(LIBXML_SAX1_ENABLED)
 /**
+ * Default old SAX v1 handler for HTML, builds the DOM tree
+ *
  * @deprecated This handler is unused and will be removed from future
  * versions.
  *
- * Default old SAX v1 handler for HTML, builds the DOM tree
  */
 const xmlSAXHandlerV1 htmlDefaultSAXHandler = {
     xmlSAX2InternalSubset,
@@ -767,11 +766,10 @@ xmlGetLocalRngState(void) {
  * library functions to make sure that thread-local storage was
  * allocated properly.
  *
+ * @since 2.12.0
  * @returns 0 on success or -1 if a memory allocation failed. A failed
  * allocation signals a typically fatal and irrecoverable out-of-memory
  * situation. Don't call any library functions in this case.
- *
- * @since 2.12.0
  */
 int
 xmlCheckThreadLocalStorage(void) {
@@ -793,13 +791,12 @@ xmlGetLastErrorInternal(void) {
 /** @cond IGNORE */
 
 /**
- * @param hinstDLL  handle to DLL instance
- * @param fdwReason  Reason code for entry
- * @param lpvReserved  generic pointer (depends upon reason code)
- *
  * Entry point for Windows library. It is being used to free thread-specific
  * storage.
  *
+ * @param hinstDLL  handle to DLL instance
+ * @param fdwReason  Reason code for entry
+ * @param lpvReserved  generic pointer (depends upon reason code)
  * @returns TRUE always
  */
 #ifdef USE_DLL_MAIN

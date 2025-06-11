@@ -25,6 +25,7 @@
 #include "private/enc.h"
 #include "private/entities.h"
 #include "private/error.h"
+#include "private/html.h"
 #include "private/io.h"
 #include "private/save.h"
 
@@ -51,9 +52,9 @@ struct _xmlSaveCtxt {
  *									*
  ************************************************************************/
 /**
- * @param out  an output buffer
- *
  * Handle an out of memory condition
+ *
+ * @param out  an output buffer
  */
 static void
 xmlSaveErrMemory(xmlOutputBufferPtr out)
@@ -64,12 +65,12 @@ xmlSaveErrMemory(xmlOutputBufferPtr out)
 }
 
 /**
+ * Handle an out of memory condition
+ *
  * @param out  an output buffer
  * @param code  the error number
  * @param node  the location of the error.
  * @param extra  extra information
- *
- * Handle an out of memory condition
  */
 static void
 xmlSaveErr(xmlOutputBufferPtr out, int code, xmlNodePtr node,
@@ -205,7 +206,7 @@ xmlSerializeText(xmlOutputBufferPtr buf, const xmlChar *string,
                 val = 0xFFFD;
                 cur += 1;
             } else {
-                if (!IS_CHAR(val))
+                if ((val == 0xFFFE) || (val == 0xFFFF))
                     val = 0xFFFD;
                 cur += len;
             }
@@ -223,13 +224,12 @@ xmlSerializeText(xmlOutputBufferPtr buf, const xmlChar *string,
  ************************************************************************/
 
 /**
- * @param ctxt  save context
- * @param indent  indent string
- *
  * Sets the indent string.
  *
  * @since 2.14.0
  *
+ * @param ctxt  save context
+ * @param indent  indent string
  * @returns 0 on success, -1 if the string is NULL, empty or too long.
  */
 int
@@ -253,10 +253,10 @@ xmlSaveSetIndentString(xmlSaveCtxtPtr ctxt, const char *indent) {
 }
 
 /**
+ * Initialize a saving context
+ *
  * @param ctxt  the saving context
  * @param options  save options
- *
- * Initialize a saving context
  */
 static void
 xmlSaveCtxtInit(xmlSaveCtxtPtr ctxt, int options)
@@ -341,10 +341,10 @@ xmlSaveWriteText(xmlSaveCtxt *ctxt, const xmlChar *text, unsigned flags) {
 }
 
 /**
+ * Serialize the attribute in the buffer
+ *
  * @param ctxt  save context
  * @param attr  the attribute pointer
- *
- * Serialize the attribute in the buffer
  */
 static void
 xmlSaveWriteAttrContent(xmlSaveCtxt *ctxt, xmlAttrPtr attr)
@@ -372,10 +372,10 @@ xmlSaveWriteAttrContent(xmlSaveCtxt *ctxt, xmlAttrPtr attr)
 }
 
 /**
+ * This will dump the content the notation declaration as an XML DTD definition
+ *
  * @param buf  the XML buffer output
  * @param nota  A notation declaration
- *
- * This will dump the content the notation declaration as an XML DTD definition
  */
 static void
 xmlBufDumpNotationDecl(xmlOutputBufferPtr buf, xmlNotationPtr nota) {
@@ -398,11 +398,11 @@ xmlBufDumpNotationDecl(xmlOutputBufferPtr buf, xmlNotationPtr nota) {
 }
 
 /**
+ * This is called with the hash scan function, and just reverses args
+ *
  * @param nota  A notation declaration
  * @param buf  the XML buffer output
  * @param name  unused
- *
- * This is called with the hash scan function, and just reverses args
  */
 static void
 xmlBufDumpNotationDeclScan(void *nota, void *buf,
@@ -411,10 +411,10 @@ xmlBufDumpNotationDeclScan(void *nota, void *buf,
 }
 
 /**
+ * This will dump the content of the notation table as an XML DTD definition
+ *
  * @param buf  an xmlBufPtr output
  * @param table  A notation table
- *
- * This will dump the content of the notation table as an XML DTD definition
  */
 static void
 xmlBufDumpNotationTable(xmlOutputBufferPtr buf, xmlNotationTablePtr table) {
@@ -422,10 +422,10 @@ xmlBufDumpNotationTable(xmlOutputBufferPtr buf, xmlNotationTablePtr table) {
 }
 
 /**
+ * Dump the occurrence operator of an element.
+ *
  * @param buf  output buffer
  * @param cur  element table
- *
- * Dump the occurrence operator of an element.
  */
 static void
 xmlBufDumpElementOccur(xmlOutputBufferPtr buf, xmlElementContentPtr cur) {
@@ -445,10 +445,10 @@ xmlBufDumpElementOccur(xmlOutputBufferPtr buf, xmlElementContentPtr cur) {
 }
 
 /**
+ * This will dump the content of the element table as an XML DTD definition
+ *
  * @param buf  output buffer
  * @param content  element table
- *
- * This will dump the content of the element table as an XML DTD definition
  */
 static void
 xmlBufDumpElementContent(xmlOutputBufferPtr buf,
@@ -517,11 +517,11 @@ xmlBufDumpElementContent(xmlOutputBufferPtr buf,
 }
 
 /**
- * @param buf  an xmlBufPtr output
- * @param elem  An element table
- *
  * This will dump the content of the element declaration as an XML
  * DTD definition
+ *
+ * @param buf  an xmlBufPtr output
+ * @param elem  An element table
  */
 static void
 xmlBufDumpElementDecl(xmlOutputBufferPtr buf, xmlElementPtr elem) {
@@ -553,10 +553,10 @@ xmlBufDumpElementDecl(xmlOutputBufferPtr buf, xmlElementPtr elem) {
 }
 
 /**
+ * This will dump the content of the enumeration
+ *
  * @param buf  output buffer
  * @param cur  an enumeration
- *
- * This will dump the content of the enumeration
  */
 static void
 xmlBufDumpEnumeration(xmlOutputBufferPtr buf, xmlEnumerationPtr cur) {
@@ -571,14 +571,16 @@ xmlBufDumpEnumeration(xmlOutputBufferPtr buf, xmlEnumerationPtr cur) {
     xmlOutputBufferWrite(buf, 1, ")");
 }
 /**
- * @param buf  output buffer
- * @param attr  An attribute declaration
- *
  * This will dump the content of the attribute declaration as an XML
  * DTD definition
+ *
+ * @param ctxt  save context
+ * @param attr  an attribute declaration
  */
 static void
-xmlBufDumpAttributeDecl(xmlOutputBufferPtr buf, xmlAttributePtr attr) {
+xmlSaveWriteAttributeDecl(xmlSaveCtxtPtr ctxt, xmlAttributePtr attr) {
+    xmlOutputBufferPtr buf = ctxt->buf;
+
     xmlOutputBufferWrite(buf, 10, "<!ATTLIST ");
     xmlOutputBufferWriteString(buf, (const char *) attr->elem);
     xmlOutputBufferWrite(buf, 1, " ");
@@ -644,19 +646,20 @@ xmlBufDumpAttributeDecl(xmlOutputBufferPtr buf, xmlAttributePtr attr) {
     }
 
     if (attr->defaultValue != NULL) {
-	xmlOutputBufferWrite(buf, 1, " ");
-	xmlOutputBufferWriteQuotedString(buf, attr->defaultValue);
+        xmlOutputBufferWrite(buf, 2, " \"");
+        xmlSaveWriteText(ctxt, attr->defaultValue, XML_ESCAPE_ATTR);
+        xmlOutputBufferWrite(buf, 1, "\"");
     }
 
     xmlOutputBufferWrite(buf, 2, ">\n");
 }
 
 /**
- * @param buf  output buffer
- * @param content  entity content.
- *
  * This will dump the quoted string value, taking care of the special
  * treatment required by %
+ *
+ * @param buf  output buffer
+ * @param content  entity content.
  */
 static void
 xmlBufDumpEntityContent(xmlOutputBufferPtr buf, const xmlChar *content) {
@@ -691,10 +694,10 @@ xmlBufDumpEntityContent(xmlOutputBufferPtr buf, const xmlChar *content) {
 }
 
 /**
+ * This will dump the content of the entity table as an XML DTD definition
+ *
  * @param buf  an xmlBufPtr output
  * @param ent  An entity table
- *
- * This will dump the content of the entity table as an XML DTD definition
  */
 static void
 xmlBufDumpEntityDecl(xmlOutputBufferPtr buf, xmlEntityPtr ent) {
@@ -833,10 +836,10 @@ xmlSaveWriteIndent(xmlSaveCtxtPtr ctxt, int extra)
 }
 
 /**
+ * Write out formatting for non-significant whitespace output.
+ *
  * @param ctxt  The save context
  * @param extra  Number of extra indents to apply to ctxt->level
- *
- * Write out formatting for non-significant whitespace output.
  */
 static void
 xmlOutputBufferWriteWSNonSig(xmlSaveCtxtPtr ctxt, int extra)
@@ -854,13 +857,13 @@ xmlOutputBufferWriteWSNonSig(xmlSaveCtxtPtr ctxt, int extra)
 }
 
 /**
- * @param buf  the XML buffer output
- * @param cur  a namespace
- * @param ctxt  the output save context. Optional.
- *
  * Dump a local Namespace definition.
  * Should be called in the context of attributes dumps.
  * If `ctxt` is supplied, `buf` should be its buffer.
+ *
+ * @param buf  the XML buffer output
+ * @param cur  a namespace
+ * @param ctxt  the output save context. Optional.
  */
 static void
 xmlNsDumpOutput(xmlOutputBufferPtr buf, xmlNsPtr cur, xmlSaveCtxtPtr ctxt) {
@@ -893,11 +896,11 @@ xmlNsDumpOutput(xmlOutputBufferPtr buf, xmlNsPtr cur, xmlSaveCtxtPtr ctxt) {
 }
 
 /**
- * @param ctxt  the save context
- * @param cur  the first namespace
- *
  * Dump a list of local namespace definitions to a save context.
  * Should be called in the context of attribute dumps.
+ *
+ * @param ctxt  the save context
+ * @param cur  the first namespace
  */
 static void
 xmlNsListDumpOutputCtxt(xmlSaveCtxtPtr ctxt, xmlNsPtr cur) {
@@ -908,11 +911,10 @@ xmlNsListDumpOutputCtxt(xmlSaveCtxtPtr ctxt, xmlNsPtr cur) {
 }
 
 /**
+ * Serialize a list of namespace definitions.
+ *
  * @param buf  the XML buffer output
  * @param cur  the first namespace
- *
- * Dump a list of local Namespace definitions.
- * Should be called in the context of attributes dumps.
  */
 void
 xmlNsListDumpOutput(xmlOutputBufferPtr buf, xmlNsPtr cur) {
@@ -923,10 +925,10 @@ xmlNsListDumpOutput(xmlOutputBufferPtr buf, xmlNsPtr cur) {
 }
 
 /**
+ * Dump the XML document DTD, if any.
+ *
  * @param ctxt  the save context
  * @param dtd  the pointer to the DTD
- *
- * Dump the XML document DTD, if any.
  */
 static void
 xmlDtdDumpOutput(xmlSaveCtxtPtr ctxt, xmlDtdPtr dtd) {
@@ -977,10 +979,10 @@ xmlDtdDumpOutput(xmlSaveCtxtPtr ctxt, xmlDtdPtr dtd) {
 }
 
 /**
+ * Dump an XML attribute
+ *
  * @param ctxt  the save context
  * @param cur  the attribute pointer
- *
- * Dump an XML attribute
  */
 static void
 xmlAttrDumpOutput(xmlSaveCtxtPtr ctxt, xmlAttrPtr cur) {
@@ -1017,39 +1019,28 @@ xmlAttrDumpOutput(xmlSaveCtxtPtr ctxt, xmlAttrPtr cur) {
 
 #ifdef LIBXML_HTML_ENABLED
 /**
+ * Dump an HTML node, recursive behaviour, children are printed too.
+ *
  * @param ctxt  the save context
  * @param cur  the current node
- *
- * Dump an HTML node, recursive behaviour, children are printed too.
  */
 static int
 htmlNodeDumpOutputInternal(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
-    const xmlChar *encoding;
     int switched_encoding = 0;
     int format = 0;
-    xmlDocPtr doc;
 
     xmlInitParser();
 
-    encoding = ctxt->encoding;
-    doc = cur->doc;
-    if (doc != NULL) {
-        if (encoding == NULL)
-            encoding = doc->encoding;
-
-        /* We probably shouldn't do this unless we're dumping a document. */
-        if (encoding != NULL)
-            htmlSetMetaEncoding(doc, encoding);
-    }
-
     if (ctxt->encoding == NULL) {
-        if ((encoding == NULL) && (doc != NULL))
-            encoding = htmlGetMetaEncoding(doc);
+        const char *encoding = NULL;
+
+        if (cur->doc != NULL)
+            encoding = (char *) cur->doc->encoding;
 
         if (encoding == NULL)
-            encoding = BAD_CAST "HTML";
+            encoding = "HTML";
 
-	if (xmlSaveSwitchEncoding(ctxt, (const char*) encoding) < 0)
+	if (xmlSaveSwitchEncoding(ctxt, encoding) < 0)
 	    return(-1);
 	switched_encoding = 1;
     }
@@ -1057,7 +1048,7 @@ htmlNodeDumpOutputInternal(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
     if (ctxt->options & XML_SAVE_FORMAT)
         format = 1;
 
-    htmlNodeDumpFormatOutput(ctxt->buf, doc, cur, NULL, format);
+    htmlNodeDumpInternal(ctxt->buf, cur, (char *) ctxt->encoding, format);
 
     if (switched_encoding) {
 	xmlSaveClearEncoding(ctxt);
@@ -1068,10 +1059,10 @@ htmlNodeDumpOutputInternal(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
 #endif
 
 /**
+ * Dump an XML node, recursive behaviour, children are printed too.
+ *
  * @param ctxt  the save context
  * @param cur  the current node
- *
- * Dump an XML node, recursive behaviour, children are printed too.
  */
 static void
 xmlNodeDumpOutputInternal(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
@@ -1111,7 +1102,7 @@ xmlNodeDumpOutputInternal(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
             break;
 
         case XML_ATTRIBUTE_DECL:
-            xmlBufDumpAttributeDecl(buf, (xmlAttributePtr) cur);
+            xmlSaveWriteAttributeDecl(ctxt, (xmlAttributePtr) cur);
             break;
 
         case XML_ENTITY_DECL:
@@ -1331,11 +1322,11 @@ xmlNodeDumpOutputInternal(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
 }
 
 /**
+ * Dump an XML document.
+ *
  * @param ctxt  the save context
  * @param cur  the document
  * @param encoding  character encoding (optional)
- *
- * Dump an XML document.
  */
 static int
 xmlSaveDocInternal(xmlSaveCtxtPtr ctxt, xmlDocPtr cur,
@@ -1363,16 +1354,9 @@ xmlSaveDocInternal(xmlSaveCtxtPtr ctxt, xmlDocPtr cur,
 #ifdef LIBXML_HTML_ENABLED
         int format = 0;
 
-        if (encoding != NULL)
-	    htmlSetMetaEncoding(cur, encoding);
-
 	if (ctxt->encoding == NULL) {
-            if (encoding == NULL) {
-                encoding = htmlGetMetaEncoding(cur);
-
-                if (encoding == NULL)
-                    encoding = BAD_CAST "HTML";
-            }
+            if (encoding == NULL)
+                encoding = BAD_CAST "HTML";
 
 	    if (xmlSaveSwitchEncoding(ctxt, (const char*) encoding) < 0) {
 		return(-1);
@@ -1382,7 +1366,8 @@ xmlSaveDocInternal(xmlSaveCtxtPtr ctxt, xmlDocPtr cur,
 
         if (ctxt->options & XML_SAVE_FORMAT)
             format = 1;
-        htmlDocContentDumpFormatOutput(buf, cur, NULL, format);
+        htmlNodeDumpInternal(buf, (htmlNodePtr) cur, (char *) ctxt->encoding,
+                             format);
 #else
         return(-1);
 #endif
@@ -1467,10 +1452,9 @@ xmlSaveDocInternal(xmlSaveCtxtPtr ctxt, xmlDocPtr cur,
  ************************************************************************/
 
 /**
- * @param node  the node
- *
  * Check if a node is an empty xhtml node
  *
+ * @param node  the node
  * @returns 1 if the node is an empty node, 0 if not and -1 in case of error
  */
 static int
@@ -1533,10 +1517,10 @@ xhtmlIsEmpty(xmlNodePtr node) {
 }
 
 /**
+ * Dump a list of XML attributes
+ *
  * @param ctxt  the save context
  * @param cur  the first attribute pointer
- *
- * Dump a list of XML attributes
  */
 static void
 xhtmlAttrListDumpOutput(xmlSaveCtxtPtr ctxt, xmlAttrPtr cur) {
@@ -1601,10 +1585,10 @@ xhtmlAttrListDumpOutput(xmlSaveCtxtPtr ctxt, xmlAttrPtr cur) {
 }
 
 /**
+ * Dump an XHTML node, recursive behaviour, children are printed too.
+ *
  * @param ctxt  the save context
  * @param cur  the current node
- *
- * Dump an XHTML node, recursive behaviour, children are printed too.
  */
 static void
 xhtmlNodeDumpOutput(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
@@ -1649,7 +1633,7 @@ xhtmlNodeDumpOutput(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
 	    break;
 
         case XML_ATTRIBUTE_DECL:
-            xmlBufDumpAttributeDecl(buf, (xmlAttributePtr) cur);
+            xmlSaveWriteAttributeDecl(ctxt, (xmlAttributePtr) cur);
 	    break;
 
         case XML_ENTITY_DECL:
@@ -1934,13 +1918,18 @@ xhtmlNodeDumpOutput(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
  ************************************************************************/
 
 /**
- * @param fd  a file descriptor number
- * @param encoding  the encoding name to use or NULL
- * @param options  a set of xmlSaveOptions
- *
  * Create a document saving context serializing to a file descriptor
  * with the encoding and the options given.
  *
+ * If `encoding` is NULL, xmlSaveDoc() uses the document's
+ * encoding and xmlSaveTree() uses UTF-8.
+ *
+ * This function doesn't allow to distinguish unsupported
+ * encoding errors from failed memory allocations.
+ *
+ * @param fd  a file descriptor number
+ * @param encoding  the encoding name to use (optional)
+ * @param options  a set of xmlSaveOptions
  * @returns a new serialization context or NULL in case of error.
  */
 xmlSaveCtxtPtr
@@ -1959,14 +1948,18 @@ xmlSaveToFd(int fd, const char *encoding, int options)
 }
 
 /**
+ * Create a document saving context serializing to a filename
+ * with the encoding and the options given.
+ *
+ * If `encoding` is NULL, xmlSaveDoc() uses the document's
+ * encoding and xmlSaveTree() uses UTF-8.
+ *
+ * This function doesn't allow to distinguish unsupported
+ * encoding errors from failed memory allocations.
+ *
  * @param filename  a file name or an URL
  * @param encoding  the encoding name to use or NULL
  * @param options  a set of xmlSaveOptions
- *
- * Create a document saving context serializing to a filename or possibly
- * to an URL (but this is less reliable) with the encoding and the options
- * given.
- *
  * @returns a new serialization context or NULL in case of error.
  */
 xmlSaveCtxtPtr
@@ -1987,13 +1980,18 @@ xmlSaveToFilename(const char *filename, const char *encoding, int options)
 }
 
 /**
+ * Create a document saving context serializing to a buffer
+ * with the encoding and the options given.
+ *
+ * If `encoding` is NULL, xmlSaveDoc() uses the document's
+ * encoding and xmlSaveTree() uses UTF-8.
+ *
+ * This function doesn't allow to distinguish unsupported
+ * encoding errors from failed memory allocations.
+ *
  * @param buffer  a buffer
  * @param encoding  the encoding name to use or NULL
  * @param options  a set of xmlSaveOptions
- *
- * Create a document saving context serializing to a buffer
- * with the encoding and the options given
- *
  * @returns a new serialization context or NULL in case of error.
  */
 
@@ -2013,15 +2011,20 @@ xmlSaveToBuffer(xmlBufferPtr buffer, const char *encoding, int options)
 }
 
 /**
+ * Create a document saving context serializing to a file descriptor
+ * with the encoding and the options given
+ *
+ * If `encoding` is NULL, xmlSaveDoc() uses the document's
+ * encoding and xmlSaveTree() uses UTF-8.
+ *
+ * This function doesn't allow to distinguish unsupported
+ * encoding errors from failed memory allocations.
+ *
  * @param iowrite  an I/O write function
  * @param ioclose  an I/O close function
  * @param ioctx  an I/O handler
  * @param encoding  the encoding name to use or NULL
  * @param options  a set of xmlSaveOptions
- *
- * Create a document saving context serializing to a file descriptor
- * with the encoding and the options given
- *
  * @returns a new serialization context or NULL in case of error.
  */
 xmlSaveCtxtPtr
@@ -2042,14 +2045,15 @@ xmlSaveToIO(xmlOutputWriteCallback iowrite,
 }
 
 /**
+ * Serialize a document.
+ *
+ * If the save context has no encoding, uses the document's
+ * encoding. If the document has no encoding, uses ASCII
+ * without an encoding declaration.
+ *
  * @param ctxt  a document saving context
  * @param doc  a document
- *
- * Save a full document to a saving context
- * TODO: The function is not fully implemented yet as it does not return the
- * byte count but 0 instead
- *
- * @returns the number of byte written or -1 in case of error
+ * @returns 0 on success or -1 in case of error.
  */
 long
 xmlSaveDoc(xmlSaveCtxtPtr ctxt, xmlDocPtr doc)
@@ -2063,14 +2067,13 @@ xmlSaveDoc(xmlSaveCtxtPtr ctxt, xmlDocPtr doc)
 }
 
 /**
+ * Serialize a subtree starting.
+ *
+ * If the save context has no encoding, uses UTF-8.
+ *
  * @param ctxt  a document saving context
- * @param cur  the top node of the subtree to save
- *
- * Save a subtree starting at the node parameter to a saving context
- * TODO: The function is not fully implemented yet as it does not return the
- * byte count but 0 instead
- *
- * @returns the number of byte written or -1 in case of error
+ * @param cur  the root of the subtree to save
+ * @returns 0 on success or -1 in case of error.
  */
 long
 xmlSaveTree(xmlSaveCtxtPtr ctxt, xmlNodePtr cur)
@@ -2096,11 +2099,10 @@ xmlSaveTree(xmlSaveCtxtPtr ctxt, xmlNodePtr cur)
 }
 
 /**
- * @param ctxt  save context
- * @param cur  notation
- *
  * Serialize a notation declaration.
  *
+ * @param ctxt  save context
+ * @param cur  notation
  * @returns 0 on succes, -1 on error.
  */
 int
@@ -2112,11 +2114,10 @@ xmlSaveNotationDecl(xmlSaveCtxtPtr ctxt, xmlNotationPtr cur) {
 }
 
 /**
- * @param ctxt  save context
- * @param cur  notation table
- *
  * Serialize notation declarations of a document.
  *
+ * @param ctxt  save context
+ * @param cur  notation table
  * @returns 0 on succes, -1 on error.
  */
 int
@@ -2128,12 +2129,11 @@ xmlSaveNotationTable(xmlSaveCtxtPtr ctxt, xmlNotationTablePtr cur) {
 }
 
 /**
+ * Flush a document saving context, i.e. make sure that all
+ * buffered input has been processed.
+ *
  * @param ctxt  a document saving context
- *
- * Flush a document saving context, i.e. make sure that all bytes have
- * been output.
- *
- * @returns the number of byte written or -1 in case of error.
+ * @returns the number of bytes written or -1 in case of error.
  */
 int
 xmlSaveFlush(xmlSaveCtxtPtr ctxt)
@@ -2144,12 +2144,11 @@ xmlSaveFlush(xmlSaveCtxtPtr ctxt)
 }
 
 /**
+ * Close a document saving context, i.e. make sure that all
+ * buffered input has been processed and free the context struct.
+ *
  * @param ctxt  a document saving context
- *
- * Close a document saving context, i.e. make sure that all bytes have
- * been output and free the associated data.
- *
- * @returns the number of byte written or -1 in case of error.
+ * @returns the number of bytes written or -1 in case of error.
  */
 int
 xmlSaveClose(xmlSaveCtxtPtr ctxt)
@@ -2163,13 +2162,12 @@ xmlSaveClose(xmlSaveCtxtPtr ctxt)
 }
 
 /**
- * @param ctxt  a document saving context
- *
- * Close a document saving context, i.e. make sure that all bytes have
- * been output and free the associated data.
+ * Close a document saving context, i.e. make sure that all
+ * buffered input has been processed and free the context struct.
  *
  * @since 2.13.0
  *
+ * @param ctxt  a document saving context
  * @returns an xmlParserErrors code.
  */
 xmlParserErrors
@@ -2192,13 +2190,13 @@ xmlSaveFinish(xmlSaveCtxtPtr ctxt)
 }
 
 /**
- * @param ctxt  a document saving context
- * @param escape  the escaping function
+ * Set a custom escaping function to be used for text in element
+ * content.
  *
  * @deprecated Don't use.
  *
- * Set a custom escaping function to be used for text in element content
- *
+ * @param ctxt  a document saving context
+ * @param escape  the escaping function
  * @returns 0 if successful or -1 in case of error.
  */
 int
@@ -2210,13 +2208,12 @@ xmlSaveSetEscape(xmlSaveCtxtPtr ctxt, xmlCharEncodingOutputFunc escape)
 }
 
 /**
- * @param ctxt  a document saving context
- * @param escape  the escaping function
+ * Has no effect.
  *
  * @deprecated Don't use.
  *
- * Has no effect.
- *
+ * @param ctxt  a document saving context
+ * @param escape  the escaping function
  * @returns 0 if successful or -1 in case of error.
  */
 int
@@ -2234,11 +2231,11 @@ xmlSaveSetAttrEscape(xmlSaveCtxtPtr ctxt,
  ************************************************************************/
 
 /**
+ * Serialize attribute text to an output buffer.
+ *
  * @param buf  output buffer
  * @param doc  the document
  * @param string  the text content
- *
- * Serialize text attribute values to an xmlBufPtr
  */
 void
 xmlBufAttrSerializeTxtContent(xmlOutputBufferPtr buf, xmlDocPtr doc,
@@ -2252,12 +2249,12 @@ xmlBufAttrSerializeTxtContent(xmlOutputBufferPtr buf, xmlDocPtr doc,
 }
 
 /**
+ * Serialize attribute text to an xmlBuffer.
+ *
  * @param buf  the XML buffer output
  * @param doc  the document
  * @param attr  the attribute node
  * @param string  the text content
- *
- * Serialize text attribute values to an xml simple buffer
  */
 void
 xmlAttrSerializeTxtContent(xmlBufferPtr buf, xmlDocPtr doc,
@@ -2277,19 +2274,22 @@ xmlAttrSerializeTxtContent(xmlBufferPtr buf, xmlDocPtr doc,
 }
 
 /**
+ * Serialize an XML node to an xmlBuffer.
+ *
+ * Uses the document's encoding. If the document has no encoding,
+ * uses ASCII without an encoding declaration.
+ *
+ * Note that `format` only works if the document was parsed with
+ * XML_PARSE_NOBLANKS.
+ *
+ * Since this is using xmlBuffer structures it is limited to 2GB and
+ * somewhat deprecated, use xmlNodeDumpOutput() instead.
+ *
  * @param buf  the XML buffer output
  * @param doc  the document
  * @param cur  the current node
- * @param level  the imbrication level for indenting
+ * @param level  the initial indenting level
  * @param format  is formatting allowed
- *
- * Dump an XML node, recursive behaviour,children are printed too.
- * Note that `format` provides node indenting only if the document
- * was parsed with XML_PARSE_NOBLANKS.
- *
- * Since this is using xmlBuffer structures it is limited to 2GB and somehow
- * deprecated, use xmlNodeDumpOutput() instead.
- *
  * @returns the number of bytes written to the buffer or -1 in case of error
  */
 int
@@ -2317,16 +2317,19 @@ xmlNodeDump(xmlBufferPtr buf, xmlDocPtr doc, xmlNodePtr cur, int level,
 }
 
 /**
+ * Serialize an XML node to an xmlBuf.
+ *
+ * Uses the document's encoding. If the document has no encoding,
+ * uses ASCII without an encoding declaration.
+ *
+ * Note that `format` only works if the document was parsed with
+ * XML_PARSE_NOBLANKS.
+ *
  * @param buf  the XML buffer output
  * @param doc  the document
  * @param cur  the current node
  * @param level  the imbrication level for indenting
  * @param format  is formatting allowed
- *
- * Dump an XML node, recursive behaviour,children are printed too.
- * Note that `format` provides node indenting only if the document
- * was parsed with XML_PARSE_NOBLANKS.
- *
  * @returns the number of bytes written to the buffer, in case of error 0
  *     is returned or `buf` stores the error
  */
@@ -2371,11 +2374,14 @@ xmlBufNodeDump(xmlBufPtr buf, xmlDocPtr doc, xmlNodePtr cur, int level,
 }
 
 /**
+ * Serialize an XML node to a `FILE`.
+ *
+ * Uses the document's encoding. If the document has no encoding,
+ * uses ASCII without an encoding declaration.
+ *
  * @param f  the FILE * for the output
  * @param doc  the document
  * @param cur  the current node
- *
- * Dump an XML/HTML node, recursive behaviour, children are printed too.
  */
 void
 xmlElemDump(FILE * f, xmlDocPtr doc, xmlNodePtr cur)
@@ -2407,16 +2413,21 @@ xmlElemDump(FILE * f, xmlDocPtr doc, xmlNodePtr cur)
  ************************************************************************/
 
 /**
+ * Serialize an XML node to an output buffer.
+ *
+ * If `encoding` is NULL, uses the document's encoding. If the
+ * document has no encoding, serializes as ASCII without an
+ * encoding declaration.
+ *
+ * Note that `format` only works if the document was parsed with
+ * XML_PARSE_NOBLANKS.
+ *
  * @param buf  the XML buffer output
  * @param doc  the document
  * @param cur  the current node
  * @param level  the imbrication level for indenting
  * @param format  is formatting allowed
  * @param encoding  an optional encoding string
- *
- * Dump an XML node, recursive behaviour, children are printed too.
- * Note that `format` provides node indenting only if the document
- * was parsed with XML_PARSE_NOBLANKS.
  */
 void
 xmlNodeDumpOutput(xmlOutputBufferPtr buf, xmlDocPtr doc, xmlNodePtr cur,
@@ -2494,17 +2505,23 @@ xmlDocDumpInternal(xmlOutputBufferPtr buf, xmlDocPtr doc, const char *encoding,
 }
 
 /**
+ * Serialize an XML document to memory.
+ *
+ * If `encoding` is NULL, uses the document's encoding. If the
+ * document has no encoding, serializes as ASCII without an
+ * encoding declaration.
+ *
+ * It is up to the caller of this function to free the returned
+ * memory with xmlFree().
+ *
+ * Note that `format` only works if the document was parsed with
+ * XML_PARSE_NOBLANKS.
+ *
  * @param out_doc  Document to generate XML text from
  * @param doc_txt_ptr  Memory pointer for allocated XML text
  * @param doc_txt_len  Length of the generated XML text
  * @param txt_encoding  Character encoding to use when generating XML text
  * @param format  should formatting spaces been added
- *
- * Dump the current DOM tree into memory using the character encoding specified
- * by the caller.  Note it is up to the caller of this function to free the
- * allocated memory with xmlFree().
- * Note that `format` provides node indenting only if the document
- * was parsed with XML_PARSE_NOBLANKS.
  */
 
 void
@@ -2543,14 +2560,12 @@ xmlDocDumpFormatMemoryEnc(xmlDocPtr out_doc, xmlChar **doc_txt_ptr,
 }
 
 /**
+ * Same as xmlDocDumpFormatMemoryEnc() with `encoding` set to
+ * NULL and `format` set to 0.
+ *
  * @param cur  the document
  * @param mem  OUT: the memory pointer
  * @param size  OUT: the memory length
- *
- * Dump an XML document in memory and return the \#xmlChar * and it's size
- * in bytes. It's up to the caller to free the memory with xmlFree().
- * The resulting byte array is zero terminated, though the last 0 is not
- * included in the returned size.
  */
 void
 xmlDocDumpMemory(xmlDocPtr cur, xmlChar**mem, int *size) {
@@ -2558,16 +2573,13 @@ xmlDocDumpMemory(xmlDocPtr cur, xmlChar**mem, int *size) {
 }
 
 /**
+ * Same as xmlDocDumpFormatMemoryEnc() with `encoding` set to
+ * NULL.
+ *
  * @param cur  the document
  * @param mem  OUT: the memory pointer
  * @param size  OUT: the memory length
  * @param format  should formatting spaces been added
- *
- *
- * Dump an XML document in memory and return the \#xmlChar * and it's size.
- * It's up to the caller to free the memory with xmlFree().
- * Note that `format` provides node indenting only if the document
- * was parsed with XML_PARSE_NOBLANKS.
  */
 void
 xmlDocDumpFormatMemory(xmlDocPtr cur, xmlChar**mem, int *size, int format) {
@@ -2575,14 +2587,12 @@ xmlDocDumpFormatMemory(xmlDocPtr cur, xmlChar**mem, int *size, int format) {
 }
 
 /**
+ * Same as xmlDocDumpFormatMemoryEnc() with `format` set to 0.
+ *
  * @param out_doc  Document to generate XML text from
  * @param doc_txt_ptr  Memory pointer for allocated XML text
  * @param doc_txt_len  Length of the generated XML text
  * @param txt_encoding  Character encoding to use when generating XML text
- *
- * Dump the current DOM tree into memory using the character encoding specified
- * by the caller.  Note it is up to the caller of this function to free the
- * allocated memory with xmlFree().
  */
 
 void
@@ -2593,14 +2603,17 @@ xmlDocDumpMemoryEnc(xmlDocPtr out_doc, xmlChar **doc_txt_ptr,
 }
 
 /**
+ * Serialize an XML document to a `FILE`.
+ *
+ * Uses the document's encoding. If the document has no encoding,
+ * uses ASCII without an encoding declaration.
+ *
+ * Note that `format` only works if the document was parsed with
+ * XML_PARSE_NOBLANKS.
+ *
  * @param f  the FILE*
  * @param cur  the document
  * @param format  should formatting spaces been added
- *
- * Dump an XML document to an open FILE.
- * Note that `format` provides node indenting only if the document
- * was parsed with XML_PARSE_NOBLANKS.
- *
  * @returns the number of bytes written or -1 in case of failure.
  */
 int
@@ -2620,11 +2633,13 @@ xmlDocFormatDump(FILE *f, xmlDocPtr cur, int format) {
 }
 
 /**
+ * Serialize an XML document to a `FILE`.
+ *
+ * Uses the document's encoding. If the document has no encoding,
+ * uses ASCII without an encoding declaration.
+ *
  * @param f  the FILE*
  * @param cur  the document
- *
- * Dump an XML document to an open FILE.
- *
  * @returns the number of bytes written or -1 in case of failure.
  */
 int
@@ -2633,14 +2648,13 @@ xmlDocDump(FILE *f, xmlDocPtr cur) {
 }
 
 /**
+ * Same as xmlSaveFormatFileTo() with `format` set to 0.
+ *
+ * WARNING: This calls xmlOutputBufferClose() and frees `buf`.
+ *
  * @param buf  an output I/O buffer
  * @param cur  the document
  * @param encoding  the encoding if any assuming the I/O layer handles the transcoding
- *
- * Dump an XML document to an I/O buffer.
- * Warning ! This call xmlOutputBufferClose() on buf which is not available
- * after this call.
- *
  * @returns the number of bytes written or -1 in case of failure.
  */
 int
@@ -2649,15 +2663,22 @@ xmlSaveFileTo(xmlOutputBufferPtr buf, xmlDocPtr cur, const char *encoding) {
 }
 
 /**
+ * Serialize an XML document to an output buffer.
+ *
+ * If the output buffer already uses a (non-default) encoding,
+ * `encoding` is ignored. If the output buffer has no encoding
+ * and `encoding` is NULL, uses the document's encoding or
+ * ASCII without an encoding declaration.
+ *
+ * Note that `format` only works if the document was parsed with
+ * XML_PARSE_NOBLANKS.
+ *
+ * WARNING: This calls xmlOutputBufferClose() and frees `buf`.
+ *
  * @param buf  an output I/O buffer
  * @param cur  the document
  * @param encoding  the encoding if any assuming the I/O layer handles the transcoding
  * @param format  should formatting spaces been added
- *
- * Dump an XML document to an I/O buffer.
- * Warning ! This call xmlOutputBufferClose() on buf which is not available
- * after this call.
- *
  * @returns the number of bytes written or -1 in case of failure.
  */
 int
@@ -2678,16 +2699,22 @@ xmlSaveFormatFileTo(xmlOutputBufferPtr buf, xmlDocPtr cur,
 }
 
 /**
+ * Serialize an XML document to a file using the given encoding.
+ * If `filename` is `"-"`, stdout is used. This is potentially
+ * insecure and might be changed in a future version.
+ *
+ * If `encoding` is NULL, uses the document's encoding. If the
+ * document has no encoding, serializes as ASCII without an
+ * encoding declaration.
+ *
+ * Note that `format` only works if the document was parsed with
+ * XML_PARSE_NOBLANKS.
+ *
  * @param filename  the filename or URL to output
  * @param cur  the document being saved
  * @param encoding  the name of the encoding to use or NULL.
  * @param format  should formatting spaces be added.
- *
- * Dump an XML document to a file or an URL.
- *
  * @returns the number of bytes written or -1 in case of error.
- * Note that `format` provides node indenting only if the document
- * was parsed with XML_PARSE_NOBLANKS.
  */
 int
 xmlSaveFormatFileEnc( const char * filename, xmlDocPtr cur,
@@ -2713,12 +2740,11 @@ xmlSaveFormatFileEnc( const char * filename, xmlDocPtr cur,
 
 
 /**
+ * Same as xmlSaveFormatFileEnc() with `format` set to 0.
+ *
  * @param filename  the filename (or URL)
  * @param cur  the document
  * @param encoding  the name of an encoding (or NULL)
- *
- * Dump an XML document, converting it to the given encoding
- *
  * @returns the number of bytes written or -1 in case of failure.
  */
 int
@@ -2727,16 +2753,11 @@ xmlSaveFileEnc(const char *filename, xmlDocPtr cur, const char *encoding) {
 }
 
 /**
+ * Same as xmlSaveFormatFileEnc() with `encoding` set to NULL.
+ *
  * @param filename  the filename (or URL)
  * @param cur  the document
  * @param format  should formatting spaces been added
- *
- * Dump an XML document to a file. Will use compression if
- * compiled in and enabled. If `filename` is "-" the stdout file is
- * used. If `format` is set then the document will be indented on output.
- * Note that `format` provides node indenting only if the document
- * was parsed with XML_PARSE_NOBLANKS.
- *
  * @returns the number of bytes written or -1 in case of failure.
  */
 int
@@ -2745,12 +2766,11 @@ xmlSaveFormatFile(const char *filename, xmlDocPtr cur, int format) {
 }
 
 /**
+ * Same as xmlSaveFormatFileEnc() with `encoding` set to NULL
+ * and `format` set to 0.
+ *
  * @param filename  the filename (or URL)
  * @param cur  the document
- *
- * Dump an XML document to a file. Will use compression if
- * compiled in and enabled. If `filename` is "-" the stdout file is
- * used.
  * @returns the number of bytes written or -1 in case of failure.
  */
 int

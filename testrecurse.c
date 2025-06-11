@@ -246,10 +246,9 @@ static const char *current;
 static int rlen;
 
 /**
- * @param URI  an URI to test
- *
  * Check for a huge query
  *
+ * @param URI  an URI to test
  * @returns 1 if yes and 0 if another Input module should be used
  */
 static int
@@ -268,11 +267,10 @@ hugeMatch(const char * URI) {
 }
 
 /**
- * @param URI  an URI to test
- *
- * @returns a pointer to the huge query handler, in this example simply
+ * Returns a pointer to the huge query handler, in this example simply
  * the current pointer...
  *
+ * @param URI  an URI to test
  * @returns an Input context or NULL in case or error
  */
 static void *
@@ -296,10 +294,9 @@ hugeOpen(const char * URI) {
 }
 
 /**
- * @param context  the read context
- *
  * Close the huge query handler
  *
+ * @param context  the read context
  * @returns 0 or -1 in case of error
  */
 static int
@@ -311,12 +308,11 @@ hugeClose(void * context) {
 #define MAX_NODES 1000
 
 /**
+ * Implement an huge query read.
+ *
  * @param context  the read context
  * @param buffer  where to store data
  * @param len  number of bytes to read
- *
- * Implement an huge query read.
- *
  * @returns the number of bytes read or -1 in case of error
  */
 static int
@@ -474,13 +470,12 @@ static int checkTestFile(const char *filename) {
  *									*
  ************************************************************************/
 /**
- * @param filename  the file to parse
- * @param result  the file with expected result
- * @param err  the file with error messages: unused
- *
  * Parse a file loading DTD and replacing entities check it fails for
  * lol cases
  *
+ * @param filename  the file to parse
+ * @param result  the file with expected result
+ * @param err  the file with error messages: unused
  * @returns 0 in case of success, an error code otherwise
  */
 static int
@@ -521,13 +516,12 @@ recursiveDetectTest(const char *filename,
 }
 
 /**
- * @param filename  the file to parse
- * @param result  the file with expected result
- * @param err  the file with error messages: unused
- *
  * Parse a file loading DTD and replacing entities check it works for
  * good cases
  *
+ * @param filename  the file to parse
+ * @param result  the file with expected result
+ * @param err  the file with error messages: unused
  * @returns 0 in case of success, an error code otherwise
  */
 static int
@@ -563,13 +557,12 @@ notRecursiveDetectTest(const char *filename,
 }
 
 /**
- * @param filename  the file to parse
- * @param result  the file with expected result
- * @param err  the file with error messages: unused
- *
  * Parse a memory generated file
  * good cases
  *
+ * @param filename  the file to parse
+ * @param result  the file with expected result
+ * @param err  the file with error messages: unused
  * @returns 0 in case of success, an error code otherwise
  */
 static int
@@ -664,13 +657,12 @@ notRecursiveHugeTest(const char *filename ATTRIBUTE_UNUSED,
 }
 
 /**
- * @param filename  the file to parse
- * @param result  the file with expected result
- * @param err  the file with error messages: unused
- *
  * Parse a memory generated file
  * good cases
  *
+ * @param filename  the file to parse
+ * @param result  the file with expected result
+ * @param err  the file with error messages: unused
  * @returns 0 in case of success, an error code otherwise
  */
 static int

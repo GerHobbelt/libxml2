@@ -185,12 +185,11 @@ const xmlChRangeGroup *xmlIsIdeographicGroup(void)
 
 
 /**
- * @param val  character to be validated
- * @param rptr  pointer to range to be used to validate
- *
  * Does a binary search of the range table to determine if char
  * is valid
  *
+ * @param val  character to be validated
+ * @param rptr  pointer to range to be used to validate
  * @returns true if character valid, false otherwise
  */
 int
@@ -243,11 +242,10 @@ xmlCharInRange (unsigned int val, const xmlChRangeGroup *rptr) {
 
 
 /**
- * @param ch  character to validate
- *
  * This function is DEPRECATED.
  * Use xmlIsBaseChar_ch() or xmlIsBaseCharQ() instead
  *
+ * @param ch  character to validate
  * @returns true if argument valid, false otherwise
  */
 int
@@ -257,11 +255,10 @@ xmlIsBaseChar(unsigned int ch) {
 
 
 /**
- * @param ch  character to validate
- *
  * This function is DEPRECATED.
  * Use xmlIsBlank_ch() or xmlIsBlankQ() instead
  *
+ * @param ch  character to validate
  * @returns true if argument valid, false otherwise
  */
 int
@@ -271,11 +268,10 @@ xmlIsBlank(unsigned int ch) {
 
 
 /**
- * @param ch  character to validate
- *
  * This function is DEPRECATED.
  * Use xmlIsChar_ch() or xmlIsCharQ() instead
  *
+ * @param ch  character to validate
  * @returns true if argument valid, false otherwise
  */
 int
@@ -285,11 +281,10 @@ xmlIsChar(unsigned int ch) {
 
 
 /**
- * @param ch  character to validate
- *
  * This function is DEPRECATED.
  * Use xmlIsCombiningQ() instead
  *
+ * @param ch  character to validate
  * @returns true if argument valid, false otherwise
  */
 int
@@ -299,11 +294,10 @@ xmlIsCombining(unsigned int ch) {
 
 
 /**
- * @param ch  character to validate
- *
  * This function is DEPRECATED.
  * Use xmlIsDigit_ch() or xmlIsDigitQ() instead
  *
+ * @param ch  character to validate
  * @returns true if argument valid, false otherwise
  */
 int
@@ -313,11 +307,10 @@ xmlIsDigit(unsigned int ch) {
 
 
 /**
- * @param ch  character to validate
- *
  * This function is DEPRECATED.
  * Use xmlIsExtender_ch() or xmlIsExtenderQ() instead
  *
+ * @param ch  character to validate
  * @returns true if argument valid, false otherwise
  */
 int
@@ -327,11 +320,10 @@ xmlIsExtender(unsigned int ch) {
 
 
 /**
- * @param ch  character to validate
- *
  * This function is DEPRECATED.
  * Use xmlIsIdeographicQ() instead
  *
+ * @param ch  character to validate
  * @returns true if argument valid, false otherwise
  */
 int
@@ -341,11 +333,10 @@ xmlIsIdeographic(unsigned int ch) {
 
 
 /**
- * @param ch  character to validate
- *
  * This function is DEPRECATED.
  * Use xmlIsPubidChar_ch() or xmlIsPubidCharQ() instead
  *
+ * @param ch  character to validate
  * @returns true if argument valid, false otherwise
  */
 int

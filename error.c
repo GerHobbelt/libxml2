@@ -21,9 +21,16 @@
 #include "private/string.h"
 
 /**
+ * This currently comprises
+ *
+ * - OOM errors
+ * - assertion failures
+ * - invalid argument errors
+ * - I/O errors
+ * - unexpected errors from external libraries
+ *
  * @param level  error level
  * @param code  error code
- *
  * @returns true if an error is catastrophic.
  */
 int
@@ -214,11 +221,11 @@ xmlVUpdateError(xmlError *err,
  ************************************************************************/
 
 /**
- * @param ctx  an error context
- * @param msg  the message to display/transmit
- * @...:  extra parameters for the message display
+ * Default handler for out-of-context error messages.
  *
- * Default handler for out of context error messages.
+ * @param ctx  user data (unused)
+ * @param msg  printf-like format string
+ * @param ...  arguments to format
  */
 void
 xmlGenericErrorDefaultFunc(void *ctx ATTRIBUTE_UNUSED, const char *msg, ...) {
@@ -233,24 +240,27 @@ xmlGenericErrorDefaultFunc(void *ctx ATTRIBUTE_UNUSED, const char *msg, ...) {
 }
 
 /**
- * @param ctx  the new error handling context
- * @param handler  the new handler function
+ * Set the thread-local "generic" handler and context for error
+ * messages. The generic error handler will only receive fragments
+ * of error messages which should be concatenated or printed to a
+ * stream.
  *
  * @deprecated See xmlSetStructuredErrorFunc() for alternatives.
- *
- * Set the global "generic" handler and context for error messages.
- * The generic error handler will only receive fragments of error
- * messages which should be concatenated or printed to a stream.
  *
  * If handler is NULL, use the built-in default handler which prints
  * to stderr.
  *
- * Since this is a global setting, it's a good idea to reset the
- * error handler to its default value after collecting the errors
- * you're interested in.
+ * Since this is a thread-local setting, it's a good idea to reset
+ * the error handler to its default value after collecting the
+ * errors you're interested in. To get the original values, you
+ * have to access xmlGenericError and xmlGenericErrorContext
+ * directly, making this function kind of useless.
  *
  * For multi-threaded applications, this must be set separately for
  * each thread.
+ *
+ * @param ctx  the new error handling context
+ * @param handler  the new handler function
  */
 void
 xmlSetGenericErrorFunc(void *ctx, xmlGenericErrorFunc handler) {
@@ -262,33 +272,36 @@ xmlSetGenericErrorFunc(void *ctx, xmlGenericErrorFunc handler) {
 }
 
 /**
- * @param ctx  the new error handling context
- * @param handler  the new handler function
+ * It's recommended to use the per-context error handlers instead:
  *
  * @deprecated Use a per-context error handler.
- *
- * It's recommended to use the per-context error handlers instead:
  *
  * - xmlCtxtSetErrorHandler() (since 2.13.0)
  * - xmlTextReaderSetStructuredErrorHandler()
  * - xmlXPathSetErrorHandler() (since 2.13.0)
  * - xmlXIncludeSetErrorHandler() (since 2.13.0)
- * - xmlSchemaSetParserStructuredErrors
- * - xmlSchemaSetValidStructuredErrors
+ * - xmlSchemaSetParserStructuredErrors()
+ * - xmlSchemaSetValidStructuredErrors()
  * - xmlRelaxNGSetParserStructuredErrors()
  * - xmlRelaxNGSetValidStructuredErrors()
  *
- * Set the global "structured" handler and context for error messages.
- * If handler is NULL, the error handler is deactivated.
+ * Set the thread-local "structured" handler and context for error
+ * messages. If handler is NULL, the error handler is deactivated.
  *
  * The structured error handler takes precedence over "generic"
  * handlers, even per-context generic handlers.
  *
- * Since this is a global setting, it's a good idea to deactivate the
- * error handler after collecting the errors you're interested in.
+ * Since this is a thread-local setting, it's a good idea to reset
+ * the error handler to its default value after collecting the
+ * errors you're interested in. To get the original values, you
+ * have to access xmlStructuredError and xmlStructuredErrorContext
+ * directly, making this function kind of useless.
  *
  * For multi-threaded applications, this must be set separately for
  * each thread.
+ *
+ * @param ctx  the new error handling context
+ * @param handler  the new handler function
  */
 void
 xmlSetStructuredErrorFunc(void *ctx, xmlStructuredErrorFunc handler) {
@@ -303,11 +316,12 @@ xmlSetStructuredErrorFunc(void *ctx, xmlStructuredErrorFunc handler) {
  ************************************************************************/
 
 /**
- * @param input  an xmlParserInputPtr input
+ * Displays the associated file and line information for the
+ * current input.
  *
  * @deprecated Use xmlFormatError().
  *
- * Displays the associated file and line information for the current input
+ * @param input  an xmlParserInputPtr input
  */
 
 void
@@ -324,11 +338,12 @@ xmlParserPrintFileInfo(xmlParserInputPtr input) {
 }
 
 /**
+ * Displays current context within the input content for
+ * error reporting.
+ *
  * @param input  an xmlParserInputPtr input
  * @param channel  output callback
  * @param data  user data for output callback
- *
- * Displays current context within the input content for error tracking
  */
 
 static void
@@ -396,11 +411,12 @@ xmlParserPrintFileContextInternal(xmlParserInputPtr input ,
 }
 
 /**
- * @param input  an xmlParserInputPtr input
+ * Displays current context within the input content for
+ * error reporting.
  *
  * @deprecated Use xmlFormatError().
  *
- * Displays current context within the input content for error tracking
+ * @param input  an xmlParserInputPtr input
  */
 void
 xmlParserPrintFileContext(xmlParserInputPtr input) {
@@ -409,16 +425,15 @@ xmlParserPrintFileContext(xmlParserInputPtr input) {
 }
 
 /**
- * @param err  the error
- * @param channel  callback
- * @param data  user data for callback
- *
  * Report a formatted error to a printf-like callback.
  *
  * This can result in a verbose multi-line report including additional
  * information from the parser context.
  *
  * @since 2.13.0
+ * @param err  the error
+ * @param channel  callback
+ * @param data  user data for callback
  */
 void
 xmlFormatError(const xmlError *err, xmlGenericErrorFunc channel, void *data)
@@ -626,17 +641,17 @@ xmlFormatError(const xmlError *err, xmlGenericErrorFunc channel, void *data)
 }
 
 /**
- * @param schannel  the structured callback channel
- * @param channel  the old callback channel
- * @param data  the callback data
- * @param domain  the domain for the error
- * @param error  optional error struct to be filled
- *
  * Update the global and optional error structure, then forward the
  * error to an error handler.
  *
  * This function doesn't make memory allocations which are likely
  * to fail after an OOM error.
+ *
+ * @param schannel  the structured callback channel
+ * @param channel  the old callback channel
+ * @param data  the callback data
+ * @param domain  the domain for the error
+ * @param error  optional error struct to be filled
  */
 void
 xmlRaiseMemoryError(xmlStructuredErrorFunc schannel, xmlGenericErrorFunc channel,
@@ -666,6 +681,10 @@ xmlRaiseMemoryError(xmlStructuredErrorFunc schannel, xmlGenericErrorFunc channel
 }
 
 /**
+ * Update the appropriate global or contextual error structure,
+ * then forward the error message down the parser or generic
+ * error callback handler
+ *
  * @param schannel  the structured callback channel
  * @param channel  the old callback channel
  * @param data  the callback data
@@ -683,11 +702,6 @@ xmlRaiseMemoryError(xmlStructuredErrorFunc schannel, xmlGenericErrorFunc channel
  * @param col  column number of the error or 0 if N/A
  * @param msg  the message to display/transmit
  * @param ap  extra parameters for the message display
- *
- * Update the appropriate global or contextual error structure,
- * then forward the error message down the parser or generic
- * error callback handler
- *
  * @returns 0 on success, -1 if a memory allocation failed.
  */
 int
@@ -750,6 +764,10 @@ xmlVRaiseError(xmlStructuredErrorFunc schannel,
 }
 
 /**
+ * Update the appropriate global or contextual error structure,
+ * then forward the error message down the parser or generic
+ * error callback handler
+ *
  * @param schannel  the structured callback channel
  * @param channel  the old callback channel
  * @param data  the callback data
@@ -765,13 +783,8 @@ xmlVRaiseError(xmlStructuredErrorFunc schannel,
  * @param str3  extra string info
  * @param int1  extra int info
  * @param col  column number of the error or 0 if N/A
- * @param msg  the message to display/transmit
- * @...:  extra parameters for the message display
- *
- * Update the appropriate global or contextual error structure,
- * then forward the error message down the parser or generic
- * error callback handler
- *
+ * @param msg  printf-like format string
+ * @param ...  arguments to format
  * @returns 0 on success, -1 if a memory allocation failed.
  */
 int
@@ -831,12 +844,18 @@ xmlVFormatLegacyError(void *ctx, const char *level,
 }
 
 /**
- * @param ctx  an XML parser context
- * @param msg  the message to display/transmit
- * @...:  extra parameters for the message display
+ * This is the default SAX error handler, but it will never be
+ * called. If it isn't replaced by the user, errors will be
+ * handled by xmlFormatError().
  *
- * Display and format an error messages, gives file, line, position and
- * extra parameters.
+ * @deprecated Do not call directly.
+ *
+ * Format an error message with additional detail from the
+ * parser context and print to generic error handler.
+ *
+ * @param ctx  an XML parser context
+ * @param msg  printf-like format string
+ * @param ...  arguments to format
  */
 void
 xmlParserError(void *ctx, const char *msg ATTRIBUTE_UNUSED, ...)
@@ -849,12 +868,18 @@ xmlParserError(void *ctx, const char *msg ATTRIBUTE_UNUSED, ...)
 }
 
 /**
- * @param ctx  an XML parser context
- * @param msg  the message to display/transmit
- * @...:  extra parameters for the message display
+ * This is the default SAX warning handler, but it will never be
+ * called. If it isn't replaced by the user, warnings will be
+ * handled by xmlFormatError().
  *
- * Display and format a warning messages, gives file, line, position and
- * extra parameters.
+ * @deprecated Do not call directly.
+ *
+ * Format an warning message with additional detail from the
+ * parser context and print to generic error handler.
+ *
+ * @param ctx  an XML parser context
+ * @param msg  printf-like format string
+ * @param ...  arguments to format
  */
 void
 xmlParserWarning(void *ctx, const char *msg ATTRIBUTE_UNUSED, ...)
@@ -867,12 +892,18 @@ xmlParserWarning(void *ctx, const char *msg ATTRIBUTE_UNUSED, ...)
 }
 
 /**
- * @param ctx  an XML parser context
- * @param msg  the message to display/transmit
- * @...:  extra parameters for the message display
+ * This is the default validity error handler, but it will never be
+ * called. If it isn't replaced by the user, errors will be
+ * handled by xmlFormatError().
  *
- * Display and format an validity error messages, gives file,
- * line, position and extra parameters.
+ * @deprecated Do not call directly.
+ *
+ * Format an error message with additional detail from the
+ * parser context and print to generic error handler.
+ *
+ * @param ctx  an XML parser context
+ * @param msg  printf-like format string
+ * @param ...  arguments to format
  */
 void
 xmlParserValidityError(void *ctx, const char *msg ATTRIBUTE_UNUSED, ...)
@@ -885,12 +916,18 @@ xmlParserValidityError(void *ctx, const char *msg ATTRIBUTE_UNUSED, ...)
 }
 
 /**
- * @param ctx  an XML parser context
- * @param msg  the message to display/transmit
- * @...:  extra parameters for the message display
+ * This is the default validity warning handler, but it will never
+ * be called. If it isn't replaced by the user, warnings will be
+ * handled by xmlFormatError().
  *
- * Display and format a validity warning messages, gives file, line,
- * position and extra parameters.
+ * @deprecated Do not call directly.
+ *
+ * Format an warning message with additional detail from the
+ * parser context and print to generic error handler.
+ *
+ * @param ctx  an XML parser context
+ * @param msg  printf-like format string
+ * @param ...  arguments to format
  */
 void
 xmlParserValidityWarning(void *ctx, const char *msg ATTRIBUTE_UNUSED, ...)
@@ -910,8 +947,7 @@ xmlParserValidityWarning(void *ctx, const char *msg ATTRIBUTE_UNUSED, ...)
  ************************************************************************/
 
 /**
- * Get the last global error registered. This is per thread if compiled
- * with thread support.
+ * Get the last error raised in this thread.
  *
  * @returns a pointer to the error
  */
@@ -926,9 +962,9 @@ xmlGetLastError(void)
 }
 
 /**
- * @param err  pointer to the error.
+ * Reset the error to success.
  *
- * Cleanup the error.
+ * @param err  pointer to the error
  */
 void
 xmlResetError(xmlErrorPtr err)
@@ -952,8 +988,7 @@ xmlResetError(xmlErrorPtr err)
 }
 
 /**
- * Cleanup the last global error registered. For parsing error
- * this does not change the well-formedness result.
+ * Reset the last error to success.
  */
 void
 xmlResetLastError(void)
@@ -965,11 +1000,10 @@ xmlResetLastError(void)
 }
 
 /**
+ * Copy an error.
+ *
  * @param from  a source error
  * @param to  a target error
- *
- * Save the original error to the new place.
- *
  * @returns 0 in case of success and -1 in case of error.
  */
 int
@@ -992,7 +1026,6 @@ xmlCopyError(const xmlError *from, xmlErrorPtr to) {
 
 /**
  * @param code  an xmlParserErrors code
- *
  * @returns an error message for a code.
  */
 const char *
@@ -1323,10 +1356,10 @@ xmlErrString(xmlParserErrors code) {
 }
 
 /**
- * @param fmt  printf format string
- * @param ap  arguments
- *
  * Prints to stderr.
+ *
+ * @param fmt  printf-like format string
+ * @param ap  arguments
  */
 void
 xmlVPrintErrorMessage(const char *fmt, va_list ap) {
@@ -1334,10 +1367,10 @@ xmlVPrintErrorMessage(const char *fmt, va_list ap) {
 }
 
 /**
- * @param fmt  printf format string
- * @...:  arguments
- *
  * Prints to stderr.
+ *
+ * @param fmt  printf-like format string
+ * @param ...  arguments
  */
 void
 xmlPrintErrorMessage(const char *fmt, ...) {
@@ -1349,10 +1382,10 @@ xmlPrintErrorMessage(const char *fmt, ...) {
 }
 
 /**
- * @param fmt  printf format string
- * @...:  arguments
- *
  * Print message to stderr and abort.
+ *
+ * @param fmt  printf-like format string
+ * @param ...  arguments
  */
 void
 xmlAbort(const char *fmt, ...) {

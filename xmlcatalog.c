@@ -65,10 +65,9 @@ static const char *filename = NULL;
  *									*
  ************************************************************************/
 /**
- * @param prompt  the prompt value
- *
  * Read a string
  *
+ * @param prompt  the prompt value
  * @returns a pointer to it or NULL on EOF the caller is expected to
  *     free the returned string.
  */

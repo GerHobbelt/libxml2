@@ -91,10 +91,9 @@ static unsigned int currentTest = 0;
 static int instate = 0;
 
 /**
- * @param URI  an URI to test
- *
  * Check for an huge: query
  *
+ * @param URI  an URI to test
  * @returns 1 if yes and 0 if another Input module should be used
  */
 static int
@@ -105,11 +104,10 @@ hugeMatch(const char * URI) {
 }
 
 /**
- * @param URI  an URI to test
- *
- * @returns a pointer to the huge: query handler, in this example simply
+ * Returns a pointer to the huge: query handler, in this example simply
  * the current pointer...
  *
+ * @param URI  an URI to test
  * @returns an Input context or NULL in case or error
  */
 static void *
@@ -132,10 +130,9 @@ found:
 }
 
 /**
- * @param context  the read context
- *
  * Close the huge: query handler
  *
+ * @param context  the read context
  * @returns 0 or -1 in case of error
  */
 static int
@@ -163,12 +160,11 @@ size_t curlen = 0;
 size_t dotlen;
 
 /**
+ * Implement an huge: query read.
+ *
  * @param context  the read context
  * @param buffer  where to store data
  * @param len  number of bytes to read
- *
- * Implement an huge: query read.
- *
  * @returns the number of bytes read or -1 in case of error
  */
 static int
@@ -250,10 +246,9 @@ foo\
 <!-- tst -->";
 
 /**
- * @param URI  an URI to test
- *
  * Check for a crazy: query
  *
+ * @param URI  an URI to test
  * @returns 1 if yes and 0 if another Input module should be used
  */
 static int
@@ -264,11 +259,10 @@ crazyMatch(const char * URI) {
 }
 
 /**
- * @param URI  an URI to test
- *
- * @returns a pointer to the crazy: query handler, in this example simply
+ * Returns a pointer to the crazy: query handler, in this example simply
  * the current pointer...
  *
+ * @param URI  an URI to test
  * @returns an Input context or NULL in case or error
  */
 static void *
@@ -286,10 +280,9 @@ crazyOpen(const char * URI) {
 }
 
 /**
- * @param context  the read context
- *
  * Close the crazy: query handler
  *
+ * @param context  the read context
  * @returns 0 or -1 in case of error
  */
 static int
@@ -300,12 +293,11 @@ crazyClose(void * context) {
 
 
 /**
+ * Implement an crazy: query read.
+ *
  * @param context  the read context
  * @param buffer  where to store data
  * @param len  number of bytes to read
- *
- * Implement an crazy: query read.
- *
  * @returns the number of bytes read or -1 in case of error
  */
 static int
@@ -399,10 +391,9 @@ initializeLibxml2(void) {
 unsigned long callbacks = 0;
 
 /**
- * @param ctxt  An XML parser context
- *
  * Is this document tagged standalone ?
  *
+ * @param ctxt  An XML parser context
  * @returns 1 if true
  */
 static int
@@ -413,10 +404,9 @@ isStandaloneCallback(void *ctx ATTRIBUTE_UNUSED)
 }
 
 /**
- * @param ctxt  An XML parser context
- *
  * Does this document has an internal subset
  *
+ * @param ctxt  An XML parser context
  * @returns 1 if true
  */
 static int
@@ -427,10 +417,9 @@ hasInternalSubsetCallback(void *ctx ATTRIBUTE_UNUSED)
 }
 
 /**
- * @param ctxt  An XML parser context
- *
  * Does this document has an external subset
  *
+ * @param ctxt  An XML parser context
  * @returns 1 if true
  */
 static int
@@ -441,9 +430,9 @@ hasExternalSubsetCallback(void *ctx ATTRIBUTE_UNUSED)
 }
 
 /**
- * @param ctxt  An XML parser context
- *
  * Does this document has an internal subset
+ *
+ * @param ctxt  An XML parser context
  */
 static void
 internalSubsetCallback(void *ctx ATTRIBUTE_UNUSED,
@@ -455,9 +444,9 @@ internalSubsetCallback(void *ctx ATTRIBUTE_UNUSED,
 }
 
 /**
- * @param ctxt  An XML parser context
- *
  * Does this document has an external subset
+ *
+ * @param ctxt  An XML parser context
  */
 static void
 externalSubsetCallback(void *ctx ATTRIBUTE_UNUSED,
@@ -469,16 +458,15 @@ externalSubsetCallback(void *ctx ATTRIBUTE_UNUSED,
 }
 
 /**
- * @param ctxt  An XML parser context
- * @param publicId  The public ID of the entity
- * @param systemId  The system ID of the entity
- *
  * Special entity resolver, better left to the parser, it has
  * more context than the application layer.
  * The default behaviour is to NOT resolve the entities, in that case
  * the ENTITY_REF nodes are built in the structure (and the parameter
  * values).
  *
+ * @param ctxt  An XML parser context
+ * @param publicId  The public ID of the entity
+ * @param systemId  The system ID of the entity
  * @returns the xmlParserInputPtr if inlined or NULL for DOM behaviour.
  */
 static xmlParserInputPtr
@@ -491,11 +479,10 @@ resolveEntityCallback(void *ctx ATTRIBUTE_UNUSED,
 }
 
 /**
- * @param ctxt  An XML parser context
- * @param name  The entity name
- *
  * Get an entity by name
  *
+ * @param ctxt  An XML parser context
+ * @param name  The entity name
  * @returns the xmlParserInputPtr if inlined or NULL for DOM behaviour.
  */
 static xmlEntityPtr
@@ -507,11 +494,10 @@ getEntityCallback(void *ctx ATTRIBUTE_UNUSED,
 }
 
 /**
- * @param ctxt  An XML parser context
- * @param name  The entity name
- *
  * Get a parameter entity by name
  *
+ * @param ctxt  An XML parser context
+ * @param name  The entity name
  * @returns the xmlParserInputPtr
  */
 static xmlEntityPtr
@@ -524,14 +510,14 @@ getParameterEntityCallback(void *ctx ATTRIBUTE_UNUSED,
 
 
 /**
+ * An entity definition has been parsed
+ *
  * @param ctxt  An XML parser context
  * @param name  the entity name
  * @param type  the entity type
  * @param publicId  The public ID of the entity
  * @param systemId  The system ID of the entity
  * @param content  the entity value (without processing).
- *
- * An entity definition has been parsed
  */
 static void
 entityDeclCallback(void *ctx ATTRIBUTE_UNUSED,
@@ -545,11 +531,11 @@ entityDeclCallback(void *ctx ATTRIBUTE_UNUSED,
 }
 
 /**
+ * An attribute definition has been parsed
+ *
  * @param ctxt  An XML parser context
  * @param name  the attribute name
  * @param type  the attribute type
- *
- * An attribute definition has been parsed
  */
 static void
 attributeDeclCallback(void *ctx ATTRIBUTE_UNUSED,
@@ -563,12 +549,12 @@ attributeDeclCallback(void *ctx ATTRIBUTE_UNUSED,
 }
 
 /**
+ * An element definition has been parsed
+ *
  * @param ctxt  An XML parser context
  * @param name  the element name
  * @param type  the element type
  * @param content  the element value (without processing).
- *
- * An element definition has been parsed
  */
 static void
 elementDeclCallback(void *ctx ATTRIBUTE_UNUSED,
@@ -580,12 +566,12 @@ elementDeclCallback(void *ctx ATTRIBUTE_UNUSED,
 }
 
 /**
+ * What to do when a notation declaration has been parsed.
+ *
  * @param ctxt  An XML parser context
  * @param name  The name of the notation
  * @param publicId  The public ID of the entity
  * @param systemId  The system ID of the entity
- *
- * What to do when a notation declaration has been parsed.
  */
 static void
 notationDeclCallback(void *ctx ATTRIBUTE_UNUSED,
@@ -597,13 +583,13 @@ notationDeclCallback(void *ctx ATTRIBUTE_UNUSED,
 }
 
 /**
+ * What to do when an unparsed entity declaration is parsed
+ *
  * @param ctxt  An XML parser context
  * @param name  The name of the entity
  * @param publicId  The public ID of the entity
  * @param systemId  The system ID of the entity
  * @param notationName  the name of the notation
- *
- * What to do when an unparsed entity declaration is parsed
  */
 static void
 unparsedEntityDeclCallback(void *ctx ATTRIBUTE_UNUSED,
@@ -616,11 +602,11 @@ unparsedEntityDeclCallback(void *ctx ATTRIBUTE_UNUSED,
 }
 
 /**
- * @param ctxt  An XML parser context
- * @param loc  A SAX Locator
- *
  * Receive the document locator at startup, actually xmlDefaultSAXLocator
  * Everything is available on the context, so this is useless in our case.
+ *
+ * @param ctxt  An XML parser context
+ * @param loc  A SAX Locator
  */
 static void
 setDocumentLocatorCallback(void *ctx ATTRIBUTE_UNUSED,
@@ -630,9 +616,9 @@ setDocumentLocatorCallback(void *ctx ATTRIBUTE_UNUSED,
 }
 
 /**
- * @param ctxt  An XML parser context
- *
  * called when the document start being processed.
+ *
+ * @param ctxt  An XML parser context
  */
 static void
 startDocumentCallback(void *ctx ATTRIBUTE_UNUSED)
@@ -641,9 +627,9 @@ startDocumentCallback(void *ctx ATTRIBUTE_UNUSED)
 }
 
 /**
- * @param ctxt  An XML parser context
- *
  * called when the document end has been detected.
+ *
+ * @param ctxt  An XML parser context
  */
 static void
 endDocumentCallback(void *ctx ATTRIBUTE_UNUSED)
@@ -653,10 +639,10 @@ endDocumentCallback(void *ctx ATTRIBUTE_UNUSED)
 
 #if 0
 /**
+ * called when an opening tag has been processed.
+ *
  * @param ctxt  An XML parser context
  * @param name  The element name
- *
- * called when an opening tag has been processed.
  */
 static void
 startElementCallback(void *ctx ATTRIBUTE_UNUSED,
@@ -668,10 +654,10 @@ startElementCallback(void *ctx ATTRIBUTE_UNUSED,
 }
 
 /**
+ * called when the end of an element has been detected.
+ *
  * @param ctxt  An XML parser context
  * @param name  The element name
- *
- * called when the end of an element has been detected.
  */
 static void
 endElementCallback(void *ctx ATTRIBUTE_UNUSED,
@@ -683,12 +669,12 @@ endElementCallback(void *ctx ATTRIBUTE_UNUSED,
 #endif
 
 /**
+ * receiving some chars from the parser.
+ * Question: how much at a time ???
+ *
  * @param ctxt  An XML parser context
  * @param ch  a xmlChar string
  * @param len  the number of xmlChar
- *
- * receiving some chars from the parser.
- * Question: how much at a time ???
  */
 static void
 charactersCallback(void *ctx ATTRIBUTE_UNUSED,
@@ -699,10 +685,10 @@ charactersCallback(void *ctx ATTRIBUTE_UNUSED,
 }
 
 /**
+ * called when an entity reference is detected.
+ *
  * @param ctxt  An XML parser context
  * @param name  The entity name
- *
- * called when an entity reference is detected.
  */
 static void
 referenceCallback(void *ctx ATTRIBUTE_UNUSED,
@@ -712,13 +698,13 @@ referenceCallback(void *ctx ATTRIBUTE_UNUSED,
 }
 
 /**
+ * receiving some ignorable whitespaces from the parser.
+ * Question: how much at a time ???
+ *
  * @param ctxt  An XML parser context
  * @param ch  a xmlChar string
  * @param start  the first char in the string
  * @param len  the number of xmlChar
- *
- * receiving some ignorable whitespaces from the parser.
- * Question: how much at a time ???
  */
 static void
 ignorableWhitespaceCallback(void *ctx ATTRIBUTE_UNUSED,
@@ -729,12 +715,12 @@ ignorableWhitespaceCallback(void *ctx ATTRIBUTE_UNUSED,
 }
 
 /**
+ * A processing instruction has been parsed.
+ *
  * @param ctxt  An XML parser context
  * @param target  the target name
  * @param data  the PI data's
  * @param len  the number of xmlChar
- *
- * A processing instruction has been parsed.
  */
 static void
 processingInstructionCallback(void *ctx ATTRIBUTE_UNUSED,
@@ -745,11 +731,11 @@ processingInstructionCallback(void *ctx ATTRIBUTE_UNUSED,
 }
 
 /**
+ * called when a pcdata block has been parsed
+ *
  * @param ctx  the user data (XML parser context)
  * @param value  The pcdata content
  * @param len  the block length
- *
- * called when a pcdata block has been parsed
  */
 static void
 cdataBlockCallback(void *ctx ATTRIBUTE_UNUSED,
@@ -760,10 +746,10 @@ cdataBlockCallback(void *ctx ATTRIBUTE_UNUSED,
 }
 
 /**
+ * A comment has been parsed.
+ *
  * @param ctxt  An XML parser context
  * @param value  the comment content
- *
- * A comment has been parsed.
  */
 static void
 commentCallback(void *ctx ATTRIBUTE_UNUSED,
@@ -773,12 +759,12 @@ commentCallback(void *ctx ATTRIBUTE_UNUSED,
 }
 
 /**
- * @param ctxt  An XML parser context
- * @param msg  the message to display/transmit
- * @...:  extra parameters for the message display
- *
  * Display and format a warning messages, gives file, line, position and
  * extra parameters.
+ *
+ * @param ctxt  An XML parser context
+ * @param msg  the message to display/transmit
+ * @param ...  extra parameters for the message display
  */
 static void
 warningCallback(void *ctx ATTRIBUTE_UNUSED,
@@ -788,12 +774,12 @@ warningCallback(void *ctx ATTRIBUTE_UNUSED,
 }
 
 /**
- * @param ctxt  An XML parser context
- * @param msg  the message to display/transmit
- * @...:  extra parameters for the message display
- *
  * Display and format a error messages, gives file, line, position and
  * extra parameters.
+ *
+ * @param ctxt  An XML parser context
+ * @param msg  the message to display/transmit
+ * @param ...  extra parameters for the message display
  */
 static void
 errorCallback(void *ctx ATTRIBUTE_UNUSED, const char *msg ATTRIBUTE_UNUSED,
@@ -803,12 +789,12 @@ errorCallback(void *ctx ATTRIBUTE_UNUSED, const char *msg ATTRIBUTE_UNUSED,
 }
 
 /**
- * @param ctxt  An XML parser context
- * @param msg  the message to display/transmit
- * @...:  extra parameters for the message display
- *
  * Display and format a fatalError messages, gives file, line, position and
  * extra parameters.
+ *
+ * @param ctxt  An XML parser context
+ * @param msg  the message to display/transmit
+ * @param ...  extra parameters for the message display
  */
 static void
 fatalErrorCallback(void *ctx ATTRIBUTE_UNUSED,
@@ -822,10 +808,10 @@ fatalErrorCallback(void *ctx ATTRIBUTE_UNUSED,
  */
 
 /**
+ * called when an opening tag has been processed.
+ *
  * @param ctxt  An XML parser context
  * @param name  The element name
- *
- * called when an opening tag has been processed.
  */
 static void
 startElementNsCallback(void *ctx ATTRIBUTE_UNUSED,
@@ -842,10 +828,10 @@ startElementNsCallback(void *ctx ATTRIBUTE_UNUSED,
 }
 
 /**
+ * called when the end of an element has been detected.
+ *
  * @param ctxt  An XML parser context
  * @param name  The element name
- *
- * called when the end of an element has been detected.
  */
 static void
 endElementNsCallback(void *ctx ATTRIBUTE_UNUSED,
@@ -900,13 +886,12 @@ static xmlSAXHandlerPtr callbackSAX2Handler = &callbackSAX2HandlerStruct;
  ************************************************************************/
 
 /**
+ * Parse a memory generated file using SAX
+ *
  * @param filename  the file to parse
  * @param max_size  size of the limit to test
  * @param options  parsing options
  * @param fail  should a failure be reported
- *
- * Parse a memory generated file using SAX
- *
  * @returns 0 in case of success, an error code otherwise
  */
 static int
@@ -951,13 +936,12 @@ saxTest(const char *filename, size_t limit, int options, int fail) {
 }
 #ifdef LIBXML_READER_ENABLED
 /**
+ * Parse a memory generated file using the xmlReader
+ *
  * @param filename  the file to parse
  * @param max_size  size of the limit to test
  * @param options  parsing options
  * @param fail  should a failure be reported
- *
- * Parse a memory generated file using the xmlReader
- *
  * @returns 0 in case of success, an error code otherwise
  */
 static int
