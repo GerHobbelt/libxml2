@@ -5,7 +5,8 @@
  */
 
 #define IN_LIBXML
-#include "libxml.h"
+#include <libxml.h>
+#include <libxml/xmlversion.h>
 
 #ifdef LIBXML_HTTP_STUBS_ENABLED
 

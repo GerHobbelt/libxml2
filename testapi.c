@@ -30,6 +30,7 @@
 #include <libxml/xmlwriter.h>
 #include <libxml/xpathInternals.h>
 #include <libxml/xpointer.h>
+#include <libxml/nanohttp.h>
 
 static void
 ignoreError(void *userData ATTRIBUTE_UNUSED,
@@ -733,7 +734,7 @@ main(void) {
 #endif /* LIBXML_PUSH_ENABLED */
 #endif /* LIBXML_HTML_ENABLED */
 
-#ifdef LIBXML_HTTP_ENABLED
+#if defined(LIBXML_HTTP_STUBS_ENABLED)
     xmlIOHTTPClose(NULL);
     xmlIOHTTPMatch(NULL);
     xmlIOHTTPOpen(NULL);
