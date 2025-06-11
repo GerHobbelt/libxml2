@@ -627,11 +627,7 @@ xmlHasFeature(xmlFeature feature)
             return(0);
 #endif
         case XML_WITH_EXPR:
-#ifdef LIBXML_EXPR_ENABLED
-            return(1);
-#else
             return(0);
-#endif
         case XML_WITH_RELAXNG:
 #ifdef LIBXML_RELAXNG_ENABLED
             return(1);
@@ -969,6 +965,28 @@ xmlCtxtInitializeLate(xmlParserCtxtPtr ctxt) {
         ctxt->vctxt.flags &= ~XML_VCTXT_VALIDATE;
 #endif /* LIBXML_VALID_ENABLED */
 }
+
+typedef struct {
+    xmlHashedString prefix;
+    xmlHashedString name;
+    xmlHashedString value;
+    const xmlChar *valueEnd;
+    int external;
+    int expandedSize;
+} xmlDefAttr;
+
+typedef struct _xmlDefAttrs xmlDefAttrs;
+typedef xmlDefAttrs *xmlDefAttrsPtr;
+struct _xmlDefAttrs {
+    int nbAttrs;	/* number of defaulted attributes on that element */
+    int maxAttrs;       /* the size of the array */
+#if __STDC_VERSION__ >= 199901L
+    /* Using a C99 flexible array member avoids UBSan errors. */
+    xmlDefAttr attrs[] ATTRIBUTE_COUNTED_BY(maxAttrs);
+#else
+    xmlDefAttr attrs[1];
+#endif
+};
 
 /**
  * Normalize the space in non CDATA attribute values:
@@ -6040,7 +6058,7 @@ xmlParseAttributeListDecl(xmlParserCtxt *ctxt) {
 	    else if (tree != NULL)
 		xmlFreeEnumeration(tree);
 
-	    if ((defaultValue != NULL) &&
+	    if ((ctxt->sax2) && (defaultValue != NULL) &&
 	        (def != XML_ATTRIBUTE_IMPLIED) &&
 		(def != XML_ATTRIBUTE_REQUIRED)) {
 		xmlAddDefAttrs(ctxt, elemName, attrName, defaultValue);
@@ -8964,7 +8982,7 @@ xmlParseStartTag2(xmlParserCtxtPtr ctxt, const xmlChar **pref,
                                         ((unsigned) alloc << 31);
             atts[nbatts++] = attname;
             atts[nbatts++] = aprefix;
-            atts[nbatts++] = (const xmlChar *) (size_t) haprefix.hashValue;
+            atts[nbatts++] = XML_INT_TO_PTR(haprefix.hashValue);
             if (alloc) {
                 atts[nbatts++] = attvalue;
                 attvalue += len;
@@ -8975,9 +8993,9 @@ xmlParseStartTag2(xmlParserCtxtPtr ctxt, const xmlChar **pref,
                  * reallocated. Store differences to input->base instead.
                  * The pointers will be reconstructed later.
                  */
-                atts[nbatts++] = (void *) (attvalue - BASE_PTR);
+                atts[nbatts++] = XML_INT_TO_PTR(attvalue - BASE_PTR);
                 attvalue += len;
-                atts[nbatts++] = (void *) (attvalue - BASE_PTR);
+                atts[nbatts++] = XML_INT_TO_PTR(attvalue - BASE_PTR);
             }
             /*
              * tag if some deallocation is needed
@@ -9506,12 +9524,11 @@ xmlParseCDSect(xmlParserCtxt *ctxt) {
      * OK the buffer is to be consumed as cdata.
      */
     if ((ctxt->sax != NULL) && (!ctxt->disableSAX)) {
-        if (ctxt->options & XML_PARSE_NOCDATA) {
-            if (ctxt->sax->characters != NULL)
-                ctxt->sax->characters(ctxt->userData, buf, len);
-        } else {
-            if (ctxt->sax->cdataBlock != NULL)
-                ctxt->sax->cdataBlock(ctxt->userData, buf, len);
+        if ((ctxt->sax->cdataBlock != NULL) &&
+            ((ctxt->options & XML_PARSE_NOCDATA) == 0)) {
+            ctxt->sax->cdataBlock(ctxt->userData, buf, len);
+        } else if (ctxt->sax->characters != NULL) {
+            ctxt->sax->characters(ctxt->userData, buf, len);
         }
     }
 
