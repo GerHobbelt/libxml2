@@ -193,11 +193,21 @@ static xmlGlobalState globalState;
  * Memory allocation routines
  */
 
+/**
+ * a strdup implementation with a type signature matching POSIX
+ *
+ * @param cur  the input char *
+ * @returns a new xmlChar * or NULL
+ */
+static char * XMLCALL
+xmlPosixStrdup(const char *cur) {
+    return((char*) xmlCharStrdup(cur));
+}
+
 /* [i_a] make sure MS and other platforms always do the linkage right, irrespective of whether you're using dynamic loadable of statically linked runtime libs */
 static void XMLCALL lcl_xmlFreeFunc(void *mem) { free(mem); }
 static void * LIBXML_ATTR_ALLOC_SIZE(1) XMLCALL lcl_xmlMallocFunc(size_t size) { return malloc(size); }
 static void * XMLCALL lcl_xmlReallocFunc(void *mem, size_t size) { return realloc(mem, size); }
-static char * XMLCALL lcl_xmlStrdupFunc(const char *str) { return strdup(str); }
 
 /**
  * The variable holding the libxml free() implementation
@@ -235,7 +245,7 @@ xmlReallocFunc xmlRealloc = lcl_xmlReallocFunc;
  * @param str  a zero terminated string
  * @returns the copy of the string or NULL in case of error
  */
-xmlStrdupFunc xmlMemStrdup = lcl_xmlStrdupFunc;
+xmlStrdupFunc xmlMemStrdup = xmlPosixStrdup;
 
 /*
  * Parser defaults
