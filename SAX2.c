@@ -272,7 +272,7 @@ xmlSAX2ExternalSubset(void *ctx, const xmlChar *name,
     if (ctx == NULL) return;
     if ((systemId != NULL) &&
         ((ctxt->options & XML_PARSE_NO_XXE) == 0) &&
-        (((ctxt->validate) || (ctxt->loadsubset)) &&
+        (((ctxt->validate) || (ctxt->loadsubset & ~XML_SKIP_IDS)) &&
 	 (ctxt->wellFormed && ctxt->myDoc))) {
 	/*
 	 * Try to fetch and parse the external subset.
@@ -282,7 +282,7 @@ xmlSAX2ExternalSubset(void *ctx, const xmlChar *name,
 	int oldinputMax;
 	xmlParserInputPtr *oldinputTab;
 	xmlParserInputPtr input = NULL;
-	const xmlChar *oldencoding;
+	xmlChar *oldencoding;
         unsigned long consumed;
         size_t buffered;
 #ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
@@ -370,10 +370,8 @@ error:
 	ctxt->inputNr = oldinputNr;
 	ctxt->inputMax = oldinputMax;
 	ctxt->inputTab = oldinputTab;
-	if ((ctxt->encoding != NULL) &&
-	    ((ctxt->dict == NULL) ||
-	     (!xmlDictOwns(ctxt->dict, ctxt->encoding))))
-	    xmlFree((xmlChar *) ctxt->encoding);
+	if (ctxt->encoding != NULL)
+	    xmlFree(ctxt->encoding);
 	ctxt->encoding = oldencoding;
 	/* ctxt->wellFormed = oldwellFormed; */
     }

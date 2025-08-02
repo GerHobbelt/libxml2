@@ -1658,7 +1658,7 @@ xmlSetDeclaredEncoding(xmlParserCtxt *ctxt, xmlChar *encoding) {
     }
 
     if (ctxt->encoding != NULL)
-        xmlFree((xmlChar *) ctxt->encoding);
+        xmlFree(ctxt->encoding);
     ctxt->encoding = encoding;
 }
 
@@ -1940,7 +1940,7 @@ xmlCtxtNewInputFromString(xmlParserCtxt *ctxt, const char *url,
 }
 
 /**
- * Creates a new parser input to read from a zero-terminated string.
+ * Creates a new parser input to read from a file descriptor.
  *
  * `url` is used as base to resolve external entities and for
  * error reporting.
@@ -2011,7 +2011,7 @@ xmlCtxtNewInputFromFd(xmlParserCtxt *ctxt, const char *url,
 
 /**
  * Creates a new parser input to read from input callbacks and
- * cintext.
+ * context.
  *
  * `url` is used as base to resolve external entities and for
  * error reporting.
@@ -2903,10 +2903,10 @@ xmlFreeParserCtxt(xmlParserCtxt *ctxt)
     if (ctxt->nodeTab != NULL) xmlFree(ctxt->nodeTab);
     if (ctxt->nodeInfoTab != NULL) xmlFree(ctxt->nodeInfoTab);
     if (ctxt->inputTab != NULL) xmlFree(ctxt->inputTab);
-    if (ctxt->version != NULL) xmlFree((char *) ctxt->version);
-    if (ctxt->encoding != NULL) xmlFree((char *) ctxt->encoding);
-    if (ctxt->extSubURI != NULL) xmlFree((char *) ctxt->extSubURI);
-    if (ctxt->extSubSystem != NULL) xmlFree((char *) ctxt->extSubSystem);
+    if (ctxt->version != NULL) xmlFree(ctxt->version);
+    if (ctxt->encoding != NULL) xmlFree(ctxt->encoding);
+    if (ctxt->extSubURI != NULL) xmlFree(ctxt->extSubURI);
+    if (ctxt->extSubSystem != NULL) xmlFree(ctxt->extSubSystem);
 #ifdef LIBXML_SAX1_ENABLED
     if ((ctxt->sax != NULL) &&
         (ctxt->sax != (xmlSAXHandlerPtr) &xmlDefaultSAXHandler))
@@ -3195,6 +3195,11 @@ xmlCtxtIsHtml(xmlParserCtxt *ctxt) {
 }
 
 /**
+ * Check whether the parser is stopped.
+ *
+ * The parser is stopped on fatal (non-wellformedness) errors or
+ * on user request with #xmlStopParser.
+ *
  * @since 2.14.0
  *
  * @param ctxt  parser context
@@ -3205,7 +3210,7 @@ xmlCtxtIsStopped(xmlParserCtxt *ctxt) {
     if (ctxt == NULL)
         return(0);
 
-    return(PARSER_STOPPED(ctxt));
+    return(ctxt->disableSAX != 0);
 }
 
 #ifdef LIBXML_VALID_ENABLED

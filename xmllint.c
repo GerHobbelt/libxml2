@@ -94,7 +94,7 @@ typedef enum {
     XMLLINT_ERR_UNCLASS = 1,	    /* Unclassified */
     XMLLINT_ERR_DTD = 2,	    /* Error in DTD */
     XMLLINT_ERR_VALID = 3,	    /* Validation error */
-    XMLLINT_ERR_RDFILE = 4,	    /* CtxtReadFile error */
+    XMLLINT_ERR_RDFILE = 4,	    /* Wellformedness or IO error */
     XMLLINT_ERR_SCHEMACOMP = 5,	    /* Schema compilation */
     XMLLINT_ERR_OUT = 6,	    /* Error writing output */
     XMLLINT_ERR_SCHEMAPAT = 7,	    /* Error in schema pattern */
@@ -115,6 +115,62 @@ typedef struct {
    int usec;
 } xmlTime;
 
+/* Boolean xmllint application options */
+typedef enum {
+    /** Do not build a tree but work just at the SAX level */
+    XML_LINT_SAX_ENABLED = (1 << 0),
+    /** run a navigating shell */
+    XML_LINT_NAVIGATING_SHELL = (1 << 1),
+    /** Show additional debug information */
+    XML_LINT_DEBUG_ENABLED = (1 << 2),
+    /** Test the internal copy implementation */
+    XML_LINT_COPY_ENABLED = (1 << 3),
+    /** Turn on gzip compression of output */
+    XML_LINT_ZLIB_COMPRESSION = (1 << 4),
+    /** Save in W3C canonical format v1.0 (with comments) */
+    XML_LINT_CANONICAL_V1_0 = (1 << 5),
+    /** Save in W3C canonical format v1.1 (with comments) */
+    XML_LINT_CANONICAL_V1_1 = (1 << 6),
+    /** Save exclusive canonical format (with comments) */
+    XML_LINT_CANONICAL_EXE = (1 << 7),
+    /** Do a posteriori validation, i.e after parsing */
+    XML_LINT_POST_VALIDATION = (1 << 8),
+    /** Ad-hoc test for valid insertions */
+    XML_LINT_VALID_INSERTIONS = (1 << 9),
+    /** Use the HTML parser */
+    XML_LINT_HTML_ENABLED = (1 << 10),
+    /** Force to use the XML serializer when using XML_LINT_HTML_ENABLED */
+    XML_LINT_XML_OUT = (1 << 11),
+    /** Use the push mode of the parser */
+    XML_LINT_PUSH_ENABLED = (1 << 12),
+    /** Parse from memory */
+    XML_LINT_MEMORY = (1 << 13),
+    /** Do XInclude processing */
+    XML_LINT_XINCLUDE = (1 << 14),
+    /** Be quiet when succeeded */
+    XML_LINT_QUIET = (1 << 15),
+    /** Print some timings */
+    XML_LINT_TIMINGS = (1 << 16),
+    /** Generate a small doc on the fly */
+    XML_LINT_GENERATE = (1 << 17),
+    /** Remove the DOCTYPE of the input docs */
+    XML_LINT_DROP_DTD = (1 << 18),
+    /** Use the streaming interface to process very large files */
+    XML_LINT_USE_STREAMING = (1 << 19),
+    /** Create a reader and walk though the resulting doc */
+    XML_LINT_USE_WALKER = (1 << 20),
+    /** use SGML catalogs from $SGML_CATALOG_FILES */
+    XML_LINT_USE_CATALOGS = (1 << 21),
+    /** Deactivate all catalogs */
+    XML_LINT_USE_NO_CATALOGS = (1 << 22),
+    /** Print trace of all external entities loaded */
+    XML_LINT_USE_LOAD_TRACE = (1 << 23),
+    /** Return application failure if document has any namespace errors */
+    XML_LINT_STRICT_NAMESPACE = (1 << 24)
+
+
+} xmllintAppOptions;
+
 typedef struct {
     FILE *errStream;
     xmlParserCtxtPtr ctxt;
@@ -122,31 +178,17 @@ typedef struct {
 
     int version;
     int maxmem;
-    int sax;
     int callbacks;
-    int shell;
-    int debug;
-    int copy;
     int noout;
 #ifdef LIBXML_OUTPUT_ENABLED
     const char *output;
     const char *encoding;
     const char *indentString;
     int format;
-#ifdef LIBXML_ZLIB_ENABLED
-    int compress;
-#endif
-#ifdef LIBXML_C14N_ENABLED
-    int canonical;
-    int canonical_11;
-    int exc_canonical;
-#endif
 #endif /* LIBXML_OUTPUT_ENABLED */
 #ifdef LIBXML_VALID_ENABLED
-    int postvalid;
     const char *dtdvalid;
     const char *dtdvalidfpi;
-    int insert;
 #endif
 #ifdef LIBXML_RELAXNG_ENABLED
     const char *relaxng;
@@ -162,31 +204,14 @@ typedef struct {
 #endif
     int repeat;
 #ifdef LIBXML_HTML_ENABLED
-    int html;
     int htmlOptions;
-#ifdef LIBXML_OUTPUT_ENABLED
-    int xmlout;
 #endif
-#endif
-#ifdef LIBXML_PUSH_ENABLED
-    int push;
-#endif /* LIBXML_PUSH_ENABLED */
 #if HAVE_DECL_MMAP
-    int memory;
     char *memoryData;
     size_t memorySize;
 #endif
-#ifdef LIBXML_XINCLUDE_ENABLED
-    int xinclude;
-#endif
     xmllintReturnCode progresult;
-    int quiet;
-    int timing;
-    int generate;
-    int dropdtd;
 #ifdef LIBXML_READER_ENABLED
-    int stream;
-    int walker;
 #ifdef LIBXML_PATTERN_ENABLED
     const char *pattern;
     xmlPatternPtr patternc;
@@ -196,16 +221,12 @@ typedef struct {
 #ifdef LIBXML_XPATH_ENABLED
     const char *xpathquery;
 #endif
-#ifdef LIBXML_CATALOG_ENABLED
-    int catalogs;
-    int nocatalogs;
-#endif
-    int options;
+    int parseOptions;
+    unsigned appOptions;
     unsigned maxAmpl;
 
     xmlChar *paths[MAX_PATHS + 1];
     int nbpaths;
-    int load_trace;
 
     xmlTime begin;
     xmlTime end;
@@ -271,7 +292,7 @@ xmllintResourceLoader(void *ctxt, const char *URL,
     else
         code = xmlNewInputFromUrl(URL, flags, out);
     if (code != XML_IO_ENOENT) {
-        if ((lint->load_trace) && (code == XML_ERR_OK)) {
+        if ((lint->appOptions & XML_LINT_USE_LOAD_TRACE) && (code == XML_ERR_OK)) {
             fprintf(lint->errStream, "Loaded URL=\"%s\" ID=\"%s\"\n",
                     URL, ID ? ID : "(null)");
         }
@@ -291,7 +312,7 @@ xmllintResourceLoader(void *ctxt, const char *URL,
             else
                 code = xmlNewInputFromUrl((const char *) newURL, flags, out);
             if (code != XML_IO_ENOENT) {
-                if ((lint->load_trace) && (code == XML_ERR_OK)) {
+                if ((lint->appOptions & XML_LINT_USE_LOAD_TRACE) && (code == XML_ERR_OK)) {
                     fprintf(lint->errStream, "Loaded URL=\"%s\" ID=\"%s\"\n",
                             newURL, ID ? ID : "(null)");
                 }
@@ -317,7 +338,7 @@ parseXml(xmllintState *lint, const char *filename) {
     xmlDocPtr doc;
 
 #ifdef LIBXML_PUSH_ENABLED
-    if (lint->push) {
+    if (lint->appOptions & XML_LINT_PUSH_ENABLED) {
         FILE *f;
         int res;
         char chars[4096];
@@ -347,7 +368,7 @@ parseXml(xmllintState *lint, const char *filename) {
 #endif /* LIBXML_PUSH_ENABLED */
 
 #if HAVE_DECL_MMAP
-    if (lint->memory) {
+    if (lint->appOptions & XML_LINT_MEMORY) {
         xmlParserInputPtr input;
 
         input = xmlNewInputFromMemory(filename,
@@ -364,10 +385,10 @@ parseXml(xmllintState *lint, const char *filename) {
 
     if (strcmp(filename, "-") == 0)
         doc = xmlCtxtReadFd(ctxt, STDIN_FILENO, "-", NULL,
-                            lint->options | XML_PARSE_UNZIP);
+                            lint->parseOptions | XML_PARSE_UNZIP);
     else
         doc = xmlCtxtReadFile(ctxt, filename, NULL,
-                              lint->options | XML_PARSE_UNZIP);
+                              lint->parseOptions | XML_PARSE_UNZIP);
 
     return(doc);
 }
@@ -379,7 +400,7 @@ parseHtml(xmllintState *lint, const char *filename) {
     xmlDocPtr doc;
 
 #ifdef LIBXML_PUSH_ENABLED
-    if (lint->push) {
+    if (lint->appOptions & XML_LINT_PUSH_ENABLED) {
         FILE *f;
         int res;
         char chars[4096];
@@ -409,7 +430,7 @@ parseHtml(xmllintState *lint, const char *filename) {
 #endif /* LIBXML_PUSH_ENABLED */
 
 #if HAVE_DECL_MMAP
-    if (lint->memory) {
+    if (lint->appOptions & XML_LINT_MEMORY) {
         xmlParserInputPtr input;
 
         input = xmlNewInputFromMemory(filename,
@@ -1200,7 +1221,7 @@ testSAX(xmllintState *lint, const char *filename) {
 	ret = xmlSchemaValidateStream(vctxt, buf, 0, lint->ctxt->sax, lint);
 	if (lint->repeat == 1) {
 	    if (ret == 0) {
-	        if (!lint->quiet) {
+	        if ((lint->appOptions & XML_LINT_QUIET) != XML_LINT_QUIET) {
 	            fprintf(lint->errStream, "%s validates\n", filename);
 	        }
 	    } else if (ret > 0) {
@@ -1216,7 +1237,7 @@ testSAX(xmllintState *lint, const char *filename) {
     } else
 #endif
 #ifdef LIBXML_HTML_ENABLED
-    if (lint->html) {
+    if (lint->appOptions & XML_LINT_HTML_ENABLED) {
         parseHtml(lint, filename);
     } else
 #endif
@@ -1238,7 +1259,7 @@ static void processNode(xmllintState *lint, xmlTextReaderPtr reader) {
     type = xmlTextReaderNodeType(reader);
     empty = xmlTextReaderIsEmptyElement(reader);
 
-    if (lint->debug) {
+    if (lint->appOptions & XML_LINT_DEBUG_ENABLED) {
 	name = xmlTextReaderConstName(reader);
 	if (name == NULL)
 	    name = BAD_CAST "--";
@@ -1323,9 +1344,9 @@ static void streamFile(xmllintState *lint, const char *filename) {
     int ret;
 
 #if HAVE_DECL_MMAP
-    if (lint->memory) {
+    if (lint->appOptions & XML_LINT_MEMORY) {
 	reader = xmlReaderForMemory(lint->memoryData, lint->memorySize,
-                                    filename, NULL, lint->options);
+                                    filename, NULL, lint->parseOptions);
         if (reader == NULL) {
             lint->progresult = XMLLINT_ERR_MEM;
             return;
@@ -1337,11 +1358,11 @@ static void streamFile(xmllintState *lint, const char *filename) {
 
         if (strcmp(filename, "-") == 0) {
             reader = xmlReaderForFd(STDIN_FILENO, "-", NULL,
-                                    lint->options | XML_PARSE_UNZIP);
+                                    lint->parseOptions | XML_PARSE_UNZIP);
         }
         else {
             reader = xmlReaderForFile(filename, NULL,
-                                      lint->options | XML_PARSE_UNZIP);
+                                      lint->parseOptions | XML_PARSE_UNZIP);
         }
         if (reader == NULL) {
             const xmlError *error = xmlGetLastError();
@@ -1377,7 +1398,7 @@ static void streamFile(xmllintState *lint, const char *filename) {
 
 #ifdef LIBXML_RELAXNG_ENABLED
     if (lint->relaxng != NULL) {
-        if ((lint->timing) && (lint->repeat == 1)) {
+        if ((lint->appOptions & XML_LINT_TIMINGS) && (lint->repeat == 1)) {
             startTimer(lint);
         }
         ret = xmlTextReaderRelaxNGValidate(reader, lint->relaxng);
@@ -1387,14 +1408,14 @@ static void streamFile(xmllintState *lint, const char *filename) {
             lint->progresult = XMLLINT_ERR_SCHEMACOMP;
             lint->relaxng = NULL;
         }
-        if ((lint->timing) && (lint->repeat == 1)) {
+        if ((lint->appOptions & XML_LINT_TIMINGS) && (lint->repeat == 1)) {
             endTimer(lint, "Compiling the schemas");
         }
     }
 #endif
 #ifdef LIBXML_SCHEMAS_ENABLED
     if (lint->schema != NULL) {
-        if ((lint->timing) && (lint->repeat == 1)) {
+        if ((lint->appOptions & XML_LINT_TIMINGS) && (lint->repeat == 1)) {
             startTimer(lint);
         }
         ret = xmlTextReaderSchemaValidate(reader, lint->schema);
@@ -1404,7 +1425,7 @@ static void streamFile(xmllintState *lint, const char *filename) {
             lint->progresult = XMLLINT_ERR_SCHEMACOMP;
             lint->schema = NULL;
         }
-        if ((lint->timing) && (lint->repeat == 1)) {
+        if ((lint->appOptions & XML_LINT_TIMINGS) && (lint->repeat == 1)) {
             endTimer(lint, "Compiling the schemas");
         }
     }
@@ -1413,12 +1434,12 @@ static void streamFile(xmllintState *lint, const char *filename) {
     /*
      * Process all nodes in sequence
      */
-    if ((lint->timing) && (lint->repeat == 1)) {
+    if ((lint->appOptions & XML_LINT_TIMINGS) && (lint->repeat == 1)) {
         startTimer(lint);
     }
     ret = xmlTextReaderRead(reader);
     while (ret == 1) {
-        if ((lint->debug)
+        if ((lint->appOptions & XML_LINT_DEBUG_ENABLED)
 #ifdef LIBXML_PATTERN_ENABLED
             || (lint->patternc)
 #endif
@@ -1426,14 +1447,14 @@ static void streamFile(xmllintState *lint, const char *filename) {
             processNode(lint, reader);
         ret = xmlTextReaderRead(reader);
     }
-    if ((lint->timing) && (lint->repeat == 1)) {
+    if ((lint->appOptions & XML_LINT_TIMINGS) && (lint->repeat == 1)) {
 #ifdef LIBXML_RELAXNG_ENABLED
         if (lint->relaxng != NULL)
             endTimer(lint, "Parsing and validating");
         else
 #endif
 #ifdef LIBXML_VALID_ENABLED
-        if (lint->options & XML_PARSE_DTDVALID)
+        if (lint->parseOptions & XML_PARSE_DTDVALID)
             endTimer(lint, "Parsing and validating");
         else
 #endif
@@ -1441,7 +1462,7 @@ static void streamFile(xmllintState *lint, const char *filename) {
     }
 
 #ifdef LIBXML_VALID_ENABLED
-    if (lint->options & XML_PARSE_DTDVALID) {
+    if (lint->parseOptions & XML_PARSE_DTDVALID) {
         if (xmlTextReaderIsValid(reader) != 1) {
             fprintf(errStream,
                     "Document %s does not validate\n", filename);
@@ -1466,7 +1487,7 @@ static void streamFile(xmllintState *lint, const char *filename) {
                 fprintf(errStream, "%s fails to validate\n", filename);
                 lint->progresult = XMLLINT_ERR_VALID;
             } else {
-                if (!lint->quiet) {
+                if ((lint->appOptions & XML_LINT_QUIET) != XML_LINT_QUIET) {
                     fprintf(errStream, "%s validates\n", filename);
                 }
             }
@@ -1545,12 +1566,12 @@ static void walkDoc(xmllintState *lint, xmlDocPtr doc) {
 #endif /* LIBXML_PATTERN_ENABLED */
     reader = xmlReaderWalker(doc);
     if (reader != NULL) {
-	if ((lint->timing) && (lint->repeat == 1)) {
+	if ((lint->appOptions & XML_LINT_TIMINGS) && (lint->repeat == 1)) {
 	    startTimer(lint);
 	}
 	ret = xmlTextReaderRead(reader);
 	while (ret == 1) {
-	    if ((lint->debug)
+	    if ((lint->appOptions & XML_LINT_DEBUG_ENABLED)
 #ifdef LIBXML_PATTERN_ENABLED
 	        || (lint->patternc)
 #endif
@@ -1558,7 +1579,7 @@ static void walkDoc(xmllintState *lint, xmlDocPtr doc) {
 		processNode(lint, reader);
 	    ret = xmlTextReaderRead(reader);
 	}
-	if ((lint->timing) && (lint->repeat == 1)) {
+	if ((lint->appOptions & XML_LINT_TIMINGS) && (lint->repeat == 1)) {
 	    endTimer(lint, "walking through the doc");
 	}
 	xmlFreeTextReader(reader);
@@ -1603,7 +1624,7 @@ doXPathDump(xmllintState *lint, xmlXPathObjectPtr cur) {
 
             if ((cur->nodesetval == NULL) || (cur->nodesetval->nodeNr <= 0)) {
                 lint->progresult = XMLLINT_ERR_XPATH_EMPTY;
-                if (!lint->quiet) {
+                if ((lint->appOptions & XML_LINT_QUIET) != XML_LINT_QUIET) {
                     fprintf(lint->errStream, "XPath set is empty\n");
                 }
                 break;
@@ -1678,7 +1699,7 @@ doXPathQuery(xmllintState *lint, xmlDocPtr doc, const char *query) {
     }
 
 #ifdef LIBXML_DEBUG_ENABLED
-    if (lint->debug) {
+    if (lint->appOptions & XML_LINT_DEBUG_ENABLED) {
         xmlXPathDebugDumpCompExpr(stdout, comp, 0);
         printf("\n");
     }
@@ -1711,7 +1732,7 @@ static xmlDocPtr
 parseFile(xmllintState *lint, const char *filename) {
     xmlDocPtr doc = NULL;
 
-    if ((lint->generate) && (filename == NULL)) {
+    if ((lint->appOptions & XML_LINT_GENERATE) && (filename == NULL)) {
         xmlNodePtr n;
 
         doc = xmlNewDoc(BAD_CAST "1.0");
@@ -1737,7 +1758,7 @@ parseFile(xmllintState *lint, const char *filename) {
     }
 
 #ifdef LIBXML_HTML_ENABLED
-    if (lint->html) {
+    if (lint->appOptions & XML_LINT_HTML_ENABLED) {
         doc = parseHtml(lint, filename);
         return(doc);
     }
@@ -1752,10 +1773,15 @@ parseFile(xmllintState *lint, const char *filename) {
         else
 	    lint->progresult = XMLLINT_ERR_RDFILE;
     } else {
-#ifdef LIBXML_VALID_ENABLED
-        if ((lint->options & XML_PARSE_DTDVALID) && (lint->ctxt->valid == 0))
+        xmlParserStatus status = xmlCtxtGetStatus(lint->ctxt);
+        if ((lint->parseOptions & XML_PARSE_DTDVALID) &&
+            (status & XML_STATUS_DTD_VALIDATION_FAILED))
             lint->progresult = XMLLINT_ERR_VALID;
-#endif /* LIBXML_VALID_ENABLED */
+
+        if ((lint->appOptions & XML_LINT_STRICT_NAMESPACE) &&
+            (status & XML_STATUS_NOT_NS_WELL_FORMED)) {
+            lint->progresult = XMLLINT_ERR_RDFILE;
+        }
     }
 
     return(doc);
@@ -1769,7 +1795,7 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
     /* Avoid unused variable warning */
     (void) errStream;
 
-    if ((lint->timing) && (lint->repeat == 1))
+    if ((lint->appOptions & XML_LINT_TIMINGS) && (lint->repeat == 1))
 	startTimer(lint);
 
     doc = parseFile(lint, filename);
@@ -1779,11 +1805,11 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
 	return;
     }
 
-    if ((lint->timing) && (lint->repeat == 1)) {
+    if ((lint->appOptions & XML_LINT_TIMINGS) && (lint->repeat == 1)) {
 	endTimer(lint, "Parsing");
     }
 
-    if (lint->dropdtd) {
+    if (lint->appOptions & XML_LINT_DROP_DTD) {
 	xmlDtdPtr dtd;
 
 	dtd = xmlGetIntSubset(doc);
@@ -1794,15 +1820,32 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
     }
 
 #ifdef LIBXML_XINCLUDE_ENABLED
-    if (lint->xinclude) {
-	if ((lint->timing) && (lint->repeat == 1)) {
+    if (lint->appOptions & XML_LINT_XINCLUDE) {
+        xmlXIncludeCtxt *xinc;
+        int res;
+
+	if ((lint->appOptions & XML_LINT_TIMINGS) && (lint->repeat == 1)) {
 	    startTimer(lint);
 	}
-	if (xmlXIncludeProcessFlags(doc, lint->options) < 0) {
-	    lint->progresult = XMLLINT_ERR_UNCLASS;
+
+        xinc = xmlXIncludeNewContext(doc);
+        if (xinc == NULL) {
+            lint->progresult = XMLLINT_ERR_MEM;
             goto done;
         }
-	if ((lint->timing) && (lint->repeat == 1)) {
+        xmlXIncludeSetResourceLoader(xinc, xmllintResourceLoader, lint);
+        xmlXIncludeSetFlags(xinc, lint->parseOptions);
+        res = xmlXIncludeProcessNode(xinc, (xmlNode *) doc);
+        xmlXIncludeFreeContext(xinc);
+        if (res < 0) {
+            /*
+             * Return an error but continue to print the document
+             * to match long-standing behavior.
+             */
+	    lint->progresult = XMLLINT_ERR_UNCLASS;
+        }
+
+	if ((lint->appOptions & XML_LINT_TIMINGS) && (lint->repeat == 1)) {
 	    endTimer(lint, "Xinclude processing");
 	}
     }
@@ -1811,7 +1854,7 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
     /*
      * shell interaction
      */
-    if (lint->shell) {
+    if (lint->appOptions & XML_LINT_NAVIGATING_SHELL) {
 #ifdef LIBXML_XPATH_ENABLED
         xmlXPathOrderDocElems(doc);
 #endif
@@ -1829,11 +1872,11 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
     /*
      * test intermediate copy if needed.
      */
-    if (lint->copy) {
+    if (lint->appOptions & XML_LINT_COPY_ENABLED) {
         xmlDocPtr tmp;
 
         tmp = doc;
-	if (lint->timing) {
+	if (lint->appOptions & XML_LINT_TIMINGS) {
 	    startTimer(lint);
 	}
 	doc = xmlCopyDoc(doc, 1);
@@ -1842,22 +1885,22 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
             xmlFreeDoc(tmp);
             return;
         }
-	if (lint->timing) {
+	if (lint->appOptions & XML_LINT_TIMINGS) {
 	    endTimer(lint, "Copying");
 	}
-	if (lint->timing) {
+	if (lint->appOptions & XML_LINT_TIMINGS) {
 	    startTimer(lint);
 	}
 	xmlFreeDoc(tmp);
-	if (lint->timing) {
+	if (lint->appOptions & XML_LINT_TIMINGS) {
 	    endTimer(lint, "Freeing original");
 	}
     }
 
 #ifdef LIBXML_VALID_ENABLED
-    if ((lint->insert)
+    if ((lint->appOptions & XML_LINT_VALID_INSERTIONS)
 #ifdef LIBXML_HTML_ENABLED
-        && (!lint->html)
+        && ((lint->appOptions & XML_LINT_HTML_ENABLED) != XML_LINT_HTML_ENABLED)
 #endif
     ) {
         const xmlChar* list[256];
@@ -1888,14 +1931,14 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
     } else
 #endif /* LIBXML_VALID_ENABLED */
 #ifdef LIBXML_READER_ENABLED
-    if (lint->walker) {
+    if (lint->appOptions & XML_LINT_USE_WALKER) {
         walkDoc(lint, doc);
     }
 #endif /* LIBXML_READER_ENABLED */
 #ifdef LIBXML_OUTPUT_ENABLED
     if (lint->noout == 0) {
 #ifdef LIBXML_ZLIB_ENABLED
-        if (lint->compress)
+        if (lint->appOptions & XML_LINT_ZLIB_COMPRESSION)
             xmlSetDocCompressMode(doc, 9);
 #endif
 
@@ -1903,13 +1946,13 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
 	 * print it.
 	 */
 #ifdef LIBXML_DEBUG_ENABLED
-	if (!lint->debug) {
+	if ((lint->appOptions & XML_LINT_DEBUG_ENABLED) != XML_LINT_DEBUG_ENABLED) {
 #endif
-	    if ((lint->timing) && (lint->repeat == 1)) {
+	    if ((lint->appOptions & XML_LINT_TIMINGS) && (lint->repeat == 1)) {
 		startTimer(lint);
 	    }
 #ifdef LIBXML_C14N_ENABLED
-            if (lint->canonical) {
+            if (lint->appOptions & XML_LINT_CANONICAL_V1_0) {
 	        xmlChar *result = NULL;
 		int size;
 
@@ -1923,7 +1966,7 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
 		    fprintf(errStream, "Failed to canonicalize\n");
 		    lint->progresult = XMLLINT_ERR_OUT;
 		}
-	    } else if (lint->canonical_11) {
+	    } else if (lint->appOptions & XML_LINT_CANONICAL_V1_1) {
 	        xmlChar *result = NULL;
 		int size;
 
@@ -1937,7 +1980,7 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
 		    fprintf(errStream, "Failed to canonicalize\n");
 		    lint->progresult = XMLLINT_ERR_OUT;
 		}
-	    } else if (lint->exc_canonical) {
+	    } else if (lint->appOptions & XML_LINT_CANONICAL_EXE) {
 	        xmlChar *result = NULL;
 		int size;
 
@@ -1954,7 +1997,7 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
 	    } else
 #endif
 #ifdef LIBXML_ZLIB_ENABLED
-	    if (lint->compress) {
+	    if (lint->appOptions & XML_LINT_ZLIB_COMPRESSION) {
 		xmlSaveFile(lint->output ? lint->output : "-", doc);
 	    } else
 #endif
@@ -1968,7 +2011,7 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
                     saveOpts |= XML_SAVE_WSNONSIG;
 
 #if defined(LIBXML_HTML_ENABLED)
-                if (lint->xmlout)
+                if (lint->appOptions & XML_LINT_XML_OUT)
                     saveOpts |= XML_SAVE_AS_XML;
 #endif
 
@@ -1993,7 +2036,7 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
 		    lint->progresult = XMLLINT_ERR_OUT;
 		}
 	    }
-	    if ((lint->timing) && (lint->repeat == 1)) {
+	    if ((lint->appOptions & XML_LINT_TIMINGS) && (lint->repeat == 1)) {
 		endTimer(lint, "Saving");
 	    }
 #ifdef LIBXML_DEBUG_ENABLED
@@ -2025,14 +2068,14 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
     if ((lint->dtdvalid != NULL) || (lint->dtdvalidfpi != NULL)) {
 	xmlDtdPtr dtd;
 
-	if ((lint->timing) && (lint->repeat == 1)) {
+	if ((lint->appOptions & XML_LINT_TIMINGS) && (lint->repeat == 1)) {
 	    startTimer(lint);
 	}
 	if (lint->dtdvalid != NULL)
 	    dtd = xmlParseDTD(NULL, BAD_CAST lint->dtdvalid);
 	else
 	    dtd = xmlParseDTD(BAD_CAST lint->dtdvalidfpi, NULL);
-	if ((lint->timing) && (lint->repeat == 1)) {
+	if ((lint->appOptions & XML_LINT_TIMINGS) && (lint->repeat == 1)) {
 	    endTimer(lint, "Parsing DTD");
 	}
 	if (dtd == NULL) {
@@ -2053,7 +2096,7 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
                 return;
 	    }
 
-	    if ((lint->timing) && (lint->repeat == 1)) {
+	    if ((lint->appOptions & XML_LINT_TIMINGS) && (lint->repeat == 1)) {
 		startTimer(lint);
 	    }
 	    if (!xmlValidateDtd(cvp, doc, dtd)) {
@@ -2067,13 +2110,13 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
 			    filename, lint->dtdvalidfpi);
 		lint->progresult = XMLLINT_ERR_VALID;
 	    }
-	    if ((lint->timing) && (lint->repeat == 1)) {
+	    if ((lint->appOptions & XML_LINT_TIMINGS) && (lint->repeat == 1)) {
 		endTimer(lint, "Validating against DTD");
 	    }
 	    xmlFreeValidCtxt(cvp);
 	    xmlFreeDtd(dtd);
 	}
-    } else if (lint->postvalid) {
+    } else if (lint->appOptions & XML_LINT_POST_VALIDATION) {
 	xmlValidCtxtPtr cvp;
 
 	cvp = xmlNewValidCtxt();
@@ -2083,7 +2126,7 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
             return;
 	}
 
-	if ((lint->timing) && (lint->repeat == 1)) {
+	if ((lint->appOptions & XML_LINT_TIMINGS) && (lint->repeat == 1)) {
 	    startTimer(lint);
 	}
 	if (!xmlValidateDocument(cvp, doc)) {
@@ -2091,7 +2134,7 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
 		    "Document %s does not validate\n", filename);
 	    lint->progresult = XMLLINT_ERR_VALID;
 	}
-	if ((lint->timing) && (lint->repeat == 1)) {
+	if ((lint->appOptions & XML_LINT_TIMINGS) && (lint->repeat == 1)) {
 	    endTimer(lint, "Validating");
 	}
 	xmlFreeValidCtxt(cvp);
@@ -2103,11 +2146,11 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
 	int ret;
 	int flag;
 
-	if ((lint->timing) && (lint->repeat == 1)) {
+	if ((lint->appOptions & XML_LINT_TIMINGS) && (lint->repeat == 1)) {
 	    startTimer(lint);
 	}
 
-	if (lint->debug)
+	if (lint->appOptions & XML_LINT_DEBUG_ENABLED)
 	    flag = XML_SCHEMATRON_OUT_XML;
 	else
 	    flag = XML_SCHEMATRON_OUT_TEXT;
@@ -2121,7 +2164,7 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
         }
 	ret = xmlSchematronValidateDoc(ctxt, doc);
 	if (ret == 0) {
-	    if (!lint->quiet) {
+	    if ((lint->appOptions & XML_LINT_QUIET) != XML_LINT_QUIET) {
 	        fprintf(errStream, "%s validates\n", filename);
 	    }
 	} else if (ret > 0) {
@@ -2133,7 +2176,7 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
 	    lint->progresult = XMLLINT_ERR_VALID;
 	}
 	xmlSchematronFreeValidCtxt(ctxt);
-	if ((lint->timing) && (lint->repeat == 1)) {
+	if ((lint->appOptions & XML_LINT_TIMINGS) && (lint->repeat == 1)) {
 	    endTimer(lint, "Validating");
 	}
     }
@@ -2144,7 +2187,7 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
 	xmlRelaxNGValidCtxtPtr ctxt;
 	int ret;
 
-	if ((lint->timing) && (lint->repeat == 1)) {
+	if ((lint->appOptions & XML_LINT_TIMINGS) && (lint->repeat == 1)) {
 	    startTimer(lint);
 	}
 
@@ -2156,7 +2199,7 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
         }
 	ret = xmlRelaxNGValidateDoc(ctxt, doc);
 	if (ret == 0) {
-	    if (!lint->quiet) {
+	    if ((lint->appOptions & XML_LINT_QUIET) != XML_LINT_QUIET) {
 	        fprintf(errStream, "%s validates\n", filename);
 	    }
 	} else if (ret > 0) {
@@ -2168,7 +2211,7 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
 	    lint->progresult = XMLLINT_ERR_VALID;
 	}
 	xmlRelaxNGFreeValidCtxt(ctxt);
-	if ((lint->timing) && (lint->repeat == 1)) {
+	if ((lint->appOptions & XML_LINT_TIMINGS) && (lint->repeat == 1)) {
 	    endTimer(lint, "Validating");
 	}
     }
@@ -2179,7 +2222,7 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
 	xmlSchemaValidCtxtPtr ctxt;
 	int ret;
 
-	if ((lint->timing) && (lint->repeat == 1)) {
+	if ((lint->appOptions & XML_LINT_TIMINGS) && (lint->repeat == 1)) {
 	    startTimer(lint);
 	}
 
@@ -2191,7 +2234,7 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
         }
 	ret = xmlSchemaValidateDoc(ctxt, doc);
 	if (ret == 0) {
-	    if (!lint->quiet) {
+	    if ((lint->appOptions & XML_LINT_QUIET) != XML_LINT_QUIET) {
 	        fprintf(errStream, "%s validates\n", filename);
 	    }
 	} else if (ret > 0) {
@@ -2203,7 +2246,7 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
 	    lint->progresult = XMLLINT_ERR_VALID;
 	}
 	xmlSchemaFreeValidCtxt(ctxt);
-	if ((lint->timing) && (lint->repeat == 1)) {
+	if ((lint->appOptions & XML_LINT_TIMINGS) && (lint->repeat == 1)) {
 	    endTimer(lint, "Validating");
 	}
     }
@@ -2216,11 +2259,11 @@ done:
     /*
      * free it.
      */
-    if ((lint->timing) && (lint->repeat == 1)) {
+    if ((lint->appOptions & XML_LINT_TIMINGS) && (lint->repeat == 1)) {
 	startTimer(lint);
     }
     xmlFreeDoc(doc);
-    if ((lint->timing) && (lint->repeat == 1)) {
+    if ((lint->appOptions & XML_LINT_TIMINGS) && (lint->repeat == 1)) {
 	endTimer(lint, "Freeing");
     }
 }
@@ -2291,6 +2334,7 @@ static void usage(FILE *f, const char *name) {
     fprintf(f, "\t--dtdvalidfpi FPI : same but name the DTD with a Public Identifier\n");
     fprintf(f, "\t--insert : ad-hoc test for valid insertions\n");
 #endif /* LIBXML_VALID_ENABLED */
+    fprintf(f, "\t--strict-namespace : Return application failure if document has any namespace errors\n");
     fprintf(f, "\t--quiet : be quiet when succeeded\n");
     fprintf(f, "\t--timing : print some timings\n");
     fprintf(f, "\t--repeat : repeat 100 times, for timing or profiling\n");
@@ -2453,7 +2497,7 @@ xmllintInit(xmllintState *lint) {
 
     lint->repeat = 1;
     lint->progresult = XMLLINT_RETURN_OK;
-    lint->options = XML_PARSE_COMPACT | XML_PARSE_BIG_LINES;
+    lint->parseOptions = XML_PARSE_COMPACT | XML_PARSE_BIG_LINES;
 #ifdef LIBXML_HTML_ENABLED
     lint->htmlOptions = HTML_PARSE_COMPACT | HTML_PARSE_BIG_LINES;
 #endif
@@ -2494,40 +2538,40 @@ xmllintParseOptions(xmllintState *lint, int argc, const char **argv) {
             lint->maxmem = val;
         } else if ((!strcmp(argv[i], "-debug")) ||
                    (!strcmp(argv[i], "--debug"))) {
-            lint->debug = 1;
+            lint->appOptions |= XML_LINT_DEBUG_ENABLED;
         } else if ((!strcmp(argv[i], "-shell")) ||
                    (!strcmp(argv[i], "--shell"))) {
-            lint->shell = 1;
+            lint->appOptions |= XML_LINT_NAVIGATING_SHELL;
         } else if ((!strcmp(argv[i], "-copy")) ||
                    (!strcmp(argv[i], "--copy"))) {
-            lint->copy = 1;
+            lint->appOptions |= XML_LINT_COPY_ENABLED;
         } else if ((!strcmp(argv[i], "-recover")) ||
                    (!strcmp(argv[i], "--recover"))) {
-            lint->options |= XML_PARSE_RECOVER;
+            lint->parseOptions |= XML_PARSE_RECOVER;
         } else if ((!strcmp(argv[i], "-huge")) ||
                    (!strcmp(argv[i], "--huge"))) {
-            lint->options |= XML_PARSE_HUGE;
+            lint->parseOptions |= XML_PARSE_HUGE;
 #ifdef LIBXML_HTML_ENABLED
             lint->htmlOptions |= HTML_PARSE_HUGE;
 #endif
         } else if ((!strcmp(argv[i], "-noent")) ||
                    (!strcmp(argv[i], "--noent"))) {
-            lint->options |= XML_PARSE_NOENT;
+            lint->parseOptions |= XML_PARSE_NOENT;
         } else if ((!strcmp(argv[i], "-noenc")) ||
                    (!strcmp(argv[i], "--noenc"))) {
-            lint->options |= XML_PARSE_IGNORE_ENC;
+            lint->parseOptions |= XML_PARSE_IGNORE_ENC;
 #ifdef LIBXML_HTML_ENABLED
             lint->htmlOptions |= HTML_PARSE_IGNORE_ENC;
 #endif
         } else if ((!strcmp(argv[i], "-nsclean")) ||
                    (!strcmp(argv[i], "--nsclean"))) {
-            lint->options |= XML_PARSE_NSCLEAN;
+            lint->parseOptions |= XML_PARSE_NSCLEAN;
         } else if ((!strcmp(argv[i], "-nocdata")) ||
                    (!strcmp(argv[i], "--nocdata"))) {
-            lint->options |= XML_PARSE_NOCDATA;
+            lint->parseOptions |= XML_PARSE_NOCDATA;
         } else if ((!strcmp(argv[i], "-nodict")) ||
                    (!strcmp(argv[i], "--nodict"))) {
-            lint->options |= XML_PARSE_NODICT;
+            lint->parseOptions |= XML_PARSE_NODICT;
         } else if ((!strcmp(argv[i], "-version")) ||
                    (!strcmp(argv[i], "--version"))) {
             showVersion(errStream, argv[0]);
@@ -2538,56 +2582,59 @@ xmllintParseOptions(xmllintState *lint, int argc, const char **argv) {
 #ifdef LIBXML_HTML_ENABLED
         } else if ((!strcmp(argv[i], "-html")) ||
                    (!strcmp(argv[i], "--html"))) {
-            lint->html = 1;
+            lint->appOptions |= XML_LINT_HTML_ENABLED;
         } else if ((!strcmp(argv[i], "-nodefdtd")) ||
                    (!strcmp(argv[i], "--nodefdtd"))) {
             lint->htmlOptions |= HTML_PARSE_NODEFDTD;
 #ifdef LIBXML_OUTPUT_ENABLED
         } else if ((!strcmp(argv[i], "-xmlout")) ||
                    (!strcmp(argv[i], "--xmlout"))) {
-            lint->xmlout = 1;
+            lint->appOptions |= XML_LINT_XML_OUT;
 #endif
 #endif /* LIBXML_HTML_ENABLED */
         } else if ((!strcmp(argv[i], "-loaddtd")) ||
                    (!strcmp(argv[i], "--loaddtd"))) {
-            lint->options |= XML_PARSE_DTDLOAD;
+            lint->parseOptions |= XML_PARSE_DTDLOAD;
         } else if ((!strcmp(argv[i], "-dtdattr")) ||
                    (!strcmp(argv[i], "--dtdattr"))) {
-            lint->options |= XML_PARSE_DTDATTR;
+            lint->parseOptions |= XML_PARSE_DTDATTR;
 #ifdef LIBXML_VALID_ENABLED
         } else if ((!strcmp(argv[i], "-valid")) ||
                    (!strcmp(argv[i], "--valid"))) {
-            lint->options |= XML_PARSE_DTDVALID;
+            lint->parseOptions |= XML_PARSE_DTDVALID;
         } else if ((!strcmp(argv[i], "-postvalid")) ||
                    (!strcmp(argv[i], "--postvalid"))) {
-            lint->postvalid = 1;
-            lint->options |= XML_PARSE_DTDLOAD;
+            lint->appOptions |= XML_LINT_POST_VALIDATION;
+            lint->parseOptions |= XML_PARSE_DTDLOAD;
         } else if ((!strcmp(argv[i], "-dtdvalid")) ||
                    (!strcmp(argv[i], "--dtdvalid"))) {
             i++;
             lint->dtdvalid = argv[i];
-            lint->options |= XML_PARSE_DTDLOAD;
+            lint->parseOptions |= XML_PARSE_DTDLOAD;
         } else if ((!strcmp(argv[i], "-dtdvalidfpi")) ||
                    (!strcmp(argv[i], "--dtdvalidfpi"))) {
             i++;
             lint->dtdvalidfpi = argv[i];
-            lint->options |= XML_PARSE_DTDLOAD;
+            lint->parseOptions |= XML_PARSE_DTDLOAD;
         } else if ((!strcmp(argv[i], "-insert")) ||
                    (!strcmp(argv[i], "--insert"))) {
-            lint->insert = 1;
+            lint->appOptions |= XML_LINT_VALID_INSERTIONS;
 #endif /* LIBXML_VALID_ENABLED */
+        } else if ((!strcmp(argv[i], "-strict-namespace")) ||
+            (!strcmp(argv[i], "--strict-namespace"))) {
+            lint->appOptions |= XML_LINT_STRICT_NAMESPACE;
         } else if ((!strcmp(argv[i], "-dropdtd")) ||
                    (!strcmp(argv[i], "--dropdtd"))) {
-            lint->dropdtd = 1;
+            lint->appOptions |= XML_LINT_DROP_DTD;
         } else if ((!strcmp(argv[i], "-quiet")) ||
                    (!strcmp(argv[i], "--quiet"))) {
-            lint->quiet = 1;
+            lint->appOptions |= XML_LINT_QUIET;
         } else if ((!strcmp(argv[i], "-timing")) ||
                    (!strcmp(argv[i], "--timing"))) {
-            lint->timing = 1;
+            lint->appOptions |= XML_LINT_TIMINGS;
         } else if ((!strcmp(argv[i], "-auto")) ||
                    (!strcmp(argv[i], "--auto"))) {
-            lint->generate = 1;
+            lint->appOptions |= XML_LINT_GENERATE;
         } else if ((!strcmp(argv[i], "-repeat")) ||
                    (!strcmp(argv[i], "--repeat"))) {
 #ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
@@ -2601,52 +2648,52 @@ xmllintParseOptions(xmllintState *lint, int argc, const char **argv) {
 #ifdef LIBXML_PUSH_ENABLED
         } else if ((!strcmp(argv[i], "-push")) ||
                    (!strcmp(argv[i], "--push"))) {
-            lint->push = 1;
+            lint->appOptions |= XML_LINT_PUSH_ENABLED;
 #endif /* LIBXML_PUSH_ENABLED */
 #if HAVE_DECL_MMAP
         } else if ((!strcmp(argv[i], "-memory")) ||
                    (!strcmp(argv[i], "--memory"))) {
-            lint->memory = 1;
+            lint->appOptions |= XML_LINT_MEMORY;
 #endif
 #ifdef LIBXML_XINCLUDE_ENABLED
         } else if ((!strcmp(argv[i], "-xinclude")) ||
                    (!strcmp(argv[i], "--xinclude"))) {
-            lint->xinclude = 1;
-            lint->options |= XML_PARSE_XINCLUDE;
+            lint->appOptions |= XML_LINT_XINCLUDE;
+            lint->parseOptions |= XML_PARSE_XINCLUDE;
         } else if ((!strcmp(argv[i], "-noxincludenode")) ||
                    (!strcmp(argv[i], "--noxincludenode"))) {
-            lint->xinclude = 1;
-            lint->options |= XML_PARSE_XINCLUDE;
-            lint->options |= XML_PARSE_NOXINCNODE;
+            lint->appOptions |= XML_LINT_XINCLUDE;
+            lint->parseOptions |= XML_PARSE_XINCLUDE;
+            lint->parseOptions |= XML_PARSE_NOXINCNODE;
         } else if ((!strcmp(argv[i], "-nofixup-base-uris")) ||
                    (!strcmp(argv[i], "--nofixup-base-uris"))) {
-            lint->xinclude = 1;
-            lint->options |= XML_PARSE_XINCLUDE;
-            lint->options |= XML_PARSE_NOBASEFIX;
+            lint->appOptions |= XML_LINT_XINCLUDE;
+            lint->parseOptions |= XML_PARSE_XINCLUDE;
+            lint->parseOptions |= XML_PARSE_NOBASEFIX;
 #endif
         } else if ((!strcmp(argv[i], "-nowarning")) ||
                    (!strcmp(argv[i], "--nowarning"))) {
-            lint->options |= XML_PARSE_NOWARNING;
-            lint->options &= ~XML_PARSE_PEDANTIC;
+            lint->parseOptions |= XML_PARSE_NOWARNING;
+            lint->parseOptions &= ~XML_PARSE_PEDANTIC;
 #ifdef LIBXML_HTML_ENABLED
             lint->htmlOptions |= HTML_PARSE_NOWARNING;
 #endif
         } else if ((!strcmp(argv[i], "-pedantic")) ||
                    (!strcmp(argv[i], "--pedantic"))) {
-            lint->options |= XML_PARSE_PEDANTIC;
-            lint->options &= ~XML_PARSE_NOWARNING;
+            lint->parseOptions |= XML_PARSE_PEDANTIC;
+            lint->parseOptions &= ~XML_PARSE_NOWARNING;
 #ifdef LIBXML_CATALOG_ENABLED
         } else if ((!strcmp(argv[i], "-catalogs")) ||
                    (!strcmp(argv[i], "--catalogs"))) {
-            lint->catalogs = 1;
+            lint->appOptions |= XML_LINT_USE_CATALOGS;
         } else if ((!strcmp(argv[i], "-nocatalogs")) ||
                    (!strcmp(argv[i], "--nocatalogs"))) {
-            lint->nocatalogs = 1;
-            lint->options |= XML_PARSE_NO_SYS_CATALOG;
+            lint->appOptions |= XML_LINT_USE_NO_CATALOGS;
+            lint->parseOptions |= XML_PARSE_NO_SYS_CATALOG;
 #endif
         } else if ((!strcmp(argv[i], "-noblanks")) ||
                    (!strcmp(argv[i], "--noblanks"))) {
-            lint->options |= XML_PARSE_NOBLANKS;
+            lint->parseOptions |= XML_PARSE_NOBLANKS;
 #ifdef LIBXML_HTML_ENABLED
             lint->htmlOptions |= HTML_PARSE_NOBLANKS;
 #endif
@@ -2659,7 +2706,7 @@ xmllintParseOptions(xmllintState *lint, int argc, const char **argv) {
         } else if ((!strcmp(argv[i], "-format")) ||
                    (!strcmp(argv[i], "--format"))) {
             lint->format = 1;
-            lint->options |= XML_PARSE_NOBLANKS;
+            lint->parseOptions |= XML_PARSE_NOBLANKS;
 #ifdef LIBXML_HTML_ENABLED
             lint->htmlOptions |= HTML_PARSE_NOBLANKS;
 #endif
@@ -2681,30 +2728,30 @@ xmllintParseOptions(xmllintState *lint, int argc, const char **argv) {
 #if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
         } else if ((!strcmp(argv[i], "-compress")) ||
                    (!strcmp(argv[i], "--compress"))) {
-            lint->compress = 1;
+            lint->appOptions |= XML_LINT_ZLIB_COMPRESSION;
 #endif
 #ifdef LIBXML_C14N_ENABLED
         } else if ((!strcmp(argv[i], "-c14n")) ||
                    (!strcmp(argv[i], "--c14n"))) {
-            lint->canonical = 1;
-            lint->options |= XML_PARSE_NOENT | XML_PARSE_DTDATTR | XML_PARSE_DTDLOAD;
+            lint->appOptions |= XML_LINT_CANONICAL_V1_0;
+            lint->parseOptions |= XML_PARSE_NOENT | XML_PARSE_DTDATTR | XML_PARSE_DTDLOAD;
         } else if ((!strcmp(argv[i], "-c14n11")) ||
                    (!strcmp(argv[i], "--c14n11"))) {
-            lint->canonical_11 = 1;
-            lint->options |= XML_PARSE_NOENT | XML_PARSE_DTDATTR | XML_PARSE_DTDLOAD;
+            lint->appOptions |= XML_LINT_CANONICAL_V1_1;
+            lint->parseOptions |= XML_PARSE_NOENT | XML_PARSE_DTDATTR | XML_PARSE_DTDLOAD;
         } else if ((!strcmp(argv[i], "-exc-c14n")) ||
                    (!strcmp(argv[i], "--exc-c14n"))) {
-            lint->exc_canonical = 1;
-            lint->options |= XML_PARSE_NOENT | XML_PARSE_DTDATTR | XML_PARSE_DTDLOAD;
+            lint->appOptions |= XML_LINT_CANONICAL_EXE;
+            lint->parseOptions |= XML_PARSE_NOENT | XML_PARSE_DTDATTR | XML_PARSE_DTDLOAD;
 #endif /* LIBXML_C14N_ENABLED */
 #endif /* LIBXML_OUTPUT_ENABLED */
 #ifdef LIBXML_READER_ENABLED
         } else if ((!strcmp(argv[i], "-stream")) ||
                    (!strcmp(argv[i], "--stream"))) {
-             lint->stream = 1;
+             lint->appOptions |= XML_LINT_USE_STREAMING;
         } else if ((!strcmp(argv[i], "-walker")) ||
                    (!strcmp(argv[i], "--walker"))) {
-             lint->walker = 1;
+             lint->appOptions |= XML_LINT_USE_WALKER;
              lint->noout = 1;
 #ifdef LIBXML_PATTERN_ENABLED
         } else if ((!strcmp(argv[i], "-pattern")) ||
@@ -2716,44 +2763,44 @@ xmllintParseOptions(xmllintState *lint, int argc, const char **argv) {
 #ifdef LIBXML_SAX1_ENABLED
         } else if ((!strcmp(argv[i], "-sax1")) ||
                    (!strcmp(argv[i], "--sax1"))) {
-            lint->options |= XML_PARSE_SAX1;
+            lint->parseOptions |= XML_PARSE_SAX1;
 #endif /* LIBXML_SAX1_ENABLED */
         } else if ((!strcmp(argv[i], "-sax")) ||
                    (!strcmp(argv[i], "--sax"))) {
-            lint->sax = 1;
+            lint->appOptions |= XML_LINT_SAX_ENABLED;
 #ifdef LIBXML_RELAXNG_ENABLED
         } else if ((!strcmp(argv[i], "-relaxng")) ||
                    (!strcmp(argv[i], "--relaxng"))) {
             i++;
             lint->relaxng = argv[i];
-            lint->options |= XML_PARSE_NOENT;
+            lint->parseOptions |= XML_PARSE_NOENT;
 #endif
 #ifdef LIBXML_SCHEMAS_ENABLED
         } else if ((!strcmp(argv[i], "-schema")) ||
                  (!strcmp(argv[i], "--schema"))) {
             i++;
             lint->schema = argv[i];
-            lint->options |= XML_PARSE_NOENT;
+            lint->parseOptions |= XML_PARSE_NOENT;
 #endif
 #ifdef LIBXML_SCHEMATRON_ENABLED
         } else if ((!strcmp(argv[i], "-schematron")) ||
                    (!strcmp(argv[i], "--schematron"))) {
             i++;
             lint->schematron = argv[i];
-            lint->options |= XML_PARSE_NOENT;
+            lint->parseOptions |= XML_PARSE_NOENT;
 #endif
         } else if ((!strcmp(argv[i], "-nonet")) ||
                    (!strcmp(argv[i], "--nonet"))) {
-            lint->options |= XML_PARSE_NONET;
+            lint->parseOptions |= XML_PARSE_NONET;
         } else if ((!strcmp(argv[i], "-nocompact")) ||
                    (!strcmp(argv[i], "--nocompact"))) {
-            lint->options &= ~XML_PARSE_COMPACT;
+            lint->parseOptions &= ~XML_PARSE_COMPACT;
 #ifdef LIBXML_HTML_ENABLED
             lint->htmlOptions &= ~HTML_PARSE_COMPACT;
 #endif
         } else if ((!strcmp(argv[i], "-load-trace")) ||
                    (!strcmp(argv[i], "--load-trace"))) {
-            lint->load_trace = 1;
+            lint->appOptions |= XML_LINT_USE_LOAD_TRACE;
         } else if ((!strcmp(argv[i], "-path")) ||
                    (!strcmp(argv[i], "--path"))) {
             i++;
@@ -2767,7 +2814,7 @@ xmllintParseOptions(xmllintState *lint, int argc, const char **argv) {
 #endif
         } else if ((!strcmp(argv[i], "-oldxml10")) ||
                    (!strcmp(argv[i], "--oldxml10"))) {
-            lint->options |= XML_PARSE_OLD10;
+            lint->parseOptions |= XML_PARSE_OLD10;
         } else if ((!strcmp(argv[i], "-max-ampl")) ||
                    (!strcmp(argv[i], "--max-ampl"))) {
             i++;
@@ -2786,31 +2833,31 @@ xmllintParseOptions(xmllintState *lint, int argc, const char **argv) {
         }
     }
 
-    if (lint->shell)
+    if (lint->appOptions & XML_LINT_NAVIGATING_SHELL)
         lint->repeat = 1;
 
 #ifdef LIBXML_READER_ENABLED
-    if (lint->stream) {
+    if (lint->appOptions & XML_LINT_USE_STREAMING) {
         specialMode = "--stream";
 
-        if (lint->sax)
+        if (lint->appOptions & XML_LINT_SAX_ENABLED)
             xmllintOptWarnNoSupport(errStream, "--stream", "--sax");
 #ifdef LIBXML_PUSH_ENABLED
-        if (lint->push)
+        if (lint->appOptions & XML_LINT_PUSH_ENABLED)
             xmllintOptWarnNoSupport(errStream, "--stream", "--push");
 #endif
 #ifdef LIBXML_HTML_ENABLED
-        if (lint->html)
+        if (lint->appOptions & XML_LINT_HTML_ENABLED)
             xmllintOptWarnNoSupport(errStream, "--stream", "--html");
 #endif
     }
 #endif /* LIBXML_READER_ENABLED */
 
-    if (lint->sax) {
+    if (lint->appOptions & XML_LINT_SAX_ENABLED) {
         specialMode = "--sax";
 
 #ifdef LIBXML_XINCLUDE_ENABLED
-        if (lint->xinclude)
+        if (lint->appOptions & XML_LINT_XINCLUDE)
             xmllintOptWarnNoSupport(errStream, "--sax", "--xinclude");
 #endif
 #ifdef LIBXML_RELAXNG_ENABLED
@@ -2820,30 +2867,30 @@ xmllintParseOptions(xmllintState *lint, int argc, const char **argv) {
     }
 
     if (specialMode != NULL) {
-        if (lint->generate)
+        if (lint->appOptions & XML_LINT_GENERATE)
             xmllintOptWarnNoSupport(errStream, specialMode, "--auto");
-        if (lint->dropdtd)
+        if (lint->appOptions & XML_LINT_DROP_DTD)
             xmllintOptWarnNoSupport(errStream, specialMode, "--dropdtd");
-        if (lint->shell)
+        if (lint->appOptions & XML_LINT_NAVIGATING_SHELL)
             xmllintOptWarnNoSupport(errStream, specialMode, "--shell");
-        if (lint->copy)
+        if (lint->appOptions & XML_LINT_COPY_ENABLED)
             xmllintOptWarnNoSupport(errStream, specialMode, "--copy");
 #ifdef LIBXML_XPATH_ENABLED
         if (lint->xpathquery != NULL)
             xmllintOptWarnNoSupport(errStream, specialMode, "--xpath");
 #endif
 #ifdef LIBXML_READER_ENABLED
-        if (lint->walker)
+        if (lint->appOptions & XML_LINT_USE_WALKER)
             xmllintOptWarnNoSupport(errStream, specialMode, "--walker");
 #endif
 #ifdef LIBXML_VALID_ENABLED
-        if (lint->insert)
+        if (lint->appOptions & XML_LINT_VALID_INSERTIONS)
             xmllintOptWarnNoSupport(errStream, specialMode, "--insert");
         if (lint->dtdvalid != NULL)
             xmllintOptWarnNoSupport(errStream, specialMode, "--dtdvalid");
         if (lint->dtdvalidfpi != NULL)
             xmllintOptWarnNoSupport(errStream, specialMode, "--dtdvalidfpi");
-        if (lint->postvalid)
+        if (lint->appOptions & XML_LINT_POST_VALIDATION)
             xmllintOptWarnNoSupport(errStream, specialMode, "--postvalid");
 #endif
 #ifdef LIBXML_SCHEMATRON_ENABLED
@@ -2859,62 +2906,62 @@ xmllintParseOptions(xmllintState *lint, int argc, const char **argv) {
             xmllintOptWarnNoSupport(errStream, specialMode,
                                     "--format or -pretty");
 #ifdef LIBXML_ZLIB_ENABLED
-        if (lint->compress)
+        if (lint->appOptions & XML_LINT_ZLIB_COMPRESSION)
             xmllintOptWarnNoSupport(errStream, specialMode, "--compress");
 #endif
 #ifdef LIBXML_HTML_ENABLED
-        if (lint->xmlout)
+        if (lint->appOptions & XML_LINT_XML_OUT)
             xmllintOptWarnNoSupport(errStream, specialMode, "--xmlout");
 #endif
 #ifdef LIBXML_C14N_ENABLED
-        if (lint->canonical)
+        if (lint->appOptions & XML_LINT_CANONICAL_V1_0)
             xmllintOptWarnNoSupport(errStream, specialMode, "--c14n");
-        if (lint->canonical_11)
+        if (lint->appOptions & XML_LINT_CANONICAL_V1_1)
             xmllintOptWarnNoSupport(errStream, specialMode, "--c14n11");
-        if (lint->exc_canonical)
+        if (lint->appOptions & XML_LINT_CANONICAL_EXE)
             xmllintOptWarnNoSupport(errStream, specialMode, "--exc-c14n");
 #endif
 #endif /* LIBXML_OUTPUT_ENABLED */
     }
 
 #if defined(LIBXML_READER_ENABLED) && defined(LIBXML_PATTERN_ENABLED)
-    if (lint->pattern && !(lint->stream || lint->walker))
+    if (lint->pattern && !((lint->appOptions & XML_LINT_USE_STREAMING) || (lint->appOptions & XML_LINT_USE_WALKER)))
         fprintf(errStream, "Warning: Option %s requires %s\n",
                 "--pattern", "--stream or --walker");
 #endif
 
 #ifdef LIBXML_HTML_ENABLED
-    if (lint->html) {
-        if (lint->options & XML_PARSE_DTDATTR)
+    if (lint->appOptions & XML_LINT_HTML_ENABLED) {
+        if (lint->parseOptions & XML_PARSE_DTDATTR)
             xmllintOptWarnNoSupport(errStream, "--html", "--dtdattr");
-        if (lint->options & XML_PARSE_DTDLOAD)
+        if (lint->parseOptions & XML_PARSE_DTDLOAD)
             xmllintOptWarnNoSupport(errStream, "--html", "--loaddtd");
         if (lint->maxAmpl)
             xmllintOptWarnNoSupport(errStream, "--html", "--max-ampl");
-        if (lint->options & XML_PARSE_NOCDATA)
+        if (lint->parseOptions & XML_PARSE_NOCDATA)
             xmllintOptWarnNoSupport(errStream, "--html", "--nocdata");
-        if (lint->options & XML_PARSE_NODICT)
+        if (lint->parseOptions & XML_PARSE_NODICT)
             xmllintOptWarnNoSupport(errStream, "--html", "--nodict");
-        if (lint->options & XML_PARSE_NOENT)
+        if (lint->parseOptions & XML_PARSE_NOENT)
             xmllintOptWarnNoSupport(errStream, "--html", "--noent");
-        if (lint->options & XML_PARSE_NONET)
+        if (lint->parseOptions & XML_PARSE_NONET)
             xmllintOptWarnNoSupport(errStream, "--html", "--nonet");
-        if (lint->options & XML_PARSE_NSCLEAN)
+        if (lint->parseOptions & XML_PARSE_NSCLEAN)
             xmllintOptWarnNoSupport(errStream, "--html", "--nsclean");
-        if (lint->options & XML_PARSE_OLD10)
+        if (lint->parseOptions & XML_PARSE_OLD10)
             xmllintOptWarnNoSupport(errStream, "--html", "--oldxml10");
-        if (lint->options & XML_PARSE_PEDANTIC)
+        if (lint->parseOptions & XML_PARSE_PEDANTIC)
             xmllintOptWarnNoSupport(errStream, "--html", "--pedantic");
-        if (lint->options & XML_PARSE_DTDVALID)
+        if (lint->parseOptions & XML_PARSE_DTDVALID)
             xmllintOptWarnNoSupport(errStream, "--html", "--valid");
-        if (lint->options & XML_PARSE_SAX1)
+        if (lint->parseOptions & XML_PARSE_SAX1)
             xmllintOptWarnNoSupport(errStream, "--html", "--sax1");
     } else {
         if (lint->htmlOptions & HTML_PARSE_NODEFDTD)
             fprintf(errStream, "Warning: Option %s requires %s\n",
                     "--nodefdtd", "--html");
 #ifdef LIBXML_OUTPUT_ENABLED
-        if (lint->xmlout)
+        if (lint->appOptions & XML_LINT_XML_OUT)
             fprintf(errStream, "Warning: Option %s requires %s\n",
                     "--xmlout", "--html");
 #endif
@@ -2961,8 +3008,8 @@ xmllintMain(int argc, const char **argv, FILE *errStream,
     LIBXML_TEST_VERSION();
 
 #ifdef LIBXML_CATALOG_ENABLED
-    if (lint->nocatalogs == 0) {
-	if (lint->catalogs) {
+    if ((lint->appOptions & XML_LINT_USE_NO_CATALOGS) != XML_LINT_USE_NO_CATALOGS) {
+	if (lint->appOptions & XML_LINT_USE_CATALOGS) {
 	    const char *catal;
 
 	    catal = getenv("SGML_CATALOG_FILES");
@@ -2985,16 +3032,16 @@ xmllintMain(int argc, const char **argv, FILE *errStream,
 #endif
 
 #ifdef LIBXML_SCHEMATRON_ENABLED
-    if ((lint->schematron != NULL) && (lint->sax == 0)
+    if ((lint->schematron != NULL) && ((lint->appOptions & XML_LINT_SAX_ENABLED) != XML_LINT_SAX_ENABLED)
 #ifdef LIBXML_READER_ENABLED
-        && (lint->stream == 0)
+        && ((lint->appOptions & XML_LINT_USE_STREAMING) != XML_LINT_USE_STREAMING)
 #endif /* LIBXML_READER_ENABLED */
 	) {
 	xmlSchematronParserCtxtPtr ctxt;
 
         /* forces loading the DTDs */
-	lint->options |= XML_PARSE_DTDLOAD;
-	if (lint->timing) {
+	lint->parseOptions |= XML_PARSE_DTDLOAD;
+	if (lint->appOptions & XML_LINT_TIMINGS) {
 	    startTimer(lint);
 	}
 	ctxt = xmlSchematronNewParserCtxt(lint->schematron);
@@ -3010,23 +3057,23 @@ xmllintMain(int argc, const char **argv, FILE *errStream,
             lint->progresult = XMLLINT_ERR_SCHEMACOMP;
             goto error;
 	}
-	if (lint->timing) {
+	if (lint->appOptions & XML_LINT_TIMINGS) {
 	    endTimer(lint, "Compiling the schemas");
 	}
     }
 #endif
 
 #ifdef LIBXML_RELAXNG_ENABLED
-    if ((lint->relaxng != NULL) && (lint->sax == 0)
+    if ((lint->relaxng != NULL) && ((lint->appOptions & XML_LINT_SAX_ENABLED) != XML_LINT_SAX_ENABLED)
 #ifdef LIBXML_READER_ENABLED
-        && (lint->stream == 0)
+        && ((lint->appOptions & XML_LINT_USE_STREAMING) != XML_LINT_USE_STREAMING)
 #endif /* LIBXML_READER_ENABLED */
 	) {
 	xmlRelaxNGParserCtxtPtr ctxt;
 
         /* forces loading the DTDs */
-	lint->options |= XML_PARSE_DTDLOAD;
-	if (lint->timing) {
+	lint->parseOptions |= XML_PARSE_DTDLOAD;
+	if (lint->appOptions & XML_LINT_TIMINGS) {
 	    startTimer(lint);
 	}
 	ctxt = xmlRelaxNGNewParserCtxt(lint->relaxng);
@@ -3043,7 +3090,7 @@ xmllintMain(int argc, const char **argv, FILE *errStream,
             lint->progresult = XMLLINT_ERR_SCHEMACOMP;
             goto error;
 	}
-	if (lint->timing) {
+	if (lint->appOptions & XML_LINT_TIMINGS) {
 	    endTimer(lint, "Compiling the schemas");
 	}
     }
@@ -3052,12 +3099,12 @@ xmllintMain(int argc, const char **argv, FILE *errStream,
 #ifdef LIBXML_SCHEMAS_ENABLED
     if ((lint->schema != NULL)
 #ifdef LIBXML_READER_ENABLED
-        && (lint->stream == 0)
+        && ((lint->appOptions& XML_LINT_USE_STREAMING) != XML_LINT_USE_STREAMING)
 #endif
 	) {
 	xmlSchemaParserCtxtPtr ctxt;
 
-	if (lint->timing) {
+	if (lint->appOptions & XML_LINT_TIMINGS) {
 	    startTimer(lint);
 	}
 	ctxt = xmlSchemaNewParserCtxt(lint->schema);
@@ -3074,14 +3121,14 @@ xmllintMain(int argc, const char **argv, FILE *errStream,
             lint->progresult = XMLLINT_ERR_SCHEMACOMP;
             goto error;
 	}
-	if (lint->timing) {
+	if (lint->appOptions & XML_LINT_TIMINGS) {
 	    endTimer(lint, "Compiling the schemas");
 	}
     }
 #endif /* LIBXML_SCHEMAS_ENABLED */
 
 #if defined(LIBXML_READER_ENABLED) && defined(LIBXML_PATTERN_ENABLED)
-    if ((lint->pattern != NULL) && (lint->walker == 0)) {
+    if ((lint->pattern != NULL) && ((lint->appOptions & XML_LINT_USE_WALKER) != XML_LINT_USE_WALKER)) {
         res = xmlPatternCompileSafe(BAD_CAST lint->pattern, NULL, 0, NULL,
                                     &lint->patternc);
 	if (lint->patternc == NULL) {
@@ -3112,7 +3159,7 @@ xmllintMain(int argc, const char **argv, FILE *errStream,
         }
 
 #if HAVE_DECL_MMAP
-        if (lint->memory) {
+        if (lint->appOptions & XML_LINT_MEMORY) {
             struct stat info;
             if (stat(filename, &info) < 0) {
                 lint->progresult = XMLLINT_ERR_RDFILE;
@@ -3135,11 +3182,11 @@ xmllintMain(int argc, const char **argv, FILE *errStream,
         }
 #endif /* HAVE_DECL_MMAP */
 
-	if ((lint->timing) && (lint->repeat > 1))
+	if ((lint->appOptions & XML_LINT_TIMINGS) && (lint->repeat > 1))
 	    startTimer(lint);
 
 #ifdef LIBXML_READER_ENABLED
-        if (lint->stream != 0) {
+        if (lint->appOptions & XML_LINT_USE_STREAMING) {
             for (j = 0; j < lint->repeat; j++)
                 streamFile(lint, filename);
         } else
@@ -3148,9 +3195,9 @@ xmllintMain(int argc, const char **argv, FILE *errStream,
             xmlParserCtxtPtr ctxt;
 
 #ifdef LIBXML_HTML_ENABLED
-            if (lint->html) {
+            if (lint->appOptions & XML_LINT_HTML_ENABLED) {
 #ifdef LIBXML_PUSH_ENABLED
-                if (lint->push) {
+                if (lint->appOptions & XML_LINT_PUSH_ENABLED) {
                     ctxt = htmlCreatePushParserCtxt(NULL, NULL, NULL, 0,
                                                     filename,
                                                     XML_CHAR_ENCODING_NONE);
@@ -3164,7 +3211,7 @@ xmllintMain(int argc, const char **argv, FILE *errStream,
 #endif /* LIBXML_HTML_ENABLED */
             {
 #ifdef LIBXML_PUSH_ENABLED
-                if (lint->push) {
+                if (lint->appOptions & XML_LINT_PUSH_ENABLED) {
                     ctxt = xmlCreatePushParserCtxt(NULL, NULL, NULL, 0,
                                                    filename);
                 } else
@@ -3172,20 +3219,20 @@ xmllintMain(int argc, const char **argv, FILE *errStream,
                 {
                     ctxt = xmlNewParserCtxt();
                 }
-                xmlCtxtUseOptions(ctxt, lint->options);
+                xmlCtxtUseOptions(ctxt, lint->parseOptions);
             }
             if (ctxt == NULL) {
                 lint->progresult = XMLLINT_ERR_MEM;
                 goto error;
             }
 
-            if (lint->sax) {
+            if (lint->appOptions & XML_LINT_SAX_ENABLED) {
                 const xmlSAXHandler *handler;
 
                 if (lint->noout) {
                     handler = &emptySAXHandler;
 #ifdef LIBXML_SAX1_ENABLED
-                } else if (lint->options & XML_PARSE_SAX1) {
+                } else if (lint->parseOptions & XML_PARSE_SAX1) {
                     handler = &debugSAXHandler;
 #endif
                 } else {
@@ -3205,7 +3252,7 @@ xmllintMain(int argc, const char **argv, FILE *errStream,
             for (j = 0; j < lint->repeat; j++) {
                 if (j > 0) {
 #ifdef LIBXML_PUSH_ENABLED
-                    if (lint->push) {
+                    if (lint->appOptions & XML_LINT_PUSH_ENABLED) {
                         xmlCtxtResetPush(ctxt, NULL, 0, NULL, NULL);
                     } else
 #endif
@@ -3214,7 +3261,7 @@ xmllintMain(int argc, const char **argv, FILE *errStream,
                     }
                 }
 
-                if (lint->sax) {
+                if (lint->appOptions & XML_LINT_SAX_ENABLED) {
                     testSAX(lint, filename);
                 } else {
                     parseAndPrintFile(lint, filename);
@@ -3224,24 +3271,24 @@ xmllintMain(int argc, const char **argv, FILE *errStream,
             xmlFreeParserCtxt(ctxt);
         }
 
-        if ((lint->timing) && (lint->repeat > 1)) {
+        if ((lint->appOptions & XML_LINT_TIMINGS) && (lint->repeat > 1)) {
             endTimer(lint, "%d iterations", lint->repeat);
         }
 
         files += 1;
 
 #if HAVE_DECL_MMAP
-        if (lint->memory) {
+        if (lint->appOptions & XML_LINT_MEMORY) {
             munmap(lint->memoryData, lint->memorySize);
             close(memoryFd);
         }
 #endif
     }
 
-    if (lint->generate)
+    if (lint->appOptions & XML_LINT_GENERATE)
 	parseAndPrintFile(lint, NULL);
 
-    if ((files == 0) && (!lint->generate) && (lint->version == 0)) {
+    if ((files == 0) && ((lint->appOptions & XML_LINT_GENERATE) != XML_LINT_GENERATE) && (lint->version == 0)) {
 	usage(errStream, argv[0]);
         lint->progresult = XMLLINT_ERR_UNCLASS;
     }

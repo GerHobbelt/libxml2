@@ -186,6 +186,24 @@ testUndeclEntInContent(void) {
     return err;
 }
 
+static int
+testInvalidCharRecovery(void) {
+    const char *xml = "<doc>&#x10;</doc>";
+    xmlDoc *doc;
+    int err = 0;
+
+    doc = xmlReadDoc(BAD_CAST xml, NULL, NULL, XML_PARSE_RECOVER);
+
+    if (strcmp((char *) doc->children->children->content, "\x10") != 0) {
+        fprintf(stderr, "Failed to recover from invalid char ref\n");
+        err = 1;
+    }
+
+    xmlFreeDoc(doc);
+
+    return err;
+}
+
 #ifdef LIBXML_VALID_ENABLED
 static void
 testSwitchDtdExtSubset(void *vctxt, const xmlChar *name ATTRIBUTE_UNUSED,
@@ -539,7 +557,7 @@ testPushCDataEnd(void) {
     int err = 0;
     int k;
 
-    for (k = 0; k < 2; k++) {
+    for (k = 0; k < 4; k++) {
         xmlBufferPtr buf;
         xmlChar *chunk;
         xmlParserCtxtPtr ctxt;
@@ -557,7 +575,7 @@ testPushCDataEnd(void) {
         /*
          * Also test xmlParseCharDataCopmlex
          */
-        if (k == 0)
+        if (k & 1)
             xmlBufferCCat(buf, "x");
         else
             xmlBufferCCat(buf, "\xC3\xA4");
@@ -569,12 +587,19 @@ testPushCDataEnd(void) {
         for (i = 0; i < 2000; i++)
             xmlBufferCCat(buf, "x");
 
-        xmlBufferCCat(buf, "]");
+        if (k & 2)
+            xmlBufferCCat(buf, "]");
+        else
+            xmlBufferCCat(buf, "]]");
+
         chunk = xmlBufferDetach(buf);
         xmlBufferFree(buf);
 
         xmlParseChunk(ctxt, (char *) chunk, xmlStrlen(chunk), 0);
-        xmlParseChunk(ctxt, "]>xxx</doc>", 11, 1);
+        if (k & 2)
+            xmlParseChunk(ctxt, "]>xxx</doc>", 11, 1);
+        else
+            xmlParseChunk(ctxt, ">xxx</doc>", 10, 1);
 
         if (ctxt->errNo != XML_ERR_MISPLACED_CDATA_END) {
             fprintf(stderr, "xmlParseChunk failed to detect CData end: %d\n",
@@ -617,6 +642,7 @@ testHtmlIds(void) {
 
 #define MHE "meta http-equiv=\"Content-Type\""
 
+#ifdef LIBXML_OUTPUT_ENABLED
 static int
 testHtmlInsertMetaEncoding(void) {
     /* We currently require a head element to be present. */
@@ -737,6 +763,7 @@ testHtmlUpdateMetaEncoding(void) {
     xmlFreeDoc(doc);
     return err;
 }
+#endif /* LIBXML_OUTPUT_ENABLED */
 
 #ifdef LIBXML_PUSH_ENABLED
 static int
@@ -802,6 +829,7 @@ testReaderEncoding(void) {
     return err;
 }
 
+#ifdef LIBXML_OUTPUT_ENABLED
 static int
 testReaderContent(void) {
     xmlTextReader *reader;
@@ -836,6 +864,7 @@ testReaderContent(void) {
     xmlFreeTextReader(reader);
     return err;
 }
+#endif /* LIBXML_OUTPUT_ENABLED */
 
 static int
 testReaderNode(xmlTextReader *reader) {
@@ -1405,6 +1434,7 @@ main(void) {
     err |= testNodeGetContent();
     err |= testCFileIO();
     err |= testUndeclEntInContent();
+    err |= testInvalidCharRecovery();
 #ifdef LIBXML_VALID_ENABLED
     err |= testSwitchDtd();
 #endif
@@ -1424,15 +1454,19 @@ main(void) {
 #endif
 #ifdef LIBXML_HTML_ENABLED
     err |= testHtmlIds();
+#ifdef LIBXML_OUTPUT_ENABLED
     err |= testHtmlInsertMetaEncoding();
     err |= testHtmlUpdateMetaEncoding();
+#endif
 #ifdef LIBXML_PUSH_ENABLED
     err |= testHtmlPushWithEncoding();
 #endif
 #endif
 #ifdef LIBXML_READER_ENABLED
     err |= testReaderEncoding();
+#ifdef LIBXML_OUTPUT_ENABLED
     err |= testReaderContent();
+#endif
     err |= testReader();
 #ifdef LIBXML_XINCLUDE_ENABLED
     err |= testReaderXIncludeError();

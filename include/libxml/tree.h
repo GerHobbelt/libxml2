@@ -52,26 +52,38 @@ extern "C" {
  * Some of the basic types pointer to structures:
  */
 /* xmlIO.h */
+/**
+ * Parser input buffer
+ *
+ * This struct and all related functions should ultimately
+ * be removed from the public interface.
+ */
 typedef struct _xmlParserInputBuffer xmlParserInputBuffer;
 typedef xmlParserInputBuffer *xmlParserInputBufferPtr;
 
+/** Output buffer */
 typedef struct _xmlOutputBuffer xmlOutputBuffer;
 typedef xmlOutputBuffer *xmlOutputBufferPtr;
 
 /* parser.h */
+/** Parser input */
 typedef struct _xmlParserInput xmlParserInput;
 typedef xmlParserInput *xmlParserInputPtr;
 
+/** Parser context */
 typedef struct _xmlParserCtxt xmlParserCtxt;
 typedef xmlParserCtxt *xmlParserCtxtPtr;
 
+/** SAX locator */
 typedef struct _xmlSAXLocator xmlSAXLocator;
 typedef xmlSAXLocator *xmlSAXLocatorPtr;
 
+/** SAX handler */
 typedef struct _xmlSAXHandler xmlSAXHandler;
 typedef xmlSAXHandler *xmlSAXHandlerPtr;
 
 /* entities.h */
+/** Entity declaration */
 typedef struct _xmlEntity xmlEntity;
 typedef xmlEntity *xmlEntityPtr;
 
@@ -87,6 +99,7 @@ typedef enum {
     XML_BUFFER_ALLOC_BOUNDED	/* limit the upper size of the buffer */
 } xmlBufferAllocationScheme;
 
+/** Buffer type */
 typedef struct _xmlBuffer xmlBuffer;
 typedef xmlBuffer *xmlBufferPtr;
 /**
@@ -106,9 +119,7 @@ struct _xmlBuffer {
     xmlChar *contentIO XML_DEPRECATED_MEMBER;
 };
 
-/**
- * A buffer structure, new one, the actual structure internals are not public
- */
+/** Buffer with 64-bit support */
 typedef struct _xmlBuf xmlBuf;
 typedef xmlBuf *xmlBufPtr;
 
@@ -266,6 +277,7 @@ typedef enum {
 #define XML_DOCB_DOCUMENT_NODE      error!: "b0rked DocBook support has been dropped from libxml"
 /** @endcond */
 
+/** Notation declaration */
 typedef struct _xmlNotation xmlNotation;
 typedef xmlNotation *xmlNotationPtr;
 /**
@@ -309,6 +321,7 @@ typedef enum {
     XML_ATTRIBUTE_FIXED
 } xmlAttributeDefault;
 
+/** Enumeration in a DTD */
 typedef struct _xmlEnumeration xmlEnumeration;
 typedef xmlEnumeration *xmlEnumerationPtr;
 /**
@@ -324,6 +337,7 @@ struct _xmlEnumeration {
     const xmlChar            *name XML_DEPRECATED_MEMBER;
 };
 
+/** Attribute declaration */
 typedef struct _xmlAttribute xmlAttribute;
 typedef xmlAttribute *xmlAttributePtr;
 /**
@@ -359,11 +373,11 @@ struct _xmlAttribute {
     /** attribute default */
     xmlAttributeDefault      def XML_DEPRECATED_MEMBER;
     /** default value */
-    const xmlChar  *defaultValue XML_DEPRECATED_MEMBER;
+    xmlChar *defaultValue;
     /** enumeration tree if any */
     xmlEnumeration         *tree XML_DEPRECATED_MEMBER;
     /** namespace prefix if any */
-    const xmlChar        *prefix XML_DEPRECATED_MEMBER;
+    const xmlChar        *prefix;
     /** element name */
     const xmlChar          *elem XML_DEPRECATED_MEMBER;
 };
@@ -388,6 +402,7 @@ typedef enum {
     XML_ELEMENT_CONTENT_PLUS
 } xmlElementContentOccur;
 
+/** Element content in element declarations */
 typedef struct _xmlElementContent xmlElementContent;
 typedef xmlElementContent *xmlElementContentPtr;
 /**
@@ -425,6 +440,7 @@ typedef enum {
     XML_ELEMENT_TYPE_ELEMENT
 } xmlElementTypeVal;
 
+/** Element declaration */
 typedef struct _xmlElement xmlElement;
 typedef xmlElement *xmlElementPtr;
 /**
@@ -476,6 +492,7 @@ struct _xmlElement {
 #define XML_LOCAL_NAMESPACE XML_NAMESPACE_DECL
 typedef xmlElementType xmlNsType;
 
+/** Namespace declaration */
 typedef struct _xmlNs xmlNs;
 typedef xmlNs *xmlNsPtr;
 /**
@@ -506,6 +523,7 @@ struct _xmlNs {
     struct _xmlDoc *context XML_DEPRECATED_MEMBER;
 };
 
+/** Document type definition (DTD) */
 typedef struct _xmlDtd xmlDtd;
 typedef xmlDtd *xmlDtdPtr;
 /**
@@ -546,13 +564,14 @@ struct _xmlDtd {
     /** hash table for entities if any */
     void          *entities XML_DEPRECATED_MEMBER;
     /** public identifier */
-    const xmlChar *ExternalID XML_DEPRECATED_MEMBER;
+    xmlChar *ExternalID XML_DEPRECATED_MEMBER;
     /** system identifier */
-    const xmlChar *SystemID XML_DEPRECATED_MEMBER;
+    xmlChar *SystemID XML_DEPRECATED_MEMBER;
     /** hash table for parameter entities if any */
     void          *pentities XML_DEPRECATED_MEMBER;
 };
 
+/** Attribute of an element */
 typedef struct _xmlAttr xmlAttr;
 typedef xmlAttr *xmlAttrPtr;
 /**
@@ -587,6 +606,7 @@ struct _xmlAttr {
     struct _xmlID   *id XML_DEPRECATED_MEMBER;
 };
 
+/** Extra data for ID attributes */
 typedef struct _xmlID xmlID;
 typedef xmlID *xmlIDPtr;
 /**
@@ -599,7 +619,7 @@ struct _xmlID {
     /* next ID */
     struct _xmlID    *next XML_DEPRECATED_MEMBER;
     /* The ID name */
-    const xmlChar    *value XML_DEPRECATED_MEMBER;
+    xmlChar *value XML_DEPRECATED_MEMBER;
     /* The attribute holding it */
     xmlAttr          *attr XML_DEPRECATED_MEMBER;
     /* The attribute if attr is not available */
@@ -630,6 +650,7 @@ struct _xmlRef {
 };
 /** @endcond */
 
+/** Generic node type in an XML or HTML tree */
 typedef struct _xmlNode xmlNode;
 typedef xmlNode *xmlNodePtr;
 /**
@@ -749,6 +770,7 @@ typedef enum {
     XML_DOC_HTML		= 1<<7
 } xmlDocProperties;
 
+/** XML or HTML document */
 typedef struct _xmlDoc xmlDoc;
 typedef xmlDoc *xmlDocPtr;
 /**
@@ -777,7 +799,7 @@ struct _xmlDoc {
     /* End of common part */
 
     /** level of zlib compression */
-    int             compression XML_DEPRECATED_MEMBER;
+    int             compression;
     /**
      * standalone document (no external refs)
      *
@@ -795,17 +817,17 @@ struct _xmlDoc {
     /** used to hold the XML namespace if needed */
     struct _xmlNs   *oldNs XML_DEPRECATED_MEMBER;
     /** version string from XML declaration */
-    const xmlChar  *version;
+    xmlChar  *version;
     /** actual encoding if any */
-    const xmlChar  *encoding;
+    xmlChar  *encoding;
     /** hash table for ID attributes if any */
-    void           *ids XML_DEPRECATED_MEMBER;
+    void           *ids;
     /** hash table for IDREFs attributes if any */
     void           *refs XML_DEPRECATED_MEMBER;
     /** URI of the document */
-    const xmlChar  *URL;
+    xmlChar  *URL;
     /** unused */
-    int             charset XML_DEPRECATED_MEMBER;
+    int             charset;
     /** dict used to allocate names if any */
     struct _xmlDict *dict;
     /** for type/PSVI information */
@@ -817,6 +839,7 @@ struct _xmlDoc {
 };
 
 
+/** Context for DOM wrapper operations */
 typedef struct _xmlDOMWrapCtxt xmlDOMWrapCtxt;
 typedef xmlDOMWrapCtxt *xmlDOMWrapCtxtPtr;
 

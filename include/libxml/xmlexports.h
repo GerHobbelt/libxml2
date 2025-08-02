@@ -15,21 +15,18 @@
  * Symbol visibility
  */
 
-#if defined(_WIN32) || defined(__CYGWIN__)
-  #if defined(LIBXML_STATIC) || defined(BUILD_MONOLITHIC)
-    #define XMLPUBLIC
-  #elif defined(IN_LIBXML)
-    #define XMLPUBLIC __declspec(dllexport)
+#if (defined(_WIN32) || defined(__CYGWIN__)) && !defined(LIBXML_STATIC) && !defined(BUILD_MONOLITHIC)
+  #if defined(IN_LIBXML)
+    #define XMLPUBFUN __declspec(dllexport)
+    #define XMLPUBVAR __declspec(dllexport) extern
   #else
-    #define XMLPUBLIC __declspec(dllimport)
+    #define XMLPUBFUN __declspec(dllimport)
+    #define XMLPUBVAR __declspec(dllimport) extern
   #endif
 #else /* not Windows */
-  #define XMLPUBLIC
+  #define XMLPUBFUN
+  #define XMLPUBVAR extern
 #endif /* platform switch */
-
-#define XMLPUBFUN XMLPUBLIC
-
-#define XMLPUBVAR XMLPUBLIC extern
 
 /* Compatibility */
 #define XMLCALL

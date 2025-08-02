@@ -373,6 +373,12 @@ xmlInitParserInternal(void) {
 #ifdef LIBXML_CATALOG_ENABLED
     xmlInitCatalogInternal();
 #endif
+#ifdef LIBXML_SCHEMAS_ENABLED
+    xmlInitSchemasTypesInternal();
+#endif
+#ifdef LIBXML_RELAXNG_ENABLED
+    xmlInitRelaxNGInternal();
+#endif
 
     xmlParserInitialized = 1;
 }
@@ -457,6 +463,14 @@ xmlCleanupParser(void) {
 #endif
 #ifdef LIBXML_RELAXNG_ENABLED
     xmlRelaxNGCleanupTypes();
+#endif
+
+#ifdef LIBXML_SCHEMAS_ENABLED
+    /* Must be after xmlRelaxNGCleanupTypes */
+    xmlCleanupSchemasTypesInternal();
+#endif
+#ifdef LIBXML_RELAXNG_ENABLED
+    xmlCleanupRelaxNGInternal();
 #endif
 
     xmlCleanupDictInternal();

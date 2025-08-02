@@ -137,12 +137,6 @@ struct _xmlParserInput {
 
 /** @cond ignore */
 
-/*
- * The parser can be asked to collect Node information, i.e. at what
- * place in the file they were detected.
- *
- * NOTE: This feature is off by default and deprecated.
- */
 typedef struct _xmlParserNodeInfo xmlParserNodeInfo;
 typedef xmlParserNodeInfo *xmlParserNodeInfoPtr;
 
@@ -276,13 +270,13 @@ struct _xmlParserCtxt {
      *
      * the XML version string
      */
-    const xmlChar *version;
+    xmlChar *version;
     /**
      * @deprecated Use xmlCtxtGetDeclaredEncoding()
      *
      * the declared encoding, if any
      */
-    const xmlChar *encoding;
+    xmlChar *encoding;
     /**
      * @deprecated Use xmlCtxtGetStandalone()
      *
@@ -477,20 +471,21 @@ struct _xmlParserCtxt {
      */
     void *_private;
     /**
-     * @deprecated Use xmlParserOption XML_PARSE_DTDLOAD or
-     * XML_PARSE_DTDATTR
+     * @deprecated Use xmlParserOption XML_PARSE_DTDLOAD,
+     * XML_PARSE_DTDATTR or XML_PARSE_SKIP_IDS.
      *
-     * Control loading of the external subset. Other options like
-     * `validate` can override this value.
+     * Control loading of the external subset and handling of IDs.
+     * Other options like `validate` can override this value.
      *
-     * - 0: Don't load external subset.
-     * - XML_DETECT_IDS: Load external subset and store IDs.
-     * - XML_COMPLETE_ATTRS: Load external subset, store IDs and
-     *   process default attributes.
-     * - XML_SKIP_IDS: Load external subset and ignore IDs.
+     * - 0: The default behavior is to process IDs and to ignore
+     *   the external subset.
+     * - XML_DETECT_IDS: Load external subset. This flag is
+     *   misnamed. ID handling is only controlled by XML_SKIP_IDS.
+     * - XML_COMPLETE_ATTRS: Load external subset and process
+     *   default attributes.
+     * - XML_SKIP_IDS: Ignore IDs.
      */
-    /* TODO: See issue #873 */
-    int loadsubset;
+    int loadsubset XML_DEPRECATED_MEMBER;
     /* unused */
     int linenumbers XML_DEPRECATED_MEMBER;
     /**
@@ -1180,6 +1175,11 @@ struct _xmlSAXHandler {
     xmlStructuredErrorFunc serror;
 };
 
+/**
+ * SAX handler, version 1.
+ *
+ * @deprecated Use version 2 handlers.
+ */
 typedef struct _xmlSAXHandlerV1 xmlSAXHandlerV1;
 typedef xmlSAXHandlerV1 *xmlSAXHandlerV1Ptr;
 /**
@@ -1238,9 +1238,6 @@ typedef xmlParserInput *(*xmlExternalEntityLoader) (const char *URL,
  * Variables
  */
 
-/**
- * Run-time version string.
- */
 XMLPUBVAR const char *const xmlParserVersion;
 
 /** @cond ignore */
@@ -1861,7 +1858,13 @@ typedef enum {
      *
      * @since 2.14.0
      */
-    XML_PARSE_CATALOG_PI = 1<<26
+    XML_PARSE_CATALOG_PI = 1<<26,
+    /**
+     * Force the parser to ignore IDs.
+     *
+     * @since 2.15.0
+     */
+    XML_PARSE_SKIP_IDS = 1<<27
 } xmlParserOption;
 
 XMLPUBFUN void

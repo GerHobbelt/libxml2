@@ -2384,8 +2384,8 @@ testParseContent(xmlParserCtxtPtr ctxt, xmlDocPtr doc, const char *filename) {
     xmlFreeNodeList(list);
 
     /* xmlParseInNodeContext uses the document's encoding. */
-    xmlFree((xmlChar *) doc->encoding);
-    doc->encoding = (const xmlChar *) xmlStrdup(BAD_CAST "UTF-8");
+    xmlFree(doc->encoding);
+    doc->encoding = xmlStrdup(BAD_CAST "UTF-8");
     xmlParseInNodeContext(root, content, strlen(content),
                           ctxt->options | XML_PARSE_NOERROR,
                           &list);
@@ -3825,7 +3825,7 @@ rngStreamTest(const char *filename,
      */
     if ((!strcmp(prefix, "tutor10_1")) || (!strcmp(prefix, "tutor10_2")) ||
         (!strcmp(prefix, "tutor3_2")) || (!strcmp(prefix, "307377")) ||
-        (!strcmp(prefix, "tutor8_2")))
+        (!strcmp(prefix, "tutor8_2")) || (!strcmp(prefix, "simplifyChoiceNotAllowed")))
 	disable_err = 1;
 
     if (snprintf(pattern, 499, "./test/relaxng/%s_?.xml", prefix) >= 499)
@@ -3942,6 +3942,9 @@ schematronTest(const char *filename,
     size_t i;
     char count = 0;
 
+    /* Redirect XPath errors */
+    xmlSetStructuredErrorFunc(NULL, testStructuredErrorHandler);
+
     pctxt = xmlSchematronNewParserCtxt(filename);
     schematron = xmlSchematronParse(pctxt);
     xmlSchematronFreeParserCtxt(pctxt);
@@ -3955,8 +3958,8 @@ schematronTest(const char *filename,
      */
     len = strlen(base);
     if ((len > 499) || (len < 5)) {
-        xmlSchematronFree(schematron);
-	return(-1);
+        ret = -1;
+        goto done;
     }
     len -= 4; /* remove trailing .sct */
     memcpy(prefix, base, len);
@@ -3996,8 +3999,10 @@ schematronTest(const char *filename,
         }
     }
     globfree(&globbuf);
-    xmlSchematronFree(schematron);
 
+done:
+    xmlSchematronFree(schematron);
+    xmlSetStructuredErrorFunc(NULL, NULL);
     return(ret);
 }
 #endif /* LIBXML_SCHEMATRON_ENABLED */

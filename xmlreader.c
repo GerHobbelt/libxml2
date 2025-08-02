@@ -154,7 +154,6 @@ struct _xmlTextReader {
 #ifdef LIBXML_XINCLUDE_ENABLED
     /* Handling of XInclude processing */
     int                xinclude;	/* is xinclude asked for */
-    const xmlChar *    xinclude_name;	/* the xinclude name from dict */
     xmlXIncludeCtxtPtr xincctxt;	/* the xinclude context */
     int                in_xinclude;	/* counts for xinclude */
 #endif
@@ -543,11 +542,11 @@ xmlTextReaderFreeDoc(xmlTextReaderPtr reader, xmlDocPtr cur) {
 
     if (cur->children != NULL) xmlTextReaderFreeNodeList(reader, cur->children);
 
-    if (cur->version != NULL) xmlFree((char *) cur->version);
+    if (cur->version != NULL) xmlFree(cur->version);
     if (cur->name != NULL) xmlFree((char *) cur->name);
-    if (cur->encoding != NULL) xmlFree((char *) cur->encoding);
+    if (cur->encoding != NULL) xmlFree(cur->encoding);
     if (cur->oldNs != NULL) xmlFreeNsList(cur->oldNs);
-    if (cur->URL != NULL) xmlFree((char *) cur->URL);
+    if (cur->URL != NULL) xmlFree(cur->URL);
     if (cur->dict != NULL) xmlDictFree(cur->dict);
 
     xmlFree(cur);
@@ -4855,9 +4854,6 @@ xmlTextReaderSetup(xmlTextReader *reader,
     }
     if (options & XML_PARSE_XINCLUDE) {
         reader->xinclude = 1;
-	reader->xinclude_name = xmlDictLookup(reader->dict, XINCLUDE_NODE, -1);
-        if (reader->xinclude_name == NULL)
-            return(-1);
 	options -= XML_PARSE_XINCLUDE;
     } else
         reader->xinclude = 0;

@@ -35,6 +35,7 @@
 #include <libxml/xmlschemastypes.h>
 
 #include "private/error.h"
+#include "private/threads.h"
 
 #ifndef isnan
   #define isnan(x) (!((x) == (x)))
@@ -524,6 +525,20 @@ xmlSchemaCleanupTypesInternal(void) {
 #endif
 #endif
 
+static xmlMutex xmlSchemasTypesMutex;
+
+void
+xmlInitSchemasTypesInternal(void)
+{
+    xmlInitMutex(&xmlSchemasTypesMutex);
+}
+
+void
+xmlCleanupSchemasTypesInternal(void)
+{
+    xmlCleanupMutex(&xmlSchemasTypesMutex);
+}
+
 /**
  * Initialize the default XML Schemas type library
  *
@@ -532,22 +547,27 @@ xmlSchemaCleanupTypesInternal(void) {
 int
 xmlSchemaInitTypes(void)
 {
-#if !defined(NAN) || !defined(INFINITY)
-    /* MSVC doesn't allow division by zero in constant expressions. */
-    double zero = 0.0;
-#endif
+    xmlInitParser();
 
-    if (xmlSchemaTypesInitialized != 0)
+    xmlMutexLock(&xmlSchemasTypesMutex);
+    if (xmlSchemaTypesInitialized != 0) {
+        xmlMutexUnlock(&xmlSchemasTypesMutex);
         return (0);
+    }
 
 #if defined(NAN) && defined(INFINITY)
     xmlSchemaNAN = NAN;
     xmlSchemaPINF = INFINITY;
     xmlSchemaNINF = -INFINITY;
 #else
-    xmlSchemaNAN = 0.0 / zero;
-    xmlSchemaPINF = 1.0 / zero;
-    xmlSchemaNINF = -xmlSchemaPINF;
+    /* MSVC doesn't allow division by zero in constant expressions. */
+    double zero = 0.0;
+
+    {
+        xmlSchemaNAN = 0.0 / zero;
+        xmlSchemaPINF = 1.0 / zero;
+        xmlSchemaNINF = -xmlSchemaPINF;
+    }
 #endif
 
     xmlSchemaTypesBank = xmlHashCreate(40);
@@ -864,10 +884,12 @@ xmlSchemaInitTypes(void)
     xmlSchemaTypeNmtokensDef->subtypes = xmlSchemaTypeNmtokenDef;
 
     xmlSchemaTypesInitialized = 1;
+    xmlMutexUnlock(&xmlSchemasTypesMutex);
     return (0);
 
 error:
     xmlSchemaCleanupTypesInternal();
+    xmlMutexUnlock(&xmlSchemasTypesMutex);
     return (-1);
 }
 
@@ -886,10 +908,12 @@ error:
  */
 void
 xmlSchemaCleanupTypes(void) {
+    xmlMutexLock(&xmlSchemasTypesMutex);
     if (xmlSchemaTypesInitialized != 0) {
         xmlSchemaCleanupTypesInternal();
         xmlSchemaTypesInitialized = 0;
     }
+    xmlMutexUnlock(&xmlSchemasTypesMutex);
 }
 
 /**
@@ -980,8 +1004,7 @@ xmlSchemaIsBuiltInTypeFacet(xmlSchemaType *type, int facetType)
 xmlSchemaType *
 xmlSchemaGetBuiltInType(xmlSchemaValType type)
 {
-    if ((xmlSchemaTypesInitialized == 0) &&
-	(xmlSchemaInitTypes() < 0))
+    if (xmlSchemaInitTypes() < 0)
         return (NULL);
     switch (type) {
 
@@ -1314,8 +1337,7 @@ xmlSchemaFreeValue(xmlSchemaVal *value) {
  */
 xmlSchemaType *
 xmlSchemaGetPredefinedType(const xmlChar *name, const xmlChar *ns) {
-    if ((xmlSchemaTypesInitialized == 0) &&
-	(xmlSchemaInitTypes() < 0))
+    if (xmlSchemaInitTypes() < 0)
         return (NULL);
     if (name == NULL)
 	return(NULL);
@@ -2433,8 +2455,7 @@ xmlSchemaValAtomicType(xmlSchemaTypePtr type, const xmlChar * value,
     xmlChar *norm = NULL;
     int ret = 0;
 
-    if ((xmlSchemaTypesInitialized == 0) &&
-	(xmlSchemaInitTypes() < 0))
+    if (xmlSchemaInitTypes() < 0)
         return (-1);
     if (type == NULL)
         return (-1);

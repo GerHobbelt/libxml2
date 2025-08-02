@@ -420,7 +420,7 @@ invalid:
     /* Only report the first error */
     if ((ctxt->input->flags & XML_INPUT_ENCODING_ERROR) == 0) {
         htmlParseErr(ctxt, XML_ERR_INVALID_ENCODING,
-                     "Invalid bytes in character encoding", NULL, NULL);
+                     "Invalid bytes in character encoding\n", NULL, NULL);
         ctxt->input->flags |= XML_INPUT_ENCODING_ERROR;
     }
 
@@ -4428,12 +4428,25 @@ htmlParseDocument(htmlParserCtxt *ctxt) {
 	ctxt->sax->startDocument(ctxt->userData);
 
     /*
-     * Parse possible comments and PIs before any content
+     * Parse possible comments, PIs or doctype declarations
+     * before any content.
      */
+    ctxt->instate = XML_PARSER_MISC;
     while (CUR == '<') {
-        if ((NXT(1) == '!') && (NXT(2) == '-') && (NXT(3) == '-')) {
-            SKIP(4);
-            htmlParseComment(ctxt, /* bogus */ 0);
+        if (NXT(1) == '!') {
+            if ((NXT(2) == '-') && (NXT(3) == '-')) {
+                SKIP(4);
+                htmlParseComment(ctxt, /* bogus */ 0);
+            } else if ((UPP(2) == 'D') && (UPP(3) == 'O') &&
+                       (UPP(4) == 'C') && (UPP(5) == 'T') &&
+                       (UPP(6) == 'Y') && (UPP(7) == 'P') &&
+                       (UPP(8) == 'E')) {
+                htmlParseDocTypeDecl(ctxt);
+                ctxt->instate = XML_PARSER_PROLOG;
+            } else {
+                SKIP(2);
+                htmlParseComment(ctxt, /* bogus */ 1);
+            }
         } else if (NXT(1) == '?') {
             SKIP(1);
             htmlParseComment(ctxt, /* bogus */ 1);
@@ -4441,37 +4454,7 @@ htmlParseDocument(htmlParserCtxt *ctxt) {
             break;
         }
 	SKIP_BLANKS;
-    }
-
-    /*
-     * Then possibly doc type declaration(s) and more Misc
-     * (doctypedecl Misc*)?
-     */
-    if ((CUR == '<') && (NXT(1) == '!') &&
-	(UPP(2) == 'D') && (UPP(3) == 'O') &&
-	(UPP(4) == 'C') && (UPP(5) == 'T') &&
-	(UPP(6) == 'Y') && (UPP(7) == 'P') &&
-	(UPP(8) == 'E')) {
-        ctxt->instate = XML_PARSER_MISC;
-	htmlParseDocTypeDecl(ctxt);
-    }
-    SKIP_BLANKS;
-
-    /*
-     * Parse possible comments and PIs before any content
-     */
-    ctxt->instate = XML_PARSER_PROLOG;
-    while (CUR == '<') {
-        if ((NXT(1) == '!') && (NXT(2) == '-') && (NXT(3) == '-')) {
-            SKIP(4);
-            htmlParseComment(ctxt, /* bogus */ 0);
-        } else if (NXT(1) == '?') {
-            SKIP(1);
-            htmlParseComment(ctxt, /* bogus */ 1);
-        } else {
-            break;
-        }
-	SKIP_BLANKS;
+        GROW;
     }
 
     /*
@@ -5083,10 +5066,7 @@ htmlParseTryOrFinish(htmlParserCtxtPtr ctxt, int terminate) {
                             htmlParseDocTypeDecl(ctxt);
                             if (ctxt->instate == XML_PARSER_MISC)
                                 ctxt->instate = XML_PARSER_PROLOG;
-                            else
-                                ctxt->instate = XML_PARSER_CONTENT;
                         } else {
-                            ctxt->instate = XML_PARSER_CONTENT;
                             if ((!terminate) &&
                                 (htmlParseLookupString(ctxt, 2, ">", 1, 0) < 0))
                                 return;
@@ -5500,16 +5480,6 @@ htmlNodeStatus(xmlNode *node ATTRIBUTE_UNUSED,
  *	New set (2.6.0) of simpler and more flexible APIs		*
  *									*
  ************************************************************************/
-/**
- * Free a string if it is not owned by the "dict" dictionary in the
- * current scope
- *
- * @param str  a string
- */
-#define DICT_FREE(str)						\
-	if ((str) && ((!dict) ||				\
-	    (xmlDictOwns(dict, (const xmlChar *)(str)) == 0)))	\
-	    xmlFree((char *)(str));
 
 /**
  * Reset a parser context
@@ -5553,6 +5523,11 @@ htmlCtxtSetOptionsInternal(xmlParserCtxtPtr ctxt, int options, int keepMask)
      * of truth. See xmlCtxtSetOptionsInternal.
      */
     ctxt->keepBlanks = (options & HTML_PARSE_NOBLANKS) ? 0 : 1;
+
+    /*
+     * Recover from character encoding errors
+     */
+    ctxt->recovery = 1;
 
     /*
      * Changing SAX callbacks is a bad idea. This should be fixed.
