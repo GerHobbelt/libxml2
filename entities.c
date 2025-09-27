@@ -416,7 +416,7 @@ xmlGetEntityFromTable(xmlEntitiesTablePtr table, const xmlChar *name) {
 }
 
 /**
- * Look up a paramater entity in the internal and external subset
+ * Look up a parameter entity in the internal and external subset
  * of `doc`.
  *
  * @param doc  the document
