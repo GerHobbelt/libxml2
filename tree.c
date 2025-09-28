@@ -988,19 +988,30 @@ xmlFreeDoc(xmlDoc *cur) {
 }
 
 /**
- * See xmlNodeParseContent.
+ * Parse an attribute value and replace the node's children with
+ * the resulting node list.
+ *
+ * `content` is expected to be a valid XML attribute value possibly
+ * containing character and entity references. Syntax errors
+ * and references to undeclared entities are ignored silently.
+ * Only references are handled, nested elements, comments or PIs are
+ * not.
+ *
+ * This function is used by the SAX parser to parse attribute
+ * values a second time if entities aren't substituted. It's also
+ * used to parse node content in the tree API, but this is a
+ * historical mistake.
  *
  * @param doc  a document (optional)
- * @param parent  an element or attribute (optional)
+ * @param attr  an attribute or element (optional)
  * @param value  an attribute value
  * @param len  maximum length of the attribute value
  * @param listPtr  pointer to the resulting node list (optional)
  * @returns 0 on success, -1 if a memory allocation failed.
  */
-static int
-xmlNodeParseContentInternal(const xmlDoc *doc, xmlNodePtr parent,
-                            const xmlChar *value, int len,
-                            xmlNodePtr *listPtr) {
+int
+xmlNodeParseAttValue(const xmlDoc *doc, xmlAttr *attr,
+                     const xmlChar *value, size_t len, xmlNode **listPtr) {
     xmlNodePtr head = NULL, last = NULL;
     xmlNodePtr node;
     xmlChar *val = NULL;
@@ -1008,15 +1019,10 @@ xmlNodeParseContentInternal(const xmlDoc *doc, xmlNodePtr parent,
     const xmlChar *q;
     xmlEntityPtr ent;
     xmlBufPtr buf;
-    int remaining;
+    size_t remaining = len;
 
     if (listPtr != NULL)
         *listPtr = NULL;
-
-    if (len < 0)
-        remaining = INT_MAX;
-    else
-        remaining = len;
 
     if ((value == NULL) || (value[0] == 0))
         goto done;
@@ -1114,7 +1120,8 @@ xmlNodeParseContentInternal(const xmlDoc *doc, xmlNodePtr parent,
                          */
 			if (xmlBufCat(buf, ent->content))
 			    goto out;
-		    } else {
+                    } else if (ent == NULL ||
+                               (ent->flags & XML_ENT_EXPANDING) == 0) {
 			/*
 			 * Flush buffer so far
 			 */
@@ -1123,7 +1130,7 @@ xmlNodeParseContentInternal(const xmlDoc *doc, xmlNodePtr parent,
 			    if (node == NULL)
 				goto out;
 			    node->content = xmlBufDetach(buf);
-                            node->parent = parent;
+                            node->parent = (xmlNode *) attr;
 
 			    if (last == NULL) {
 				head = node;
@@ -1136,13 +1143,13 @@ xmlNodeParseContentInternal(const xmlDoc *doc, xmlNodePtr parent,
 
 			if ((ent != NULL) &&
                             ((ent->flags & XML_ENT_PARSED) == 0) &&
-                            ((ent->flags & XML_ENT_EXPANDING) == 0) &&
                             (ent->content != NULL)) {
                             int res;
 
                             ent->flags |= XML_ENT_EXPANDING;
-                            res = xmlNodeParseContentInternal(doc,
-                                    (xmlNodePtr) ent, ent->content, -1, NULL);
+                            res = xmlNodeParseAttValue(doc, (xmlAttr *) ent,
+                                                       ent->content, SIZE_MAX,
+                                                       NULL);
                             ent->flags &= ~XML_ENT_EXPANDING;
                             if (res < 0)
                                 goto out;
@@ -1156,7 +1163,7 @@ xmlNodeParseContentInternal(const xmlDoc *doc, xmlNodePtr parent,
                         val = NULL;
 			if (node == NULL)
 			    goto out;
-                        node->parent = parent;
+                        node->parent = (xmlNode *) attr;
                         node->last = (xmlNodePtr) ent;
                         if (ent != NULL) {
                             node->children = (xmlNodePtr) ent;
@@ -1209,7 +1216,7 @@ xmlNodeParseContentInternal(const xmlDoc *doc, xmlNodePtr parent,
 	node = xmlNewDocText(doc, NULL);
 	if (node == NULL)
             goto out;
-        node->parent = parent;
+        node->parent = (xmlNode *) attr;
 	node->content = xmlBufDetach(buf);
 
 	if (last == NULL) {
@@ -1223,18 +1230,18 @@ xmlNodeParseContentInternal(const xmlDoc *doc, xmlNodePtr parent,
         head = xmlNewDocText(doc, BAD_CAST "");
         if (head == NULL)
             goto out;
-        head->parent = parent;
+        head->parent = (xmlNode *) attr;
         last = head;
     }
 
     xmlBufFree(buf);
 
 done:
-    if (parent != NULL) {
-        if (parent->children != NULL)
-            xmlFreeNodeList(parent->children);
-        parent->children = head;
-        parent->last = last;
+    if (attr != NULL) {
+        if (attr->children != NULL)
+            xmlFreeNodeList(attr->children);
+        attr->children = head;
+        attr->last = last;
     }
 
     if (listPtr != NULL)
@@ -1252,29 +1259,9 @@ out:
 }
 
 /**
- * Parse content and replace the node's children with the resulting
- * node list.
- *
- * `content` is expected to be a valid XML attribute value possibly
- * containing character and entity references. Syntax errors
- * and references to undeclared entities are ignored silently.
- * Only references are handled, nested elements, comments or PIs are
- * not.
- *
- * @param node  an element or attribute
- * @param content  text content with XML references
- * @param len  maximum length of content
- * @returns 0 on success, -1 if a memory allocation failed.
- */
-int
-xmlNodeParseContent(xmlNode *node, const xmlChar *content, int len) {
-    return(xmlNodeParseContentInternal(node->doc, node, content, len, NULL));
-}
-
-/**
  * See #xmlStringGetNodeList.
  *
- * @deprecated Use #xmlNodeSetContentLen.
+ * @deprecated Internal function, don't use.
  *
  * @param doc  a document (optional)
  * @param value  an attribute value
@@ -1285,8 +1272,9 @@ xmlNodeParseContent(xmlNode *node, const xmlChar *content, int len) {
 xmlNode *
 xmlStringLenGetNodeList(const xmlDoc *doc, const xmlChar *value, int len) {
     xmlNodePtr ret;
+    size_t maxSize = len < 0 ? SIZE_MAX : (size_t) len;
 
-    xmlNodeParseContentInternal(doc, NULL, value, len, &ret);
+    xmlNodeParseAttValue(doc, NULL, value, maxSize, &ret);
     return(ret);
 }
 
@@ -1296,7 +1284,7 @@ xmlStringLenGetNodeList(const xmlDoc *doc, const xmlChar *value, int len) {
  * associated with the document if provided. The document is also
  * used to look up entities.
  *
- * @deprecated Use #xmlNodeSetContent.
+ * @deprecated Internal function, don't use.
  *
  * The input is not validated. Syntax errors or references to
  * undeclared entities will be ignored silently with unspecified
@@ -1311,7 +1299,7 @@ xmlNode *
 xmlStringGetNodeList(const xmlDoc *doc, const xmlChar *value) {
     xmlNodePtr ret;
 
-    xmlNodeParseContentInternal(doc, NULL, value, -1, &ret);
+    xmlNodeParseAttValue(doc, NULL, value, SIZE_MAX, &ret);
     return(ret);
 }
 
@@ -1670,7 +1658,11 @@ xmlNewDocProp(xmlDoc *doc, const xmlChar *name, const xmlChar *value) {
         goto error;
     cur->doc = doc;
     if (value != NULL) {
-	if (xmlNodeParseContent((xmlNodePtr) cur, value, -1) < 0)
+        /*
+         * We shouldn't parse the attribute value here,
+         * but the API can't be changed.
+         */
+        if (xmlNodeParseAttValue(doc, cur, value, SIZE_MAX, NULL) < 0)
             goto error;
     }
 
@@ -1877,7 +1869,12 @@ xmlNewElem(xmlDocPtr doc, xmlNsPtr ns, const xmlChar *name,
     cur->ns = ns;
 
     if (content != NULL) {
-        if (xmlNodeParseContent(cur, content, -1) < 0) {
+        /*
+         * We shouldn't parse the content as attribute value here,
+         * but the API can't be changed.
+         */
+        if (xmlNodeParseAttValue(doc, (xmlAttr *) cur, content, SIZE_MAX,
+                                 NULL) < 0) {
             /* Don't free name on error */
             xmlFree(cur);
             return(NULL);
@@ -3090,6 +3087,10 @@ xmlAddChildList(xmlNode *parent, xmlNode *cur) {
  * If `cur` is an attribute node, it is appended to the attributes of
  * `parent`. If the attribute list contains an attribute with a name
  * matching `cur`, the old attribute is destroyed.
+ *
+ * Before version 2.13, this function didn't unlink `cur` before
+ * moving it. Callers must unlink the node manually if it has
+ * siblings.
  *
  * General notes:
  *
@@ -5345,10 +5346,18 @@ xmlNodeSetContentInternal(xmlNodePtr cur, const xmlChar *content, int len) {
     switch (cur->type) {
         case XML_DOCUMENT_FRAG_NODE:
         case XML_ELEMENT_NODE:
-        case XML_ATTRIBUTE_NODE:
-            if (xmlNodeParseContent(cur, content, len) < 0)
+        case XML_ATTRIBUTE_NODE: {
+            size_t maxSize = len < 0 ? SIZE_MAX : (size_t) len;
+
+            /*
+             * We shouldn't parse the content as attribute value here,
+             * but the API can't be changed.
+             */
+            if (xmlNodeParseAttValue(cur->doc, (xmlAttr *) cur,
+                                     content, maxSize, NULL) < 0)
                 return(-1);
 	    break;
+        }
 
         case XML_TEXT_NODE:
         case XML_CDATA_SECTION_NODE:
@@ -5422,6 +5431,8 @@ xmlNodeSetContentLen(xmlNode *cur, const xmlChar *content, int len) {
  * to be raw text, so unescaped XML special chars are allowed, entity
  * references are not supported.
  *
+ * This doesn't work on attributes before version 2.15.
+ *
  * @param cur  the node being modified
  * @param content  extra content
  * @param len  the size of `content`
@@ -5469,6 +5480,8 @@ xmlNodeAddContentLen(xmlNode *cur, const xmlChar *content, int len) {
  * NOTE: In contrast to #xmlNodeSetContent, `content` is supposed
  * to be raw text, so unescaped XML special chars are allowed, entity
  * references are not supported.
+ *
+ * This doesn't work on attributes before version 2.15.
  *
  * @param cur  the node being modified
  * @param content  extra content

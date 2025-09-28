@@ -97,6 +97,9 @@ xmlCheckVersion(int version) {
  * Register a callback function that will be called on errors and
  * warnings. If handler is NULL, the error handler will be deactivated.
  *
+ * If you only want to disable parser errors being printed to
+ * stderr, use xmlParserOption XML_PARSE_NOERROR.
+ *
  * This is the recommended way to collect errors from the parser and
  * takes precedence over all other error reporting mechanisms.
  * These are (in order of precedence):
@@ -387,8 +390,18 @@ xmlCtxtVErr(xmlParserCtxt *ctxt, xmlNode *node, xmlErrorDomain domain,
     if (level == XML_ERR_FATAL) {
         ctxt->wellFormed = 0;
 
-        if (xmlCtxtIsCatastrophicError(ctxt))
-            ctxt->disableSAX = 2; /* stop parser */
+        /*
+         * By long-standing design, the parser isn't completely
+         * stopped on well-formedness errors. Only SAX callbacks
+         * are disabled.
+         *
+         * In some situations, we really want to abort as fast
+         * as possible.
+         */
+        if (xmlCtxtIsCatastrophicError(ctxt) ||
+            code == XML_ERR_RESOURCE_LIMIT ||
+            code == XML_ERR_ENTITY_LOOP)
+            ctxt->disableSAX = 2; /* really stop parser */
         else if (ctxt->recovery == 0)
             ctxt->disableSAX = 1;
     }
@@ -518,20 +531,6 @@ xmlIsLetter(int c) {
 #define LINE_LEN        80
 
 /**
- * Blocks further parser processing don't override error
- * for internal use
- *
- * @param ctxt  an XML parser context
- */
-void
-xmlHaltParser(xmlParserCtxt *ctxt) {
-    if (ctxt == NULL)
-        return;
-    ctxt->instate = XML_PARSER_EOF; /* TODO: Remove after refactoring */
-    ctxt->disableSAX = 2;
-}
-
-/**
  * @deprecated This function was internal and is deprecated.
  *
  * @param in  an XML parser input
@@ -574,7 +573,6 @@ xmlParserGrow(xmlParserCtxt *ctxt) {
     if (curBase > maxLength) {
         xmlFatalErr(ctxt, XML_ERR_RESOURCE_LIMIT,
                     "Buffer size limit exceeded, try XML_PARSE_HUGE\n");
-        xmlHaltParser(ctxt);
 	return(-1);
     }
 
@@ -3213,6 +3211,30 @@ xmlCtxtIsStopped(xmlParserCtxt *ctxt) {
     return(ctxt->disableSAX != 0);
 }
 
+/**
+ * Check whether a DTD subset is being parsed.
+ *
+ * Should only be used by SAX callbacks.
+ *
+ * Return values are
+ *
+ * - 0: not in DTD
+ * - 1: in internal DTD subset
+ * - 2: in external DTD subset
+ *
+ * @since 2.15.0
+ *
+ * @param ctxt  parser context
+ * @returns the subset status
+ */
+int
+xmlCtxtIsInSubset(xmlParserCtxt *ctxt) {
+    if (ctxt == NULL)
+        return(0);
+
+    return(ctxt->inSubset);
+}
+
 #ifdef LIBXML_VALID_ENABLED
 /**
  * @since 2.14.0
@@ -3228,6 +3250,81 @@ xmlCtxtGetValidCtxt(xmlParserCtxt *ctxt) {
     return(&ctxt->vctxt);
 }
 #endif
+
+/**
+ * Return user data.
+ *
+ * Return user data of a custom SAX parser or the parser context
+ * itself if unset.
+ *
+ * @since 2.15.0
+ *
+ * @param ctxt  parser context
+ * @returns the user data.
+ */
+void *
+xmlCtxtGetUserData(xmlParserCtxt *ctxt) {
+    if (ctxt == NULL)
+        return NULL;
+
+    return ctxt->userData;
+}
+
+/**
+ * Return the current node being parsed.
+ *
+ * This is only useful if the default SAX callbacks which build
+ * a document tree are intercepted. This mode of operation is
+ * fragile and discouraged.
+ *
+ * Returns the current element node, or the document node if no
+ * element was parsed yet.
+ *
+ * @since 2.15.0
+ *
+ * @param ctxt  parser context
+ * @returns the current node.
+ */
+xmlNode *
+xmlCtxtGetNode(xmlParserCtxt *ctxt) {
+    if (ctxt == NULL)
+        return NULL;
+
+    if (ctxt->node != NULL)
+        return ctxt->node;
+    return (xmlNode *) ctxt->myDoc;
+}
+
+/**
+ * Return data from the doctype declaration.
+ *
+ * Should only be used by SAX callbacks.
+ *
+ * @since 2.15.0
+ *
+ * @param ctxt  parser context
+ * @param name  name of the root element (output)
+ * @param systemId  system ID (URI) of the external subset (output)
+ * @param publicId  public ID of the external subset (output)
+ * @returns 0 on success, -1 if argument is invalid
+ */
+int
+xmlCtxtGetDocTypeDecl(xmlParserCtxt *ctxt,
+                      const xmlChar **name,
+                      const xmlChar **systemId,
+                      const xmlChar **publicId) {
+    if (ctxt == NULL)
+        return -1;
+
+    if (name != NULL)
+        *name = ctxt->intSubName;
+    if (systemId != NULL)
+        *systemId = ctxt->extSubURI;
+    if (publicId != NULL)
+        *publicId = ctxt->extSubSystem; /* The member is misnamed */
+
+    return 0;
+}
 
 /************************************************************************
  *									*
