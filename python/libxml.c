@@ -462,13 +462,8 @@ xmlOutputBufferCreatePythonFile(PyObject *file,
 
     if (file == NULL) return(NULL);
 
-    ret = xmlAllocOutputBuffer(encoder);
-    if (ret != NULL) {
-        ret->context = file;
-	/* Py_INCREF(file); */
-	ret->writecallback = xmlPythonFileWrite;
-	ret->closecallback = xmlPythonFileClose;
-    }
+    ret = xmlOutputBufferCreateIO(xmlPythonFileWrite, xmlPythonFileClose,
+                                  file, encoder);
 
     return(ret);
 }
@@ -521,6 +516,7 @@ libxml_outputBufferGetPythonFile(ATTRIBUTE_UNUSED PyObject *self,
 	Py_INCREF(Py_None);
 	return(Py_None);
     }
+XML_IGNORE_DEPRECATION_WARNINGS
     if (obj->closecallback != xmlPythonFileClose) {
 	fprintf(stderr,
 	        "outputBufferGetPythonFile: not a python file wrapper\n");
@@ -532,6 +528,7 @@ libxml_outputBufferGetPythonFile(ATTRIBUTE_UNUSED PyObject *self,
 	Py_INCREF(Py_None);
 	return(Py_None);
     }
+XML_POP_WARNINGS
     Py_INCREF(file);
     return(file);
 }
@@ -639,13 +636,8 @@ xmlParserInputBufferCreatePythonFile(PyObject *file,
 
     if (file == NULL) return(NULL);
 
-    ret = xmlAllocParserInputBuffer(encoding);
-    if (ret != NULL) {
-        ret->context = file;
-	/* Py_INCREF(file); */
-	ret->readcallback = xmlPythonFileRead;
-	ret->closecallback = xmlPythonFileClose;
-    }
+    ret = xmlParserInputBufferCreateIO(xmlPythonFileRead, xmlPythonFileClose,
+                                       file, encoding);
 
     return(ret);
 }
@@ -699,11 +691,10 @@ pythonExternalEntityLoader(const char *URL, const char *ID,
 	    if (PyObject_HasAttrString(ret, "read")) {
 		xmlParserInputBufferPtr buf;
 
-		buf = xmlAllocParserInputBuffer(XML_CHAR_ENCODING_NONE);
+		buf = xmlParserInputBufferCreateIO(xmlPythonFileReadRaw,
+                                                   xmlPythonFileCloseRaw,
+                                                   ret, XML_CHAR_ENCODING_NONE);
 		if (buf != NULL) {
-		    buf->context = ret;
-		    buf->readcallback = xmlPythonFileReadRaw;
-		    buf->closecallback = xmlPythonFileCloseRaw;
 		    result = xmlNewIOInputStream(ctxt, buf,
 			                         XML_CHAR_ENCODING_NONE);
 		}

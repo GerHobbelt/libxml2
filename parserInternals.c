@@ -505,6 +505,71 @@ xmlFatalErr(xmlParserCtxt *ctxt, xmlParserErrors code, const char *info)
 }
 
 /**
+ * Return window into current parser data.
+ *
+ * @param input  parser input
+ * @param startOut  start of window (output)
+ * @param sizeInOut  maximum size of window (in)
+ *                   actual size of window (out)
+ * @param offsetOut  offset of current position inside
+ *                   window (out)
+ */
+void
+xmlParserInputGetWindow(xmlParserInput *input, const xmlChar **startOut,
+                        int *sizeInOut, int *offsetOut) {
+    const xmlChar *cur, *base, *start;
+    int n, col;
+    int size = *sizeInOut;
+
+    cur = input->cur;
+    base = input->base;
+    /* skip backwards over any end-of-lines */
+    while ((cur > base) && ((*(cur) == '\n') || (*(cur) == '\r'))) {
+	cur--;
+    }
+    n = 0;
+    /* search backwards for beginning-of-line (to max buff size) */
+    while ((n < size) && (cur > base) &&
+	   (*cur != '\n') && (*cur != '\r')) {
+        cur--;
+        n++;
+    }
+    if ((n > 0) && ((*cur == '\n') || (*cur == '\r'))) {
+        cur++;
+    } else {
+        /* skip over continuation bytes */
+        while ((cur < input->cur) && ((*cur & 0xC0) == 0x80))
+            cur++;
+    }
+    /* calculate the error position in terms of the current position */
+    col = input->cur - cur;
+    /* search forward for end-of-line (to max buff size) */
+    n = 0;
+    start = cur;
+    /* copy selected text to our buffer */
+    while ((*cur != 0) && (*(cur) != '\n') && (*(cur) != '\r')) {
+        int len = input->end - cur;
+        int c = xmlGetUTF8Char(cur, &len);
+
+        if ((c < 0) || (n + len > size))
+            break;
+        cur += len;
+	n += len;
+    }
+
+    /*
+     * col can only point to the end of the buffer if
+     * there's space for a marker.
+     */
+    if (col >= n)
+        col = n < size ? n : size - 1;
+
+    *startOut = start;
+    *sizeInOut = n;
+    *offsetOut = col;
+}
+
+/**
  * Check whether the character is allowed by the production
  *
  * @deprecated Internal function, don't use.
@@ -697,11 +762,7 @@ xmlParserShrink(xmlParserCtxt *ctxt) {
 
         if (res > 0) {
             used -= res;
-            if ((res > ULONG_MAX) ||
-                (in->consumed > ULONG_MAX - (unsigned long)res))
-                in->consumed = ULONG_MAX;
-            else
-                in->consumed += res;
+            xmlSaturatedAddSizeT(&in->consumed, res);
         }
 
         xmlBufUpdateInput(buf->buffer, in, used);
@@ -732,11 +793,7 @@ xmlParserInputShrink(xmlParserInput *in) {
 	ret = xmlBufShrink(in->buf->buffer, used - LINE_LEN);
 	if (ret > 0) {
             used -= ret;
-            if ((ret > ULONG_MAX) ||
-                (in->consumed > ULONG_MAX - (unsigned long)ret))
-                in->consumed = ULONG_MAX;
-            else
-                in->consumed += ret;
+            xmlSaturatedAddSizeT(&in->consumed, ret);
 	}
 
         xmlBufUpdateInput(in->buf->buffer, in, used);
@@ -3322,6 +3379,113 @@ xmlCtxtGetDocTypeDecl(xmlParserCtxt *ctxt,
         *systemId = ctxt->extSubURI;
     if (publicId != NULL)
         *publicId = ctxt->extSubSystem; /* The member is misnamed */
+
+    return 0;
+}
+
+/**
+ * Return input position.
+ *
+ * Should only be used by error handlers or SAX callbacks.
+ *
+ * Because of entities, there can be multiple inputs. Non-negative
+ * values of `inputIndex` (0, 1, 2, ...)  select inputs starting
+ * from the outermost input. Negative values (-1, -2, ...) select
+ * inputs starting from the innermost input.
+ *
+ * The byte position is counted in possibly decoded UTF-8 bytes,
+ * so it won't match the position in the raw input data.
+ *
+ * @since 2.15.0
+ *
+ * @param ctxt  parser context
+ * @param inputIndex  input index
+ * @param filename  filename (output)
+ * @param line  line number (output)
+ * @param col  column number (output)
+ * @param utf8BytePos  byte position (output)
+ * @returns 0 on success, -1 if arguments are invalid
+ */
+int
+xmlCtxtGetInputPosition(xmlParserCtxt *ctxt, int inputIndex,
+                        const char **filename, int *line, int *col,
+                        unsigned long *utf8BytePos) {
+    xmlParserInput *input;
+
+    if (ctxt == NULL)
+        return -1;
+
+    if (inputIndex < 0) {
+        inputIndex += ctxt->inputNr;
+        if (inputIndex < 0)
+            return -1;
+    }
+    if (inputIndex >= ctxt->inputNr)
+        return -1;
+
+    input = ctxt->inputTab[inputIndex];
+
+    if (filename != NULL)
+        *filename = input->filename;
+    if (line != NULL)
+        *line = input->line;
+    if (col != NULL)
+        *col = input->col;
+
+    if (utf8BytePos != NULL) {
+        unsigned long consumed;
+
+        consumed = input->consumed;
+        xmlSaturatedAddSizeT(&consumed, input->cur - input->base);
+        *utf8BytePos = consumed;
+    }
+
+    return 0;
+}
+
+/**
+ * Return window into input data.
+ *
+ * Should only be used by error handlers or SAX callbacks.
+ * The returned pointer is only valid until the callback returns.
+ *
+ * Because of entities, there can be multiple inputs. Non-negative
+ * values of `inputIndex` (0, 1, 2, ...)  select inputs starting
+ * from the outermost input. Negative values (-1, -2, ...) select
+ * inputs starting from the innermost input.
+ *
+ * @since 2.15.0
+ *
+ * @param ctxt  parser context
+ * @param inputIndex  input index
+ * @param startOut  start of window (output)
+ * @param sizeInOut  maximum size of window (in)
+ *                   actual size of window (out)
+ * @param offsetOut  offset of current position inside
+ *                   window (out)
+ * @returns 0 on success, -1 if arguments are invalid
+ */
+int
+xmlCtxtGetInputWindow(xmlParserCtxt *ctxt, int inputIndex,
+                      const xmlChar **startOut,
+                      int *sizeInOut, int *offsetOut) {
+    xmlParserInput *input;
+
+    if (ctxt == NULL || startOut == NULL || sizeInOut == NULL ||
+        offsetOut == NULL)
+        return -1;
+
+    if (inputIndex < 0) {
+        inputIndex += ctxt->inputNr;
+        if (inputIndex < 0)
+            return -1;
+    }
+    if (inputIndex >= ctxt->inputNr)
+        return -1;
+
+    input = ctxt->inputTab[inputIndex];
+
+    xmlParserInputGetWindow(input, startOut, sizeInOut, offsetOut);
 
     return 0;
 }
