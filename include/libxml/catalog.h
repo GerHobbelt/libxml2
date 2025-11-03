@@ -70,42 +70,57 @@ typedef xmlCatalog *xmlCatalogPtr;
 /*
  * Operations on a given catalog.
  */
+XML_DEPRECATED
 XMLPUBFUN xmlCatalog *
 		xmlNewCatalog		(int sgml);
+XML_DEPRECATED
 XMLPUBFUN xmlCatalog *
 		xmlLoadACatalog		(const char *filename);
+#ifdef LIBXML_SGML_CATALOG_ENABLED
+XML_DEPRECATED
 XMLPUBFUN xmlCatalog *
 		xmlLoadSGMLSuperCatalog	(const char *filename);
+XML_DEPRECATED
 XMLPUBFUN int
 		xmlConvertSGMLCatalog	(xmlCatalog *catal);
+#endif /* LIBXML_SGML_CATALOG_ENABLED */
+XML_DEPRECATED
 XMLPUBFUN int
 		xmlACatalogAdd		(xmlCatalog *catal,
 					 const xmlChar *type,
 					 const xmlChar *orig,
 					 const xmlChar *replace);
+XML_DEPRECATED
 XMLPUBFUN int
 		xmlACatalogRemove	(xmlCatalog *catal,
 					 const xmlChar *value);
+XML_DEPRECATED
 XMLPUBFUN xmlChar *
 		xmlACatalogResolve	(xmlCatalog *catal,
 					 const xmlChar *pubID,
 	                                 const xmlChar *sysID);
+XML_DEPRECATED
 XMLPUBFUN xmlChar *
 		xmlACatalogResolveSystem(xmlCatalog *catal,
 					 const xmlChar *sysID);
+XML_DEPRECATED
 XMLPUBFUN xmlChar *
 		xmlACatalogResolvePublic(xmlCatalog *catal,
 					 const xmlChar *pubID);
+XML_DEPRECATED
 XMLPUBFUN xmlChar *
 		xmlACatalogResolveURI	(xmlCatalog *catal,
 					 const xmlChar *URI);
 #ifdef LIBXML_OUTPUT_ENABLED
+XML_DEPRECATED
 XMLPUBFUN void
 		xmlACatalogDump		(xmlCatalog *catal,
 					 FILE *out);
 #endif /* LIBXML_OUTPUT_ENABLED */
+XML_DEPRECATED
 XMLPUBFUN void
 		xmlFreeCatalog		(xmlCatalog *catal);
+XML_DEPRECATED
 XMLPUBFUN int
 		xmlCatalogIsEmpty	(xmlCatalog *catal);
 
@@ -142,8 +157,11 @@ XMLPUBFUN int
 XML_DEPRECATED
 XMLPUBFUN xmlDoc *
 		xmlParseCatalogFile	(const char *filename);
+#ifdef LIBXML_SGML_CATALOG_ENABLED
+XML_DEPRECATED
 XMLPUBFUN int
 		xmlCatalogConvert	(void);
+#endif /* LIBXML_SGML_CATALOG_ENABLED */
 
 /*
  * Strictly minimal interfaces for per-document catalogs used

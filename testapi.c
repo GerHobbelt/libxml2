@@ -152,6 +152,8 @@ main(void) {
     xmlDictFree(xmlCtxtGetDict(NULL));
     xmlCtxtGetDocTypeDecl(NULL, NULL, NULL, NULL);
     xmlFreeDoc(xmlCtxtGetDocument(NULL));
+    xmlCtxtGetInputPosition(NULL, 0, NULL, NULL, NULL, NULL);
+    xmlCtxtGetInputWindow(NULL, 0, NULL, NULL, NULL);
     xmlCtxtGetLastError(NULL);
     xmlFreeNode(xmlCtxtGetNode(NULL));
     xmlCtxtGetOptions(NULL);
@@ -629,7 +631,6 @@ main(void) {
     xmlCatalogAdd(NULL, NULL, NULL);
     xmlCatalogAddLocal(NULL, NULL);
     xmlCatalogCleanup();
-    xmlCatalogConvert();
     xmlCatalogFreeLocal(NULL);
     xmlCatalogGetDefaults();
     xmlCatalogIsEmpty(NULL);
@@ -643,13 +644,11 @@ main(void) {
     xmlCatalogSetDebug(0);
     xmlCatalogSetDefaultPrefer(0);
     xmlCatalogSetDefaults(0);
-    xmlConvertSGMLCatalog(NULL);
     xmlFreeCatalog(NULL);
     xmlInitializeCatalog();
     xmlFreeCatalog(xmlLoadACatalog(NULL));
     xmlLoadCatalog(NULL);
     xmlLoadCatalogs(NULL);
-    xmlFreeCatalog(xmlLoadSGMLSuperCatalog(NULL));
     xmlFreeCatalog(xmlNewCatalog(0));
     xmlFreeDoc(xmlParseCatalogFile(NULL));
 #ifdef LIBXML_OUTPUT_ENABLED
@@ -1099,6 +1098,12 @@ main(void) {
     xmlSchematronSetValidStructuredErrors(NULL, 0, NULL);
     xmlSchematronValidateDoc(NULL, NULL);
 #endif /* LIBXML_SCHEMATRON_ENABLED */
+
+#ifdef LIBXML_SGML_CATALOG_ENABLED
+    xmlCatalogConvert();
+    xmlConvertSGMLCatalog(NULL);
+    xmlFreeCatalog(xmlLoadSGMLSuperCatalog(NULL));
+#endif /* LIBXML_SGML_CATALOG_ENABLED */
 
 #ifdef LIBXML_VALID_ENABLED
     xmlFreeValidCtxt(xmlCtxtGetValidCtxt(NULL));

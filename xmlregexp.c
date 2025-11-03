@@ -473,14 +473,17 @@ static int xmlFAComputesDeterminism(xmlRegParserCtxtPtr ctxt);
  */
 static void*
 xmlRegCalloc2(size_t dim1, size_t dim2, size_t elemSize) {
-    size_t totalSize;
+    size_t numElems, totalSize;
     void *ret;
 
     /* Check for overflow */
     if ((dim2 == 0) || (elemSize == 0) ||
         (dim1 > SIZE_MAX / dim2 / elemSize))
         return (NULL);
-    totalSize = dim1 * dim2 * elemSize;
+    numElems = dim1 * dim2;
+    if (numElems > XML_MAX_ITEMS)
+        return NULL;
+    totalSize = numElems * elemSize;
     ret = xmlMalloc(totalSize);
     if (ret != NULL)
         memset(ret, 0, totalSize);
@@ -4517,6 +4520,22 @@ xmlRegExecErrInfo(xmlRegExecCtxt *exec, const xmlChar **string,
 	    *string = NULL;
     }
     return(xmlRegExecGetValues(exec, 1, nbval, nbneg, values, terminal));
+}
+
+/**
+ * Clear errors in the context, allowing to recover
+ * from errors on specific scenarios
+ *
+ * @param exec  a regexp execution context
+ * @remarks it doesn's reset the last internal libxml2 error
+ */
+void
+xmlRegExecClearErrors(xmlRegExecCtxt* exec) {
+    exec->status = 0;
+    exec->errState = NULL;
+    exec->errStateNo = -1;
+    xmlFree(exec->errString);
+    exec->errString = NULL;
 }
 
 /************************************************************************
