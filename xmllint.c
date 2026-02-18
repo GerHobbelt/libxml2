@@ -33,6 +33,10 @@
   #endif
 #endif
 
+#ifdef LIBXML_ZLIB_ENABLED
+  #include <zlib.h>
+#endif
+
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 #include <libxml/parserInternals.h>
@@ -220,6 +224,7 @@ typedef struct {
 #endif /* LIBXML_READER_ENABLED */
 #ifdef LIBXML_XPATH_ENABLED
     const char *xpathquery;
+    const char *xpathsep;
 #endif
     int parseOptions;
     unsigned appOptions;
@@ -332,10 +337,35 @@ xmllintResourceLoader(void *ctxt, const char *URL,
  *									*
  ************************************************************************/
 
+#ifdef LIBXML_ZLIB_ENABLED
+static int
+xmllintGzRead(void *ctxt, char *buf, int len) {
+    return gzread(ctxt, buf, len);
+}
+
+#ifdef LIBXML_OUTPUT_ENABLED
+static int
+xmllintGzWrite(void *ctxt, const char *buf, int len) {
+    return gzwrite(ctxt, buf, len);
+}
+#endif
+
+static int
+xmllintGzClose(void *ctxt) {
+    if (gzclose(ctxt) != Z_OK)
+        return -1;
+
+    return 0;
+}
+#endif
+
 static xmlDocPtr
 parseXml(xmllintState *lint, const char *filename) {
     xmlParserCtxtPtr ctxt = lint->ctxt;
     xmlDocPtr doc;
+#ifdef LIBXML_ZLIB_ENABLED
+    gzFile gz;
+#endif
 
 #ifdef LIBXML_PUSH_ENABLED
     if (lint->appOptions & XML_LINT_PUSH_ENABLED) {
@@ -383,12 +413,26 @@ parseXml(xmllintState *lint, const char *filename) {
     }
 #endif
 
+#ifdef LIBXML_ZLIB_ENABLED
     if (strcmp(filename, "-") == 0)
-        doc = xmlCtxtReadFd(ctxt, STDIN_FILENO, "-", NULL,
-                            lint->parseOptions | XML_PARSE_UNZIP);
+        gz = gzdopen(STDIN_FILENO, "rb");
     else
-        doc = xmlCtxtReadFile(ctxt, filename, NULL,
-                              lint->parseOptions | XML_PARSE_UNZIP);
+        gz = gzopen(filename, "rb");
+
+    if (gz == NULL) {
+        fprintf(lint->errStream, "Can't open %s\n", filename);
+        lint->progresult = XMLLINT_ERR_RDFILE;
+        return(NULL);
+    }
+
+    doc = xmlCtxtReadIO(ctxt, xmllintGzRead, xmllintGzClose, gz,
+                        filename, NULL, lint->parseOptions);
+#else
+    if (strcmp(filename, "-") == 0)
+        doc = xmlCtxtReadFd(ctxt, STDIN_FILENO, "-", NULL, lint->parseOptions);
+    else
+        doc = xmlCtxtReadFile(ctxt, filename, NULL, lint->parseOptions);
+#endif
 
     return(doc);
 }
@@ -1354,16 +1398,35 @@ static void streamFile(xmllintState *lint, const char *filename) {
     } else
 #endif
     {
+#ifdef LIBXML_ZLIB_ENABLED
+        gzFile gz;
+#endif
+
         xmlResetLastError();
 
+#ifdef LIBXML_ZLIB_ENABLED
+        if (strcmp(filename, "-") == 0)
+            gz = gzdopen(STDIN_FILENO, "rb");
+        else
+            gz = gzopen(filename, "rb");
+
+        if (gz == NULL) {
+            fprintf(lint->errStream, "Can't open %s\n", filename);
+            lint->progresult = XMLLINT_ERR_RDFILE;
+            return;
+        }
+
+        reader = xmlReaderForIO(xmllintGzRead, xmllintGzClose, gz,
+                                filename, NULL, lint->parseOptions);
+#else
         if (strcmp(filename, "-") == 0) {
             reader = xmlReaderForFd(STDIN_FILENO, "-", NULL,
-                                    lint->parseOptions | XML_PARSE_UNZIP);
+                                    lint->parseOptions);
         }
         else {
-            reader = xmlReaderForFile(filename, NULL,
-                                      lint->parseOptions | XML_PARSE_UNZIP);
+            reader = xmlReaderForFile(filename, NULL, lint->parseOptions);
         }
+#endif
         if (reader == NULL) {
             const xmlError *error = xmlGetLastError();
 
@@ -1637,7 +1700,7 @@ doXPathDump(xmllintState *lint, xmlXPathObjectPtr cur) {
             for (i = 0;i < cur->nodesetval->nodeNr;i++) {
                 node = cur->nodesetval->nodeTab[i];
                 xmlNodeDumpOutput(buf, NULL, node, 0, 0, NULL);
-                xmlOutputBufferWrite(buf, 1, "\n");
+                xmlOutputBufferWrite(buf, 1, lint->xpathsep);
             }
             xmlOutputBufferClose(buf);
 #else
@@ -1646,27 +1709,27 @@ doXPathDump(xmllintState *lint, xmlXPathObjectPtr cur) {
 	    break;
         }
         case XPATH_BOOLEAN:
-	    if (cur->boolval) printf("true\n");
-	    else printf("false\n");
+	    if (cur->boolval) printf("true%s", lint->xpathsep);
+	    else printf("false%s", lint->xpathsep);
 	    break;
         case XPATH_NUMBER:
 	    switch (xmlXPathIsInf(cur->floatval)) {
 	    case 1:
-		printf("Infinity\n");
+		printf("Infinity%s", lint->xpathsep);
 		break;
 	    case -1:
-		printf("-Infinity\n");
+		printf("-Infinity%s", lint->xpathsep);
 		break;
 	    default:
 		if (xmlXPathIsNaN(cur->floatval)) {
-		    printf("NaN\n");
+		    printf("NaN%s", lint->xpathsep);
 		} else {
-		    printf("%0g\n", cur->floatval);
+		    printf("%0g%s", cur->floatval, lint->xpathsep);
 		}
 	    }
 	    break;
         case XPATH_STRING:
-	    printf("%s\n", (const char *) cur->stringval);
+	    printf("%s%s", (const char *) cur->stringval, lint->xpathsep);
 	    break;
         case XPATH_UNDEFINED:
 	    fprintf(lint->errStream, "XPath Object is uninitialized\n");
@@ -1937,11 +2000,6 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
 #endif /* LIBXML_READER_ENABLED */
 #ifdef LIBXML_OUTPUT_ENABLED
     if (lint->noout == 0) {
-#ifdef LIBXML_ZLIB_ENABLED
-        if (lint->appOptions & XML_LINT_ZLIB_COMPRESSION)
-            xmlSetDocCompressMode(doc, 9);
-#endif
-
 	/*
 	 * print it.
 	 */
@@ -1996,13 +2054,8 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
 		}
 	    } else
 #endif
-#ifdef LIBXML_ZLIB_ENABLED
-	    if (lint->appOptions & XML_LINT_ZLIB_COMPRESSION) {
-		xmlSaveFile(lint->output ? lint->output : "-", doc);
-	    } else
-#endif
             {
-	        xmlSaveCtxtPtr ctxt;
+	        xmlSaveCtxtPtr ctxt = NULL;
 		int saveOpts = 0;
 
                 if (lint->format == 1)
@@ -2015,12 +2068,28 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
                     saveOpts |= XML_SAVE_AS_XML;
 #endif
 
-		if (lint->output == NULL)
-		    ctxt = xmlSaveToFd(STDOUT_FILENO, lint->encoding,
-                                       saveOpts);
-		else
-		    ctxt = xmlSaveToFilename(lint->output, lint->encoding,
-                                             saveOpts);
+#ifdef LIBXML_ZLIB_ENABLED
+	        if (lint->appOptions & XML_LINT_ZLIB_COMPRESSION) {
+                    gzFile gz;
+
+                    if (lint->output == NULL)
+                        gz = gzdopen(STDOUT_FILENO, "wb9");
+                    else
+                        gz = gzopen(lint->output, "wb9");
+
+                    if (gz != NULL)
+                        ctxt = xmlSaveToIO(xmllintGzWrite, xmllintGzClose, gz,
+                                           lint->encoding, saveOpts);
+                } else
+#endif
+                {
+                    if (lint->output == NULL)
+                        ctxt = xmlSaveToFd(STDOUT_FILENO, lint->encoding,
+                                           saveOpts);
+                    else
+                        ctxt = xmlSaveToFilename(lint->output, lint->encoding,
+                                                 saveOpts);
+                }
 
 		if (ctxt != NULL) {
                     if (lint->indentString != NULL)
@@ -2033,6 +2102,8 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
 		    }
 		    xmlSaveClose(ctxt);
 		} else {
+                    fprintf(errStream, "failed save to %s\n",
+                            lint->output ? lint->output : "-");
 		    lint->progresult = XMLLINT_ERR_OUT;
 		}
 	    }
@@ -2412,7 +2483,8 @@ static void usage(FILE *f, const char *name) {
     fprintf(f, "\t--sax: do not build a tree but work just at the SAX level\n");
     fprintf(f, "\t--oldxml10: use XML-1.0 parsing rules before the 5th edition\n");
 #ifdef LIBXML_XPATH_ENABLED
-    fprintf(f, "\t--xpath expr: evaluate the XPath expression, imply --noout\n");
+    fprintf(f, "\t--xpath expr: evaluate the XPath expression, results are separated by \\n, imply --noout\n");
+    fprintf(f, "\t--xpath0 expr: evaluate the XPath expression, results are separated by \\0, imply --noout\n");
 #endif
     fprintf(f, "\t--max-ampl value: set maximum amplification factor\n");
 
@@ -2480,6 +2552,8 @@ skipArgs(const char *arg) {
 #ifdef LIBXML_XPATH_ENABLED
         (!strcmp(arg, "-xpath")) ||
         (!strcmp(arg, "--xpath")) ||
+        (!strcmp(arg, "-xpath0")) ||
+        (!strcmp(arg, "--xpath0")) ||
 #endif
         (!strcmp(arg, "-max-ampl")) ||
         (!strcmp(arg, "--max-ampl"))
@@ -2810,6 +2884,13 @@ xmllintParseOptions(xmllintState *lint, int argc, const char **argv) {
             i++;
             lint->noout++;
             lint->xpathquery = argv[i];
+            lint->xpathsep = "\n";
+        } else if ((!strcmp(argv[i], "-xpath0")) ||
+                   (!strcmp(argv[i], "--xpath0"))) {
+            i++;
+            lint->noout++;
+            lint->xpathquery = argv[i];
+            lint->xpathsep = "\0";
 #endif
         } else if ((!strcmp(argv[i], "-oldxml10")) ||
                    (!strcmp(argv[i], "--oldxml10"))) {
