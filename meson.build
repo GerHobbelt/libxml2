@@ -5,7 +5,6 @@ project(
     license: 'MIT',
     default_options: [
         meson.version().version_compare('>=1.3.0') ? 'c_std=c11,c99,c89' : 'c_std=c11',
-        'buildtype=debug',
         'warning_level=3',
     ],
     meson_version: '>= 0.61',
@@ -117,6 +116,10 @@ want_sax1 = want_minimum ? feature.enabled() : feature.allowed()
 
 feature = get_option('threads')
 want_threads = want_minimum ? feature.enabled() : feature.allowed()
+
+# auto-enabled on Windows
+feature = get_option('winpath')
+want_winpath = (sys_cygwin or sys_windows) ? feature.allowed() : feature.enabled()
 
 feature = get_option('valid')
 want_valid = want_minimum ? feature.enabled() : feature.allowed()
@@ -513,6 +516,7 @@ checks = {
 # Disabled for now, see #694
 #    'testModule': [],
     'testapi': [],
+    'testcatalog': [],
     'testchar': [],
     'testdict': [],
     'testlimits': [],
@@ -650,6 +654,7 @@ summary(
         'thread-alloc': want_thread_alloc,
         'tls': want_tls,
         'valid': want_valid,
+        'winpath': want_winpath,
         'writer': want_writer,
         'xinclude': want_xinclude,
         'xpath': want_xpath,

@@ -47,6 +47,11 @@ option(LIBXML2_WITH_TESTS "Build tests" ON)
 option(LIBXML2_WITH_THREADS "Add multithread support" ON)
 option(LIBXML2_WITH_TLS "Enable thread-local storage" OFF)
 option(LIBXML2_WITH_VALID "Add the DTD validation support" ON)
+if(WIN32 OR CYGWIN)
+    option(LIBXML2_WITH_WINPATH "Handle Windows-styled path" ON)
+else()
+    option(LIBXML2_WITH_WINPATH "Handle Windows-styled path" OFF)
+endif()
 option(LIBXML2_WITH_XINCLUDE "Add the XInclude support" ON)
 option(LIBXML2_WITH_XPATH "Add the XPATH support" ON)
 
@@ -90,7 +95,7 @@ if(LIBXML2_WITH_PYTHON)
         CACHE PATH "Python bindings install directory")
 endif()
 
-foreach(VARIABLE IN ITEMS WITH_C14N WITH_CATALOG WITH_DEBUG WITH_HTML WITH_HTTP WITH_ICONV WITH_ICU WITH_ISO8859X WITH_MODULES WITH_OUTPUT WITH_PATTERN WITH_PUSH WITH_READER WITH_REGEXPS WITH_RELAXNG WITH_SAX1 WITH_SCHEMAS WITH_SCHEMATRON WITH_THREADS WITH_THREAD_ALLOC WITH_VALID WITH_WRITER WITH_XINCLUDE WITH_XPATH WITH_XPTR WITH_ZLIB)
+foreach(VARIABLE IN ITEMS WITH_C14N WITH_CATALOG WITH_DEBUG WITH_HTML WITH_HTTP WITH_ICONV WITH_ICU WITH_ISO8859X WITH_MODULES WITH_OUTPUT WITH_PATTERN WITH_PUSH WITH_READER WITH_REGEXPS WITH_RELAXNG WITH_SAX1 WITH_SCHEMAS WITH_SCHEMATRON WITH_THREADS WITH_THREAD_ALLOC WITH_VALID WITH_WINPATH WITH_WRITER WITH_XINCLUDE WITH_XPATH WITH_XPTR WITH_ZLIB)
     if(LIBXML2_${VARIABLE})
         set(${VARIABLE} 1)
     else()
@@ -493,6 +498,7 @@ if(LIBXML2_WITH_TESTS)
         runxmlconf
         runsuite
         testapi
+        testcatalog
         testchar
         testdict
         testModule
@@ -515,6 +521,7 @@ if(LIBXML2_WITH_TESTS)
         add_test(NAME runxmlconf COMMAND runxmlconf WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
     endif()
     add_test(NAME testapi COMMAND testapi)
+    add_test(NAME testcatalog COMMAND testcatalog)
     add_test(NAME testchar COMMAND testchar)
     add_test(NAME testdict COMMAND testdict)
     add_test(NAME testparser COMMAND testparser WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
