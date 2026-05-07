@@ -34,7 +34,7 @@
 #endif
 
 #ifdef LIBXML_ZLIB_ENABLED
-  #include <zlib.h>
+  #include <zlib-ng.h>
 #endif
 
 #include <libxml/xmlmemory.h>
@@ -340,19 +340,19 @@ xmllintResourceLoader(void *ctxt, const char *URL,
 #ifdef LIBXML_ZLIB_ENABLED
 static int
 xmllintGzRead(void *ctxt, char *buf, int len) {
-    return gzread(ctxt, buf, len);
+    return zng_gzread(ctxt, buf, len);
 }
 
 #ifdef LIBXML_OUTPUT_ENABLED
 static int
 xmllintGzWrite(void *ctxt, const char *buf, int len) {
-    return gzwrite(ctxt, buf, len);
+    return zng_gzwrite(ctxt, buf, len);
 }
 #endif
 
 static int
 xmllintGzClose(void *ctxt) {
-    if (gzclose(ctxt) != Z_OK)
+    if (zng_gzclose(ctxt) != Z_OK)
         return -1;
 
     return 0;
@@ -415,9 +415,9 @@ parseXml(xmllintState *lint, const char *filename) {
 
 #ifdef LIBXML_ZLIB_ENABLED
     if (strcmp(filename, "-") == 0)
-        gz = gzdopen(STDIN_FILENO, "rb");
+        gz = zng_gzdopen(STDIN_FILENO, "rb");
     else
-        gz = gzopen(filename, "rb");
+        gz = zng_gzopen(filename, "rb");
 
     if (gz == NULL) {
         fprintf(lint->errStream, "Can't open %s\n", filename);
@@ -1406,9 +1406,9 @@ static void streamFile(xmllintState *lint, const char *filename) {
 
 #ifdef LIBXML_ZLIB_ENABLED
         if (strcmp(filename, "-") == 0)
-            gz = gzdopen(STDIN_FILENO, "rb");
+            gz = zng_gzdopen(STDIN_FILENO, "rb");
         else
-            gz = gzopen(filename, "rb");
+            gz = zng_gzopen(filename, "rb");
 
         if (gz == NULL) {
             fprintf(lint->errStream, "Can't open %s\n", filename);
@@ -2073,9 +2073,9 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
                     gzFile gz;
 
                     if (lint->output == NULL)
-                        gz = gzdopen(STDOUT_FILENO, "wb9");
+                        gz = zng_gzdopen(STDOUT_FILENO, "wb9");
                     else
-                        gz = gzopen(lint->output, "wb9");
+                        gz = zng_gzopen(lint->output, "wb9");
 
                     if (gz != NULL)
                         ctxt = xmlSaveToIO(xmllintGzWrite, xmllintGzClose, gz,
