@@ -231,12 +231,13 @@ xmlVUpdateError(xmlError *err,
 void
 xmlGenericErrorDefaultFunc(void *ctx ATTRIBUTE_UNUSED, const char *msg, ...) {
     va_list args;
+    FILE *out = (FILE *) xmlGenericErrorContext;
 
-    if (xmlGenericErrorContext == NULL)
-	xmlGenericErrorContext = (void *) stderr;
+    if (out == NULL)
+	out = stderr;
 
     va_start(args, msg);
-    vfprintf((FILE *)xmlGenericErrorContext, msg, args);
+    vfprintf(out, msg, args);
     va_end(args);
 }
 
