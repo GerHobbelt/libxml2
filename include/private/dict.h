@@ -68,6 +68,8 @@ XML_HIDDEN void
 xmlCleanupRandom(void);
 XML_HIDDEN unsigned
 xmlGlobalRandom(void);
+XML_HIDDEN void
+xmlInitLocalRandom(unsigned *state);
 XML_HIDDEN unsigned
 xmlRandom(void);
 

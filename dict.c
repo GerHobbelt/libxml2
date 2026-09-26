@@ -1025,6 +1025,27 @@ xmlGlobalRandom(void) {
 }
 
 /*
+ * Seed a thread's PRNG state from the global one without modifying it,
+ * mixing in the address of the state, which differs between threads.
+ *
+ * @param state  the thread's PRNG state
+ */
+ATTRIBUTE_NO_SANITIZE_INTEGER
+void
+xmlInitLocalRandom(unsigned *state) {
+    size_t addr = (size_t) state;
+
+    state[0] = globalRngState[0] ^
+               HASH_ROL((unsigned) (addr & 0xFFFFFFFF), 8);
+    state[1] = globalRngState[1] ^
+               HASH_ROL((unsigned) ((addr >> 16) & 0xFFFFFFFF), 24);
+    /* The xoroshiro64** state must not be all zero. */
+    if ((state[0] | state[1]) == 0)
+        state[0] = 1;
+    (void) xoroshiro64ss(state);
+}
+
+/*
  *
  * Generate a pseudo-random value using the thread-local PRNG.
  *

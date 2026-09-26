@@ -751,9 +751,28 @@ __xmlMemStrdup(void) {
 /**
  * @returns the local RNG state.
  */
+#if !defined(LIBXML_THREAD_ENABLED) && defined(XML_THREAD_LOCAL)
+/*
+ * Without thread support, the global state is shared by all threads
+ * that use the library. Parsing always advances the PRNG, to seed
+ * dictionaries and hash tables, so keep its state per thread when the
+ * compiler supports thread-local storage.
+ */
+static XML_THREAD_LOCAL unsigned localRngState[2];
+static XML_THREAD_LOCAL int localRngStateInitialized;
+#endif
+
 unsigned *
 xmlGetLocalRngState(void) {
+#if !defined(LIBXML_THREAD_ENABLED) && defined(XML_THREAD_LOCAL)
+    if (!localRngStateInitialized) {
+        xmlInitLocalRandom(localRngState);
+        localRngStateInitialized = 1;
+    }
+    return(localRngState);
+#else
     return(xmlGetThreadLocalStorage(0)->localRngState);
+#endif
 }
 
 /**
