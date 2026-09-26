@@ -1884,7 +1884,15 @@ typedef enum {
      *
      * @since 2.15.0
      */
-    XML_PARSE_SKIP_IDS = 1<<27
+    XML_PARSE_SKIP_IDS = 1<<27,
+    /**
+     * Report errors only to the parser context and its error
+     * handlers. They are not copied to the global last error
+     * returned by #xmlGetLastError, so parsing leaves no error
+     * state outside the context. Use #xmlCtxtGetLastError to
+     * retrieve the last error.
+     */
+    XML_PARSE_NO_GLOBAL_ERROR = 1<<28
 } xmlParserOption;
 
 XMLPUBFUN void

@@ -637,12 +637,37 @@ void
 xmlRaiseMemoryError(xmlStructuredErrorFunc schannel, xmlGenericErrorFunc channel,
                     void *data, int domain, xmlError *error)
 {
-    xmlError *lastError = xmlGetLastErrorInternal();
+    xmlRaiseMemoryErrorInternal(schannel, channel, data, domain, error, 1);
+}
 
-    xmlResetLastError();
-    lastError->domain = domain;
-    lastError->code = XML_ERR_NO_MEMORY;
-    lastError->level = XML_ERR_FATAL;
+/**
+ * Like #xmlRaiseMemoryError, but the global error structure is only
+ * updated if `updateGlobal` is set. Otherwise, `error` is the error
+ * passed to the error handler.
+ *
+ * @param schannel  the structured callback channel
+ * @param channel  the old callback channel
+ * @param data  the callback data
+ * @param domain  the domain for the error
+ * @param error  optional error struct to be filled
+ * @param updateGlobal  whether to update the global error structure
+ */
+void
+xmlRaiseMemoryErrorInternal(xmlStructuredErrorFunc schannel,
+                            xmlGenericErrorFunc channel, void *data,
+                            int domain, xmlError *error, int updateGlobal)
+{
+    xmlError *reported = error;
+
+    if ((updateGlobal) || (error == NULL)) {
+        xmlError *lastError = xmlGetLastErrorInternal();
+
+        xmlResetLastError();
+        lastError->domain = domain;
+        lastError->code = XML_ERR_NO_MEMORY;
+        lastError->level = XML_ERR_FATAL;
+        reported = lastError;
+    }
 
     if (error != NULL) {
         xmlResetError(error);
@@ -652,9 +677,9 @@ xmlRaiseMemoryError(xmlStructuredErrorFunc schannel, xmlGenericErrorFunc channel
     }
 
     if (schannel != NULL) {
-        schannel(data, lastError);
+        schannel(data, reported);
     } else if (xmlStructuredError != NULL) {
-        xmlStructuredError(xmlStructuredErrorContext, lastError);
+        xmlStructuredError(xmlStructuredErrorContext, reported);
     } else if (channel != NULL) {
         channel(data, "libxml2: out of memory\n");
     }
@@ -719,7 +744,8 @@ xmlVRaiseError(xmlStructuredErrorFunc schannel,
                         str1, str2, str3, int1, col, msg, ap))
         return(-1);
 
-    if (to != lastError) {
+    if ((to != lastError) &&
+        ((ctxt->options & XML_PARSE_NO_GLOBAL_ERROR) == 0)) {
         if (xmlCopyError(to, lastError) < 0)
             return(-1);
     }

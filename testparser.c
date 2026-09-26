@@ -91,6 +91,38 @@ testUnsupportedEncoding(void) {
 }
 
 static int
+testNoGlobalError(void) {
+    xmlParserCtxtPtr ctxt;
+    xmlDocPtr doc;
+    const xmlError *error;
+    int err = 0;
+
+    xmlResetLastError();
+
+    ctxt = xmlNewParserCtxt();
+    doc = xmlCtxtReadDoc(ctxt, BAD_CAST "<doc>", NULL, NULL,
+                         XML_PARSE_NOERROR | XML_PARSE_NO_GLOBAL_ERROR);
+    if (doc != NULL) {
+        fprintf(stderr, "Unfinished document was parsed\n");
+        err = 1;
+    }
+    error = xmlCtxtGetLastError(ctxt);
+    if ((error == NULL) || (error->code != XML_ERR_TAG_NOT_FINISHED)) {
+        fprintf(stderr, "Parser context has wrong last error\n");
+        err = 1;
+    }
+    if (xmlGetLastError() != NULL) {
+        fprintf(stderr, "XML_PARSE_NO_GLOBAL_ERROR set the global error\n");
+        err = 1;
+    }
+
+    xmlFreeDoc(doc);
+    xmlFreeParserCtxt(ctxt);
+
+    return err;
+}
+
+static int
 testNodeGetContent(void) {
     xmlDocPtr doc;
     xmlChar *content;
@@ -1799,6 +1831,7 @@ main(void) {
     err |= testNewDocNode();
     err |= testStandaloneWithEncoding();
     err |= testUnsupportedEncoding();
+    err |= testNoGlobalError();
     err |= testNodeGetContent();
     err |= testCFileIO();
     err |= testUndeclEntInContent();

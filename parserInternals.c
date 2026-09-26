@@ -203,8 +203,9 @@ xmlCtxtErrMemory(xmlParserCtxt *ctxt)
         data = ctxt->userData;
     }
 
-    xmlRaiseMemoryError(schannel, channel, data, XML_FROM_PARSER,
-                        &ctxt->lastError);
+    xmlRaiseMemoryErrorInternal(schannel, channel, data, XML_FROM_PARSER,
+                                &ctxt->lastError,
+                                (ctxt->options & XML_PARSE_NO_GLOBAL_ERROR) == 0);
 }
 
 /**

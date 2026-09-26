@@ -13204,7 +13204,8 @@ xmlCtxtSetOptionsInternal(xmlParserCtxtPtr ctxt, int options, int keepMask)
               XML_PARSE_NO_XXE |
               XML_PARSE_UNZIP |
               XML_PARSE_NO_SYS_CATALOG |
-              XML_PARSE_CATALOG_PI;
+              XML_PARSE_CATALOG_PI |
+              XML_PARSE_NO_GLOBAL_ERROR;
 
     ctxt->options = (ctxt->options & keepMask) | (options & allMask);
 

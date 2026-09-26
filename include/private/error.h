@@ -16,6 +16,10 @@ xmlIsCatastrophicError(int level, int code);
 XML_HIDDEN void
 xmlRaiseMemoryError(xmlStructuredErrorFunc schannel, xmlGenericErrorFunc channel,
                     void *data, int domain, xmlError *error);
+XML_HIDDEN void
+xmlRaiseMemoryErrorInternal(xmlStructuredErrorFunc schannel,
+                            xmlGenericErrorFunc channel, void *data,
+                            int domain, xmlError *error, int updateGlobal);
 XML_HIDDEN int
 xmlVRaiseError(xmlStructuredErrorFunc schannel, xmlGenericErrorFunc channel,
                void *data, void *ctx, struct _xmlNode *node,
