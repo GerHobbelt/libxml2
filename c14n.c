@@ -1722,8 +1722,7 @@ xmlC14NFreeCtx(xmlC14NCtxPtr ctx)
  * @param mode  the c14n mode (see `xmlC14NMode`)
  * @param inclusive_ns_prefixes  the list of inclusive namespace prefixes
  *			ended with a NULL or NULL if there is no
- *			inclusive namespaces (only for `
- *			canonicalization)
+ *			inclusive namespaces (only for canonicalization)
  * @param with_comments  	include comments in the result (!=0) or not (==0)
  * @param buf  		the output buffer to store canonical XML; this
  *			buffer MUST have encoder==NULL because C14N requires

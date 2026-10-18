@@ -44,8 +44,10 @@
 #undef ERROR
 #endif
 #define ERROR(str)							\
-    ctxt->error = XML_REGEXP_COMPILE_ERROR;				\
-    xmlRegexpErrCompile(ctxt, str);
+    if (ctxt->error == 0) {						\
+        ctxt->error = XML_REGEXP_COMPILE_ERROR;				\
+        xmlRegexpErrCompile(ctxt, str);					\
+    }
 #define NEXT ctxt->cur++
 #define CUR (*(ctxt->cur))
 #define NXT(index)									\
@@ -4976,6 +4978,7 @@ xmlFAParseCharRange(xmlRegParserCtxtPtr ctxt) {
     int cur, len;
     int start = -1;
     int end = -1;
+    int start_escaped = 0;
 
     if (CUR == '\0') {
         ERROR("Expecting ']'");
@@ -4984,6 +4987,7 @@ xmlFAParseCharRange(xmlRegParserCtxtPtr ctxt) {
 
     cur = CUR;
     if (cur == '\\') {
+	start_escaped = 1;
 	NEXT;
 	cur = CUR;
 	switch (cur) {
@@ -5023,7 +5027,7 @@ xmlFAParseCharRange(xmlRegParserCtxtPtr ctxt) {
      * Since we are "inside" a range, we can assume ctxt->cur is past
      * the start of ctxt->string, and PREV should be safe
      */
-    if ((start == '-') && (NXT(1) != ']') && (PREV != '[') && (PREV != '^')) {
+    if ((start == '-') && (!start_escaped) && (NXT(1) != ']') && (PREV != '[') && (PREV != '^')) {
 	NEXTL(len);
 	return;
     }
@@ -5032,6 +5036,10 @@ xmlFAParseCharRange(xmlRegParserCtxtPtr ctxt) {
     if ((cur != '-') || (NXT(1) == '[') || (NXT(1) == ']')) {
         xmlRegAtomAddRange(ctxt, ctxt->atom, ctxt->neg,
 		              XML_REGEXP_CHARVAL, start, end, NULL);
+	return;
+    }
+    if ((start == '-') && (!start_escaped)) {
+	ERROR("Unescaped '-' can't be the start of a range");
 	return;
     }
     NEXT;
@@ -5063,6 +5071,10 @@ xmlFAParseCharRange(xmlRegParserCtxtPtr ctxt) {
     } else if ((cur != '\0') && (cur != 0x5B) && (cur != 0x5D)) {
         len = 4;
         end = xmlGetUTF8Char(ctxt->cur, &len);
+        if (end == '-') {
+            ERROR("Unescaped '-' can't be the end of a range");
+            return;
+        }
         if (end < 0) {
             ERROR("Invalid UTF-8");
             return;
