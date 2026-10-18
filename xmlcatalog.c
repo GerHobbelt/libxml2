@@ -409,6 +409,11 @@ int main(int argc, const char** argv) {
 	    usage(argv[0]);
 	    return(1);
 	}
+	if (i > argc) {
+	    fprintf(stderr, "Missing arguments for option\n");
+	    usage(argv[0]);
+	    return(1);
+	}
     }
 
     for (i = 1; i < argc; i++) {
