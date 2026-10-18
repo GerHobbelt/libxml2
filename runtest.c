@@ -29,7 +29,7 @@
 #endif
 
 #ifdef LIBXML_ZLIB_ENABLED
-#include <zlib.h>
+#include <zlib-ng.h>
 #endif
 
 #include <libxml/parser.h>
