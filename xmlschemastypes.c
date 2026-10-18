@@ -1796,16 +1796,25 @@ xmlSchemaValidateDates (xmlSchemaValType type,
     xmlSchemaValPtr dt;
     int ret;
     const xmlChar *cur = dateTime;
+    const xmlChar *start;
 
 #define RETURN_TYPE_IF_VALID(t)					\
     if (IS_TZO_CHAR(*cur)) {					\
 	ret = _xmlSchemaParseTimeZone(&(dt->value.date), &cur);	\
 	if (ret == 0) {						\
+	    if (collapse)					\
+		while IS_WSP_BLANK_CH(*cur) cur++;		\
 	    if (*cur != 0)					\
 		goto error;					\
 	    dt->type = t;					\
 	    goto done;						\
 	}							\
+    } else if (collapse && IS_WSP_BLANK_CH(*cur)) {		\
+	while IS_WSP_BLANK_CH(*cur) cur++;			\
+	if (*cur != 0)						\
+	    goto error;						\
+	dt->type = t;						\
+	goto done;						\
     }
 
     if (dateTime == NULL)
@@ -1813,6 +1822,8 @@ xmlSchemaValidateDates (xmlSchemaValType type,
 
     if (collapse)
 	while IS_WSP_BLANK_CH(*cur) cur++;
+
+    start = cur;
 
     if ((*cur != '-') && (*cur < '0') && (*cur > '9'))
 	return 1;
@@ -1904,7 +1915,7 @@ xmlSchemaValidateDates (xmlSchemaValType type,
     }
 
     /* fallback on date parsing */
-    cur = dateTime;
+    cur = start;
 
     ret = _xmlSchemaParseGYear(&(dt->value.date), &cur);
     if (ret != 0)
@@ -1944,7 +1955,8 @@ xmlSchemaValidateDates (xmlSchemaValType type,
     if (ret != 0)
 	goto error;
 
-    ret = _xmlSchemaParseTimeZone(&(dt->value.date), &cur);
+    if (IS_TZO_CHAR(*cur))
+	ret = _xmlSchemaParseTimeZone(&(dt->value.date), &cur);
     if (collapse)
 	while IS_WSP_BLANK_CH(*cur) cur++;
     if ((ret != 0) || (*cur != 0) || (!(VALID_DATETIME((&(dt->value.date))))))
@@ -2049,6 +2061,13 @@ xmlSchemaValidateDuration (xmlSchemaTypePtr type ATTRIBUTE_UNUSED,
         size_t         has_digits = 0;
         int            has_frac = 0;
         const xmlChar  desig[] = {'Y', 'M', 'D', 'H', 'M', 'S'};
+
+        if (collapse && IS_WSP_BLANK_CH(*cur)) {
+            while IS_WSP_BLANK_CH(*cur) cur++;
+            if (*cur != 0)
+                goto error;
+            break;
+        }
 
         /* input string should be empty or invalid date/time item */
         if (seq >= sizeof(desig))

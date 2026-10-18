@@ -1352,7 +1352,7 @@ xmlParseXMLCatalogNode(xmlNodePtr cur, xmlCatalogPrefer prefer,
 		BAD_CAST "nextCatalog", NULL,
 		BAD_CAST "catalog", prefer, cgroup);
 	/* Avoid duplication of nextCatalog */
-	while (prev != NULL) {
+	while ((entry != NULL) && (prev != NULL)) {
 	    if ((prev->type == XML_CATA_NEXT_CATALOG) &&
 		(xmlStrEqual (prev->URL, entry->URL)) &&
 		(prev->prefer == entry->prefer) &&
