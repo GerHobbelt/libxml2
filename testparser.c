@@ -1792,7 +1792,7 @@ testRemoveParamEntityExtSubset(void) {
     return err;
 }
 
-int
+
 
 #if defined(BUILD_MONOLITHIC)
 #define main      xml_testparser_main
