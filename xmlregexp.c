@@ -222,6 +222,7 @@ struct _xmlRegRange {
     int start;
     int end;
     xmlChar *blockName;
+    int inv;
 };
 
 typedef struct _xmlRegAtom xmlRegAtom;
@@ -761,11 +762,12 @@ xmlRegNewParserCtxt(const xmlChar *string) {
  * @param type  the type of range
  * @param start  the start codepoint
  * @param end  the end codepoint
+ * @param inv  the range type is inverted (p vs P)
  * @returns the new range or NULL in case of error
  */
 static xmlRegRangePtr
 xmlRegNewRange(xmlRegParserCtxtPtr ctxt,
-	       int neg, xmlRegAtomType type, int start, int end) {
+	       int neg, xmlRegAtomType type, int start, int end, int inv) {
     xmlRegRangePtr ret;
 
     ret = (xmlRegRangePtr) xmlMalloc(sizeof(xmlRegRange));
@@ -777,6 +779,7 @@ xmlRegNewRange(xmlRegParserCtxtPtr ctxt,
     ret->type = type;
     ret->start = start;
     ret->end = end;
+    ret->inv = inv;
     return(ret);
 }
 
@@ -810,7 +813,7 @@ xmlRegCopyRange(xmlRegParserCtxtPtr ctxt, xmlRegRangePtr range) {
 	return(NULL);
 
     ret = xmlRegNewRange(ctxt, range->neg, range->type, range->start,
-                         range->end);
+                         range->end, range->inv);
     if (ret == NULL)
         return(NULL);
     if (range->blockName != NULL) {
@@ -1400,7 +1403,7 @@ xmlRegexpPrintInternal(FILE *output, xmlRegexpPtr regexp) {
 static xmlRegRangePtr
 xmlRegAtomAddRange(xmlRegParserCtxtPtr ctxt, xmlRegAtomPtr atom,
 	           int neg, xmlRegAtomType type, int start, int end,
-		   xmlChar *blockName) {
+		   xmlChar *blockName, int inv) {
     xmlRegRangePtr range;
 
     if (atom == NULL) {
@@ -1429,7 +1432,7 @@ xmlRegAtomAddRange(xmlRegParserCtxtPtr ctxt, xmlRegAtomPtr atom,
 	atom->ranges = tmp;
 	atom->maxRanges = newSize;
     }
-    range = xmlRegNewRange(ctxt, neg, type, start, end);
+    range = xmlRegNewRange(ctxt, neg, type, start, end, inv);
     if (range == NULL)
 	return(NULL);
     range->blockName = blockName;
@@ -3212,21 +3215,21 @@ xmlRegCheckCharacter(xmlRegAtomPtr atom, int codepoint) {
 		range = atom->ranges[i];
 		if (range->neg == 2) {
 		    ret = xmlRegCheckCharacterRange(range->type, codepoint,
-						0, range->start, range->end,
+						range->inv, range->start, range->end,
 						range->blockName);
 		    if (ret != 0)
 			return(0); /* excluded char */
 		} else if (range->neg) {
 		    ret = xmlRegCheckCharacterRange(range->type, codepoint,
-						0, range->start, range->end,
+						range->inv, range->start, range->end,
 						range->blockName);
 		    if (ret == 0)
 		        accept = 1;
-		    else
-		        return(0);
+                    else
+                        return(0);
 		} else {
 		    ret = xmlRegCheckCharacterRange(range->type, codepoint,
-						0, range->start, range->end,
+						range->inv, range->start, range->end,
 						range->blockName);
 		    if (ret != 0)
 			accept = 1; /* might still be excluded */
@@ -4589,9 +4592,10 @@ xmlFAIsChar(xmlRegParserCtxtPtr ctxt) {
  * [36]   IsBlock   ::=   'Is' [a-zA-Z0-9\#x2D]+
  *
  * @param ctxt  a regexp parser context
+ * @param inv   1 if it's inverted (p = 0, P = 1)
  */
 static void
-xmlFAParseCharProp(xmlRegParserCtxtPtr ctxt) {
+xmlFAParseCharProp(xmlRegParserCtxtPtr ctxt, int inv) {
     int cur;
     xmlRegAtomType type = (xmlRegAtomType) 0;
     xmlChar *blockName = NULL;
@@ -4789,6 +4793,7 @@ xmlFAParseCharProp(xmlRegParserCtxtPtr ctxt) {
 	ERROR("Unknown char property");
 	return;
     }
+
     if (ctxt->atom == NULL) {
 	ctxt->atom = xmlRegNewAtom(ctxt, type);
         if (ctxt->atom == NULL) {
@@ -4798,7 +4803,7 @@ xmlFAParseCharProp(xmlRegParserCtxtPtr ctxt) {
 	ctxt->atom->valuep = blockName;
     } else if (ctxt->atom->type == XML_REGEXP_RANGES) {
         if (xmlRegAtomAddRange(ctxt, ctxt->atom, ctxt->neg,
-                               type, 0, 0, blockName) == NULL) {
+                               type, 0, 0, blockName, inv) == NULL) {
             xmlFree(blockName);
         }
     }
@@ -4865,7 +4870,7 @@ xmlFAParseCharClassEsc(xmlRegParserCtxtPtr ctxt) {
 	    ctxt->atom = xmlRegNewAtom(ctxt, XML_REGEXP_ANYCHAR);
 	} else if (ctxt->atom->type == XML_REGEXP_RANGES) {
 	    xmlRegAtomAddRange(ctxt, ctxt->atom, ctxt->neg,
-			       XML_REGEXP_ANYCHAR, 0, 0, NULL);
+			       XML_REGEXP_ANYCHAR, 0, 0, NULL, 0);
 	}
 	NEXT;
 	return;
@@ -4883,7 +4888,7 @@ xmlFAParseCharClassEsc(xmlRegParserCtxtPtr ctxt) {
 	    return;
 	}
 	NEXT;
-	xmlFAParseCharProp(ctxt);
+	xmlFAParseCharProp(ctxt, 0);
 	if (CUR != '}') {
 	    ERROR("Expecting '}'");
 	    return;
@@ -4896,7 +4901,7 @@ xmlFAParseCharClassEsc(xmlRegParserCtxtPtr ctxt) {
 	    return;
 	}
 	NEXT;
-	xmlFAParseCharProp(ctxt);
+	xmlFAParseCharProp(ctxt, 1);
         if (ctxt->atom != NULL)
 	    ctxt->atom->neg = 1;
 	if (CUR != '}') {
@@ -4970,7 +4975,7 @@ xmlFAParseCharClassEsc(xmlRegParserCtxtPtr ctxt) {
                     break;
             }
 	    xmlRegAtomAddRange(ctxt, ctxt->atom, ctxt->neg,
-			       XML_REGEXP_CHARVAL, cur, cur, NULL);
+			       XML_REGEXP_CHARVAL, cur, cur, NULL, 0);
 	}
 	NEXT;
     } else if ((cur == 's') || (cur == 'S') || (cur == 'i') || (cur == 'I') ||
@@ -5015,7 +5020,7 @@ xmlFAParseCharClassEsc(xmlRegParserCtxtPtr ctxt) {
 	    ctxt->atom = xmlRegNewAtom(ctxt, type);
 	} else if (ctxt->atom->type == XML_REGEXP_RANGES) {
 	    xmlRegAtomAddRange(ctxt, ctxt->atom, ctxt->neg,
-			       type, 0, 0, NULL);
+			       type, 0, 0, NULL, 0);
 	}
     } else {
 	ERROR("Wrong escape sequence, misuse of character '\\'");
@@ -5095,7 +5100,7 @@ xmlFAParseCharRange(xmlRegParserCtxtPtr ctxt) {
     cur = CUR;
     if ((cur != '-') || (NXT(1) == '[') || (NXT(1) == ']')) {
         xmlRegAtomAddRange(ctxt, ctxt->atom, ctxt->neg,
-		              XML_REGEXP_CHARVAL, start, end, NULL);
+		              XML_REGEXP_CHARVAL, start, end, NULL, 0);
 	return;
     }
     if ((start == '-') && (!start_escaped)) {
@@ -5150,7 +5155,7 @@ xmlFAParseCharRange(xmlRegParserCtxtPtr ctxt) {
     } else {
         NEXTL(len);
         xmlRegAtomAddRange(ctxt, ctxt->atom, ctxt->neg,
-		           XML_REGEXP_CHARVAL, start, end, NULL);
+		           XML_REGEXP_CHARVAL, start, end, NULL, 0);
     }
 }
 
