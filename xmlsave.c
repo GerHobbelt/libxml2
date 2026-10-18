@@ -1075,7 +1075,7 @@ xmlNodeDumpOutputInternal(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
         case XML_TEXT_NODE:
 	    if (cur->content == NULL)
                 break;
-	    if (cur->name != xmlStringTextNoenc) {
+	    if (cur->name != xmlStringTextNoenc()) {
                 if (ctxt->escape)
                     xmlOutputBufferWriteEscape(buf, cur->content,
                                                ctxt->escape);
@@ -1686,8 +1686,8 @@ xhtmlNodeDumpOutput(xmlSaveCtxtPtr ctxt, xmlNodePtr cur) {
         case XML_TEXT_NODE:
 	    if (cur->content == NULL)
                 break;
-	    if ((cur->name == xmlStringText) ||
-		(cur->name != xmlStringTextNoenc)) {
+	    if ((cur->name == xmlStringText()) ||
+		(cur->name != xmlStringTextNoenc())) {
                 if (ctxt->escape)
                     xmlOutputBufferWriteEscape(buf, cur->content,
                                                ctxt->escape);
@@ -2623,7 +2623,7 @@ xmlSaveFormatFileEnc( const char * filename, xmlDoc *cur,
     if (cur == NULL)
 	return(-1);
 
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
     if (cur->compression < 0) cur->compression = xmlGetCompressMode();
 #endif
     /*

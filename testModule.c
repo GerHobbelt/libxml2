@@ -12,6 +12,12 @@
 #include <stdio.h>
 #include <libxml/xmlversion.h>
 
+#include <libxml/monolithic_examples.h>
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_testmodule_main(cnt, arr)
+#endif
+
 #ifdef LIBXML_MODULES_ENABLED
 
 #include <limits.h>
@@ -37,13 +43,13 @@
 #ifdef _POSIX_PATH_MAX
 #define PATH_MAX _POSIX_PATH_MAX
 #else
-#define PATH_MAX 4096
+#define PATH_MAX 1024
 #endif
 #endif
 
 typedef int (*hello_world_t)(void);
 
-int main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
+int main(int argc, const char** argv) {
     xmlChar filename[PATH_MAX];
     xmlModulePtr module = NULL;
     hello_world_t hello_world = NULL;
@@ -77,7 +83,8 @@ int main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
 }
 
 #else
-int main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
+
+int main(int argc, const char** argv) {
     printf("%s : Module support not compiled in\n", argv[0]);
     return(0);
 }

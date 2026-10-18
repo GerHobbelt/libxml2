@@ -282,7 +282,7 @@ typedef enum {
 
 /** @cond IGNORE */
 /* For backward compatibility */
-#define XML_DOCB_DOCUMENT_NODE 21
+#define XML_DOCB_DOCUMENT_NODE      error!: "b0rked DocBook support has been dropped from libxml"
 /** @endcond */
 
 /** Notation declaration */

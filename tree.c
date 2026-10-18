@@ -18,14 +18,18 @@
 #define IN_LIBXML
 #include "libxml.h"
 
+#include <assert.h>
 #include <string.h> /* for memset() only ! */
 #include <stddef.h>
 #include <limits.h>
 #include <ctype.h>
 #include <stdlib.h>
 
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) && !defined(LIBXML_ZLIB_NG_ENABLED)
 #include <zlib.h>
+#endif
+#ifdef LIBXML_ZLIB_NG_ENABLED
+#include <zlib-ng.h>
 #endif
 
 #include <libxml/tree.h>
@@ -88,12 +92,24 @@ xmlUnlinkNodeInternal(xmlNodePtr cur);
  *									*
  ************************************************************************/
 /* #undef xmlStringText */
-const xmlChar xmlStringText[] = { 't', 'e', 'x', 't', 0 };
+const xmlChar *xmlStringText(void)
+{
+	static const xmlChar s[] = { 't', 'e', 'x', 't', 0 };
+	return s;
+}
 /* #undef xmlStringTextNoenc */
-const xmlChar xmlStringTextNoenc[] =
+const xmlChar *xmlStringTextNoenc(void)
+{
+	static const xmlChar s[] =
               { 't', 'e', 'x', 't', 'n', 'o', 'e', 'n', 'c', 0 };
+	return s;
+}
 /* #undef xmlStringComment */
-const xmlChar xmlStringComment[] = { 'c', 'o', 'm', 'm', 'e', 'n', 't', 0 };
+const xmlChar *xmlStringComment(void)
+{
+	static const xmlChar s[] = { 'c', 'o', 'm', 'm', 'e', 'n', 't', 0 };
+	return s;
+}
 
 static int xmlCompressMode = 0;
 
@@ -2046,7 +2062,7 @@ xmlNewText(const xmlChar *content) {
     memset(cur, 0, sizeof(xmlNode));
     cur->type = XML_TEXT_NODE;
 
-    cur->name = xmlStringText;
+    cur->name = xmlStringText();
     if (content != NULL) {
 	cur->content = xmlStrdup(content);
         if (cur->content == NULL)
@@ -2297,7 +2313,7 @@ xmlNewTextLen(const xmlChar *content, int len) {
     memset(cur, 0, sizeof(xmlNode));
     cur->type = XML_TEXT_NODE;
 
-    cur->name = xmlStringText;
+    cur->name = xmlStringText();
     if (content != NULL) {
 	cur->content = xmlStrndup(content, len);
         if (cur->content == NULL) {
@@ -2351,7 +2367,7 @@ xmlNewComment(const xmlChar *content) {
     memset(cur, 0, sizeof(xmlNode));
     cur->type = XML_COMMENT_NODE;
 
-    cur->name = xmlStringComment;
+    cur->name = xmlStringComment();
     if (content != NULL) {
 	cur->content = xmlStrdup(content);
         if (cur->content == NULL)
@@ -2596,6 +2612,10 @@ xmlSetTreeDoc(xmlNode *tree, xmlDoc *doc) {
         xmlAttrPtr prop = tree->properties;
 
         while (prop != NULL) {
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+                if (prop->doc)
+                    assert(xmlDictOwns(prop->doc->dict, prop->name) != 1);
+#endif
             if (prop->children != NULL) {
                 if (xmlSetListDoc(prop->children, doc) < 0)
                     ret = -1;
@@ -2613,6 +2633,14 @@ xmlSetTreeDoc(xmlNode *tree, xmlDoc *doc) {
         if (xmlSetListDoc(tree->children, doc) < 0)
             ret = -1;
     }
+
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+        if (tree->doc) {
+            assert(xmlDictOwns(tree->doc->dict, tree->name) != 1);
+            assert(xmlDictOwns(tree->doc->dict, tree->content) != 1);
+        }
+        assert(tree->ns == NULL);
+#endif
 
     if (xmlNodeSetDoc(tree, doc) < 0)
         ret = -1;
@@ -3677,7 +3705,7 @@ xmlCopyPropInternal(xmlDocPtr doc, xmlNodePtr target, xmlAttrPtr cur) {
     ret->parent = target;
 
     if ((cur->ns != NULL) && (target != NULL)) {
-      xmlNsPtr ns;
+      xmlNsPtr ns = NULL;
       int res;
 
       res = xmlSearchNsSafe(target, cur->ns->prefix, &ns);
@@ -3897,12 +3925,12 @@ xmlStaticCopyNode(xmlNode *node, xmlDoc *doc, xmlNode *parent,
 
     ret->doc = doc;
     ret->parent = parent;
-    if (node->name == xmlStringText)
-	ret->name = xmlStringText;
-    else if (node->name == xmlStringTextNoenc)
-	ret->name = xmlStringTextNoenc;
-    else if (node->name == xmlStringComment)
-	ret->name = xmlStringComment;
+    if (node->name == xmlStringText())
+	ret->name = xmlStringText();
+    else if (node->name == xmlStringTextNoenc())
+	ret->name = xmlStringTextNoenc();
+    else if (node->name == xmlStringComment())
+	ret->name = xmlStringComment();
     else if (node->name != NULL) {
         if ((doc != NULL) && (doc->dict != NULL))
 	    ret->name = xmlDictLookup(doc->dict, node->name, -1);
@@ -4115,6 +4143,8 @@ xmlStaticCopyNodeList(xmlNode *node, xmlDoc *doc, xmlNode *parent) {
         doc->intSubset = newSubset;
     return(ret);
 error:
+    if (linkedSubset != 0)
+        xmlUnlinkNode((xmlNodePtr) doc->intSubset);
     xmlFreeNodeList(ret);
     if (newSubset != NULL)
         xmlFreeDtd(newSubset);
@@ -4919,7 +4949,7 @@ xmlNodeSetName(xmlNode *cur, const xmlChar *name) {
  */
 int
 xmlNodeSetBase(xmlNode *cur, const xmlChar* uri) {
-    xmlNsPtr ns;
+    xmlNsPtr ns = NULL;
     xmlChar* fixed;
 
     if (cur == NULL)
@@ -5742,7 +5772,7 @@ xmlSearchNsSafe(xmlNode *node, const xmlChar *prefix,
 xmlNs *
 xmlSearchNs(xmlDoc *doc ATTRIBUTE_UNUSED, xmlNode *node,
             const xmlChar *nameSpace) {
-    xmlNsPtr cur;
+    xmlNsPtr cur = NULL;
 
     xmlSearchNsSafe(node, nameSpace, &cur);
     return(cur);
@@ -5891,7 +5921,7 @@ xmlSearchNsByHrefSafe(xmlNode *node, const xmlChar *href,
 xmlNs *
 xmlSearchNsByHref(xmlDoc *doc ATTRIBUTE_UNUSED, xmlNode *node,
                   const xmlChar * href) {
-    xmlNsPtr cur;
+    xmlNsPtr cur = NULL;
 
     xmlSearchNsByHrefSafe(node, href, &cur);
     return(cur);
@@ -5912,7 +5942,7 @@ xmlSearchNsByHref(xmlDoc *doc ATTRIBUTE_UNUSED, xmlNode *node,
  */
 static xmlNsPtr
 xmlNewReconciledNs(xmlNodePtr tree, xmlNsPtr ns) {
-    xmlNsPtr def;
+    xmlNsPtr def = NULL;
     xmlChar prefix[50];
     int counter = 1;
     int res;
@@ -8296,17 +8326,17 @@ xmlDOMWrapCloneNode(xmlDOMWrapCtxt *ctxt,
 	/*
 	* Clone the name of the node if any.
 	*/
-	if (cur->name == xmlStringText)
-	    clone->name = xmlStringText;
-	else if (cur->name == xmlStringTextNoenc)
+	if (cur->name == xmlStringText())
+	    clone->name = xmlStringText();
+	else if (cur->name == xmlStringTextNoenc())
 	    /*
-	    * NOTE: Although xmlStringTextNoenc is never assigned to a node
+	    * NOTE: Although xmlStringTextNoenc() is never assigned to a node
 	    *   in tree.c, it might be set in Libxslt via
 	    *   "xsl:disable-output-escaping".
 	    */
-	    clone->name = xmlStringTextNoenc;
-	else if (cur->name == xmlStringComment)
-	    clone->name = xmlStringComment;
+	    clone->name = xmlStringTextNoenc();
+	else if (cur->name == xmlStringComment())
+	    clone->name = xmlStringComment();
 	else if (cur->name != NULL) {
             if (dict != NULL)
                 clone->name = xmlDictLookup(dict, cur->name, -1);

@@ -26,6 +26,8 @@
 #include <libxml/xmlreader.h>
 #endif
 
+#include <libxml/monolithic_examples.h>
+
 static int verbose = 0;
 static int tests_quiet = 0;
 
@@ -1229,8 +1231,12 @@ runcrazy(void) {
     return(ret);
 }
 
-int
-main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_testlimits_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     int i, a, ret = 0;
     int subset = 0;
     char *endptr;

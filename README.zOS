@@ -58,7 +58,7 @@ July 2017
  bin_PROGRAMS = xmllint$(EXEEXT) xmlcatalog$(EXEEXT)
 @@ -106,6 +106,7 @@
  	debugXML.c xpath.c xpointer.c xinclude.c nanohttp.c nanoftp.c \
- 	DOCBparser.c catalog.c globals.c threads.c c14n.c xmlstring.c \
+ 	catalog.c globals.c threads.c c14n.c xmlstring.c \
  	buf.c xmlregexp.c xmlschemas.c xmlschemastypes.c xmlunicode.c \
 +        xmlsche.c xmlschet.c \
  	triostr.c trio.c xmlreader.c relaxng.c dict.c SAX2.c \

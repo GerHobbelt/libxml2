@@ -29,6 +29,8 @@
 #include <libxml/xmlschemas.h>
 #include <libxml/xmlschemastypes.h>
 
+#include <libxml/monolithic_examples.h>
+
 #define LOGFILE "runsuite.log"
 #define EXPECTED_XMP_ERROR_COUNT 3
 
@@ -42,9 +44,19 @@ static int verbose = 0;
  ************************************************************************/
 
 static int checkTestFile(const char *filename) {
+#if defined(_MSC_VER) && _MSC_VER >= 1500
+    struct _stat64 buf;
+#else
     struct stat buf;
+#endif
 
-    if (stat(filename, &buf) == -1)
+    if (
+#if defined(_MSC_VER) && _MSC_VER >= 1500
+        _stat64(filename, &buf)
+#else
+        stat(filename, &buf)
+#endif
+        == -1)
         return(0);
 
 #if defined(_WIN32)
@@ -1201,8 +1213,12 @@ done:
  *									*
  ************************************************************************/
 
-int
-main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_runsuite_tests_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     int ret = 0;
     int old_errors, old_tests, old_leaks;
 #ifdef LIBXML_RELAXNG_ENABLED
@@ -1346,8 +1362,11 @@ main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
     return(ret);
 }
 #else /* !RELAXNG && !SCHEMAS */
-int
-main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_runsuite_tests_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
     fprintf(stderr, "runsuite requires support for schemas and xpath in libxml2\n");
 }
 #endif

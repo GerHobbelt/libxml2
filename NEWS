@@ -680,6 +680,101 @@ v2.13.1: Jun 19 2024
 - doc: Don't mention xmlNewInputURL
 
 
+
+
+v2.13.4: Sep 18 2024
+
+### Regressions
+
+- parser: Make unsupported encodings an error in declarations
+- io: don't set the executable bit when creating files (triallax)
+- xmlcatalog: Improved fix for #699
+- Revert "catalog: Fetch XML catalog before dumping"
+- io: Add missing calls to xmlInitParser
+- tree: Restore return value of xmlNodeListGetString with NULL list
+- parser: Fix error handling after reaching limit
+- parser: Make xmlParseChunk return an error if parser was stopped
+
+### Bug fixes
+
+- python: Fix SAX driver with character streams
+
+### Improvements
+
+- xpath: Make recursion check work with xmlXPathCompile
+- parser: Report at least one fatal error
+
+### Portability
+
+- include: Check whether _MSC_VER is defined
+
+
+v2.13.3: Jul 24 2024
+
+### Security
+
+- [CVE-2024-40896] Fix XXE protection in downstream code
+
+### Regressions
+
+- autotools: Use AC_CHECK_DECL to check for getentropy
+- xinclude: Fix fallback for text includes
+- io: Don't call getcwd in xmlParserGetDirectory
+- io: Fix return value of xmlFileRead
+- parser: Fix error return of xmlParseBalancedChunkMemory
+
+### Improvements
+
+- xinclude: Set error handler when parsing text
+- Undeprecate xmlKeepBlanksDefault
+
+
+v2.13.2: Jul 4 2024
+
+### Regressions
+
+- tree: Fix handling of empty strings in xmlNodeParseContent
+- valid: Restore ID lookup
+- parser: Reenable ctxt->directory
+- uri: Handle filesystem paths in xmlBuildRelativeURISafe
+- encoding: Make xmlFindCharEncodingHandler return UTF-8 handler
+- encoding: Fix encoding lookup with xmlOpenCharEncodingHandler
+- include: Define ATTRIBUTE_UNUSED for clang
+- uri: Fix xmlBuildURI with NULL base
+
+### Improvements
+
+- uri: Enable Windows paths on Cygwin
+- tests: Clarify licence of test/intsubset2.xml
+
+
+v2.13.1: Jun 19 2024
+
+### Regressions
+
+- parser: Selectively reenable reading from "-"
+- reader: Fix xmlTextReaderReadString
+- xinclude: Set XPath context doc
+- xinclude: Load included documents with XML_PARSE_DTDLOAD
+- include: Don't redefine ATTRIBUTE_UNUSED
+- include: Readd circular dependency between tree.h and parser.h
+- xinclude: Add missing include (Jan Alexander Steffens (heftig))
+- win32, msvc: fix missing linking against Bcrypt.lib (Miklos Vajna)
+- xinclude: Don't raise error on empty nodeset
+- parser: Make failure to load main document a warning
+- tree: Fix freeing entities via xmlFreeNode
+- parser: Pass global object to sax->setDocumentLocator
+
+### Improvements
+
+- io: Fix resetting xmlParserInputBufferCreateFilename hook
+
+### Documentation
+
+- Fix typo in NEWS (--with-html -> --with-http) (Ryan Carsten Schmidt)
+- doc: Don't mention xmlNewInputURL
+
+
 v2.13.0: Jun 12 2024
 
 ### Major changes
@@ -959,6 +1054,53 @@ v2.12.4: Jan 15 2024
 - parser: Fix build --without-output
 - parser: Don't grow or shrink pull parser memory buffers
 - io: Fix memory lifetime issue with input buffers
+
+
+v2.12.3: Dec 12 2023
+
+### Regressions
+
+- parser: Fix namespaces redefined from default attributes
+
+### Build fixes
+
+- include: Rename XML_EMPTY helper macro
+- include: Move declaration of xmlInitGlobals
+- include: Add missing includes
+- include: Move globals from xmlsave.h to parser.h
+- include: Readd circular dependency between tree.h and parser.h
+
+
+v2.12.2: Dec 5 2023
+
+### Regressions
+
+- parser: Fix invalid free in xmlParseBalancedChunkMemoryRecover
+- globals: Disable TLS in static Windows builds
+- html: Reenable buggy detection of XML declarations
+- tree: Fix regression when copying DTDs
+- parser: Make CRLF increment line number
+
+### Build fixes
+
+- build: Disable compiler TLS by default
+- cmake: Update config.h.cmake.in
+- tests: Fix tests --with-valid --without-xinclude
+
+
+v2.12.1: Nov 23 2023
+
+### Regressions
+
+- hash: Fix deletion of entries during scan
+- parser: Only enable SAX2 if there are SAX2 element handlers
+
+### Build fixes
+
+- autotools: Stop checking for snprintf
+- dict: Fix '__thread' before 'static'
+- fix: pthread weak references in globals.c (Mike Dalessio)
+- tests: Fix build with older MSVC
 
 
 v2.12.3: Dec 12 2023

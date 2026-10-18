@@ -10,6 +10,12 @@
 #include <stdio.h>
 #include <libxml/xmlversion.h>
 
+#include <libxml/monolithic_examples.h>
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_runxmlconfig_main(cnt, arr)
+#endif
+
 #if defined(LIBXML_XPATH_ENABLED) && defined(LIBXML_VALID_ENABLED)
 
 #include <string.h>
@@ -45,9 +51,19 @@ static const char *const skipped_tests[] = {
  ************************************************************************/
 
 static int checkTestFile(const char *filename) {
+#if defined(_MSC_VER) && _MSC_VER >= 1500
+    struct _stat64 buf;
+#else
     struct stat buf;
+#endif
 
-    if (stat(filename, &buf) == -1)
+    if (
+#if defined(_MSC_VER) && _MSC_VER >= 1500
+        _stat64(filename, &buf)
+#else
+        stat(filename, &buf)
+#endif
+        == -1)
         return(0);
 
 #if defined(_WIN32)
@@ -544,8 +560,7 @@ xmlconfTest(const char *dir) {
  *									*
  ************************************************************************/
 
-int
-main(int argc, char **argv) {
+int main(int argc, const char** argv) {
     int ret = 0;
     int old_errors, old_tests, old_leaks;
     const char *dir = "xmlconf";
@@ -605,8 +620,8 @@ main(int argc, char **argv) {
 }
 
 #else /* ! LIBXML_XPATH_ENABLED */
-int
-main(int argc ATTRIBUTE_UNUSED, char **argv) {
+
+int main(int argc ATTRIBUTE_UNUSED, const char** argv) {
     fprintf(stderr, "%s need XPath and validation support\n", argv[0]);
     return(0);
 }

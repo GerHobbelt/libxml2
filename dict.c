@@ -16,6 +16,14 @@
  * Author: Daniel Veillard
  */
 
+// https://docs.microsoft.com/en-us/cpp/porting/modifying-winver-and-win32-winnt?view=msvc-170
+// fix for missing WINNT defines:
+#include <sdkddkver.h>
+
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT	_WIN32_WINNT_WIN10
+#endif
+
 #define IN_LIBXML
 #include "libxml.h"
 

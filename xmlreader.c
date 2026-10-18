@@ -18,6 +18,7 @@
 #include "libxml.h"
 
 #ifdef LIBXML_READER_ENABLED
+
 #include <string.h> /* for memset() only ! */
 #include <stdarg.h>
 #include <ctype.h>
@@ -26,6 +27,7 @@
 #include <libxml/xmlmemory.h>
 #include <libxml/xmlIO.h>
 #include <libxml/xmlreader.h>
+#include <libxml/parser.h>
 #include <libxml/parserInternals.h>
 #ifdef LIBXML_RELAXNG_ENABLED
 #include <libxml/relaxng.h>
@@ -50,6 +52,9 @@
 #ifdef LIBXML_XINCLUDE_ENABLED
 #include "private/xinclude.h"
 #endif
+
+#include <libxml/monolithic_examples.h>
+
 
 #ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
 /* Keeping free objects can hide memory errors. */
@@ -1951,7 +1956,7 @@ xmlTextReaderNextSibling(xmlTextReader *reader) {
     if (reader == NULL)
         return(-1);
     if (reader->doc == NULL) {
-        /* TODO */
+        /* TODO(); */
 	return(-1);
     }
 
@@ -3827,7 +3832,7 @@ xmlTextReaderPreserve(xmlTextReader *reader) {
     }
     reader->preserves++;
 
-    parent = cur->parent;;
+    parent = cur->parent;
     while (parent != NULL) {
         if (parent->type == XML_ELEMENT_NODE)
 	    parent->extra |= NODE_IS_PRESERVED;

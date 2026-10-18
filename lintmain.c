@@ -8,7 +8,16 @@
 
 #include "private/lint.h"
 
-int
-main(int argc, char **argv) {
-    return(xmllintMain(argc, (const char **) argv, stderr, NULL));
+
+#ifndef XMLLINT_FUZZ
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_xmllint_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv) {
+    return xmllintMain(argc, argv, stderr, NULL);
 }
+
+#endif
+

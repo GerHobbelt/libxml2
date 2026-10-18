@@ -38,6 +38,12 @@
   #define STDIN_FILENO 0
 #endif
 
+#include <libxml/monolithic_examples.h>
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      xml_xmlcatalog_main(cnt, arr)
+#endif
+
 #if defined(LIBXML_CATALOG_ENABLED) && defined(LIBXML_OUTPUT_ENABLED)
 static int shell = 0;
 #ifdef LIBXML_SGML_CATALOG_ENABLED
@@ -52,7 +58,7 @@ static int convert = 0;
 static int no_super_update = 0;
 #endif
 static int verbose = 0;
-static char *filename = NULL;
+static const char *filename = NULL;
 
 
 #ifdef LIBXML_SGML_CATALOG_ENABLED
@@ -349,7 +355,8 @@ static void usage(const char *name) {
 #endif
 "\t-v --verbose : provide debug information\n");
 }
-int main(int argc, char **argv) {
+
+int main(int argc, const char** argv) {
     int i;
     int ret;
     int exit_value = 0;
@@ -365,7 +372,7 @@ int main(int argc, char **argv) {
 	return(1);
     }
 
-    LIBXML_TEST_VERSION
+	LIBXML_TEST_VERSION();
     for (i = 1; i < argc ; i++) {
 	if (!strcmp(argv[i], "-"))
 	    break;
@@ -683,7 +690,8 @@ int main(int argc, char **argv) {
     return(exit_value);
 }
 #else
-int main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
+
+int main(int argc, const char** argv) {
     fprintf(stderr, "libxml was not compiled with catalog and output support\n");
     return(1);
 }

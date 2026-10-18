@@ -15,7 +15,7 @@
  * Symbol visibility
  */
 
-#if (defined(_WIN32) || defined(__CYGWIN__)) && !defined(LIBXML_STATIC)
+#if (defined(_WIN32) || defined(__CYGWIN__)) && !defined(LIBXML_STATIC) && !defined(BUILD_MONOLITHIC)
   #if defined(IN_LIBXML)
     #define XMLPUBFUN __declspec(dllexport)
     #define XMLPUBVAR __declspec(dllexport) extern
@@ -87,11 +87,11 @@
 extern "C" {
 #endif
 
-XMLPUBFUN void xmlCheckVersion(int version);
+XMLPUBFUN void XMLCALL xmlCheckVersion(int version);
 
 #ifdef __cplusplus
 }
-#endif
+#endif /* __cplusplus */
 
 #endif /* __XML_EXPORTS_H__ */
 

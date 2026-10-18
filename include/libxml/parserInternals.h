@@ -127,6 +127,7 @@ extern "C" {
  *     [3] S ::= (#x20 | #x9 | #xD | #xA)+
  * @param c  an UNICODE value (int)
  */
+#undef IS_BLANK /* [i_a] collision with xsldbg\src\libxsldbg\utils.h */
 #define IS_BLANK(c)  xmlIsBlankQ(c)
 
 /**
@@ -249,10 +250,11 @@ extern "C" {
  * Global variables used for predefined strings.
  */
 /** @cond ignore */
-XMLPUBVAR const xmlChar xmlStringText[];
-XMLPUBVAR const xmlChar xmlStringTextNoenc[];
+// [i_a] MSVC2010 in pedantic mode gives a warning for const globals which are not initialized; fixed to make sure these work across DLL/DLO boundaries, even for modern optimizing compilers.
+XMLPUBFUN const xmlChar *xmlStringText(void);
+XMLPUBFUN const xmlChar *xmlStringTextNoenc(void);
 XML_DEPRECATED
-XMLPUBVAR const xmlChar xmlStringComment[];
+XMLPUBFUN const xmlChar *xmlStringComment(void);
 /** @endcond */
 
 XML_DEPRECATED

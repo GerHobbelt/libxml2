@@ -515,6 +515,16 @@ xmlSchemaCleanupTypesInternal(void) {
     /* Note that the xmlSchemaType*Def pointers aren't set to NULL. */
 }
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#if defined(NAN) && defined(INFINITY)
+#pragma warning(disable: 4056) // overflow in floating-point constant arithmetic
+#pragma warning(disable: 4756) // overflow in constant arithmetic
+#else
+#pragma warning(disable: 4723) // potential divide by 0
+#endif
+#endif
+
 static xmlMutex xmlSchemasTypesMutex;
 
 void
@@ -550,9 +560,10 @@ xmlSchemaInitTypes(void)
     xmlSchemaPINF = INFINITY;
     xmlSchemaNINF = -INFINITY;
 #else
+    /* MSVC doesn't allow division by zero in constant expressions. */
+    double zero = 0.0;
+
     {
-        /* MSVC doesn't allow division by zero in constant expressions. */
-        double zero = 0.0;
         xmlSchemaNAN = 0.0 / zero;
         xmlSchemaPINF = 1.0 / zero;
         xmlSchemaNINF = -xmlSchemaPINF;
@@ -881,6 +892,10 @@ error:
     xmlMutexUnlock(&xmlSchemasTypesMutex);
     return (-1);
 }
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 /**
  * Cleanup the default XML Schemas type library

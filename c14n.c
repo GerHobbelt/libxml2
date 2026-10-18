@@ -2024,8 +2024,8 @@ xmlC14NDocSave(xmlDoc *doc, xmlNodeSet *nodes,
         xmlC14NErrParam(NULL);
         return (-1);
     }
-#ifdef LIBXML_ZLIB_ENABLED
-    if (compression < 0)
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
+	if (compression < 0)
         compression = xmlGetCompressMode();
 #endif
 

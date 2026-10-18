@@ -38,6 +38,8 @@
 #include "private/error.h"
 #include "private/memory.h"
 
+#include <libxml/monolithic_examples.h>
+
 #define SCHEMATRON_PARSE_OPTIONS XML_PARSE_NOENT
 
 #define SCT_OLD_NS BAD_CAST "http://www.ascc.net/xml/schematron"

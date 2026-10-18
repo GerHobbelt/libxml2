@@ -1227,7 +1227,7 @@ struct _xmlSAXHandlerV1 {
     errorSAXFunc error;
     fatalErrorSAXFunc fatalError; /* unused error() get all the errors */
     getParameterEntitySAXFunc getParameterEntity;
-    cdataBlockSAXFunc cdataBlock;
+    /* mutable */ cdataBlockSAXFunc cdataBlock;
     externalSubsetSAXFunc externalSubset;
     unsigned int initialized;
 };
@@ -1263,7 +1263,7 @@ XMLPUBVAR const xmlSAXLocator xmlDefaultSAXLocator;
  * @deprecated Use #xmlSAXVersion or #xmlSAX2InitDefaultSAXHandler
  */
 XML_DEPRECATED
-XMLPUBVAR const xmlSAXHandlerV1 xmlDefaultSAXHandler;
+XMLPUBVAR /* const */ xmlSAXHandlerV1 xmlDefaultSAXHandler;
 #endif
 
 XML_DEPRECATED

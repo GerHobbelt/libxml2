@@ -25,8 +25,11 @@
   #include <unistd.h>
 #endif
 
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) && !defined(LIBXML_ZLIB_NG_ENABLED)
 #include <zlib.h>
+#endif
+#ifdef LIBXML_ZLIB_NG_ENABLED
+#include <zlib-ng.h>
 #endif
 
 #include <libxml/xmlIO.h>
@@ -550,7 +553,7 @@ xmlIOErr(int err)
 #ifdef EADDRINUSE
         case EADDRINUSE: code = XML_IO_EADDRINUSE; break;
 #endif
-#ifdef EALREADY
+#if defined(EALREADY) && (!defined(EBUSY) || EALREADY != EBUSY)
         case EALREADY: code = XML_IO_EALREADY; break;
 #endif
 #ifdef EAFNOSUPPORT
@@ -634,8 +637,8 @@ xmlNormalizeWindowsPath(const xmlChar *path)
 int
 xmlCheckFilename(const char *path)
 {
-#if defined(_WIN32)
-    struct _stat stat_buffer;
+#if defined(_MSC_VER) && _MSC_VER >= 1500
+    struct _stat64 stat_buffer;
 #else
     struct stat stat_buffer;
 #endif
@@ -659,7 +662,11 @@ xmlCheckFilename(const char *path)
         wpath = __xmlIOWin32UTF8ToWChar(path);
         if (wpath == NULL)
             return(0);
+#if defined(_MSC_VER) && _MSC_VER >= 1500
+        res = _wstat64(wpath, &stat_buffer);
+#else
         res = _wstat(wpath, &stat_buffer);
+#endif
         xmlFree(wpath);
     }
 #else
@@ -1084,7 +1091,7 @@ xmlBufferWrite (void * context, const char * buffer, int len) {
 }
 #endif
 
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
 /************************************************************************
  *									*
  *		I/O for compressed file accesses			*
@@ -1103,7 +1110,7 @@ static int
 xmlGzfileRead (void * context, char * buffer, int len) {
     int ret;
 
-    ret = gzread((gzFile) context, &buffer[0], len);
+    ret = zng_gzread((gzFile) context, &buffer[0], len);
     if (ret < 0)
         return(-XML_IO_UNKNOWN);
     return(ret);
@@ -1122,7 +1129,7 @@ static int
 xmlGzfileWrite (void * context, const char * buffer, int len) {
     int ret;
 
-    ret = gzwrite((gzFile) context, (char *) &buffer[0], len);
+    ret = zng_gzwrite((gzFile) context, (char *) &buffer[0], len);
     if (ret < 0)
         return(-XML_IO_UNKNOWN);
     return(ret);
@@ -1136,7 +1143,7 @@ xmlGzfileWrite (void * context, const char * buffer, int len) {
  */
 static int
 xmlGzfileClose (void * context) {
-    if (gzclose((gzFile) context) != Z_OK)
+    if (zng_gzclose((gzFile) context) != Z_OK)
         return(XML_IO_UNKNOWN);
     return(0);
 }
@@ -1207,12 +1214,12 @@ xmlInputFromFd(xmlParserInputBuffer *buf, int fd,
         if (copy == -1)
             return(xmlIOErr(errno));
 
-        gzStream = gzdopen(copy, "rb");
+        gzStream = zng_gzdopen(copy, "rb");
 
         if (gzStream == NULL) {
             close(copy);
         } else {
-            int compressed = (gzdirect(gzStream) == 0);
+            int compressed = (zng_gzdirect(gzStream) == 0);
 
             if ((compressed) ||
                 /* Try to rewind if not gzip compressed */
@@ -1222,6 +1229,7 @@ xmlInputFromFd(xmlParserInputBuffer *buf, int fd,
                  * If a file isn't seekable, we pipe uncompressed
                  * input through zlib.
                  */
+				zng_gzrewind(gzStream);
                 buf->context = gzStream;
                 buf->readcallback = xmlGzfileRead;
                 buf->closecallback = xmlGzfileClose;
@@ -1287,7 +1295,7 @@ xmlOutputDefaultOpen(xmlOutputBufferPtr buf, const char *filename,
         char mode[15];
 
         snprintf(mode, sizeof(mode), "wb%d", compression);
-        gzStream = gzdopen(fd, mode);
+        gzStream = zng_gzdopen(fd, mode);
 
         if (gzStream == NULL) {
             close(fd);

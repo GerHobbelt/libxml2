@@ -41,7 +41,7 @@
 #define MAX_PUSH 10000000
 
 #ifdef ERROR
-#undef ERROR
+#undef ERROR /* [i_a] Win32 defines this one in winGDI.h :-( */
 #endif
 #define ERROR(str)							\
     if (ctxt->error == 0) {						\
@@ -2999,6 +2999,7 @@ xmlRegCheckCharacterRange(xmlRegAtomType type, int codepoint, int neg,
 		   (codepoint == '_') || (codepoint == ':') ||
 		   IS_COMBINING(codepoint) || IS_EXTENDER(codepoint));
 	    break;
+#ifdef LIBXML_UNICODE_ENABLED
         case XML_REGEXP_NOTDECIMAL:
 	    neg = !neg;
             /* Falls through. */
@@ -3128,6 +3129,65 @@ xmlRegCheckCharacterRange(xmlRegAtomType type, int codepoint, int neg,
         case XML_REGEXP_BLOCK_NAME:
 	    ret = xmlUCSIsBlock(codepoint, (const char *) blockName);
 	    break;
+#else
+		case XML_REGEXP_NOTDECIMAL:
+			neg = !neg;
+			/* Falls through. */
+		case XML_REGEXP_DECIMAL:
+			ret = isdigit(codepoint);
+			break;
+		case XML_REGEXP_REALCHAR:
+			neg = !neg;
+			/* Falls through. */
+		case XML_REGEXP_NOTREALCHAR:
+			ret = (codepoint < 0x20 || codepoint == 0x7F);
+			break;
+		case XML_REGEXP_LETTER:
+			ret = isalpha(codepoint);
+			break;
+		case XML_REGEXP_LETTER_UPPERCASE:
+			ret = (codepoint >= 'A' && codepoint <= 'Z');
+			break;
+		case XML_REGEXP_LETTER_LOWERCASE:
+			ret = (codepoint >= 'a' && codepoint <= 'z');
+			break;
+		case XML_REGEXP_LETTER_TITLECASE:
+			ret = (codepoint >= 'A' && codepoint <= 'Z');
+			break;
+		case XML_REGEXP_MARK:
+			ret = (codepoint > 0x20) && !isalpha(codepoint) && !isdigit(codepoint);
+			break;
+		case XML_REGEXP_NUMBER:
+			ret = isdigit(codepoint);
+			break;
+		case XML_REGEXP_NUMBER_DECIMAL:
+			ret = isdigit(codepoint);
+			break;
+		case XML_REGEXP_NUMBER_LETTER:
+			ret = isalpha(codepoint) || isdigit(codepoint);
+			break;
+		case XML_REGEXP_PUNCT:
+			ret = !!strchr("~!()[]{}|\\:;.,<>?/`'\"", codepoint);
+			break;
+		case XML_REGEXP_PUNCT_DASH:
+			ret = (codepoint == '-');
+			break;
+		case XML_REGEXP_PUNCT_OPEN:
+			ret = !!strchr("([{`'\"", codepoint);
+			break;
+		case XML_REGEXP_PUNCT_CLOSE:
+			ret = !!strchr(")]}`'\"", codepoint);
+			break;
+		case XML_REGEXP_PUNCT_INITQUOTE:
+			ret = !!strchr("`'\"", codepoint);
+			break;
+		case XML_REGEXP_PUNCT_FINQUOTE:
+			ret = !!strchr("`'\"", codepoint);
+			break;
+#endif
+		default:
+		ret = -1;
+		break;
     }
     if (neg)
 	return(!ret);

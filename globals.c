@@ -190,25 +190,62 @@ static xmlGlobalState globalState;
  *									*
  ************************************************************************/
 
+/*
+ * Memory allocation routines
+ */
+
 /**
  * a strdup implementation with a type signature matching POSIX
  *
  * @param cur  the input char *
  * @returns a new xmlChar * or NULL
  */
-static char *
+static char * XMLCALL
 xmlPosixStrdup(const char *cur) {
     return((char*) xmlCharStrdup(cur));
 }
 
-/*
- * Memory allocation routines
- */
+/* [i_a] make sure MS and other platforms always do the linkage right, irrespective of whether you're using dynamic loadable of statically linked runtime libs */
+static void XMLCALL lcl_xmlFreeFunc(void *mem) { free(mem); }
+static void * LIBXML_ATTR_ALLOC_SIZE(1) XMLCALL lcl_xmlMallocFunc(size_t size) { return malloc(size); }
+static void * XMLCALL lcl_xmlReallocFunc(void *mem, size_t size) { return realloc(mem, size); }
 
-xmlFreeFunc xmlFree = free;
-xmlMallocFunc xmlMalloc = malloc;
-xmlMallocFunc xmlMallocAtomic = malloc;
-xmlReallocFunc xmlRealloc = realloc;
+/**
+ * The variable holding the libxml free() implementation
+ *
+ * @param mem  an already allocated block of memory
+ */
+xmlFreeFunc xmlFree = lcl_xmlFreeFunc;
+/**
+ * The variable holding the libxml malloc() implementation
+ *
+ * @param size  the size requested in bytes
+ * @returns a pointer to the newly allocated block or NULL in case of error
+ */
+xmlMallocFunc xmlMalloc = lcl_xmlMallocFunc;
+/**
+ * The variable holding the libxml malloc() implementation for atomic
+ * data (i.e. blocks not containing pointers), useful when using a
+ * garbage collecting allocator.
+ *
+ * @param size  the size requested in bytes
+ * @returns a pointer to the newly allocated block or NULL in case of error
+ */
+xmlMallocFunc xmlMallocAtomic = lcl_xmlMallocFunc;
+/**
+ * The variable holding the libxml realloc() implementation
+ *
+ * @param mem  an already allocated block of memory
+ * @param size  the new size requested in bytes
+ * @returns a pointer to the newly reallocated block or NULL in case of error
+ */
+xmlReallocFunc xmlRealloc = lcl_xmlReallocFunc;
+/**
+ * The variable holding the libxml strdup() implementation
+ *
+ * @param str  a zero terminated string
+ * @returns the copy of the string or NULL in case of error
+ */
 xmlStrdupFunc xmlMemStrdup = xmlPosixStrdup;
 
 /*
@@ -249,7 +286,7 @@ static int xmlSaveNoEmptyTagsThrDef = 0;
  * versions.
  *
  */
-const xmlSAXHandlerV1 xmlDefaultSAXHandler = {
+/* const */ xmlSAXHandlerV1 xmlDefaultSAXHandler = {
     xmlSAX2InternalSubset,
     xmlSAX2IsStandalone,
     xmlSAX2HasInternalSubset,

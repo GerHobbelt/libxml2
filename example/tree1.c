@@ -13,6 +13,12 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
+#include <libxml/monolithic_examples.h>
+
+#if defined(BUILD_MONOLITHIC)
+#define main      xml_tree1_example_main
+#endif
+
 /*
  *To compile this file using gcc you can type
  *gcc `xml2-config --cflags --libs` -o xmlexample libxml2-example.c
@@ -46,7 +52,7 @@ print_element_names(xmlNode * a_node)
  * xml elements nodes.
  */
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
     xmlDoc *doc = NULL;
     xmlNode *root_element = NULL;
@@ -59,7 +65,7 @@ main(int argc, char **argv)
      * between the version it was compiled for and the actual shared
      * library used.
      */
-    LIBXML_TEST_VERSION
+    LIBXML_TEST_VERSION();
 
     /*parse the file and get the DOM */
     doc = xmlReadFile(argv[1], NULL, 0);

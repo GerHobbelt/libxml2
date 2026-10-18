@@ -335,15 +335,15 @@ xmlCtxtGenericNodeCheck(xmlDebugCtxtPtr ctxt, xmlNodePtr node) {
 	    xmlCtxtCheckName(ctxt, node->name);
 	    break;
         case XML_TEXT_NODE:
-	    if ((node->name == xmlStringText) ||
-	        (node->name == xmlStringTextNoenc))
+	    if ((node->name == xmlStringText()) ||
+	        (node->name == xmlStringTextNoenc()))
 		break;
 	    xmlDebugErr3(ctxt, XML_CHECK_WRONG_NAME,
 			 "Text node has wrong name '%s'",
 			 (const char *) node->name);
 	    break;
         case XML_COMMENT_NODE:
-	    if (node->name == xmlStringComment)
+	    if (node->name == xmlStringComment())
 		break;
 	    xmlDebugErr3(ctxt, XML_CHECK_WRONG_NAME,
 			 "Comment node has wrong name '%s'",
@@ -862,7 +862,7 @@ xmlCtxtDumpOneNode(xmlDebugCtxtPtr ctxt, xmlNodePtr node)
         case XML_TEXT_NODE:
             if (!ctxt->check) {
                 xmlCtxtDumpSpaces(ctxt);
-                if (node->name == (const xmlChar *) xmlStringTextNoenc)
+                if (node->name == xmlStringTextNoenc())
                     fprintf(ctxt->output, "TEXT no enc");
                 else
                     fprintf(ctxt->output, "TEXT");

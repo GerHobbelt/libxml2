@@ -18,6 +18,14 @@
 #pragma convert("ISO8859-1")
 #endif
 
+#ifdef _WIN32
+// hotfix for link-time collision when large application uses both libexpat and libxml2: collision on double-defined system symbol (function): __ucrt_int_to_float
+// collision happens in debug builds when the compiler decides the `inline` directive for that one does not apply, at least not today.
+//
+// See system's processthreadapi.h for the definition of the offending inline function: Microsoft didn't include a `static` modifier there and that's what was killing us.
+#  define __ucrt_int_to_float __ucrt_int_to_float_4xml2
+#endif
+
 #define IN_LIBXML
 #include "libxml.h"
 
@@ -173,6 +181,11 @@ double xmlXPathNAN = 0.0;
 double xmlXPathPINF = 0.0;
 double xmlXPathNINF = 0.0;
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4723) // potential divide by 0
+#endif
+
 /**
  * @deprecated Alias for #xmlInitParser.
  */
@@ -192,6 +205,15 @@ xmlXPathSFComputeHash(const xmlChar *name) {
 
     return(hashValue);
 }
+
+#ifdef _MSC_VER
+#if defined(NAN) && defined(INFINITY)
+#pragma warning(disable: 4056) // overflow in floating-point constant arithmetic
+#pragma warning(disable: 4756) // overflow in constant arithmetic
+#else
+#pragma warning(disable: 4723) // potential divide by 0
+#endif
+#endif
 
 /**
  * Initialize the XPath environment
@@ -233,6 +255,10 @@ xmlInitXPathInternal(void) {
         xmlXPathSFHash[bucketIndex] = i;
     }
 }
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 /************************************************************************
  *									*

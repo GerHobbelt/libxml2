@@ -39,6 +39,9 @@
 #include "private/threads.h"
 #include "private/xpath.h"
 
+#include <libxml/monolithic_examples.h>
+
+
 /*
  * TODO: this module still uses malloc/free and not xmlMalloc/xmlFree
  *       to avoid some craziness since xmlMalloc/xmlFree may actually

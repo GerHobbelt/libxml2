@@ -34,7 +34,7 @@
 #endif
 
 #ifdef LIBXML_ZLIB_ENABLED
-  #include <zlib.h>
+  #include <zlib-ng.h>
 #endif
 
 #include <libxml/xmlmemory.h>
@@ -74,6 +74,9 @@
 #endif
 
 #include "private/lint.h"
+
+
+#include <libxml/monolithic_examples.h>
 
 #ifndef STDIN_FILENO
   #define STDIN_FILENO 0
@@ -341,19 +344,19 @@ xmllintResourceLoader(void *ctxt, const char *URL,
 #ifdef LIBXML_ZLIB_ENABLED
 static int
 xmllintGzRead(void *ctxt, char *buf, int len) {
-    return gzread(ctxt, buf, len);
+    return zng_gzread(ctxt, buf, len);
 }
 
 #ifdef LIBXML_OUTPUT_ENABLED
 static int
 xmllintGzWrite(void *ctxt, const char *buf, int len) {
-    return gzwrite(ctxt, buf, len);
+    return zng_gzwrite(ctxt, buf, len);
 }
 #endif
 
 static int
 xmllintGzClose(void *ctxt) {
-    if (gzclose(ctxt) != Z_OK)
+    if (zng_gzclose(ctxt) != Z_OK)
         return -1;
 
     return 0;
@@ -416,9 +419,9 @@ parseXml(xmllintState *lint, const char *filename) {
 
 #ifdef LIBXML_ZLIB_ENABLED
     if (strcmp(filename, "-") == 0)
-        gz = gzdopen(STDIN_FILENO, "rb");
+        gz = zng_gzdopen(STDIN_FILENO, "rb");
     else
-        gz = gzopen(filename, "rb");
+        gz = zng_gzopen(filename, "rb");
 
     if (gz == NULL) {
         fprintf(lint->errStream, "Can't open %s\n", filename);
@@ -1407,9 +1410,9 @@ static void streamFile(xmllintState *lint, const char *filename) {
 
 #ifdef LIBXML_ZLIB_ENABLED
         if (strcmp(filename, "-") == 0)
-            gz = gzdopen(STDIN_FILENO, "rb");
+            gz = zng_gzdopen(STDIN_FILENO, "rb");
         else
-            gz = gzopen(filename, "rb");
+            gz = zng_gzopen(filename, "rb");
 
         if (gz == NULL) {
             fprintf(lint->errStream, "Can't open %s\n", filename);
@@ -2074,9 +2077,9 @@ parseAndPrintFile(xmllintState *lint, const char *filename) {
                     gzFile gz;
 
                     if (lint->output == NULL)
-                        gz = gzdopen(STDOUT_FILENO, "wb9");
+                        gz = zng_gzdopen(STDOUT_FILENO, "wb9");
                     else
-                        gz = gzopen(lint->output, "wb9");
+                        gz = zng_gzopen(lint->output, "wb9");
 
                     if (gz != NULL)
                         ctxt = xmlSaveToIO(xmllintGzWrite, xmllintGzClose, gz,
@@ -2437,7 +2440,7 @@ static void usage(FILE *f, const char *name) {
     fprintf(f, "\t                 0 Do not pretty print\n");
     fprintf(f, "\t                 1 Format the XML content, as --format\n");
     fprintf(f, "\t                 2 Add whitespace inside tags, preserving content\n");
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
     fprintf(f, "\t--compress : turn on gzip compression of output\n");
 #endif
 #ifdef LIBXML_C14N_ENABLED
@@ -2804,7 +2807,7 @@ xmllintParseOptions(xmllintState *lint, int argc, const char **argv) {
                              0, 2) < 0)
                 return(XMLLINT_ERR_UNCLASS);
             lint->format = val;
-#ifdef LIBXML_ZLIB_ENABLED
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
         } else if ((!strcmp(argv[i], "-compress")) ||
                    (!strcmp(argv[i], "--compress"))) {
             lint->appOptions |= XML_LINT_ZLIB_COMPRESSION;
@@ -3092,7 +3095,7 @@ xmllintMain(int argc, const char **argv, FILE *errStream,
         xmlMemSetup(myFreeFunc, myMallocFunc, myReallocFunc, myStrdupFunc);
     }
 
-    LIBXML_TEST_VERSION
+    LIBXML_TEST_VERSION();
 
 #ifdef LIBXML_CATALOG_ENABLED
     if ((lint->appOptions & XML_LINT_USE_NO_CATALOGS) != XML_LINT_USE_NO_CATALOGS) {
@@ -3419,4 +3422,3 @@ error:
 
     return(lint->progresult);
 }
-

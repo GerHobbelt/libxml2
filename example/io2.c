@@ -11,11 +11,16 @@
 
 #include <libxml/parser.h>
 
-#if defined(LIBXML_OUTPUT_ENABLED)
-int
-main(void)
-{
+#include <libxml/monolithic_examples.h>
 
+#if defined(BUILD_MONOLITHIC)
+#define main      xml_io2_example_main
+#endif
+
+#if defined(LIBXML_OUTPUT_ENABLED)
+
+int main(void)
+{
     xmlNodePtr n;
     xmlDocPtr doc;
     xmlChar *xmlbuff;

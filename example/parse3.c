@@ -13,6 +13,8 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
+#include <libxml/monolithic_examples.h>
+
 static const char *document = "<doc/>";
 
 /**
@@ -38,13 +40,17 @@ example3Func(const char *content, int length) {
     xmlFreeDoc(doc);
 }
 
+#if defined(BUILD_MONOLITHIC)
+#define main      xml_parse3_example_main
+#endif
+
 int main(void) {
     /*
      * this initialize the library and check potential ABI mismatches
      * between the version it was compiled for and the actual shared
      * library used.
      */
-    LIBXML_TEST_VERSION
+    LIBXML_TEST_VERSION();
 
     example3Func(document, 6);
 

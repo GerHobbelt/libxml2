@@ -19,6 +19,9 @@
 
 #include <string.h>
 
+#include <libxml/monolithic_examples.h>
+
+
 #ifdef LIBXML_SAX1_ENABLED
 static void
 ignoreError(void *ctxt ATTRIBUTE_UNUSED,
@@ -1823,6 +1826,12 @@ testRemoveParamEntityExtSubset(void) {
 
     return err;
 }
+
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main      xml_testparser_main
+#endif
 
 int
 main(void) {

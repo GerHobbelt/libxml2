@@ -646,8 +646,8 @@ xmlHasFeature(xmlFeature feature)
         case XML_WITH_DEBUG_MEM:
             return(0);
         case XML_WITH_ZLIB:
-#ifdef LIBXML_ZLIB_ENABLED
-            return(1);
+#if defined(LIBXML_ZLIB_ENABLED) || defined(LIBXML_ZLIB_NG_ENABLED)
+			return(1);
 #else
             return(0);
 #endif
@@ -8693,7 +8693,7 @@ static int
 xmlAttrHashInsert(xmlParserCtxtPtr ctxt, unsigned size, const xmlChar *name,
                   const xmlChar *uri, unsigned hashValue, int aindex) {
     xmlAttrHashBucket *table = ctxt->attrHash;
-    xmlAttrHashBucket *bucket;
+    xmlAttrHashBucket *bucket = NULL;
     unsigned hindex;
 
     hindex = hashValue & (size - 1);
@@ -9147,7 +9147,7 @@ next_attr:
         memset(ctxt->attrHash, -1, attrHashSize * sizeof(ctxt->attrHash[0]));
 
         for (i = 0, j = 0; j < nratts; i += 5, j++) {
-            const xmlChar *nsuri;
+            const xmlChar *nsuri = NULL;
             unsigned hashValue, nameHashValue, uriHashValue;
             int res;
 

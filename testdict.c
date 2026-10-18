@@ -5,6 +5,7 @@
 #include <libxml/parser.h>
 #include <libxml/dict.h>
 
+#include <libxml/monolithic_examples.h>
 
 /**** dictionary tests ****/
 
@@ -797,11 +798,15 @@ testall_hash(void) {
 
 /**** main ****/
 
+#if defined(BUILD_MONOLITHIC)
+#define main      xml_testdict_main
+#endif
+
 int
 main(void) {
     int ret = 0;
 
-    LIBXML_TEST_VERSION
+    LIBXML_TEST_VERSION();
 
     if (testall_dict() != 0) {
         fprintf(stderr, "dictionary tests failed\n");

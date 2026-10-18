@@ -21,14 +21,20 @@
 #include <unistd.h>
 #endif
 
+#include <libxml/monolithic_examples.h>
+
+#if defined(BUILD_MONOLITHIC)
+#define main      xml_testWriter_example_main
+#endif
+
 #if defined(LIBXML_WRITER_ENABLED) && defined(LIBXML_OUTPUT_ENABLED)
 
 #define MY_ENCODING "ISO-8859-1"
 
-void testXmlwriterFilename(const char *uri);
-void testXmlwriterMemory(void);
-void testXmlwriterDoc(void);
-void testXmlwriterTree(void);
+static void testXmlwriterFilename(const char *uri);
+static void testXmlwriterMemory(void);
+static void testXmlwriterDoc(void);
+static void testXmlwriterTree(void);
 
 int
 main(void)
@@ -38,7 +44,7 @@ main(void)
      * between the version it was compiled for and the actual shared
      * library used.
      */
-    LIBXML_TEST_VERSION
+    LIBXML_TEST_VERSION();
 
     /* first, the file version */
     testXmlwriterFilename("writer1.tmp");
@@ -62,7 +68,7 @@ main(void)
  *
  * test the xmlWriter interface when writing to a new file
  */
-void
+static void
 testXmlwriterFilename(const char *uri)
 {
     int rc;
@@ -316,7 +322,7 @@ testXmlwriterFilename(const char *uri)
  *
  * test the xmlWriter interface when writing to memory
  */
-void
+static void
 testXmlwriterMemory(void)
 {
     int rc;
@@ -578,7 +584,7 @@ testXmlwriterMemory(void)
  *
  * test the xmlWriter interface when creating a new document
  */
-void
+static void
 testXmlwriterDoc(void)
 {
     int rc;
@@ -815,7 +821,7 @@ testXmlwriterDoc(void)
  *
  * test the xmlWriter interface when writing to a subtree
  */
-void
+static void
 testXmlwriterTree(void)
 {
     int rc;
